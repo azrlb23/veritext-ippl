@@ -1,0 +1,14 @@
+# VeriText AI - AI Agent Rules
+
+## Frontend Architecture Rules (Vue 3 + TypeScript + Vite)
+When working on `frontend/`, you MUST follow the modular component architecture documented in `frontend/MODULAR_RULES.md` and `.agent/rules/frontend-modularization.md`:
+
+1. **Views Are Orchestrators Only**: Files in `frontend/src/views/` must NOT contain monolithic template markups. They only coordinate domain components, composables, stores, and router.
+2. **Domain Component Folders**: All UI components must reside in their respective domain folders in `frontend/src/components/<domain>/` (`common`, `dashboard`, `audit`, `billing`, `corpus`, `auth`, `landing`, `verify`, `admin`).
+3. **Always Update Barrel Exports**: Every domain component folder has an `index.ts`. Always export any new or renamed component from it.
+4. **Use Shared Common Components**: Do not reinvent buttons, badges, modals, alerts, stat cards, or empty states. Use `frontend/src/components/common/`.
+5. **Headless Business Logic in Composables**: Put asynchronous, polling, file-upload, modal, or toast logic in `frontend/src/composables/`.
+6. **Strict TypeScript Compliance**:
+   - Always define strict types for `defineProps<Props>()` and `defineEmits<Emits>()`.
+   - Never leave unused variables, props, or emits (`noUnusedLocals` and `noUnusedParameters` are enabled).
+7. **Mandatory Verification**: Always run `npx vue-tsc --noEmit` and `npm run build` in `frontend/` before completing any frontend task.

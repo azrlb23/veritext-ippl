@@ -1,0 +1,47 @@
+@import '../../design-reference/audyr/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-inter);
+    color: var(--color-ink);
+    background-color: var(--surface-page-canvas);
+    letter-spacing: -0.025em;
+  }
+  body {
+    background-color: var(--surface-page-canvas);
+    color: var(--color-ink);
+    letter-spacing: -0.025em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom Highlight Classes for Semantic Plagiarism Tiers */
+.highlight-t1 {
+  background-color: theme('colors.tier.lexical-bg');
+  border-bottom: 2px solid theme('colors.tier.lexical');
+  color: #991B1B;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.highlight-t2 {
+  background-color: theme('colors.tier.semantic-bg');
+  border-bottom: 2px solid theme('colors.tier.semantic');
+  color: #9A3412;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.highlight-t3 {
+  background-color: theme('colors.tier.ai-bg');
+  border-bottom: 2px solid theme('colors.tier.ai');
+  color: #854D0E;
+  padding: 0 2px;
+  border-radius: 2px;
+}
