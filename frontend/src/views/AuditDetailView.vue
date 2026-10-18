@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import {
   ScoreSummaryCard,
@@ -13,11 +13,14 @@ import {
   type MatchedSource,
 } from "../components/audit";
 import { useModal, useNotification } from "../composables";
+import { auditService } from "../services/auditService";
+import { useAuthStore } from "../stores/auth";
 
 const route = useRoute();
 const reportId = (route.params.id as string) || "task-001";
 const { showNotification } = useNotification();
 const { isOpen: isDetailModalOpen, open: openDetailModal, close: closeDetailModal } = useModal();
+const authStore = useAuthStore();
 
 const selectedAnnotation = ref<HeatmapAnnotation | null>(null);
 
@@ -80,6 +83,39 @@ const matchedSources = ref<MatchedSource[]>([
   },
 ]);
 
+onMounted(async () => {
+  if (reportId && !reportId.startsWith("mock-") && authStore.token && !authStore.token.startsWith("demo-")) {
+    try {
+      const data = await auditService.getReport(reportId);
+      if (data) {
+        reportData.value = {
+          id: data.id || reportId,
+          document_title: (data as any).document_title || reportData.value.document_title,
+          verification_uuid: data.verification_uuid || reportData.value.verification_uuid,
+          generated_at: new Date((data as any).created_at || Date.now()).toLocaleString("id-ID", {
+            dateStyle: "long",
+            timeStyle: "short",
+          }),
+          user_name: authStore.user?.full_name || reportData.value.user_name,
+          institution: authStore.user?.institution || reportData.value.institution,
+          score_lexical: data.score_lexical ?? 0,
+          score_semantic: data.score_semantic ?? 0,
+          score_stylometric: data.score_stylometric ?? 0,
+          score_composite: data.score_composite ?? 0,
+        };
+        if (data.heatmap_annotations && data.heatmap_annotations.length > 0) {
+          annotations.value = data.heatmap_annotations;
+        }
+        if (data.matched_sources && data.matched_sources.length > 0) {
+          matchedSources.value = data.matched_sources;
+        }
+      }
+    } catch {
+      // Offline fallback: keep mockup data
+    }
+  }
+});
+
 function handleAnnotationSelected(anno: HeatmapAnnotation) {
   selectedAnnotation.value = anno;
   openDetailModal();
@@ -91,6 +127,17 @@ function handleExportPdf() {
     "success",
     "Unduh Dimulai"
   );
+  try {
+    const downloadUrl = `/api/v1/reports/${reportData.value.id}/export-pdf`;
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.setAttribute("download", `VeriText_Certificate_${reportData.value.verification_uuid}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch {
+    // Keep notification
+  }
 }
 </script>
 

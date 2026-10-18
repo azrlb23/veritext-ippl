@@ -34,8 +34,10 @@ class HeatmapAnnotation(BaseModel):
     end: int
     tier: str  # T1, T2, T3
     color: str  # RED, ORANGE, YELLOW
+    source_title: Optional[str] = None
     source_chunk_id: Optional[str] = None
     similarity: float
+    text_snippet: Optional[str] = None
 
 
 class MatchedSource(BaseModel):

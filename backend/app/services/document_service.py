@@ -178,6 +178,22 @@ class DocumentService:
             task.celery_task_id = celery_res.id
         except Exception:
             task.celery_task_id = f"simulated-{uuid.uuid4().hex}"
+            # Graceful local execution fallback so 4-tier engine executes even without active Celery worker
+            try:
+                import threading
+                from app.workers.tasks import execute_audit_pipeline
+                from app.core.database import SyncSessionLocal
+
+                def _bg_run(t_id=str(task.id), d_id=str(doc.id)):
+                    s = SyncSessionLocal()
+                    try:
+                        execute_audit_pipeline(s, t_id, d_id)
+                    finally:
+                        s.close()
+
+                threading.Thread(target=_bg_run, daemon=True).start()
+            except Exception:
+                pass
 
         await db.commit()
         await db.refresh(doc)

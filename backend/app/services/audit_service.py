@@ -73,6 +73,21 @@ class AuditService:
         except Exception:
             # Fallback if celery is not connected in current test run
             task.celery_task_id = f"simulated-{uuid.uuid4().hex}"
+            try:
+                import threading
+                from app.workers.tasks import execute_audit_pipeline
+                from app.core.database import SyncSessionLocal
+
+                def _bg_run(t_id=str(task.id), d_id=str(document.id)):
+                    s = SyncSessionLocal()
+                    try:
+                        execute_audit_pipeline(s, t_id, d_id)
+                    finally:
+                        s.close()
+
+                threading.Thread(target=_bg_run, daemon=True).start()
+            except Exception:
+                pass
 
         await db.commit()
         await db.refresh(task)
@@ -126,3 +141,14 @@ class AuditService:
 
         await db.commit()
         return True
+
+    @staticmethod
+    def execute_audit_sync(task_id: uuid.UUID, document_id: uuid.UUID, db_session=None):
+        """Directly executes the 4-tier audit pipeline synchronously."""
+        from app.workers.tasks import execute_audit_pipeline
+        from app.core.database import get_sync_db
+        if db_session:
+            return execute_audit_pipeline(db_session, str(task_id), str(document_id))
+        else:
+            with get_sync_db() as sync_db:
+                return execute_audit_pipeline(sync_db, str(task_id), str(document_id))

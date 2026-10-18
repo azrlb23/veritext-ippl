@@ -21,7 +21,9 @@ async def get_report(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(AuditReport).where(AuditReport.id == report_id)
+    stmt = select(AuditReport).where(
+        (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+    )
     report = (await db.execute(stmt)).scalar_one_or_none()
 
     if not report:
@@ -39,7 +41,9 @@ async def export_pdf(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(AuditReport).where(AuditReport.id == report_id)
+    stmt = select(AuditReport).where(
+        (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+    )
     report = (await db.execute(stmt)).scalar_one_or_none()
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")

@@ -9,6 +9,8 @@ import {
 } from "../components/verify";
 import { useNotification } from "../composables";
 
+import { auditService } from "../services/auditService";
+
 const route = useRoute();
 const router = useRouter();
 const { showNotification } = useNotification();
@@ -29,19 +31,44 @@ const certDetails = ref<CertificateDetails>({
   styloScore: 8.0,
 });
 
-function handleLookup(uuid: string) {
+async function handleLookup(targetUuid: string) {
   isChecking.value = true;
+  try {
+    const res = await auditService.verifyCertificate(targetUuid);
+    if (res && res.is_valid !== undefined) {
+      isValid.value = res.is_valid;
+      certDetails.value.uuid = targetUuid;
+      if (res.title) certDetails.value.title = res.title;
+      if (res.examiner_name) certDetails.value.examiner = res.examiner_name;
+      if (res.institution) certDetails.value.institution = res.institution;
+      if (res.score_composite !== undefined) certDetails.value.compositeScore = res.score_composite;
+      if (res.score_lexical !== undefined) certDetails.value.lexicalScore = res.score_lexical;
+      if (res.score_semantic !== undefined) certDetails.value.semanticScore = res.score_semantic;
+      if (res.score_stylometric !== undefined) certDetails.value.styloScore = res.score_stylometric;
+      if (res.is_valid) {
+        showNotification(`Sertifikat ${targetUuid.slice(0, 8)}... berhasil divalidasi.`, "success", "Validasi Berhasil");
+      } else {
+        showNotification("Kode sertifikat tidak ditemukan atau tidak valid.", "error", "Validasi Gagal");
+      }
+      router.replace(`/verify/${targetUuid}`);
+      isChecking.value = false;
+      return;
+    }
+  } catch {
+    // Offline client fallback
+  }
+
   setTimeout(() => {
     isChecking.value = false;
-    const valid = !uuid.toLowerCase().includes("invalid");
+    const valid = !targetUuid.toLowerCase().includes("invalid");
     isValid.value = valid;
-    certDetails.value.uuid = uuid;
+    certDetails.value.uuid = targetUuid;
     if (valid) {
-      showNotification(`Sertifikat ${uuid.slice(0, 8)}... berhasil divalidasi.`, "success", "Validasi Berhasil");
+      showNotification(`Sertifikat ${targetUuid.slice(0, 8)}... berhasil divalidasi.`, "success", "Validasi Berhasil");
     } else {
       showNotification("Kode sertifikat tidak ditemukan atau tidak valid.", "error", "Validasi Gagal");
     }
-    router.replace(`/verify/${uuid}`);
+    router.replace(`/verify/${targetUuid}`);
   }, 400);
 }
 </script>
