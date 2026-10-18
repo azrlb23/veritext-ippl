@@ -115,6 +115,7 @@ if "pydantic" not in sys.modules:
     pydantic_mod.ConfigDict = ConfigDict
     pydantic_mod.AliasChoices = AliasChoices
     pydantic_mod.EmailStr = str
+    pydantic_mod.field_validator = lambda *a, **k: (lambda fn: fn)
     sys.modules["pydantic"] = pydantic_mod
 
 if "sqlalchemy" not in sys.modules:

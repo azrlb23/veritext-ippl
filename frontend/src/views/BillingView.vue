@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import {
   TokenBalanceCard,
   PlanCard,
@@ -9,13 +9,17 @@ import {
   type InvoiceItem,
 } from "../components/billing";
 import { useModal, useNotification } from "../composables";
+import { billingService } from "../services/billingService";
+import { useAuthStore } from "../stores/auth";
 
 const { showNotification } = useNotification();
 const { isOpen: isTopupOpen, open: openTopup, close: closeTopup } = useModal();
+const authStore = useAuthStore();
 
-const balance = ref(5);
+const balance = computed(() => authStore.tokenBalance);
 const selectedPlan = ref<PlanItem | null>(null);
 const isProcessing = ref(false);
+const isLoading = ref(false);
 
 const packages: PlanItem[] = [
   {
@@ -44,57 +48,78 @@ const packages: PlanItem[] = [
   },
 ];
 
-const invoices = ref<InvoiceItem[]>([
-  {
-    order_id: "VT-20261011-9F2B81C4",
-    package_name: "Paket Mahasiswa (10 Token)",
-    gross_amount: "Rp 25.000",
-    status: "PAID",
-    payment_method: "GoPay / QRIS",
-    date: "11 Okt 2026",
-  },
-  {
-    order_id: "VT-20260920-1A87D09E",
-    package_name: "Paket Peneliti (50 Token)",
-    gross_amount: "Rp 100.000",
-    status: "PAID",
-    payment_method: "BCA Virtual Account",
-    date: "20 Sep 2026",
-  },
-]);
+const invoices = ref<InvoiceItem[]>([]);
+
+async function loadBillingData() {
+  isLoading.value = true;
+  try {
+    if (authStore.isAuthenticated) {
+      void authStore.fetchProfile();
+      try {
+        const wallet = await billingService.getWallet();
+        if (wallet && typeof wallet.balance === "number") {
+          authStore.setTokenBalance(wallet.balance);
+        }
+      } catch {
+        // Continue to load invoices
+      }
+    }
+
+    const data = await billingService.listInvoices();
+    if (Array.isArray(data)) {
+      invoices.value = data.map((inv: any) => ({
+        order_id: inv.order_id || inv.id || "-",
+        package_name: inv.package_name || "Top-up Kuota",
+        gross_amount: typeof inv.gross_amount === "number"
+          ? `Rp ${inv.gross_amount.toLocaleString("id-ID")}`
+          : String(inv.gross_amount || "Rp 0"),
+        status: inv.status || "PENDING",
+        payment_method: inv.payment_type || inv.payment_method || "Payment Gateway",
+        date: inv.created_at
+          ? new Date(inv.created_at).toLocaleDateString("id-ID", { dateStyle: "medium" })
+          : "-",
+      }));
+    }
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal memuat data transaksi.",
+      "error"
+    );
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  void loadBillingData();
+});
 
 function handleSelectPlan(plan: PlanItem) {
   selectedPlan.value = plan;
   openTopup();
 }
 
-function handleConfirmTopup(payload: { packageId: string; paymentMethod: string }) {
+async function handleConfirmTopup(payload: { packageId: string; paymentMethod: string }) {
   if (!selectedPlan.value) return;
   isProcessing.value = true;
 
-  setTimeout(() => {
-    const pkg = selectedPlan.value!;
-    balance.value += pkg.tokens;
-
-    const newInvoice: InvoiceItem = {
-      order_id: `VT-${Date.now().toString(16).toUpperCase()}`,
-      package_name: `${pkg.name} (${pkg.tokens} Token)`,
-      gross_amount: pkg.price,
-      status: "PAID",
-      payment_method: payload.paymentMethod.toUpperCase(),
-      date: "Hari ini",
-    };
-    invoices.value.unshift(newInvoice);
-
-    isProcessing.value = false;
+  try {
+    const res = await billingService.topup(payload.packageId);
     closeTopup();
-
     showNotification(
-      `Pembayaran berhasil! Kuota ${pkg.tokens} token telah ditambahkan ke dompet Anda.`,
+      `Order top-up ${selectedPlan.value.name} berhasil dibuat. ID Pesanan: ${res.order_id}.`,
       "success",
-      "Top Up Sukses"
+      "Top Up Dimulai"
     );
-  }, 900);
+    await loadBillingData();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal memproses permintaan top up.",
+      "error"
+    );
+  } finally {
+    isProcessing.value = false;
+  }
 }
 </script>
 

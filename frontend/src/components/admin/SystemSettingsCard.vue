@@ -14,7 +14,7 @@ const props = withDefaults(defineProps<Props>(), {
     hnsw_similarity_threshold: 0.78,
     hnsw_ef_search: 64,
     stylometric_burstiness_threshold: 0.35,
-    sandbox_mode: true,
+    sandbox_mode: false,
   }),
 });
 

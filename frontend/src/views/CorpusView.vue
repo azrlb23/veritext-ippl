@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import {
   CorpusStatsGrid,
   CorpusFilterBar,
@@ -8,6 +8,7 @@ import {
   type CorpusItemData,
 } from "../components/corpus";
 import { useModal, useNotification } from "../composables";
+import { corpusService } from "../services/corpusService";
 
 const { showNotification } = useNotification();
 const { isOpen: isUploadModalOpen, open: openUploadModal, close: closeUploadModal } = useModal();
@@ -15,36 +16,9 @@ const { isOpen: isUploadModalOpen, open: openUploadModal, close: closeUploadModa
 const selectedCategory = ref("SEMUA");
 const searchQuery = ref("");
 const isIngesting = ref(false);
+const isLoading = ref(false);
 
-const corpusList = ref<CorpusItemData[]>([
-  {
-    id: "corp-1",
-    title: "Kumpulan Jurnal Rekayasa Perangkat Lunak 2024",
-    category: "Informatika",
-    academic_year: "2024/2025",
-    total_chunks: 1420,
-    status: "INDEXED",
-    created_at: "2026-09-15",
-  },
-  {
-    id: "corp-2",
-    title: "Prosiding Seminar Nasional Sistem Informasi & Kecerdasan Buatan",
-    category: "Sistem Informasi",
-    academic_year: "2025/2026",
-    total_chunks: 3890,
-    status: "INDEXED",
-    created_at: "2026-10-01",
-  },
-  {
-    id: "corp-3",
-    title: "Skripsi & Tesis Departemen Ilmu Komputer Periode Genap",
-    category: "Ilmu Komputer",
-    academic_year: "2025/2026",
-    total_chunks: 520,
-    status: "INDEXING",
-    created_at: "2026-10-10",
-  },
-]);
+const corpusList = ref<CorpusItemData[]>([]);
 
 const filteredCorpusList = computed(() => {
   return corpusList.value.filter((item) => {
@@ -62,35 +36,78 @@ const totalChunksCount = computed(() =>
   corpusList.value.reduce((acc, curr) => acc + (curr.total_chunks || 0), 0)
 );
 
-function handleBulkIngest(payload: { title: string; category: string; academicYear: string }) {
-  isIngesting.value = true;
-  setTimeout(() => {
-    corpusList.value.unshift({
-      id: `corp-${Date.now()}`,
-      title: payload.title.replace(".zip", ""),
-      category: payload.category,
-      academic_year: payload.academicYear,
-      total_chunks: 0,
-      status: "PENDING_INDEX",
-      created_at: "Baru saja",
-    });
-    isIngesting.value = false;
-    closeUploadModal();
-
+async function loadCorpus() {
+  isLoading.value = true;
+  try {
+    const data = await corpusService.list(
+      selectedCategory.value === "SEMUA" ? undefined : selectedCategory.value,
+      1,
+      100
+    );
+    if (data && Array.isArray(data.items)) {
+      corpusList.value = data.items.map((item: any) => ({
+        id: String(item.id),
+        title: item.title || item.original_filename || "Naskah Korpus",
+        category: item.category || "Umum",
+        academic_year: item.academic_year || "-",
+        total_chunks: item.total_chunks ?? 0,
+        status: item.status || "INDEXED",
+        created_at: item.created_at ? String(item.created_at).substring(0, 10) : "",
+      }));
+    }
+  } catch (err: any) {
     showNotification(
-      `Arsip "${payload.title}" berhasil diantrekan ke Celery worker untuk ekstraksi embedding HNSW pgvector.`,
+      err?.response?.data?.detail || err?.message || "Gagal memuat repositori korpus.",
+      "error"
+    );
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(() => {
+  void loadCorpus();
+});
+
+watch(selectedCategory, () => {
+  void loadCorpus();
+});
+
+async function handleBulkIngest(payload: { title: string; category: string; academicYear: string; file?: File | null }) {
+  if (!payload.file) {
+    showNotification("Berkas arsip ZIP harus disertakan.", "warning");
+    return;
+  }
+  isIngesting.value = true;
+  try {
+    await corpusService.ingest(payload.file, payload.category, payload.academicYear);
+    closeUploadModal();
+    showNotification(
+      `Arsip "${payload.title}" berhasil diunggah dan diantrekan ke Celery worker untuk ekstraksi embedding HNSW pgvector.`,
       "success",
       "Ingest Berhasil"
     );
-  }, 600);
+    await loadCorpus();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal mengunggah dan mengindeks korpus.",
+      "error"
+    );
+  } finally {
+    isIngesting.value = false;
+  }
 }
 
-function handleDeleteItem(id: string) {
-  const idx = corpusList.value.findIndex((c) => c.id === id);
-  if (idx !== -1) {
-    const title = corpusList.value[idx].title;
-    corpusList.value.splice(idx, 1);
-    showNotification(`Koleksi korpus "${title}" telah dihapus.`, "info");
+async function handleDeleteItem(id: string) {
+  try {
+    await corpusService.delete(id);
+    showNotification(`Koleksi korpus telah berhasil dihapus.`, "info");
+    await loadCorpus();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal menghapus dokumen korpus.",
+      "error"
+    );
   }
 }
 </script>

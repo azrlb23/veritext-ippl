@@ -4,7 +4,6 @@ import { useRoute, useRouter } from "vue-router";
 import { AuthCard, LoginForm } from "../components/auth";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables";
-import type { User } from "../types";
 
 const router = useRouter();
 const route = useRoute();
@@ -43,77 +42,15 @@ async function handleLogin(creds: { email: string; password: string }) {
     showNotification("Selamat datang kembali di VeriText AI!", "success");
     router.push(getRedirectTarget(authStore.role));
   } catch (err: any) {
-    const emailLower = creds.email.toLowerCase().trim();
-    const isAzriel = emailLower === "azriel@kampus.ac.id" || emailLower.includes("azriel");
-    const isAdmin = emailLower === "admin@veritext.ai" || emailLower.includes("admin");
-    const isDosen = emailLower === "dosen@kampus.ac.id" || emailLower.includes("dosen");
-
-    // Check if password matches custom password set by admin or default VeriText#2026
-    let customPasswords: Record<string, string> = {};
-    try {
-      customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
-    } catch {
-      customPasswords = {};
+    if (err?.response) {
+      errorMessage.value =
+        err.response.data?.detail ||
+        err.response.data?.message ||
+        "Email atau kata sandi tidak valid.";
+    } else {
+      errorMessage.value =
+        err?.message || "Gagal terhubung ke server backend. Pastikan server aktif.";
     }
-    const savedCustomPwd = customPasswords[emailLower];
-    const isCustomMatch = !!(savedCustomPwd && creds.password === savedCustomPwd);
-    const isStandardMatch = creds.password === "VeriText#2026" && (isAzriel || isAdmin || isDosen);
-
-    if (!isCustomMatch && !isStandardMatch && err?.response && [400, 401, 403, 422].includes(err.response.status)) {
-      errorMessage.value = err.response.data?.detail || "Email atau kata sandi tidak valid.";
-      return;
-    }
-
-    let demoUser: User = {
-      id: "33333333-3333-3333-3333-333333333333",
-      full_name: "Mochammad Azriel Albian Putra",
-      email: creds.email || "azriel@kampus.ac.id",
-      institution: "Institut Teknologi Nasional",
-      role: "TRIAL",
-      is_active: true,
-      created_at: new Date().toISOString(),
-      token_balance: 5,
-    };
-
-    if (isAdmin) {
-      demoUser = {
-        id: "11111111-1111-1111-1111-111111111111",
-        full_name: "Super Administrator VeriText",
-        email: "admin@veritext.ai",
-        institution: "VeriText AI System",
-        role: "ADMIN" as const,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        token_balance: 9999,
-      };
-    } else if (isDosen) {
-      demoUser = {
-        id: "22222222-2222-2222-2222-222222222222",
-        full_name: "Dr. Hendra Gunawan, M.Kom.",
-        email: "dosen@kampus.ac.id",
-        institution: "Institut Teknologi Nasional",
-        role: "REVIEWER" as const,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        token_balance: 100,
-      };
-    } else if (!isAzriel) {
-      const namePart = creds.email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-      demoUser = {
-        id: "demo-user-uuid",
-        full_name: namePart || "Pengguna VeriText",
-        email: creds.email,
-        institution: "Institut Teknologi Nasional",
-        role: "TRIAL" as const,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        token_balance: 5,
-      };
-    }
-
-    authStore.setDemoSession(demoUser, `demo-token-${Date.now()}`);
-    showNotification(`Login berhasil sebagai ${demoUser.full_name} (Mode Demo Terhubung).`, "success");
-    router.push(getRedirectTarget(demoUser.role));
   } finally {
     isLoading.value = false;
   }

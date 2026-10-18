@@ -17,102 +17,72 @@ import { auditService } from "../services/auditService";
 import { useAuthStore } from "../stores/auth";
 
 const route = useRoute();
-const reportId = (route.params.id as string) || "task-001";
+const reportId = (route.params.id as string) || "";
 const { showNotification } = useNotification();
 const { isOpen: isDetailModalOpen, open: openDetailModal, close: closeDetailModal } = useModal();
 const authStore = useAuthStore();
 
+const isLoading = ref(true);
+const errorMessage = ref("");
 const selectedAnnotation = ref<HeatmapAnnotation | null>(null);
 
-// Report data based on SDD specs
-const reportData = ref({
-  id: reportId,
-  document_title: "Pengaruh Algoritma Rekomendasi Terhadap Polaritas Opini Publik.pdf",
-  verification_uuid: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  generated_at: "11 Oktober 2026, 20:30 WIB",
-  user_name: "Dr. Budi Santoso",
-  institution: "Universitas Indonesia",
-  score_lexical: 14.5,
-  score_semantic: 18.2,
-  score_stylometric: 8.0,
-  score_composite: 14.8,
-});
+const reportData = ref<{
+  id: string;
+  document_title: string;
+  verification_uuid: string;
+  generated_at: string;
+  user_name: string;
+  institution: string;
+  score_lexical: number;
+  score_semantic: number;
+  score_stylometric: number;
+  score_composite: number;
+} | null>(null);
 
-const annotations = ref<HeatmapAnnotation[]>([
-  {
-    start: 0,
-    end: 120,
-    tier: "T1",
-    color: "RED",
-    source_title: "Jurnal Informatika Vol. 12 (2023)",
-    similarity: 0.98,
-    text_snippet: "Implementasi sistem deteksi plagiarisme cerdas memerlukan integrasi antara pemrosesan bahasa alami deterministik...",
-  },
-  {
-    start: 140,
-    end: 285,
-    tier: "T2",
-    color: "ORANGE",
-    source_title: "Prosiding Seminar Nasional Rekayasa (2024)",
-    similarity: 0.84,
-    text_snippet: "pendekatan berbasis representasi vektor padat kalimat membuktikan efektivitas tinggi dalam mengenali parafrasa...",
-  },
-  {
-    start: 310,
-    end: 450,
-    tier: "T3",
-    color: "YELLOW",
-    source_title: "AI Pattern Indicator",
-    similarity: 0.72,
-    text_snippet: "Karakteristik teks memiliki keragaman leksikal yang seragam serta variasi panjang kalimat yang konsisten rendah...",
-  },
-]);
-
-const matchedSources = ref<MatchedSource[]>([
-  {
-    corpus_doc_id: "corp-01",
-    title: "Jurnal Informatika & Sistem Cerdas Vol. 12 (2023)",
-    category: "Informatika",
-    contribution_pct: 14.5,
-  },
-  {
-    corpus_doc_id: "corp-02",
-    title: "Prosiding Seminar Nasional Rekayasa Perangkat Lunak (2024)",
-    category: "Teknik Elektro",
-    contribution_pct: 18.2,
-  },
-]);
+const annotations = ref<HeatmapAnnotation[]>([]);
+const matchedSources = ref<MatchedSource[]>([]);
 
 onMounted(async () => {
-  if (reportId && !reportId.startsWith("mock-") && authStore.token && !authStore.token.startsWith("demo-")) {
-    try {
-      const data = await auditService.getReport(reportId);
-      if (data) {
-        reportData.value = {
-          id: data.id || reportId,
-          document_title: (data as any).document_title || reportData.value.document_title,
-          verification_uuid: data.verification_uuid || reportData.value.verification_uuid,
-          generated_at: new Date((data as any).created_at || Date.now()).toLocaleString("id-ID", {
-            dateStyle: "long",
-            timeStyle: "short",
-          }),
-          user_name: authStore.user?.full_name || reportData.value.user_name,
-          institution: authStore.user?.institution || reportData.value.institution,
-          score_lexical: data.score_lexical ?? 0,
-          score_semantic: data.score_semantic ?? 0,
-          score_stylometric: data.score_stylometric ?? 0,
-          score_composite: data.score_composite ?? 0,
-        };
-        if (data.heatmap_annotations && data.heatmap_annotations.length > 0) {
-          annotations.value = data.heatmap_annotations;
-        }
-        if (data.matched_sources && data.matched_sources.length > 0) {
-          matchedSources.value = data.matched_sources;
-        }
-      }
-    } catch {
-      // Offline fallback: keep mockup data
+  if (!reportId) {
+    errorMessage.value = "ID Laporan audit tidak ditentukan.";
+    isLoading.value = false;
+    return;
+  }
+  isLoading.value = true;
+  errorMessage.value = "";
+  try {
+    const data = await auditService.getReport(reportId);
+    if (data) {
+      reportData.value = {
+        id: data.id || reportId,
+        document_title: (data as any).document_title || (data as any).document?.original_filename || "Naskah Akademik",
+        verification_uuid: data.verification_uuid || "-",
+        generated_at: (data as any).created_at || (data as any).generated_at
+          ? new Date((data as any).created_at || (data as any).generated_at).toLocaleString("id-ID", {
+              dateStyle: "long",
+              timeStyle: "short",
+            })
+          : "Waktu tidak tersedia",
+        user_name: (data as any).user_name || authStore.user?.full_name || "Pengguna VeriText",
+        institution: (data as any).institution || authStore.user?.institution || "Institusi",
+        score_lexical: data.score_lexical ?? 0,
+        score_semantic: data.score_semantic ?? 0,
+        score_stylometric: data.score_stylometric ?? 0,
+        score_composite: data.score_composite ?? 0,
+      };
+      annotations.value = data.heatmap_annotations || [];
+      matchedSources.value = data.matched_sources || [];
+    } else {
+      errorMessage.value = "Laporan audit tidak ditemukan di sistem.";
     }
+  } catch (err: any) {
+    errorMessage.value =
+      err?.response?.data?.detail ||
+      err?.response?.data?.message ||
+      err?.message ||
+      "Gagal memuat laporan audit dari server.";
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -122,6 +92,7 @@ function handleAnnotationSelected(anno: HeatmapAnnotation) {
 }
 
 function handleExportPdf() {
+  if (!reportData.value) return;
   showNotification(
     "Mengunduh sertifikat laporan audit terenkripsi dengan QR code...",
     "success",
@@ -143,61 +114,87 @@ function handleExportPdf() {
 
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[14px] border border-[#ededed] shadow-audyr-subtle">
-      <div class="space-y-1.5">
-        <div class="flex items-center space-x-2">
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] italic font-bold tracking-tight bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0]">
-            Audit Selesai
-          </span>
-          <span class="text-xs tabular-nums text-audyr-ash">ID: <span class="font-bold text-audyr-ink">{{ reportData.id }}</span> &bull; UUID: <span class="font-bold text-audyr-ink">{{ reportData.verification_uuid }}</span></span>
-        </div>
-        <h1 class="text-xl sm:text-2xl font-extrabold text-audyr-ink tracking-tight">
-          {{ reportData.document_title }}
-        </h1>
-        <p class="text-xs text-audyr-ash">
-          Diperiksa oleh: <span class="font-bold text-audyr-ink">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: <span class="tabular-nums font-medium">{{ reportData.generated_at }}</span>
-        </p>
-      </div>
-
-      <!-- Action Buttons -->
-      <ExportReportActions
-        :verificationUuid="reportData.verification_uuid"
-        @exportPdf="handleExportPdf"
-      />
+    <!-- Loading State -->
+    <div v-if="isLoading" class="p-12 text-center bg-white rounded-[14px] border border-[#ededed] shadow-audyr-subtle">
+      <div class="w-8 h-8 border-2 border-audyr-ink border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-sm font-medium text-audyr-ink">Memuat data laporan audit dari server...</p>
     </div>
 
-    <!-- Scores Overview Card (Composite + 3 Tiers) -->
-    <ScoreSummaryCard
-      :scoreComposite="reportData.score_composite"
-      :scoreLexical="reportData.score_lexical"
-      :scoreSemantic="reportData.score_semantic"
-      :scoreStylometric="reportData.score_stylometric"
-    />
+    <!-- Error State -->
+    <div v-else-if="errorMessage || !reportData" class="p-8 text-center bg-white rounded-[14px] border border-rose-200 shadow-audyr-subtle space-y-4">
+      <div class="inline-flex p-3 rounded-full bg-rose-50 text-rose-600 mb-2">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold text-audyr-ink">Laporan Audit Tidak Tersedia</h2>
+      <p class="text-xs text-audyr-ash max-w-md mx-auto">{{ errorMessage }}</p>
+      <router-link
+        to="/dashboard"
+        class="inline-block px-4 py-2 text-xs font-semibold text-white bg-audyr-ink rounded-[4px] hover:bg-black transition-colors"
+      >
+        Kembali ke Workspace Dashboard
+      </router-link>
+    </div>
 
-    <!-- Tier Legend -->
-    <TierLegend showControls />
+    <!-- Data Loaded State -->
+    <template v-else>
+      <!-- Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[14px] border border-[#ededed] shadow-audyr-subtle">
+        <div class="space-y-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] italic font-bold tracking-tight bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0]">
+              Audit Selesai
+            </span>
+            <span class="text-xs tabular-nums text-audyr-ash">ID: <span class="font-bold text-audyr-ink">{{ reportData.id }}</span> &bull; UUID: <span class="font-bold text-audyr-ink">{{ reportData.verification_uuid }}</span></span>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-extrabold text-audyr-ink tracking-tight">
+            {{ reportData.document_title }}
+          </h1>
+          <p class="text-xs text-audyr-ash">
+            Diperiksa oleh: <span class="font-bold text-audyr-ink">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: <span class="tabular-nums font-medium">{{ reportData.generated_at }}</span>
+          </p>
+        </div>
 
-    <!-- Interactive Heatmap Viewer -->
-    <HeatmapViewer
-      :annotations="annotations"
-      @selectAnnotation="handleAnnotationSelected"
-    />
+        <!-- Action Buttons -->
+        <ExportReportActions
+          :verificationUuid="reportData.verification_uuid"
+          @exportPdf="handleExportPdf"
+        />
+      </div>
 
-    <!-- Side-by-Side Comparison -->
-    <SideBySideDiff
-      :annotations="annotations"
-      @selectAnnotation="handleAnnotationSelected"
-    />
+      <!-- Scores Overview Card (Composite + 3 Tiers) -->
+      <ScoreSummaryCard
+        :scoreComposite="reportData.score_composite"
+        :scoreLexical="reportData.score_lexical"
+        :scoreSemantic="reportData.score_semantic"
+        :scoreStylometric="reportData.score_stylometric"
+      />
 
-    <!-- Matched Corpus Sources Breakdown -->
-    <MatchedSourcesTable :sources="matchedSources" />
+      <!-- Tier Legend -->
+      <TierLegend showControls />
 
-    <!-- Sentence Detail Modal -->
-    <SentenceDetailModal
-      :isOpen="isDetailModalOpen"
-      :annotation="selectedAnnotation"
-      @close="closeDetailModal"
-    />
+      <!-- Interactive Heatmap Viewer -->
+      <HeatmapViewer
+        :annotations="annotations"
+        @selectAnnotation="handleAnnotationSelected"
+      />
+
+      <!-- Side-by-Side Comparison -->
+      <SideBySideDiff
+        :annotations="annotations"
+        @selectAnnotation="handleAnnotationSelected"
+      />
+
+      <!-- Matched Corpus Sources Breakdown -->
+      <MatchedSourcesTable :sources="matchedSources" />
+
+      <!-- Sentence Detail Modal -->
+      <SentenceDetailModal
+        :isOpen="isDetailModalOpen"
+        :annotation="selectedAnnotation"
+        @close="closeDetailModal"
+      />
+    </template>
   </div>
 </template>

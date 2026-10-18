@@ -26,28 +26,14 @@ async function handleRegister(formData: RegisterDTO) {
     router.push("/dashboard");
   } catch (err: any) {
     if (err?.response) {
-      errorMessage.value = err.response.data?.detail || err.response.data?.message || "Pendaftaran gagal. Silakan periksa kembali data Anda.";
-      return;
+      errorMessage.value =
+        err.response.data?.detail ||
+        err.response.data?.message ||
+        "Pendaftaran gagal. Silakan periksa kembali data Anda.";
+    } else {
+      errorMessage.value =
+        err?.message || "Gagal terhubung ke server backend. Pastikan server aktif.";
     }
-
-    // Smart fail-safe demo fallback if backend is offline
-    const demoUser = {
-      id: "demo-" + Date.now(),
-      full_name: formData.full_name,
-      email: formData.email,
-      institution: formData.institution || "Institut Teknologi Nasional",
-      role: "TRIAL" as const,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      token_balance: 5,
-    };
-    authStore.setDemoSession(demoUser, `demo-token-${Date.now()}`);
-    showNotification(
-      "Pendaftaran berhasil (Mode Demo Terhubung)! 5 Token Percobaan telah dialokasikan.",
-      "success",
-      "Selamat Datang"
-    );
-    router.push("/dashboard");
   } finally {
     isLoading.value = false;
   }

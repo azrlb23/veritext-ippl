@@ -20,35 +20,7 @@ const { showNotification } = useNotification();
 
 const isUploading = ref(false);
 
-const tasks = ref<AuditTaskItem[]>([
-  {
-    id: "task-001",
-    document_title: "Pengaruh Algoritma Rekomendasi Terhadap Polaritas Opini Publik.pdf",
-    audit_depth: "FULL",
-    status: "SUCCESS",
-    progress_pct: 100,
-    score_composite: 21.4,
-    created_at: "2026-10-11 19:45",
-  },
-  {
-    id: "task-002",
-    document_title: "Rancang Bangun Sistem Informasi Pelayanan Terpadu Satu Pintu.docx",
-    audit_depth: "FULL",
-    status: "PROCESSING",
-    progress_pct: 70,
-    score_composite: null,
-    created_at: "2026-10-11 20:10",
-  },
-  {
-    id: "task-003",
-    document_title: "Tinjauan Literatur Etika Penggunaan Kecerdasan Buatan.txt",
-    audit_depth: "TIER1_ONLY",
-    status: "QUEUED",
-    progress_pct: 0,
-    score_composite: null,
-    created_at: "2026-10-11 20:25",
-  },
-]);
+const tasks = ref<AuditTaskItem[]>([]);
 
 const activeTasks = computed(() =>
   tasks.value
@@ -76,71 +48,73 @@ const completedCount = computed(
   () => tasks.value.filter((t) => t.status === "SUCCESS").length
 );
 
-// Worker polling simulation using usePolling composable: 0% -> 35% -> 70% -> 100%
-const { start: startPolling } = usePolling(
-  () => {
-    let hasProcessing = false;
-    for (const t of tasks.value) {
-      if (t.status === "PROCESSING") {
-        hasProcessing = true;
-        if (t.progress_pct < 35) {
-          t.progress_pct = 35;
-        } else if (t.progress_pct < 70) {
-          t.progress_pct = 70;
-        } else if (t.progress_pct < 100) {
-          t.progress_pct = 100;
-          t.status = "SUCCESS";
-          t.score_composite = +(Math.random() * 15 + 8).toFixed(1);
+async function fetchTasks(): Promise<boolean> {
+  if (!authStore.token) return true;
+  try {
+    const data = await auditService.getTasks(1, 20);
+    if (data && Array.isArray(data.items)) {
+      const prevTasks = new Map(tasks.value.map((t) => [t.id, t.status]));
+      tasks.value = data.items.map((item) => ({
+        id: item.task_id || item.id || "",
+        document_title: item.document_title || "Naskah Akademik",
+        audit_depth: item.audit_depth,
+        status: item.status,
+        progress_pct: item.progress_pct,
+        score_composite: item.score_composite ?? null,
+        created_at: item.created_at
+          ? new Date(item.created_at).toLocaleString("id-ID", {
+              dateStyle: "short",
+              timeStyle: "short",
+            })
+          : "-",
+      }));
+
+      // Notify on finished tasks
+      for (const t of tasks.value) {
+        const prevStatus = prevTasks.get(t.id);
+        if (
+          (prevStatus === "PROCESSING" || prevStatus === "QUEUED") &&
+          t.status === "SUCCESS"
+        ) {
           showNotification(
-            `Pengujian naskah "${t.document_title}" selesai (100%)! Skor komposit: ${t.score_composite}%.`,
+            `Pengujian naskah "${t.document_title}" selesai (100%)! Skor komposit: ${t.score_composite ?? 0}%.`,
             "success",
             "Audit Selesai"
           );
+          void authStore.fetchProfile();
+        } else if (
+          (prevStatus === "PROCESSING" || prevStatus === "QUEUED") &&
+          t.status === "FAILED"
+        ) {
+          showNotification(
+            `Pengujian naskah "${t.document_title}" gagal diproses oleh worker.`,
+            "error",
+            "Audit Gagal"
+          );
         }
-      } else if (t.status === "QUEUED" && !hasProcessing) {
-        t.status = "PROCESSING";
-        t.progress_pct = 35;
-        hasProcessing = true;
       }
     }
+  } catch (err: any) {
+    console.error("Gagal memuat tugas audit:", err);
+  }
 
-    const remainingActive = tasks.value.filter(
-      (t) => t.status === "PROCESSING" || t.status === "QUEUED"
-    );
-    return remainingActive.length === 0;
+  const hasActive = tasks.value.some((t) => t.status === "PROCESSING" || t.status === "QUEUED");
+  return !hasActive;
+}
+
+// Real polling from backend Celery tasks
+const { start: startPolling } = usePolling(
+  async () => {
+    return await fetchTasks();
   },
-  { intervalMs: 2000, immediate: false }
+  { intervalMs: 2500, immediate: false }
 );
 
 onMounted(async () => {
-  // Ensure profile is refreshed if token is present
   if (authStore.isAuthenticated) {
     void authStore.fetchProfile();
   }
-
-  // Attempt to fetch user's real audit tasks from backend if token is available
-  if (authStore.token && !authStore.token.startsWith("demo-")) {
-    try {
-      const data = await auditService.getTasks(1, 20);
-      if (data && data.items && data.items.length > 0) {
-        tasks.value = data.items.map((item) => ({
-          id: item.task_id || item.id || `task-${Date.now()}`,
-          document_title: item.document_title || "Naskah Akademik",
-          audit_depth: item.audit_depth,
-          status: item.status,
-          progress_pct: item.progress_pct,
-          score_composite: item.score_composite ?? null,
-          created_at: new Date(item.created_at).toLocaleString("id-ID", {
-            dateStyle: "short",
-            timeStyle: "short",
-          }),
-        }));
-      }
-    } catch {
-      // Offline fallback: keep mockup tasks
-    }
-  }
-
+  await fetchTasks();
   if (activeTasks.value.length > 0) {
     startPolling();
   }
@@ -159,70 +133,45 @@ async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ON
   }
 
   isUploading.value = true;
-  let taskId = `task-${Date.now().toString().slice(-4)}`;
-
   try {
-    if (authStore.token && !authStore.token.startsWith("demo-")) {
-      const res = await documentService.upload(payload.file, payload.depth);
-      if (res && res.task_id) {
-        taskId = String(res.task_id);
-      }
-      void authStore.fetchProfile();
+    await documentService.upload(payload.file, payload.depth);
+    showNotification(
+      `Naskah "${payload.file.name}" berhasil diunggah (${payload.depth}) dan sedang diproses oleh Celery worker pipeline.`,
+      "success",
+      "Pengujian Dimulai"
+    );
+    await authStore.fetchProfile();
+    await fetchTasks();
+    if (activeTasks.value.length > 0) {
+      startPolling();
     }
   } catch (err: any) {
-    if (err?.response) {
-      const errorMsg =
-        err.response.data?.detail || err.response.data?.message || "Gagal mengunggah naskah.";
-      const statusTitle = err.response.status === 402 ? "Kredit Tidak Cukup" : "Gagal Mengunggah";
-      const variant = err.response.status === 402 ? "warning" : "error";
-      showNotification(errorMsg, variant, statusTitle);
-      if (err.response.status === 402) {
-        router.push("/billing");
-      }
-      return;
+    const errorMsg =
+      err?.response?.data?.detail ||
+      err?.response?.data?.message ||
+      err?.message ||
+      "Gagal mengunggah naskah.";
+    const statusTitle = err?.response?.status === 402 ? "Kredit Tidak Cukup" : "Gagal Mengunggah";
+    const variant = err?.response?.status === 402 ? "warning" : "error";
+    showNotification(errorMsg, variant, statusTitle);
+    if (err?.response?.status === 402) {
+      router.push("/billing");
     }
-    // Offline demo fallback notice
-    showNotification("Mode Demo: Menggunakan antrean lokal karena backend offline.", "info", "Demo Mode");
   } finally {
     isUploading.value = false;
   }
-
-  // Deduct token from reactive wallet
-  authStore.decrementTokenBalance(tokenCost);
-
-  // Add task to active queue
-  const newTask: AuditTaskItem = {
-    id: taskId,
-    document_title: payload.file.name,
-    audit_depth: payload.depth,
-    status: "PROCESSING",
-    progress_pct: 0,
-    score_composite: null,
-    created_at: "Baru saja",
-  };
-  tasks.value.unshift(newTask);
-
-  showNotification(
-    `Naskah "${payload.file.name}" berhasil diunggah (${payload.depth}) dan sedang diproses oleh Celery worker pipeline.`,
-    "success",
-    "Pengujian Dimulai"
-  );
-
-  startPolling();
 }
 
 async function handleCancelTask(taskId: string) {
-  const task = tasks.value.find((t) => t.id === taskId);
-  if (task) {
-    task.status = "CANCELLED";
-    if (authStore.token && !authStore.token.startsWith("demo-")) {
-      try {
-        await auditService.cancelAudit(taskId);
-      } catch {
-        // Continue
-      }
-    }
+  try {
+    await auditService.cancelAudit(taskId);
     showNotification(`Tugas audit ${taskId} berhasil dibatalkan.`, "info");
+    await fetchTasks();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal membatalkan tugas audit.",
+      "error"
+    );
   }
 }
 
@@ -235,30 +184,12 @@ function handleTopup() {
 }
 
 async function handleRefresh() {
-  if (authStore.token && !authStore.token.startsWith("demo-")) {
-    try {
-      const data = await auditService.getTasks(1, 20);
-      if (data && data.items && data.items.length > 0) {
-        tasks.value = data.items.map((item) => ({
-          id: item.task_id || item.id || `task-${Date.now()}`,
-          document_title: item.document_title || "Naskah Akademik",
-          audit_depth: item.audit_depth,
-          status: item.status,
-          progress_pct: item.progress_pct,
-          score_composite: item.score_composite ?? null,
-          created_at: new Date(item.created_at).toLocaleString("id-ID", {
-            dateStyle: "short",
-            timeStyle: "short",
-          }),
-        }));
-      }
-      await authStore.fetchProfile();
-    } catch {
-      // Keep existing
-    }
-  }
-  startPolling();
   showNotification("Memperbarui status tugas dari antrean Celery worker...", "info");
+  await fetchTasks();
+  await authStore.fetchProfile();
+  if (activeTasks.value.length > 0) {
+    startPolling();
+  }
 }
 </script>
 

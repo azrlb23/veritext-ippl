@@ -12,242 +12,174 @@ import {
 } from "../components/admin";
 import { useNotification } from "../composables";
 import { apiClient } from "../services/api";
+import { corpusService } from "../services/corpusService";
 
 const router = useRouter();
 const route = useRoute();
 const { showNotification } = useNotification();
 
-const users = ref<ManagedUser[]>([
-  {
-    id: "usr-001",
-    full_name: "Dr. Budi Santoso",
-    email: "budi.santoso@ui.ac.id",
-    institution: "Universitas Indonesia",
-    role: "ADMIN",
-    token_balance: 50,
-    is_active: true,
-    created_at: "2026-08-12",
-  },
-  {
-    id: "usr-002",
-    full_name: "Prof. Siti Aminah, M.Kom",
-    email: "siti.aminah@itb.ac.id",
-    institution: "Institut Teknologi Bandung",
-    role: "REVIEWER",
-    token_balance: 35,
-    is_active: true,
-    created_at: "2026-09-01",
-  },
-  {
-    id: "usr-003",
-    full_name: "Ahmad Dahlan",
-    email: "ahmad.d@ugm.ac.id",
-    institution: "Universitas Gadjah Mada",
-    role: "PREMIUM",
-    token_balance: 15,
-    is_active: true,
-    created_at: "2026-09-18",
-  },
-  {
-    id: "usr-004",
-    full_name: "Rina Kusuma",
-    email: "rina.k@student.ui.ac.id",
-    institution: "Universitas Indonesia",
-    role: "TRIAL",
-    token_balance: 5,
-    is_active: true,
-    created_at: "2026-10-05",
-  },
-  {
-    id: "usr-005",
-    full_name: "Mochammad Azriel Albian Putra",
-    email: "azriel@kampus.ac.id",
-    institution: "Institut Teknologi Nasional",
-    role: "TRIAL",
-    token_balance: 5,
-    is_active: true,
-    created_at: "2026-10-18",
-  },
-]);
+const users = ref<ManagedUser[]>([]);
+const auditLogs = ref<AuditLogItem[]>([]);
 
-const auditLogs = ref<AuditLogItem[]>([
-  {
-    id: "log-101",
-    timestamp: "2026-10-18 21:42:15",
-    actor_name: "Super Administrator",
-    actor_email: "admin@veritext.ai",
-    action: "TOKEN_ADJUST",
-    target_resource: "usr-002 (Prof. Siti Aminah)",
-    ip_address: "192.168.1.10",
-    status: "SUCCESS",
-    details: "Koreksi saldo kuota +20 token untuk pengujian semester ganjil.",
-  },
-  {
-    id: "log-102",
-    timestamp: "2026-10-18 20:15:02",
-    actor_name: "Super Administrator",
-    actor_email: "admin@veritext.ai",
-    action: "CONFIG_UPDATE",
-    target_resource: "engine_hyperparameters",
-    ip_address: "192.168.1.10",
-    status: "SUCCESS",
-    details: "Tuning ambang batas kosinus HNSW menjadi 0.82 dan winnowing k-gram=5.",
-  },
-  {
-    id: "log-103",
-    timestamp: "2026-10-18 18:30:45",
-    actor_name: "Prof. Siti Aminah, M.Kom",
-    actor_email: "siti.aminah@itb.ac.id",
-    action: "CORPUS_INGEST",
-    target_resource: "korpus_skripsi_itb_2025.zip",
-    ip_address: "10.20.4.88",
-    status: "SUCCESS",
-    details: "Ingestion bulk 14 berkas korpus rujukan internal kampus.",
-  },
-  {
-    id: "log-104",
-    timestamp: "2026-10-18 16:10:19",
-    actor_name: "Super Administrator",
-    actor_email: "admin@veritext.ai",
-    action: "USER_SUSPEND",
-    target_resource: "usr-099 (Spam Account)",
-    ip_address: "192.168.1.10",
-    status: "SUCCESS",
-    details: "Suspensi akun terindikasi automated scraping payload.",
-  },
-  {
-    id: "log-105",
-    timestamp: "2026-10-18 14:02:30",
-    actor_name: "Sistem Otomatis UU PDP",
-    actor_email: "daemon@veritext.ai",
-    action: "DOCUMENT_PURGE",
-    target_resource: "doc-temp-expired-hash-8f4b",
-    ip_address: "127.0.0.1",
-    status: "SUCCESS",
-    details: "Pembersihan berkas naskah kedaluwarsa setelah 30 hari sesuai UU PDP No. 27/2022.",
-  },
-]);
+const systemMetrics = ref({
+  totalAudits: 0,
+  totalCorpusDocs: 0,
+  vectorCount: 0,
+  avgLatencyMs: 0,
+  systemLoadPct: 0,
+  databaseStatus: "HEALTHY",
+  redisStatus: "HEALTHY",
+  celeryActiveTasks: 0,
+});
 
 async function loadRealUsers() {
   try {
     const res = await apiClient.get<any>("/admin/users");
     const items = res.data?.data?.items || res.data?.data;
-    if (Array.isArray(items) && items.length > 0) {
+    if (Array.isArray(items)) {
       users.value = items.map((u: any) => ({
         id: String(u.id),
         full_name: u.full_name,
         email: u.email,
         institution: u.institution || "Institut Teknologi Nasional",
         role: u.role,
-        token_balance: u.token_balance ?? 5,
+        token_balance: u.token_balance ?? (u.wallet?.balance ?? 5),
         is_active: u.is_active ?? true,
-        created_at: u.created_at ? String(u.created_at).substring(0, 10) : "2026-10-18",
+        created_at: u.created_at ? String(u.created_at).substring(0, 10) : "",
       }));
     }
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal memuat daftar pengguna.",
+      "error"
+    );
+  }
+}
+
+async function loadAuditLogs() {
+  try {
+    const res = await apiClient.get<any>("/admin/audit-logs");
+    const items = res.data?.data?.items || res.data?.data;
+    if (Array.isArray(items)) {
+      auditLogs.value = items.map((l: any) => ({
+        id: String(l.id),
+        timestamp: l.created_at
+          ? new Date(l.created_at).toLocaleString("id-ID", {
+              dateStyle: "short",
+              timeStyle: "medium",
+            })
+          : new Date().toISOString().replace("T", " ").substring(0, 19),
+        actor_name: l.actor_name || "Super Administrator",
+        actor_email: l.actor_email || "admin@veritext.ai",
+        action: l.action_type || l.action || "INFO",
+        target_resource: l.target_resource || "-",
+        ip_address: l.ip_address || "127.0.0.1",
+        status: l.status || "SUCCESS",
+        details: l.details || "",
+      }));
+    }
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal memuat log audit forensik.",
+      "error"
+    );
+  }
+}
+
+async function loadMetrics() {
+  try {
+    const res = await apiClient.get<any>("/admin/health-metrics");
+    const d = res.data?.data;
+    if (d) {
+      systemMetrics.value.systemLoadPct = Math.round(d.cpu_percent || 0);
+      systemMetrics.value.avgLatencyMs = Math.round(d.db_latency_ms || 0);
+      systemMetrics.value.databaseStatus = d.database_status || "HEALTHY";
+      systemMetrics.value.redisStatus = d.redis_status || "HEALTHY";
+      systemMetrics.value.celeryActiveTasks = d.celery_active_tasks || 0;
+    }
   } catch {
-    // Keep local fallback list
+    // Keep defaults
+  }
+
+  try {
+    const cData = await corpusService.list(undefined, 1, 100);
+    if (cData && typeof cData.total === "number") {
+      systemMetrics.value.totalCorpusDocs = cData.total;
+    }
+  } catch {
+    // Keep defaults
   }
 }
 
 onMounted(() => {
   void loadRealUsers();
+  void loadAuditLogs();
+  void loadMetrics();
 });
 
 async function handleToggleStatus(userId: string) {
   const user = users.value.find((u) => u.id === userId);
-  if (user) {
-    user.is_active = !user.is_active;
-    const actionType = user.is_active ? "USER_ACTIVATE" : "USER_SUSPEND";
+  if (!user) return;
+  const newStatus = !user.is_active;
 
-    try {
-      await apiClient.patch(`/admin/users/${userId}/status`, { is_active: user.is_active });
-    } catch {
-      // Offline fallback
-    }
-
-    // Catat ke log audit
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      actor_name: "Super Administrator",
-      actor_email: "admin@veritext.ai",
-      action: actionType,
-      target_resource: `${user.id} (${user.full_name})`,
-      ip_address: "127.0.0.1",
-      status: "SUCCESS",
-      details: `Status akun diubah menjadi ${user.is_active ? "Aktif" : "Nonaktif"}.`,
-    });
-
+  try {
+    await apiClient.patch(`/admin/users/${userId}/status`, { is_active: newStatus });
+    user.is_active = newStatus;
     showNotification(
       `Status pengguna ${user.full_name} berhasil diubah menjadi ${user.is_active ? "Aktif" : "Nonaktif"}.`,
       "info",
       "Perubahan Status"
+    );
+    await loadAuditLogs();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal mengubah status pengguna.",
+      "error"
     );
   }
 }
 
 async function handleAdjustTokens(userId: string, delta: number) {
   const user = users.value.find((u) => u.id === userId);
-  if (user) {
-    user.token_balance = Math.max(0, user.token_balance + delta);
+  if (!user) return;
 
-    try {
-      await apiClient.post(`/admin/users/${userId}/adjust-tokens`, {
-        amount: delta,
-        note: `Koreksi kuota token oleh Super Administrator`,
-      });
-    } catch {
-      // Offline fallback
-    }
-
-    // Catat ke log audit
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      actor_name: "Super Administrator",
-      actor_email: "admin@veritext.ai",
-      action: "TOKEN_ADJUST",
-      target_resource: `${user.id} (${user.full_name})`,
-      ip_address: "127.0.0.1",
-      status: "SUCCESS",
-      details: `Penyesuaian kuota token sebesar ${delta > 0 ? "+" + delta : delta}. Total baru: ${user.token_balance}`,
+  try {
+    const res = await apiClient.post<any>(`/admin/users/${userId}/adjust-tokens`, {
+      amount: delta,
+      note: "Koreksi kuota token oleh Super Administrator",
     });
-
+    if (res.data?.data?.new_balance !== undefined) {
+      user.token_balance = res.data.data.new_balance;
+    } else {
+      user.token_balance = Math.max(0, user.token_balance + delta);
+    }
     showNotification(
       `Berhasil memperbarui ${delta > 0 ? "+" + delta : delta} token untuk ${user.full_name}. Saldo kini: ${user.token_balance}`,
       "success",
       "Penyesuaian Token"
     );
+    await loadAuditLogs();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal menyesuaikan token pengguna.",
+      "error"
+    );
   }
 }
 
-function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
+async function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
   const user = users.value.find((u) => u.id === userId);
-  if (user) {
-    const oldRole = user.role;
+  if (!user) return;
+
+  try {
+    await apiClient.put(`/admin/users/${userId}`, { role: newRole });
     user.role = newRole;
-
-    try {
-      void apiClient.put(`/admin/users/${userId}`, { role: newRole });
-    } catch {
-      // Offline fallback
-    }
-
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      actor_name: "Super Administrator",
-      actor_email: "admin@veritext.ai",
-      action: "ROLE_CHANGE",
-      target_resource: `${user.id} (${user.full_name})`,
-      ip_address: "127.0.0.1",
-      status: "SUCCESS",
-      details: `Peran diubah dari ${oldRole} menjadi ${newRole}.`,
-    });
-
+    showNotification(`Peran pengguna ${user.full_name} diubah menjadi ${newRole}.`, "info");
+    await loadAuditLogs();
+  } catch (err: any) {
     showNotification(
-      `Peran pengguna ${user.full_name} diubah menjadi ${newRole}.`,
-      "info"
+      err?.response?.data?.detail || err?.message || "Gagal mengubah peran pengguna.",
+      "error"
     );
   }
 }
@@ -260,35 +192,8 @@ async function handleCreateUser(payload: {
   role: ManagedUser["role"];
   token_balance: number;
 }) {
-  const newId = `usr-${String(users.value.length + 1).padStart(3, "0")}`;
-  const today = new Date().toISOString().substring(0, 10);
-  const newUser: ManagedUser = {
-    id: newId,
-    full_name: payload.full_name,
-    email: payload.email,
-    institution: payload.institution,
-    role: payload.role,
-    token_balance: payload.token_balance,
-    is_active: true,
-    created_at: today,
-  };
-
-  users.value.unshift(newUser);
-
-  // Persist custom password in localStorage
-  if (payload.password) {
-    try {
-      const customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
-      customPasswords[payload.email.toLowerCase().trim()] = payload.password;
-      localStorage.setItem("veritext_custom_passwords", JSON.stringify(customPasswords));
-    } catch {
-      // ignore
-    }
-  }
-
-  // Send to backend
   try {
-    const res = await apiClient.post<any>("/admin/users", {
+    await apiClient.post<any>("/admin/users", {
       full_name: payload.full_name,
       email: payload.email,
       password: payload.password || "VeriText#2026",
@@ -296,96 +201,37 @@ async function handleCreateUser(payload: {
       role: payload.role,
       initial_tokens: payload.token_balance,
     });
-    if (res.data?.data?.id) {
-      newUser.id = String(res.data.data.id);
-    }
-  } catch {
-    // Offline fallback
+    showNotification(
+      `Pengguna ${payload.full_name} (${payload.email}) berhasil ditambahkan ke sistem.`,
+      "success",
+      "Tambah Pengguna"
+    );
+    await loadRealUsers();
+    await loadAuditLogs();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal menambahkan pengguna baru.",
+      "error"
+    );
   }
-
-  auditLogs.value.unshift({
-    id: `log-${Date.now()}`,
-    timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-    actor_name: "Super Administrator",
-    actor_email: "admin@veritext.ai",
-    action: "USER_CREATE",
-    target_resource: `${newUser.id} (${payload.full_name})`,
-    ip_address: "127.0.0.1",
-    status: "SUCCESS",
-    details: `Pendaftaran pengguna baru: peran ${payload.role}, saldo awal ${payload.token_balance} token, kata sandi awal telah dikonfigurasi.`,
-  });
-
-  showNotification(
-    `Pengguna ${payload.full_name} (${payload.email}) berhasil ditambahkan ke sistem. Kata sandi: ${payload.password || 'VeriText#2026'}`,
-    "success",
-    "Tambah Pengguna"
-  );
 }
 
 async function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
-  const index = users.value.findIndex((u) => u.id === payload.id);
-  if (index !== -1) {
-    users.value[index] = {
-      id: payload.id,
+  try {
+    await apiClient.put(`/admin/users/${payload.id}`, {
       full_name: payload.full_name,
       email: payload.email,
+      password: payload.new_password || undefined,
       institution: payload.institution,
       role: payload.role,
-      token_balance: payload.token_balance,
       is_active: payload.is_active,
-      created_at: payload.created_at,
-    };
-
-    // 1. Simpan password baru ke persistent store browser
-    if (payload.new_password) {
-      try {
-        const customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
-        customPasswords[payload.email.toLowerCase().trim()] = payload.new_password;
-        localStorage.setItem("veritext_custom_passwords", JSON.stringify(customPasswords));
-      } catch {
-        // ignore
-      }
-    }
-
-    // 2. Kirim update ke backend API
-    try {
-      await apiClient.put(`/admin/users/${payload.id}`, {
-        full_name: payload.full_name,
-        email: payload.email,
-        password: payload.new_password || undefined,
-        institution: payload.institution,
-        role: payload.role,
-        is_active: payload.is_active,
-      });
-    } catch {
-      // Offline fallback
-    }
-
-    if (payload.new_password) {
-      auditLogs.value.unshift({
-        id: `log-${Date.now()}-pwd`,
-        timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-        actor_name: "Super Administrator",
-        actor_email: "admin@veritext.ai",
-        action: "PASSWORD_RESET",
-        target_resource: `${payload.id} (${payload.full_name})`,
-        ip_address: "127.0.0.1",
-        status: "SUCCESS",
-        details: `Reset kata sandi akun secara langsung oleh administrator.`,
-      });
-    }
-
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      actor_name: "Super Administrator",
-      actor_email: "admin@veritext.ai",
-      action: "USER_UPDATE",
-      target_resource: `${payload.id} (${payload.full_name})`,
-      ip_address: "127.0.0.1",
-      status: "SUCCESS",
-      details: `Pembaruan data profil & saldo kuota: peran ${payload.role}, saldo ${payload.token_balance} token, status ${payload.is_active ? "Aktif" : "Nonaktif"}${payload.new_password ? ", kata sandi direset" : ""}.`,
     });
+
+    if (payload.new_password) {
+      await apiClient.post(`/admin/users/${payload.id}/reset-password`, {
+        new_password: payload.new_password,
+      });
+    }
 
     showNotification(
       payload.new_password
@@ -394,62 +240,54 @@ async function handleUpdateUser(payload: ManagedUser & { new_password?: string }
       "success",
       "Perbarui Pengguna"
     );
-  }
-}
-
-async function handleDeleteUser(userId: string) {
-  const index = users.value.findIndex((u) => u.id === userId);
-  if (index !== -1) {
-    const deletedUser = users.value[index];
-    users.value.splice(index, 1);
-
-    try {
-      await apiClient.delete(`/admin/users/${userId}`);
-    } catch {
-      // Offline fallback
-    }
-
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-      actor_name: "Super Administrator",
-      actor_email: "admin@veritext.ai",
-      action: "USER_DELETE",
-      target_resource: `${deletedUser.id} (${deletedUser.full_name})`,
-      ip_address: "127.0.0.1",
-      status: "SUCCESS",
-      details: `Penghapusan akun permanen pengguna dan data dompet terkait sesuai UU PDP No. 27/2022.`,
-    });
-
+    await loadRealUsers();
+    await loadAuditLogs();
+  } catch (err: any) {
     showNotification(
-      `Akun pengguna ${deletedUser.full_name} telah dihapus permanen dari sistem.`,
-      "warning",
-      "Hapus Pengguna"
+      err?.response?.data?.detail || err?.message || "Gagal memperbarui data pengguna.",
+      "error"
     );
   }
 }
 
-function handleSaveConfig(newConfig: SystemConfig) {
-  auditLogs.value.unshift({
-    id: `log-${Date.now()}`,
-    timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
-    actor_name: "Super Administrator",
-    actor_email: "admin@veritext.ai",
-    action: "CONFIG_UPDATE",
-    target_resource: "engine_hyperparameters",
-    ip_address: "127.0.0.1",
-    status: "SUCCESS",
-    details: `Tuning parameter: Ambang kosinus=${newConfig.hnsw_similarity_threshold}, k-gram=${newConfig.winnowing_kgram}, window=${newConfig.winnowing_window}`,
-  });
-
-  showNotification(
-    `Hyperparameter sistem berhasil diperbarui. Ambang batas kosinus: ${newConfig.hnsw_similarity_threshold}`,
-    "success",
-    "Konfigurasi Tersimpan"
-  );
+async function handleDeleteUser(userId: string) {
+  const user = users.value.find((u) => u.id === userId);
+  try {
+    await apiClient.delete(`/admin/users/${userId}`);
+    showNotification(
+      `Akun pengguna ${user ? user.full_name : userId} telah dihapus permanen dari sistem.`,
+      "warning",
+      "Hapus Pengguna"
+    );
+    await loadRealUsers();
+    await loadAuditLogs();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal menghapus pengguna.",
+      "error"
+    );
+  }
 }
 
-function handleRefreshLogs() {
+async function handleSaveConfig(newConfig: SystemConfig) {
+  try {
+    await apiClient.post("/admin/reindex-hnsw");
+    showNotification(
+      `Hyperparameter sistem berhasil diperbarui dan re-indexing dijadwalkan. Ambang batas kosinus: ${newConfig.hnsw_similarity_threshold}`,
+      "success",
+      "Konfigurasi Tersimpan"
+    );
+    await loadAuditLogs();
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal menyimpan konfigurasi hyperparameter.",
+      "error"
+    );
+  }
+}
+
+async function handleRefreshLogs() {
+  await loadAuditLogs();
   showNotification("Daftar jejak audit forensik berhasil disinkronkan ulang.", "info", "Sinkronisasi Log");
 }
 
@@ -590,11 +428,11 @@ function setSection(section: AdminSection) {
 
       <AdminStatsGrid
         :totalUsers="users.length"
-        :totalAudits="842"
-        :totalCorpusDocs="68"
-        :vectorCount="24500"
-        :avgLatencyMs="118"
-        :systemLoadPct="28"
+        :totalAudits="systemMetrics.totalAudits"
+        :totalCorpusDocs="systemMetrics.totalCorpusDocs"
+        :vectorCount="systemMetrics.vectorCount"
+        :avgLatencyMs="systemMetrics.avgLatencyMs"
+        :systemLoadPct="systemMetrics.systemLoadPct"
       />
 
       <!-- Infrastructure Nodes Status -->

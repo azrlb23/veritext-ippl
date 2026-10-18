@@ -26,8 +26,9 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       const token = localStorage.getItem("veritext_access_token");
-      if (token && !token.startsWith("demo-token-")) {
+      if (token) {
         localStorage.removeItem("veritext_access_token");
+        localStorage.removeItem("veritext_user");
       }
     }
     return Promise.reject(error);

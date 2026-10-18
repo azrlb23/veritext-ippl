@@ -32,9 +32,10 @@ const certDetails = ref<CertificateDetails>({
 });
 
 async function handleLookup(targetUuid: string) {
+  if (!targetUuid || !targetUuid.trim()) return;
   isChecking.value = true;
   try {
-    const res = await auditService.verifyCertificate(targetUuid);
+    const res = await auditService.verifyCertificate(targetUuid.trim());
     if (res && res.is_valid !== undefined) {
       isValid.value = res.is_valid;
       certDetails.value.uuid = targetUuid;
@@ -51,25 +52,17 @@ async function handleLookup(targetUuid: string) {
         showNotification("Kode sertifikat tidak ditemukan atau tidak valid.", "error", "Validasi Gagal");
       }
       router.replace(`/verify/${targetUuid}`);
-      isChecking.value = false;
-      return;
     }
-  } catch {
-    // Offline client fallback
-  }
-
-  setTimeout(() => {
+  } catch (err: any) {
+    isValid.value = false;
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Kode sertifikat tidak ditemukan atau tidak valid.",
+      "error",
+      "Validasi Gagal"
+    );
+  } finally {
     isChecking.value = false;
-    const valid = !targetUuid.toLowerCase().includes("invalid");
-    isValid.value = valid;
-    certDetails.value.uuid = targetUuid;
-    if (valid) {
-      showNotification(`Sertifikat ${targetUuid.slice(0, 8)}... berhasil divalidasi.`, "success", "Validasi Berhasil");
-    } else {
-      showNotification("Kode sertifikat tidak ditemukan atau tidak valid.", "error", "Validasi Gagal");
-    }
-    router.replace(`/verify/${targetUuid}`);
-  }, 400);
+  }
 }
 </script>
 
