@@ -12,10 +12,15 @@ defineProps<Props>();
     class="text-center p-8 rounded-[14px] bg-white border border-[#ededed] shadow-audyr-subtle space-y-3 transition-all"
   >
     <div
-      class="inline-flex items-center justify-center w-12 h-12 rounded-full text-xl font-bold mb-2 border"
+      class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-2 border"
       :class="isValid ? 'bg-audyr-mint-whisper text-[#065f46] border-[#a7f3d0]' : 'bg-red-50 text-red-700 border-red-200'"
     >
-      {{ isValid ? "✓" : "✗" }}
+      <svg v-if="isValid" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+      </svg>
+      <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+      </svg>
     </div>
 
     <h1

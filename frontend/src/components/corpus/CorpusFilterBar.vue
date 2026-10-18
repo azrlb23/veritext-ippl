@@ -49,7 +49,9 @@ const emit = defineEmits<{
           placeholder="Cari judul koleksi korpus..."
           class="w-full px-3.5 py-1.5 pl-8 rounded-[4px] border border-[#ededed] text-xs text-[#262626] bg-white placeholder-[#929292] focus:outline-none focus:ring-1 focus:ring-[#262626] focus:border-[#262626]"
         />
-        <span class="absolute left-2.5 top-2 text-[#929292] text-xs">🔍</span>
+        <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#929292]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
       </div>
 
       <Button

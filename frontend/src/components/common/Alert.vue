@@ -26,26 +26,22 @@ const variantClasses = computed(() => {
     case "success":
       return {
         container: "bg-[#ecfdf5] border-[#a7f3d0] text-[#065f46]",
-        icon: "✓",
         iconColor: "text-[#059669]",
       };
     case "warning":
       return {
         container: "bg-[#fff7ed] border-[#fed7aa] text-[#9a3412]",
-        icon: "⚠",
         iconColor: "text-[#ea580c]",
       };
     case "error":
       return {
         container: "bg-[#fef2f2] border-[#fecaca] text-[#991b1b]",
-        icon: "✕",
         iconColor: "text-[#dc2626]",
       };
     case "info":
     default:
       return {
         container: "bg-[#fafafa] border-[#ededed] text-[#262626]",
-        icon: "ℹ",
         iconColor: "text-[#262626]",
       };
   }
@@ -58,8 +54,21 @@ const variantClasses = computed(() => {
     :class="variantClasses.container"
     role="alert"
   >
-    <div class="font-bold text-sm flex-shrink-0" :class="variantClasses.iconColor">
-      <slot name="icon">{{ variantClasses.icon }}</slot>
+    <div class="flex-shrink-0 pt-0.5" :class="variantClasses.iconColor">
+      <slot name="icon">
+        <svg v-if="variant === 'success'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <svg v-else-if="variant === 'warning'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <svg v-else-if="variant === 'error'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </slot>
     </div>
 
     <div class="flex-grow space-y-0.5">

@@ -26,7 +26,7 @@ withDefaults(defineProps<Props>(), {
       title="Total Pengguna"
       :value="totalUsers"
       subtitle="Pengguna terdaftar di database"
-      icon="👥"
+      badge="Pengguna"
       variant="primary"
     />
 
@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
       title="Total Audit Dijalankan"
       :value="totalAudits"
       subtitle="Tugas Celery selesai"
-      icon="⚡"
+      badge="Celery"
       variant="success"
     />
 
@@ -42,7 +42,7 @@ withDefaults(defineProps<Props>(), {
       title="Vektor pgvector (HNSW)"
       :value="`${(vectorCount / 1000).toFixed(1)}k`"
       subtitle="384-dimensi embeddings"
-      icon="🧬"
+      badge="HNSW 384D"
       variant="warning"
     />
 
@@ -51,8 +51,8 @@ withDefaults(defineProps<Props>(), {
         <span class="text-[11px] font-bold text-audyr-ash uppercase tracking-wider">
           Beban Sistem & Latensi
         </span>
-        <span class="w-8 h-8 rounded-[4px] bg-[#ededed] text-audyr-ink flex items-center justify-center font-bold text-sm">
-          📊
+        <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border border-[#ededed] bg-[#fafafa] text-[#515151]">
+          Telemetri
         </span>
       </div>
       <div class="flex items-baseline space-x-2">

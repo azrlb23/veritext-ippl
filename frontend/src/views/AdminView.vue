@@ -269,8 +269,7 @@ onMounted(() => {
     <!-- Header Konsol Super Administrator -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ededed] pb-6">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-[#262626] text-white text-xs font-bold uppercase tracking-wider mb-2">
-          <span>🛡️</span>
+        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#262626] text-white text-[11px] font-bold uppercase tracking-wider mb-2">
           <span>Konsol Tata Kelola Administrator</span>
         </div>
         <h1 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
@@ -300,31 +299,31 @@ onMounted(() => {
         href="#overview"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        📊 Overview &amp; Metrik
+        Overview &amp; Metrik
       </a>
       <a
         href="#users"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        👥 Kelola Pengguna &amp; Saldo
+        Kelola Pengguna &amp; Saldo
       </a>
       <a
         href="#corpus"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        📚 Repositori Korpus
+        Repositori Korpus
       </a>
       <a
         href="#config"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        ⚙️ Tuning Engine AI
+        Tuning Engine AI
       </a>
       <a
         href="#logs"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        📜 Log Jejak Audit
+        Log Jejak Audit
       </a>
     </div>
 

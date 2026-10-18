@@ -30,9 +30,8 @@ function copyVerifyUrl() {
   <div class="flex flex-wrap items-center gap-2.5">
     <router-link
       :to="`/verify/${verificationUuid}`"
-      class="px-3.5 py-1.5 border border-[#ededed] hover:border-[#d4d4d4] rounded-[4px] text-xs font-medium text-[#262626] transition-colors shadow-none bg-white hover:bg-[#fafafa] flex items-center space-x-1.5"
+      class="px-3.5 py-1.5 border border-[#ededed] hover:border-[#d4d4d4] rounded-[4px] text-xs font-medium text-[#262626] transition-colors shadow-none bg-white hover:bg-[#fafafa] flex items-center"
     >
-      <span>🔍</span>
       <span>Pratinjau QR Publik</span>
     </router-link>
 
@@ -41,9 +40,6 @@ function copyVerifyUrl() {
       size="sm"
       @click="copyVerifyUrl"
     >
-      <template #prefix>
-        <span>🔗</span>
-      </template>
       {{ copied ? "Tautan Disalin!" : "Salin Link QR" }}
     </Button>
 
@@ -52,9 +48,6 @@ function copyVerifyUrl() {
       size="sm"
       @click="emit('exportPdf')"
     >
-      <template #prefix>
-        <span>📥</span>
-      </template>
       Unduh Sertifikat PDF
     </Button>
   </div>

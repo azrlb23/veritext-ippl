@@ -115,7 +115,11 @@ function handleSubmit() {
           class="hidden"
         />
         <label for="corpusZipUpload" class="cursor-pointer space-y-1 block">
-          <div class="text-2xl">📦</div>
+          <div class="w-10 h-10 mx-auto rounded-[6px] bg-white border border-[#ededed] flex items-center justify-center text-audyr-ink mb-1.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+            </svg>
+          </div>
           <div v-if="selectedFile">
             <span class="text-xs font-bold text-audyr-ink block">{{ selectedFile.name }}</span>
             <span class="text-[11px] text-audyr-ash tabular-nums font-bold">{{ (selectedFile.size / (1024 * 1024)).toFixed(2) }} MB</span>

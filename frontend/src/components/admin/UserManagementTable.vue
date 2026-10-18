@@ -73,9 +73,11 @@ function onRoleSelect(userId: string, event: Event) {
             v-model="searchQuery"
             type="text"
             placeholder="Cari nama / email..."
-            class="px-3 py-1.5 pl-7 rounded-[4px] border border-[#ededed] text-xs text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white w-44 sm:w-56 font-medium"
+            class="px-3 py-1.5 pl-8 rounded-[4px] border border-[#ededed] text-xs text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white w-44 sm:w-56 font-medium"
           />
-          <span class="absolute left-2 top-2 text-audyr-ash text-xs">🔍</span>
+          <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#929292]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
 
         <select
@@ -103,7 +105,6 @@ function onRoleSelect(userId: string, event: Event) {
     <!-- Empty State -->
     <div v-else-if="filteredUsers.length === 0" class="p-8">
       <EmptyState
-        icon="👥"
         title="Pengguna Tidak Ditemukan"
         description="Tidak ada data akun pengguna yang cocok dengan kriteria pencarian saat ini."
       />

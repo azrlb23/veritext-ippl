@@ -7,6 +7,7 @@ interface Props {
   title: string;
   value: string | number;
   subtitle?: string;
+  badge?: string;
   icon?: string;
   variant?: CardVariant;
   trend?: {
@@ -17,6 +18,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   subtitle: "",
+  badge: "",
   icon: "",
   variant: "default",
 });
@@ -37,19 +39,18 @@ const valueColorClass = computed(() => {
   }
 });
 
-const iconBgClass = computed(() => {
+const badgeVariantClass = computed(() => {
   switch (props.variant) {
-    case "primary":
-      return "bg-[#ededed] text-[#262626]";
     case "warning":
-      return "bg-[#fff7ed] text-[#c2410c]";
+      return "bg-[#fff7ed] text-[#c2410c] border-[#ffedd5]";
     case "success":
-      return "bg-[#ecfdf5] text-[#065f46]";
+      return "bg-[#ecfdf5] text-[#065f46] border-[#a7f3d0]";
     case "danger":
-      return "bg-[#fef2f2] text-[#b91c1c]";
+      return "bg-[#fef2f2] text-[#b91c1c] border-[#fee2e2]";
+    case "primary":
     case "default":
     default:
-      return "bg-[#fafafa] text-[#515151] border border-[#ededed]";
+      return "bg-[#fafafa] text-[#515151] border-[#ededed]";
   }
 });
 </script>
@@ -60,15 +61,13 @@ const iconBgClass = computed(() => {
       <span class="text-[11px] font-bold text-[#515151] uppercase tracking-wider">
         {{ title }}
       </span>
-      <div
-        v-if="icon || $slots.icon"
-        class="w-9 h-9 rounded-[4px] flex items-center justify-center font-bold text-sm"
-        :class="iconBgClass"
+      <span
+        v-if="badge || $slots.badge"
+        class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border"
+        :class="badgeVariantClass"
       >
-        <slot name="icon">
-          <span>{{ icon }}</span>
-        </slot>
-      </div>
+        <slot name="badge">{{ badge }}</slot>
+      </span>
     </div>
 
     <div class="space-y-1">
@@ -85,7 +84,7 @@ const iconBgClass = computed(() => {
         class="font-medium"
         :class="trend.isPositive ? 'text-[#065f46]' : 'text-red-600'"
       >
-        {{ trend.isPositive ? '↑' : '↓' }} {{ trend.value }}
+        {{ trend.isPositive ? '+' : '-' }}{{ trend.value }}
       </span>
       <span class="text-audyr-ash">vs periode lalu</span>
     </div>

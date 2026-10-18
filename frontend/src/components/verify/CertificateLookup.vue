@@ -36,7 +36,9 @@ function handleVerify() {
         class="w-full px-3.5 py-2 pl-9 rounded-[4px] border border-[#ededed] text-xs font-medium text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white tracking-tight"
         @keyup.enter="handleVerify"
       />
-      <span class="absolute left-3 top-2.5 text-audyr-ash text-xs">🔍</span>
+      <svg class="w-3.5 h-3.5 absolute left-3 top-2.5 text-audyr-ash" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
     </div>
     <Button
       variant="primary"

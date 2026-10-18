@@ -54,7 +54,6 @@ function selectItem(idx: number) {
     <!-- Empty State -->
     <div v-if="annotations.length === 0" class="py-6">
       <EmptyState
-        icon="⚖️"
         title="Tidak Ada Temuan Kemiripan"
         description="Tidak ditemukan segmen naskah yang memerlukan perbandingan berdampingan."
       />

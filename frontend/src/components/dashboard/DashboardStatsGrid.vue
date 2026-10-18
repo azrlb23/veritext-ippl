@@ -26,8 +26,8 @@ defineEmits<{
     <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-3 flex flex-col justify-between">
       <div class="flex items-center justify-between">
         <span class="text-[11px] font-bold text-audyr-ash uppercase tracking-wider">Saldo Token Aktif</span>
-        <span class="w-8 h-8 rounded-[4px] bg-[#ededed] text-audyr-ink flex items-center justify-center font-bold text-sm">
-          ⚡
+        <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border border-[#ededed] bg-[#fafafa] text-[#515151]">
+          Kuota
         </span>
       </div>
       <div>
@@ -50,7 +50,7 @@ defineEmits<{
       title="Total Naskah Diuji"
       :value="totalAudits"
       subtitle="Dokumen terdaftar di sistem"
-      icon="📄"
+      badge="Dokumen"
       variant="primary"
     />
 
@@ -59,7 +59,7 @@ defineEmits<{
       title="Audit Selesai"
       :value="completedAudits"
       subtitle="Laporan & Sertifikat siap unduh"
-      icon="✓"
+      badge="Selesai"
       variant="success"
     />
 
@@ -68,7 +68,7 @@ defineEmits<{
       title="Sedang Diproses"
       :value="inProgressAudits"
       subtitle="Antrean Celery & pgvector"
-      icon="⏳"
+      badge="Antrean"
       variant="warning"
     />
   </div>

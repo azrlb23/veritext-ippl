@@ -20,7 +20,7 @@ withDefaults(defineProps<Props>(), {
       title="Total Dokumen Korpus"
       :value="`${totalDocs} Berkas`"
       subtitle="Arsip naskah akademik terdaftar"
-      icon="📚"
+      badge="Arsip"
       variant="primary"
     />
 
@@ -28,7 +28,7 @@ withDefaults(defineProps<Props>(), {
       title="Vektor Kalimat Terindeks (HNSW)"
       :value="`${totalChunks.toLocaleString()} Kalimat`"
       subtitle="Representasi 384D pgvector"
-      icon="🧬"
+      badge="pgvector"
       variant="default"
     />
 

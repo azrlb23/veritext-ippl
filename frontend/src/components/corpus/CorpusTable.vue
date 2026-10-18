@@ -58,7 +58,6 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
     <!-- Empty State -->
     <div v-else-if="items.length === 0" class="p-8">
       <EmptyState
-        icon="📚"
         title="Tidak Ada Dokumen Korpus Ditemukan"
         description="Cobalah sesuaikan kata kunci pencarian atau unggah file arsip korpus baru."
       />

@@ -22,7 +22,6 @@ withDefaults(defineProps<Props>(), {
 
     <div v-if="sources.length === 0" class="py-6">
       <EmptyState
-        icon="📄"
         title="Tidak Ditemukan Sumber Pembanding"
         description="Naskah ini tidak memiliki kecocokan signifikan dengan bank korpus yang terdaftar."
       />

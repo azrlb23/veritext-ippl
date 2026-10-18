@@ -63,7 +63,7 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
           size="xs"
           @click="emit('refresh')"
         >
-          ↻ Refresh
+          Refresh
         </Button>
       </div>
     </div>
@@ -76,7 +76,6 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
     <!-- Empty State -->
     <div v-else-if="tasks.length === 0" class="p-8">
       <EmptyState
-        icon="📑"
         title="Belum Ada Riwayat Audit"
         description="Silakan unggah naskah pertama Anda pada formulir di atas untuk memulai deteksi plagiarisme."
       />

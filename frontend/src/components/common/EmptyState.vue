@@ -7,7 +7,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  icon: "📂",
+  icon: "",
   description: "",
   actionText: "",
 });
@@ -19,7 +19,10 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-[14px] border border-dashed border-[#ededed] bg-[#fafafa] space-y-3">
-    <div class="w-12 h-12 rounded-[8px] bg-white border border-[#ededed] shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex items-center justify-center text-xl text-[#262626]">
+    <div
+      v-if="icon || $slots.icon"
+      class="w-10 h-10 rounded-[6px] bg-white border border-[#ededed] shadow-sm flex items-center justify-center text-sm text-[#262626]"
+    >
       <slot name="icon">{{ icon }}</slot>
     </div>
 
@@ -27,7 +30,7 @@ const emit = defineEmits<{
       <h4 class="text-sm font-semibold text-[#262626] tracking-tight">
         {{ title }}
       </h4>
-      <p v-if="description" class="text-xs text-[#686868] leading-relaxed">
+      <p v-if="description" class="text-xs text-[#686868] leading-relaxed font-normal">
         {{ description }}
       </p>
     </div>

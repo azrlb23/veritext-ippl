@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
 import { getSegmentedNavLinks, evaluateNavigationGuard } from "../utils/navigation.ts";
 
-console.log("🚀 Menjalankan Pengujian Otomatis Segmentasi Hak Akses & Navigasi VeriText AI...\n");
+console.log("[TEST] Menjalankan Pengujian Otomatis Segmentasi Hak Akses & Navigasi VeriText AI...\n");
 
 let passedCount = 0;
 function test(description, fn) {
   try {
     fn();
-    console.log(`  ✓ ${description}`);
+    console.log(`  [PASS] ${description}`);
     passedCount++;
   } catch (error) {
-    console.error(`  ✕ FAILED: ${description}`);
+    console.error(`  [FAIL] FAILED: ${description}`);
     console.error(error);
     process.exit(1);
   }
@@ -378,4 +378,4 @@ test("Edge Case: Tamu belum login mengakses /corpus ditolak & dialihkan ke /logi
   assert.ok(notif.notifications[0].msg.includes("Silakan masuk terlebih dahulu"));
 });
 
-console.log(`\n🎉 Seluruh ${passedCount} pengujian berhasil diverifikasi tanpa kegagalan!`);
+console.log(`\n[SUCCESS] Seluruh ${passedCount} pengujian berhasil diverifikasi tanpa kegagalan!`);

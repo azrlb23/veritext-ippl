@@ -71,7 +71,7 @@ function handleSubmit() {
           v-model="password"
           type="password"
           required
-          placeholder="••••••••"
+          placeholder="Kata sandi akun"
           class="w-full px-3.5 py-2.5 rounded-[4px] border border-[#ededed] focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink text-sm text-audyr-ink placeholder:text-audyr-fog bg-white tracking-tight"
         />
       </div>

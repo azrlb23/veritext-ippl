@@ -44,8 +44,9 @@ function handleSave() {
         <p class="text-xs text-audyr-ash mt-0.5 font-normal">Konfigurasi algoritma deteksi plagiarisme dan inferensi semantik</p>
       </div>
 
-      <span v-if="saved" class="text-xs font-bold text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-3 py-0.5 rounded-full tracking-tight">
-        ✓ Konfigurasi Tersimpan
+      <span v-if="saved" class="text-xs font-bold text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-3 py-0.5 rounded-full tracking-tight inline-flex items-center space-x-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+        <span>Konfigurasi Tersimpan</span>
       </span>
     </div>
 

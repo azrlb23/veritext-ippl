@@ -47,7 +47,6 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
 
     <div v-if="invoices.length === 0" class="py-6">
       <EmptyState
-        icon="💳"
         title="Belum Ada Transaksi"
         description="Riwayat faktur pembelian token akan dicatat secara otomatis di sini."
       />
