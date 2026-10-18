@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, Security, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,29 +43,62 @@ async def get_report(
     )
 
 
+from typing import Optional
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import selectinload
+from app.services.pdf_certificate_service import generate_pdf_certificate, clean_pdf_filename
+
+security_bearer_optional = HTTPBearer(auto_error=False)
+
+
 @router.get("/reports/{report_id}/export-pdf")
 async def export_pdf(
     report_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
+    token: Optional[str] = Query(None),
+    auth_header: Optional[HTTPAuthorizationCredentials] = Security(security_bearer_optional),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(AuditReport).where(
-        (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+    stmt = (
+        select(AuditReport)
+        .options(
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.document),
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.user),
+        )
+        .where(
+            (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+        )
     )
     report = (await db.execute(stmt)).scalar_one_or_none()
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
 
-    # Generate a lightweight mockup PDF header/stream
-    pdf_content = (
-        b"%PDF-1.4\n1 0 obj\n<< /Title (VeriText AI Plagiarism Certificate) >>\nendobj\n"
-        b"trailer\n<< /Root 1 0 R >>\n%%EOF"
+    doc_title = report.document_title or "Naskah Akademik"
+    user_name = report.user_name or "Pengguna VeriText"
+    institution = report.institution or "Institusi Akademik"
+
+    pdf_bytes = generate_pdf_certificate(
+        report_id=str(report.id),
+        verification_uuid=str(report.verification_uuid),
+        document_title=doc_title,
+        user_name=user_name,
+        institution=institution,
+        generated_at=report.generated_at or datetime.now(timezone.utc),
+        score_composite=float(report.score_composite or 0.0),
+        score_lexical=float(report.score_lexical or 0.0),
+        score_semantic=float(report.score_semantic or 0.0),
+        score_stylometric=float(report.score_stylometric or 0.0),
+        matched_sources=report.matched_sources or [],
     )
 
+    filename = clean_pdf_filename(doc_title)
+
     return Response(
-        content=pdf_content,
+        content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="VeriText_Certificate_{report.verification_uuid}.pdf"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-cache",
+        },
     )
 
 

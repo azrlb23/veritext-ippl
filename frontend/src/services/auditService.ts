@@ -43,4 +43,30 @@ export const auditService = {
     const res = await apiClient.get<{ data: any }>(`/verify/${verificationUuid}`);
     return res.data.data;
   },
+
+  async downloadPdfReport(reportId: string, documentTitle: string = "Naskah") {
+    const res = await apiClient.get(`/reports/${reportId}/export-pdf`, {
+      responseType: "blob",
+    });
+
+    const cleanTitle =
+      documentTitle
+        .replace(/\.(pdf|docx?|txt)$/i, "")
+        .trim()
+        .replace(/[^a-zA-Z0-9_\-]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "") || "Naskah_Akademik";
+    const filename = `Sertifikat_VeriText_${cleanTitle}.pdf`;
+
+    const blob = new Blob([res.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    return filename;
+  },
 };

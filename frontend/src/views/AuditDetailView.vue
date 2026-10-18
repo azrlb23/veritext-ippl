@@ -91,23 +91,29 @@ function handleAnnotationSelected(anno: HeatmapAnnotation) {
   openDetailModal();
 }
 
-function handleExportPdf() {
+async function handleExportPdf() {
   if (!reportData.value) return;
   showNotification(
-    "Mengunduh sertifikat laporan audit terenkripsi dengan QR code...",
-    "success",
-    "Unduh Dimulai"
+    "Menyiapkan sertifikat resmi ber-QR Code...",
+    "info",
+    "Memproses PDF"
   );
   try {
-    const downloadUrl = `/api/v1/reports/${reportData.value.id}/export-pdf`;
-    const link = document.createElement("a");
-    link.href = downloadUrl;
-    link.setAttribute("download", `VeriText_Certificate_${reportData.value.verification_uuid}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch {
-    // Keep notification
+    const filename = await auditService.downloadPdfReport(
+      reportData.value.id,
+      reportData.value.document_title || "Naskah"
+    );
+    showNotification(
+      `Sertifikat berhasil diunduh sebagai ${filename}`,
+      "success",
+      "Unduh Berhasil"
+    );
+  } catch (err: any) {
+    showNotification(
+      err?.response?.data?.detail || err?.message || "Gagal mengunduh berkas sertifikat PDF.",
+      "error",
+      "Unduh Gagal"
+    );
   }
 }
 </script>
