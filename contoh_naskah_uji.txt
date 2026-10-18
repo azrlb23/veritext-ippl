@@ -1,0 +1,16 @@
+PENGARUH TEKNOLOGI PENCARIAN VEKTOR TERHADAP DETEKSI PLAGIARISME DIGITAL
+
+Abstrak
+Pengembangan teknologi deteksi naskah digital saat ini mengalami perkembangan yang sangat pesat seiring dengan kemajuan pemrosesan bahasa alami. Naskah ini menguji performa integrasi pencarian leksikal dan representasi semantik pada korpus karya ilmiah berbahasa Indonesia.
+
+Bab I: Tinjauan Pustaka
+Algoritma Winnowing menggunakan rolling hash Rabin-Karp untuk memilih sidik jari dokumen secara deterministik. Dengan sliding window berukuran w, nilai hash minimum pada setiap jendela dipilih sebagai representasi naskah. Aturan pemecahan seri memilih posisi paling kanan guna mencegah redudansi sidik jari yang berdekatan. Metode ini terbukti memiliki kompleksitas waktu linier dan tahan terhadap manipulasi urutan kalimat kecil.
+
+Bab II: Pendekatan Semantik Modern
+Implementasi sistem deteksi plagiarisme cerdas memerlukan integrasi antara pemrosesan bahasa alami deterministik dan komputasi vektor. Pendekatan berbasis representasi vektor padat kalimat membuktikan efektivitas tinggi dalam mengenali parafrasa terstruktur. Penggunaan ruang embedding terstandarisasi mengatasi keterbatasan pencocokan kata demi kata yang rentan terhadap substitusi sinonim.
+
+Bab III: Pola Sintaksis Tulisan
+Sistem deteksi ini sangat baik dan terstruktur. Model bahasa memproses naskah dengan cepat. Algoritma menyajikan hasil pengujian secara konsisten. Data tersimpan rapi di dalam basis data PostgreSQL. Semua proses berjalan secara otomatis tanpa kendala.
+
+Bab IV: Kesimpulan dan Saran Original
+Berdasarkan hasil observasi dan pengujian independen yang kami laksanakan di laboratorium komputasi kampus, kami menyimpulkan bahwa penggabungan beberapa tier deteksi memberikan objektivitas yang jauh lebih terpercaya bagi para dosen penilai dibandingkan penilaian manual satu arah.

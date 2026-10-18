@@ -188,9 +188,14 @@ class SemanticEngine:
         return self.embed_sentence_dense(text)
 
     @staticmethod
-    def cosine_similarity(u: List[float], v: List[float]) -> float:
+    def cosine_similarity(u: Any, v: Any) -> float:
         """Calculates cosine similarity between two vectors: (u . v) / (||u|| * ||v||)."""
-        if not u or not v or len(u) != len(v):
+        if u is None or v is None:
+            return 0.0
+        try:
+            if len(u) == 0 or len(v) == 0 or len(u) != len(v):
+                return 0.0
+        except TypeError:
             return 0.0
 
         dot = 0.0
@@ -198,9 +203,9 @@ class SemanticEngine:
         norm_v_sq = 0.0
 
         for a, b in zip(u, v):
-            dot += a * b
-            norm_u_sq += a * a
-            norm_v_sq += b * b
+            dot += float(a) * float(b)
+            norm_u_sq += float(a) * float(a)
+            norm_v_sq += float(b) * float(b)
 
         if norm_u_sq <= 1e-12 or norm_v_sq <= 1e-12:
             return 0.0
@@ -245,7 +250,12 @@ class SemanticEngine:
 
             for chunk in corpus_chunks:
                 c_emb = chunk.get("embedding")
-                if not c_emb:
+                if c_emb is None:
+                    continue
+                try:
+                    if len(c_emb) == 0:
+                        continue
+                except TypeError:
                     continue
 
                 sim = self.cosine_similarity(s_emb, c_emb)

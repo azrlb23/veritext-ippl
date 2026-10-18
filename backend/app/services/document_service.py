@@ -171,14 +171,23 @@ class DocumentService:
             )
             db.add(tx)
 
-        # Dispatch Celery worker task asynchronously
+        # Dispatch Celery worker task asynchronously or run immediate background thread
+        dispatched_to_celery = False
         try:
-            from app.workers.tasks import preprocess_and_audit
-            celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
-            task.celery_task_id = celery_res.id
+            from app.workers.celery_app import celery_app
+            inspect = celery_app.control.inspect(timeout=0.3)
+            active_workers = inspect.ping() if inspect else None
+            if active_workers:
+                from app.workers.tasks import preprocess_and_audit
+                celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
+                task.celery_task_id = celery_res.id
+                dispatched_to_celery = True
         except Exception:
-            task.celery_task_id = f"simulated-{uuid.uuid4().hex}"
-            # Graceful local execution fallback so 4-tier engine executes even without active Celery worker
+            dispatched_to_celery = False
+
+        if not dispatched_to_celery:
+            # Standalone background thread execution so real 4-tier pipeline runs immediately
+            task.celery_task_id = f"local-{uuid.uuid4().hex}"
             try:
                 import threading
                 from app.workers.tasks import execute_audit_pipeline
