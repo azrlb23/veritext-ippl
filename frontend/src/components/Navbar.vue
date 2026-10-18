@@ -191,12 +191,24 @@ async function handleLogout() {
         <!-- Kondisi 2: Mahasiswa Terautentikasi (Role: TRIAL / PREMIUM / USER) -->
         <template v-else>
           <div class="hidden md:flex items-center space-x-2">
-            <!-- Chip Profil Terpadu: Avatar + Nama + Saldo Token Aktif -->
+            <!-- Chip Profil Terpadu: Avatar + Nama + Status Akun + Saldo Token Aktif -->
             <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
               <div class="w-5 h-5 rounded-[3px] bg-[#262626] text-white flex items-center justify-center text-[10px] font-extrabold flex-shrink-0">
                 {{ userInitial }}
               </div>
               <span class="truncate max-w-[120px] font-bold text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
+              <span
+                v-if="authStore.role === 'PREMIUM'"
+                class="px-1.5 py-0.5 rounded-[3px] text-[9px] font-black tracking-wider bg-[#262626] text-white"
+              >
+                PREMIUM
+              </span>
+              <span
+                v-else
+                class="px-1.5 py-0.5 rounded-[3px] text-[9px] font-bold tracking-wider bg-[#ededed] text-[#686868]"
+              >
+                TRIAL
+              </span>
               <span class="text-[#d4d4d4]">|</span>
               <span class="inline-flex items-center text-[11px] font-medium text-[#065f46]">
                 <strong class="tabular-nums font-extrabold mr-1">{{ authStore.tokenBalance }}</strong> Token

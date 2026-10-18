@@ -1,7 +1,16 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
 import { ToastContainer } from "./components/common";
+import { useAuthStore } from "./stores/auth";
+
+const authStore = useAuthStore();
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    void authStore.fetchProfile();
+  }
+});
 </script>
 
 <template>

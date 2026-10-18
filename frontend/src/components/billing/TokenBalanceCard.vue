@@ -1,9 +1,12 @@
 <script setup lang="ts">
 interface Props {
   balance: number;
+  role?: string;
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  role: "TRIAL",
+});
 
 defineEmits<{
   (e: "topup"): void;
@@ -13,7 +16,21 @@ defineEmits<{
 <template>
   <div class="bg-audyr-charcoal text-white rounded-[14px] border border-neutral-800 p-8 shadow-audyr-subtle flex flex-col md:flex-row md:items-center justify-between gap-6">
     <div class="space-y-2">
-      <span class="text-xs uppercase tracking-wider text-audyr-chalk font-bold">Dompet Saldo Token Audit</span>
+      <div class="flex items-center space-x-2">
+        <span class="text-xs uppercase tracking-wider text-audyr-chalk font-bold">Dompet Saldo Token Audit</span>
+        <span
+          v-if="role === 'PREMIUM'"
+          class="px-2 py-0.5 rounded-[3px] text-[10px] font-black tracking-wider bg-white text-audyr-ink uppercase"
+        >
+          PREMIUM
+        </span>
+        <span
+          v-else
+          class="px-2 py-0.5 rounded-[3px] text-[10px] font-bold tracking-wider bg-neutral-800 text-audyr-chalk uppercase"
+        >
+          TRIAL
+        </span>
+      </div>
       <div class="flex items-baseline space-x-3">
         <span class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white tabular-nums">{{ balance }}</span>
         <span class="text-sm text-audyr-chalk font-medium">Token Tersedia</span>

@@ -209,9 +209,21 @@ async function handleRefresh() {
         >
           {{ authStore.user.institution || 'VeriText Academic' }}
         </span>
+        <span
+          v-if="authStore.role === 'PREMIUM'"
+          class="text-xs px-2.5 py-0.5 font-black rounded-full bg-[#262626] text-white border border-[#262626]"
+        >
+          PREMIUM ACCOUNT
+        </span>
+        <span
+          v-else-if="authStore.role === 'TRIAL'"
+          class="text-xs px-2.5 py-0.5 font-bold rounded-full bg-[#fafafa] text-[#737373] border border-[#ededed]"
+        >
+          TRIAL
+        </span>
       </div>
       <p class="text-xs sm:text-sm text-audyr-ash mt-1 font-normal">
-        Selamat datang, <strong class="italic font-bold text-[#262626]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong>. Unggah dokumen akademik untuk diproses oleh <strong class="font-bold text-[#262626]">4-Tier Hybrid Detection Pipeline</strong>.
+        Selamat datang, <strong class="italic font-bold text-[#262626]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong><span v-if="authStore.role === 'PREMIUM'" class="text-[#262626] font-bold"> (Akun Premium)</span>. Unggah dokumen akademik untuk diproses oleh <strong class="font-bold text-[#262626]">4-Tier Hybrid Detection Pipeline</strong>.
       </p>
     </div>
 

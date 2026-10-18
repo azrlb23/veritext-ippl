@@ -128,6 +128,7 @@ async function handleConfirmTopup(payload: { packageId: string; paymentMethod: s
     <!-- Wallet Overview Card -->
     <TokenBalanceCard
       :balance="balance"
+      :role="authStore.role"
       @topup="handleSelectPlan(packages[1])"
     />
 
