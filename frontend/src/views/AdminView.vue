@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
   AdminStatsGrid,
   UserManagementTable,
@@ -12,6 +12,7 @@ import {
 } from "../components/admin";
 import { useNotification } from "../composables";
 
+const router = useRouter();
 const route = useRoute();
 const { showNotification } = useNotification();
 
@@ -254,18 +255,30 @@ function handleExportCsv() {
   showNotification("Berkas CSV log audit sistem berhasil diekspor.", "success", "Unduh Selesai");
 }
 
-onMounted(() => {
-  if (route.hash) {
-    const el = document.querySelector(route.hash);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-  }
+type AdminSection = "overview" | "users" | "corpus" | "config" | "logs";
+
+const currentSection = computed<AdminSection>(() => {
+  const hash = (route.hash || "").replace("#", "").toLowerCase();
+  if (hash === "users") return "users";
+  if (hash === "corpus") return "corpus";
+  if (hash === "config") return "config";
+  if (hash === "logs") return "logs";
+  return "overview";
 });
+
+function setSection(section: AdminSection) {
+  if (section === "overview") {
+    router.push({ path: "/admin", hash: "" });
+  } else if (section === "corpus") {
+    router.push("/corpus");
+  } else {
+    router.push({ path: "/admin", hash: `#${section}` });
+  }
+}
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
     <!-- Header Konsol Super Administrator -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ededed] pb-6">
       <div>
@@ -293,42 +306,53 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Quick Navigation Anchor Subnav -->
-    <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-bold text-[#686868]">
-      <a
-        href="#overview"
-        class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
-      >
-        Overview &amp; Metrik
-      </a>
-      <a
-        href="#users"
-        class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
-      >
-        Kelola Pengguna &amp; Saldo
-      </a>
-      <a
-        href="#corpus"
-        class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
-      >
-        Repositori Korpus
-      </a>
-      <a
-        href="#config"
-        class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
-      >
-        Tuning Engine AI
-      </a>
-      <a
-        href="#logs"
-        class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
-      >
-        Log Jejak Audit
-      </a>
+    <!-- Section Switcher Tabs -->
+    <div class="border-b border-[#ededed]">
+      <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto text-xs font-bold">
+        <button
+          type="button"
+          @click="setSection('overview')"
+          class="px-4 py-2.5 border-b-2 whitespace-nowrap transition-colors duration-150"
+          :class="currentSection === 'overview' ? 'text-[#262626] border-[#262626] font-bold' : 'text-[#686868] border-transparent hover:text-[#262626] font-medium'"
+        >
+          Overview &amp; Metrik
+        </button>
+        <button
+          type="button"
+          @click="setSection('users')"
+          class="px-4 py-2.5 border-b-2 whitespace-nowrap transition-colors duration-150"
+          :class="currentSection === 'users' ? 'text-[#262626] border-[#262626] font-bold' : 'text-[#686868] border-transparent hover:text-[#262626] font-medium'"
+        >
+          Kelola Pengguna &amp; Saldo
+        </button>
+        <button
+          type="button"
+          @click="setSection('corpus')"
+          class="px-4 py-2.5 border-b-2 whitespace-nowrap transition-colors duration-150 text-[#686868] border-transparent hover:text-[#262626] font-medium"
+        >
+          Bank Korpus &rarr;
+        </button>
+        <button
+          type="button"
+          @click="setSection('config')"
+          class="px-4 py-2.5 border-b-2 whitespace-nowrap transition-colors duration-150"
+          :class="currentSection === 'config' ? 'text-[#262626] border-[#262626] font-bold' : 'text-[#686868] border-transparent hover:text-[#262626] font-medium'"
+        >
+          Tuning Engine AI
+        </button>
+        <button
+          type="button"
+          @click="setSection('logs')"
+          class="px-4 py-2.5 border-b-2 whitespace-nowrap transition-colors duration-150"
+          :class="currentSection === 'logs' ? 'text-[#262626] border-[#262626] font-bold' : 'text-[#686868] border-transparent hover:text-[#262626] font-medium'"
+        >
+          Log Jejak Audit
+        </button>
+      </div>
     </div>
 
-    <!-- Bagian 1: Overview & Metrik Infrastruktur -->
-    <section id="overview" class="space-y-4 pt-2">
+    <!-- Bagian 1: Overview & Metrik Infrastruktur (Rendered only on 'overview') -->
+    <section v-if="currentSection === 'overview'" id="overview" class="space-y-6 pt-2">
       <div class="flex items-center justify-between">
         <div>
           <h2 class="text-lg font-extrabold text-[#262626] tracking-tight">
@@ -389,8 +413,8 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Bagian 2: Manajemen Pengguna & Otorisasi Kuota -->
-    <section id="users" class="space-y-4 pt-4">
+    <!-- Bagian 2: Manajemen Pengguna & Otorisasi Kuota (Rendered only on 'users') -->
+    <section v-else-if="currentSection === 'users'" id="users" class="space-y-4 pt-2">
       <UserManagementTable
         :users="users"
         @toggleStatus="handleToggleStatus"
@@ -399,8 +423,8 @@ onMounted(() => {
       />
     </section>
 
-    <!-- Bagian 3: Repositori Bank Korpus Institusi -->
-    <section id="corpus" class="bg-white border border-[#ededed] rounded-[14px] p-6 shadow-audyr-subtle space-y-4">
+    <!-- Bagian 3: Repositori Bank Korpus Institusi (Rendered on 'corpus') -->
+    <section v-else-if="currentSection === 'corpus'" id="corpus" class="bg-white border border-[#ededed] rounded-[14px] p-6 shadow-audyr-subtle space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2">
@@ -408,7 +432,7 @@ onMounted(() => {
               Tata Kelola Bank Korpus Pembanding Institusi
             </h2>
             <span class="text-[10px] italic font-bold uppercase px-2 py-0.5 rounded-full bg-[#fafafa] text-[#262626] border border-[#ededed]">
-              Tier 1 & Tier 2 Ground Truth
+              Tier 1 &amp; Tier 2 Ground Truth
             </span>
           </div>
           <p class="text-xs text-[#686868] mt-1">
@@ -436,18 +460,18 @@ onMounted(() => {
         </div>
         <div class="p-3.5 bg-[#fafafa] rounded-[4px] border border-[#ededed]">
           <span class="text-[11px] text-[#686868] font-medium block">Hak Kelola Upload</span>
-          <span class="text-lg font-extrabold text-[#262626]">Admin & Reviewer</span>
+          <span class="text-lg font-extrabold text-[#262626]">Admin &amp; Reviewer</span>
         </div>
       </div>
     </section>
 
-    <!-- Bagian 4: Tuning Hyperparameter Engine AI -->
-    <section id="config" class="space-y-4 pt-4">
+    <!-- Bagian 4: Tuning Hyperparameter Engine AI (Rendered only on 'config') -->
+    <section v-else-if="currentSection === 'config'" id="config" class="space-y-4 pt-2">
       <SystemSettingsCard @saveConfig="handleSaveConfig" />
     </section>
 
-    <!-- Bagian 5: Log Jejak Audit & Forensik Keamanan -->
-    <section id="logs" class="space-y-4 pt-4">
+    <!-- Bagian 5: Log Jejak Audit & Forensik Keamanan (Rendered only on 'logs') -->
+    <section v-else-if="currentSection === 'logs'" id="logs" class="space-y-4 pt-2">
       <AdminAuditLogsTable
         :logs="auditLogs"
         @refresh="handleRefreshLogs"
