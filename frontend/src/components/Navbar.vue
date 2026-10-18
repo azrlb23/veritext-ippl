@@ -80,30 +80,30 @@ async function handleLogout() {
           </span>
           <span
             v-if="isSuperAdmin"
-            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#262626] text-white border border-[#262626] tracking-wide"
+            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-[4px] bg-[#fafafa] text-[#262626] border border-[#ededed] tracking-wider"
           >
             Admin Console
           </span>
           <span
             v-else
-            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed] tracking-wide"
+            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-[4px] bg-[#fafafa] text-[#686868] border border-[#ededed] tracking-wider"
           >
             Hybrid Engine
           </span>
         </div>
       </router-link>
 
-      <!-- Desktop Navigation Links (Segmented) -->
-      <nav class="hidden md:flex items-center space-x-6 text-sm tracking-tight">
+      <!-- Desktop Navigation Links (Segmented & Clean Pills) -->
+      <nav class="hidden md:flex items-center space-x-1 lg:space-x-1.5 text-xs tracking-tight">
         <router-link
           v-for="item in navLinks"
           :key="item.to"
           :to="item.to"
-          class="px-1 py-1 rounded-[4px] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+          class="whitespace-nowrap px-2.5 lg:px-3 py-1.5 rounded-[4px] font-semibold transition-all duration-150 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626]"
           :class="[
             isItemActive(item.to)
-              ? 'text-[#262626] font-bold border-b border-[#262626]'
-              : 'text-[#686868] font-medium hover:text-[#262626]',
+              ? 'bg-[#262626] text-white font-bold shadow-sm'
+              : 'text-[#686868] hover:text-[#262626] hover:bg-[#f5f5f5]',
           ]"
         >
           {{ item.name }}
@@ -111,19 +111,19 @@ async function handleLogout() {
       </nav>
 
       <!-- User Session Actions & Hamburger -->
-      <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-2 flex-shrink-0">
         <!-- Kondisi 1: Tamu (Belum Login / !authStore.isAuthenticated) -->
         <template v-if="isGuest">
           <div class="hidden md:flex items-center space-x-2">
             <router-link
               to="/login"
-              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Masuk
             </router-link>
             <router-link
               to="/register"
-              class="text-xs font-bold text-white bg-[#262626] hover:bg-[#171717] px-4 py-1.5 rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] focus-visible:ring-offset-1 transition-colors duration-150 ease-out"
+              class="text-xs font-bold text-white bg-[#262626] hover:bg-[#171717] px-3.5 py-1.5 rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Daftar Gratis
             </router-link>
@@ -132,58 +132,56 @@ async function handleLogout() {
 
         <!-- Kondisi 4: Super Administrator (Role: ADMIN) -->
         <template v-else-if="isSuperAdmin">
-          <div class="hidden md:flex items-center space-x-2.5">
-            <!-- Backend Status indicator -->
-            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-xs text-[#262626]">
+          <div class="hidden md:flex items-center space-x-2">
+            <!-- Backend Status indicator (clean & compact) -->
+            <div class="hidden xl:flex items-center space-x-1.5 px-2 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-[11px] text-[#065f46]">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="text-[11px] font-bold text-[#065f46] tracking-wide">200 OK</span>
+              <span class="font-bold tracking-tight">200 OK</span>
             </div>
 
-            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+            <!-- Unified Admin User Chip -->
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-[3px] bg-[#262626] text-white flex items-center justify-center text-[10px] font-extrabold flex-shrink-0">
                 {{ userInitial }}
               </div>
-              <span class="truncate max-w-[120px]" :title="userDisplayName">{{ userDisplayName }}</span>
+              <span class="truncate max-w-[110px] font-bold text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
+              <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-[3px] bg-[#262626] text-white tracking-wider">
+                Admin
+              </span>
             </div>
-
-            <span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full bg-[#262626] text-white border border-[#262626] uppercase tracking-wider shadow-sm">
-              Super Admin
-            </span>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-bold text-[#686868] hover:text-[#262626] px-2.5 py-1 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out whitespace-nowrap"
             >
               Keluar
             </button>
           </div>
         </template>
 
-
-
         <!-- Kondisi 3: Dosen / Reviewer (Role: REVIEWER) -->
         <template v-else-if="isReviewer">
-          <div class="hidden md:flex items-center space-x-2.5">
-            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+          <div class="hidden md:flex items-center space-x-2">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-[3px] bg-[#262626] text-white flex items-center justify-center text-[10px] font-extrabold flex-shrink-0">
                 {{ userInitial }}
               </div>
-              <span class="truncate max-w-[110px]" :title="userDisplayName">{{ userDisplayName }}</span>
-              <span class="text-[10px] font-bold px-1.5 py-0.5 bg-[#ededed] text-[#262626] rounded">
+              <span class="truncate max-w-[110px] font-bold text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 bg-[#ededed] text-[#262626] rounded-[3px] uppercase tracking-wider">
                 Dosen
               </span>
             </div>
 
-            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-xs tracking-tight">
+            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-[4px] text-xs">
               <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
-              <span>Saldo: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
+              <span class="font-medium text-[11px]">Saldo: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
             </div>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-bold text-[#686868] hover:text-[#262626] px-2.5 py-1 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out whitespace-nowrap"
             >
               Keluar
             </button>
@@ -192,23 +190,23 @@ async function handleLogout() {
 
         <!-- Kondisi 2: Mahasiswa Terautentikasi (Role: TRIAL / PREMIUM / USER) -->
         <template v-else>
-          <div class="hidden md:flex items-center space-x-2.5">
+          <div class="hidden md:flex items-center space-x-2">
             <!-- Chip Profil Terpadu: Avatar + Nama + Saldo Token Aktif -->
-            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-[3px] bg-[#262626] text-white flex items-center justify-center text-[10px] font-extrabold flex-shrink-0">
                 {{ userInitial }}
               </div>
-              <span class="truncate max-w-[120px]" :title="userDisplayName">{{ userDisplayName }}</span>
-              <span class="text-[#8c8c8c]">·</span>
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
-                <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong>&nbsp;Token
+              <span class="truncate max-w-[120px] font-bold text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
+              <span class="text-[#d4d4d4]">|</span>
+              <span class="inline-flex items-center text-[11px] font-medium text-[#065f46]">
+                <strong class="tabular-nums font-extrabold mr-1">{{ authStore.tokenBalance }}</strong> Token
               </span>
             </div>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-bold text-[#686868] hover:text-[#262626] px-2.5 py-1 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out whitespace-nowrap"
             >
               Keluar
             </button>
