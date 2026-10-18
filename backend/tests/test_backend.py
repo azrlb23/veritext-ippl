@@ -621,6 +621,29 @@ class TestVeriTextBackend(unittest.TestCase):
                 DocumentService.validate_file(f)
             self.assertEqual(ctx.exception.status_code, 400)
 
+    def test_admin_password_management_schemas(self):
+        """Validates AdminUserCreateRequest, AdminUserUpdateRequest, and AdminResetPasswordRequest schemas."""
+        from app.schemas.admin import AdminUserCreateRequest, AdminUserUpdateRequest, AdminResetPasswordRequest
+
+        # Create request with custom or default password
+        create_req = AdminUserCreateRequest(
+            full_name="Budi Pratama",
+            email="budi@itn.ac.id",
+            password="SecurePass#123",
+        )
+        self.assertEqual(create_req.password, "SecurePass#123")
+
+        # Update request with password
+        update_req = AdminUserUpdateRequest(
+            full_name="Budi Pratama Updated",
+            password="NewPassword#456",
+        )
+        self.assertEqual(update_req.password, "NewPassword#456")
+
+        # Reset password request
+        reset_req = AdminResetPasswordRequest(new_password="AdminReset#2026")
+        self.assertEqual(reset_req.new_password, "AdminReset#2026")
+
 
 if __name__ == "__main__":
     unittest.main()

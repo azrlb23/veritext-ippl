@@ -25,12 +25,13 @@ const emit = defineEmits<{
     payload: {
       full_name: string;
       email: string;
+      password?: string;
       institution: string;
       role: ManagedUser["role"];
       token_balance: number;
     }
   ): void;
-  (e: "updateUser", payload: ManagedUser): void;
+  (e: "updateUser", payload: ManagedUser & { new_password?: string }): void;
   (e: "deleteUser", userId: string): void;
 }>();
 
@@ -42,15 +43,28 @@ const isCreateOpen = ref(false);
 const isEditOpen = ref(false);
 const isDeleteOpen = ref(false);
 
+const showCreatePassword = ref(false);
+const showEditPassword = ref(false);
+
+function generateRandomPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$";
+  let pwd = "VT#";
+  for (let i = 0; i < 7; i++) {
+    pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pwd;
+}
+
 const createForm = ref({
   full_name: "",
   email: "",
+  password: "VeriText#2026",
   institution: "Institut Teknologi Nasional",
   role: "TRIAL" as ManagedUser["role"],
   token_balance: 10,
 });
 
-const editForm = ref<ManagedUser>({
+const editForm = ref<ManagedUser & { new_password?: string }>({
   id: "",
   full_name: "",
   email: "",
@@ -59,6 +73,7 @@ const editForm = ref<ManagedUser>({
   token_balance: 0,
   is_active: true,
   created_at: "",
+  new_password: "",
 });
 
 const deletingUser = ref<ManagedUser | null>(null);
@@ -67,10 +82,12 @@ function openCreate() {
   createForm.value = {
     full_name: "",
     email: "",
+    password: generateRandomPassword(),
     institution: "Institut Teknologi Nasional",
     role: "TRIAL",
     token_balance: 10,
   };
+  showCreatePassword.value = false;
   isCreateOpen.value = true;
 }
 
@@ -79,6 +96,7 @@ function submitCreate() {
   emit("createUser", {
     full_name: createForm.value.full_name.trim(),
     email: createForm.value.email.trim().toLowerCase(),
+    password: createForm.value.password.trim() || "VeriText#2026",
     institution: createForm.value.institution.trim() || "Institut Teknologi Nasional",
     role: createForm.value.role,
     token_balance: Number(createForm.value.token_balance) || 0,
@@ -87,8 +105,14 @@ function submitCreate() {
 }
 
 function openEdit(user: ManagedUser) {
-  editForm.value = { ...user };
+  editForm.value = { ...user, new_password: "" };
+  showEditPassword.value = false;
   isEditOpen.value = true;
+}
+
+function generateEditPassword() {
+  editForm.value.new_password = generateRandomPassword();
+  showEditPassword.value = true;
 }
 
 function submitEdit() {
@@ -99,6 +123,7 @@ function submitEdit() {
     email: editForm.value.email.trim().toLowerCase(),
     institution: editForm.value.institution?.trim() || "Institut Teknologi Nasional",
     token_balance: Number(editForm.value.token_balance) || 0,
+    new_password: editForm.value.new_password?.trim() || undefined,
   });
   isEditOpen.value = false;
 }
@@ -345,6 +370,41 @@ function onRoleSelect(userId: string, event: Event) {
           />
         </div>
 
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-audyr-ink">
+              Kata Sandi Akun <span class="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              @click="createForm.password = generateRandomPassword()"
+              class="text-[11px] text-audyr-slate hover:text-audyr-ink font-semibold underline underline-offset-2 transition-colors"
+            >
+              Acak Sandi
+            </button>
+          </div>
+          <div class="relative">
+            <input
+              v-model="createForm.password"
+              :type="showCreatePassword ? 'text' : 'password'"
+              required
+              minlength="6"
+              placeholder="Minimal 6 karakter"
+              class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink font-mono pr-20"
+            />
+            <button
+              type="button"
+              @click="showCreatePassword = !showCreatePassword"
+              class="absolute right-2 top-2 text-[10px] uppercase font-bold text-audyr-ash hover:text-audyr-ink px-1.5 py-0.5 rounded border border-[#ededed] bg-white transition-colors"
+            >
+              {{ showCreatePassword ? 'Sembunyi' : 'Lihat' }}
+            </button>
+          </div>
+          <p class="text-[10px] text-audyr-ash mt-1 font-normal">
+            Kata sandi awal yang diberikan kepada pengguna untuk login pertama kali.
+          </p>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-audyr-ink mb-1">
@@ -463,6 +523,41 @@ function onRoleSelect(userId: string, event: Event) {
               class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink font-bold tabular-nums"
             />
           </div>
+        </div>
+
+        <!-- Reset / Ubah Password -->
+        <div class="p-3 bg-[#fafafa] rounded-[4px] border border-[#ededed] space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-bold text-audyr-ink">
+              Reset / Ubah Kata Sandi Baru
+            </label>
+            <button
+              type="button"
+              @click="generateEditPassword"
+              class="text-[11px] text-audyr-slate hover:text-audyr-ink font-semibold underline underline-offset-2 transition-colors"
+            >
+              Acak Sandi Baru
+            </button>
+          </div>
+          <div class="relative">
+            <input
+              v-model="editForm.new_password"
+              :type="showEditPassword ? 'text' : 'password'"
+              minlength="6"
+              placeholder="Kosongkan jika tidak ingin mengubah sandi..."
+              class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink font-mono pr-20 bg-white"
+            />
+            <button
+              type="button"
+              @click="showEditPassword = !showEditPassword"
+              class="absolute right-2 top-2 text-[10px] uppercase font-bold text-audyr-ash hover:text-audyr-ink px-1.5 py-0.5 rounded border border-[#ededed] bg-white transition-colors"
+            >
+              {{ showEditPassword ? 'Sembunyi' : 'Lihat' }}
+            </button>
+          </div>
+          <p class="text-[10px] text-audyr-ash leading-relaxed font-normal">
+            Jika diisi (minimal 6 karakter), kata sandi akun pengguna ini akan langsung ditimpa/direset oleh admin.
+          </p>
         </div>
 
         <div class="pt-2 flex items-center justify-between border-t border-[#ededed]">

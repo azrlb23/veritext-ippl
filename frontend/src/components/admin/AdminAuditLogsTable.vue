@@ -51,6 +51,8 @@ function getActionLabel(action: AuditLogItem["action"]): string {
       return "Pembaruan Pengguna";
     case "USER_DELETE":
       return "Penghapusan Pengguna";
+    case "PASSWORD_RESET":
+      return "Reset Kata Sandi";
     case "TOKEN_ADJUST":
       return "Penyesuaian Token";
     case "ROLE_CHANGE":
@@ -77,6 +79,7 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
     case "CONFIG_UPDATE":
     case "ROLE_CHANGE":
     case "USER_UPDATE":
+    case "PASSWORD_RESET":
       return "secondary";
     case "TOKEN_ADJUST":
     case "CORPUS_INGEST":

@@ -11,6 +11,7 @@ from app.models.audit_log import AuditLog
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.admin import (
+    AdminResetPasswordRequest,
     AdminUserCreateRequest,
     AdminUserResponse,
     AdminUserUpdateRequest,
@@ -115,6 +116,9 @@ async def update_user_admin(
         user.full_name = req.full_name
     if req.email is not None:
         user.email = req.email.lower().strip()
+    if req.password:
+        from app.core.security import get_password_hash
+        user.password_hash = get_password_hash(req.password)
     if req.institution is not None:
         user.institution = req.institution
     if req.role is not None:
@@ -125,6 +129,25 @@ async def update_user_admin(
     await db.commit()
     await db.refresh(user)
     return APIResponse(message="User updated successfully", data=AdminUserResponse.model_validate(user))
+
+
+@router.post("/users/{user_id}/reset-password", response_model=APIResponse[dict])
+async def reset_password_admin(
+    user_id: uuid.UUID,
+    req: AdminResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    from app.core.security import get_password_hash
+    user.password_hash = get_password_hash(req.new_password)
+    await db.commit()
+    return APIResponse(
+        message=f"Password for {user.full_name} has been reset successfully",
+        data={"user_id": str(user_id)},
+    )
 
 
 @router.delete("/users/{user_id}", response_model=APIResponse[dict])

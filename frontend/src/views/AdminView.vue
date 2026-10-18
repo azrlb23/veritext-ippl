@@ -208,6 +208,7 @@ function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
 function handleCreateUser(payload: {
   full_name: string;
   email: string;
+  password?: string;
   institution: string;
   role: ManagedUser["role"];
   token_balance: number;
@@ -236,20 +237,43 @@ function handleCreateUser(payload: {
     target_resource: `${newId} (${payload.full_name})`,
     ip_address: "127.0.0.1",
     status: "SUCCESS",
-    details: `Pendaftaran pengguna baru: peran ${payload.role}, saldo awal ${payload.token_balance} token.`,
+    details: `Pendaftaran pengguna baru: peran ${payload.role}, saldo awal ${payload.token_balance} token, kata sandi awal telah dikonfigurasi.`,
   });
 
   showNotification(
-    `Pengguna ${payload.full_name} (${payload.email}) berhasil ditambahkan ke sistem.`,
+    `Pengguna ${payload.full_name} (${payload.email}) berhasil ditambahkan ke sistem. Kata sandi: ${payload.password || 'VeriText#2026'}`,
     "success",
     "Tambah Pengguna"
   );
 }
 
-function handleUpdateUser(payload: ManagedUser) {
+function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
   const index = users.value.findIndex((u) => u.id === payload.id);
   if (index !== -1) {
-    users.value[index] = { ...payload };
+    users.value[index] = {
+      id: payload.id,
+      full_name: payload.full_name,
+      email: payload.email,
+      institution: payload.institution,
+      role: payload.role,
+      token_balance: payload.token_balance,
+      is_active: payload.is_active,
+      created_at: payload.created_at,
+    };
+
+    if (payload.new_password) {
+      auditLogs.value.unshift({
+        id: `log-${Date.now()}-pwd`,
+        timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
+        actor_name: "Super Administrator",
+        actor_email: "admin@veritext.ai",
+        action: "PASSWORD_RESET",
+        target_resource: `${payload.id} (${payload.full_name})`,
+        ip_address: "127.0.0.1",
+        status: "SUCCESS",
+        details: `Reset kata sandi akun secara langsung oleh administrator.`,
+      });
+    }
 
     auditLogs.value.unshift({
       id: `log-${Date.now()}`,
@@ -260,11 +284,13 @@ function handleUpdateUser(payload: ManagedUser) {
       target_resource: `${payload.id} (${payload.full_name})`,
       ip_address: "127.0.0.1",
       status: "SUCCESS",
-      details: `Pembaruan data profil & saldo kuota: peran ${payload.role}, saldo ${payload.token_balance} token, status ${payload.is_active ? "Aktif" : "Nonaktif"}.`,
+      details: `Pembaruan data profil & saldo kuota: peran ${payload.role}, saldo ${payload.token_balance} token, status ${payload.is_active ? "Aktif" : "Nonaktif"}${payload.new_password ? ", kata sandi direset" : ""}.`,
     });
 
     showNotification(
-      `Data pengguna ${payload.full_name} berhasil diperbarui.`,
+      payload.new_password
+        ? `Data pengguna ${payload.full_name} & kata sandi baru berhasil diperbarui.`
+        : `Data pengguna ${payload.full_name} berhasil diperbarui.`,
       "success",
       "Perbarui Pengguna"
     );

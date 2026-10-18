@@ -38,6 +38,7 @@ export interface AuditLogItem {
     | "USER_CREATE"
     | "USER_UPDATE"
     | "USER_DELETE"
+    | "PASSWORD_RESET"
     | "TOKEN_ADJUST"
     | "ROLE_CHANGE"
     | "CONFIG_UPDATE"

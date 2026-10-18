@@ -34,9 +34,14 @@ class AdminUserCreateRequest(BaseModel):
 class AdminUserUpdateRequest(BaseModel):
     full_name: Optional[str] = None
     email: Optional[EmailStr] = None
+    password: Optional[str] = Field(None, min_length=6)
     institution: Optional[str] = None
     role: Optional[str] = None
     is_active: Optional[bool] = None
+
+
+class AdminResetPasswordRequest(BaseModel):
+    new_password: str = Field(..., min_length=6, description="New password set by administrator")
 
 
 class TokenAdjustmentRequest(BaseModel):
