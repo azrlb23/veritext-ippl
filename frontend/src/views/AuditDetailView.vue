@@ -100,16 +100,16 @@ function handleExportPdf() {
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[14px] border border-[#ededed] shadow-audyr-subtle">
       <div class="space-y-1.5">
         <div class="flex items-center space-x-2">
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-tight bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0]">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] italic font-bold tracking-tight bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0]">
             Audit Selesai
           </span>
-          <span class="text-xs font-mono text-audyr-ash">ID: {{ reportData.id }} &bull; UUID: {{ reportData.verification_uuid }}</span>
+          <span class="text-xs tabular-nums text-audyr-ash">ID: <span class="font-bold text-audyr-ink">{{ reportData.id }}</span> &bull; UUID: <span class="font-bold text-audyr-ink">{{ reportData.verification_uuid }}</span></span>
         </div>
-        <h1 class="text-xl sm:text-2xl font-bold text-audyr-ink tracking-tight">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-audyr-ink tracking-tight">
           {{ reportData.document_title }}
         </h1>
         <p class="text-xs text-audyr-ash">
-          Diperiksa oleh: <span class="font-medium text-audyr-ink">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: {{ reportData.generated_at }}
+          Diperiksa oleh: <span class="font-bold text-audyr-ink">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: <span class="tabular-nums font-medium">{{ reportData.generated_at }}</span>
         </p>
       </div>
 

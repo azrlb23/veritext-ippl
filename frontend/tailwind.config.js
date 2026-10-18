@@ -44,12 +44,14 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        mono: ['"Plus Jakarta Sans"', 'sans-serif'],
+        serif: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
       letterSpacing: {
         tight: "-0.025em",
         tighter: "-0.035em",
+        wide: "0.025em",
       },
       borderRadius: {
         "audyr-card": "14px",

@@ -84,7 +84,7 @@ function handleSubmit() {
   >
     <div class="space-y-4">
       <p class="text-xs text-audyr-ash leading-relaxed">
-        Unggah berkas arsip naskah (.zip) untuk diindeksasi otomatis ke dalam database pgvector (HNSW) dan tabel sidik jari leksikal.
+        Unggah berkas arsip naskah (.zip) untuk diindeksasi otomatis ke dalam database <span class="italic font-bold text-audyr-ink">pgvector (HNSW)</span> dan tabel sidik jari leksikal.
       </p>
 
       <Alert
@@ -117,8 +117,8 @@ function handleSubmit() {
         <label for="corpusZipUpload" class="cursor-pointer space-y-1 block">
           <div class="text-2xl">📦</div>
           <div v-if="selectedFile">
-            <span class="text-xs font-semibold text-audyr-ink block">{{ selectedFile.name }}</span>
-            <span class="text-[11px] text-audyr-ash font-mono">{{ (selectedFile.size / (1024 * 1024)).toFixed(2) }} MB</span>
+            <span class="text-xs font-bold text-audyr-ink block">{{ selectedFile.name }}</span>
+            <span class="text-[11px] text-audyr-ash tabular-nums font-bold">{{ (selectedFile.size / (1024 * 1024)).toFixed(2) }} MB</span>
             <div>
               <button
                 type="button"
@@ -130,13 +130,13 @@ function handleSubmit() {
             </div>
           </div>
           <div v-else class="text-xs text-audyr-ash">
-            <span class="font-medium text-audyr-ink">Klik untuk memilih</span> atau seret file arsip .ZIP (Maks 100 MB)
+            <span class="font-bold text-audyr-ink">Klik untuk memilih</span> atau seret file arsip .ZIP (Maks 100 MB)
           </div>
         </label>
       </div>
 
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Nama Koleksi / Judul Korpus</label>
+        <label class="block text-xs font-bold text-audyr-ink tracking-tight">Nama Koleksi / Judul Korpus</label>
         <input
           v-model="archiveName"
           type="text"

@@ -84,13 +84,13 @@ function selectSample(id: "T1" | "T2" | "T3") {
     <!-- Header Section -->
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#ededed] pb-4">
       <div>
-        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium uppercase tracking-wider bg-[#ededed] text-[#262626] border border-[#ededed]">
+        <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#ededed] text-[#262626] border border-[#ededed]">
           <span>Live Inspection Demo</span>
         </div>
-        <h2 class="text-xl sm:text-2xl font-semibold text-[#262626] tracking-[-0.025em] mt-2">
-          Simulasi Cara Kerja Engine Hybrid
+        <h2 class="text-xl sm:text-2xl font-extrabold text-[#262626] tracking-tight mt-2">
+          Simulasi Cara Kerja <span class="italic font-bold text-[#262626]">Engine Hybrid</span>
         </h2>
-        <p class="text-xs text-[#686868] mt-0.5">
+        <p class="text-xs text-[#686868] mt-0.5 font-normal">
           Pilih salah satu tier untuk melihat bagaimana VeriText AI mendiagnosis kalimat naskah secara transparan.
         </p>
       </div>
@@ -102,7 +102,7 @@ function selectSample(id: "T1" | "T2" | "T3") {
           :key="s.id"
           type="button"
           :class="[
-            'px-3.5 py-1.5 text-xs font-medium rounded-[4px] transition-colors duration-150 ease-out select-none active:scale-[0.98]',
+            'px-3.5 py-1.5 text-xs font-bold rounded-[4px] transition-colors duration-150 ease-out select-none active:scale-[0.98]',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]',
             activeTab === s.id
               ? 'bg-[#262626] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)]'
@@ -124,12 +124,12 @@ function selectSample(id: "T1" | "T2" | "T3") {
           <!-- Kalimat Dokumen Uji -->
           <div class="p-4 rounded-[8px] border border-[#ededed] bg-[#fafafa] space-y-2">
             <div class="flex items-center justify-between text-[11px]">
-              <span class="font-mono uppercase font-semibold text-[#515151] tracking-wider">Kalimat Dokumen Uji</span>
-              <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border tabular-nums', currentSample.badgeBg, currentSample.badgeText, currentSample.badgeBorder]">
+              <span class="uppercase font-bold text-[#515151] tracking-wider">Kalimat Dokumen Uji</span>
+              <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-bold border tabular-nums', currentSample.badgeBg, currentSample.badgeText, currentSample.badgeBorder]">
                 {{ currentSample.sourceType }}
               </span>
             </div>
-            <p class="text-xs sm:text-sm text-[#262626] leading-relaxed font-sans pl-2.5 border-l-2" :style="{ borderColor: currentSample.tierColor }">
+            <p class="text-xs sm:text-sm text-[#262626] leading-relaxed pl-2.5 border-l-2 font-normal" :style="{ borderColor: currentSample.tierColor }">
               "{{ currentSample.originalText }}"
             </p>
           </div>
@@ -137,12 +137,12 @@ function selectSample(id: "T1" | "T2" | "T3") {
           <!-- Sumber Rujukan Korpus -->
           <div class="p-4 rounded-[8px] border border-[#ededed] bg-white space-y-2">
             <div class="flex items-center justify-between text-[11px]">
-              <span class="font-mono uppercase font-semibold text-[#515151] tracking-wider">Sumber Rujukan Korpus</span>
-              <span class="font-mono text-[#737373] text-[10px] truncate max-w-[220px]">
+              <span class="uppercase font-bold text-[#515151] tracking-wider">Sumber Rujukan Korpus</span>
+              <span class="text-[#737373] text-[10px] font-medium truncate max-w-[220px]">
                 {{ currentSample.sourceDoc }}
               </span>
             </div>
-            <p class="text-xs sm:text-sm text-[#515151] leading-relaxed font-sans pl-2.5 border-l-2 border-[#ededed]">
+            <p class="text-xs sm:text-sm text-[#515151] leading-relaxed pl-2.5 border-l-2 border-[#ededed] font-normal">
               "{{ currentSample.matchedText }}"
             </p>
           </div>
@@ -152,8 +152,8 @@ function selectSample(id: "T1" | "T2" | "T3") {
         <div class="lg:col-span-4 p-4 rounded-[8px] border border-[#ededed] bg-[#fafafa] flex flex-col justify-between space-y-3.5">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-[#262626]">Tingkat Kemiripan</span>
-              <span class="text-xl font-semibold font-mono tabular-nums" :style="{ color: currentSample.tierColor }">
+              <span class="text-xs font-bold text-[#262626]">Tingkat Kemiripan</span>
+              <span class="text-2xl font-extrabold tabular-nums" :style="{ color: currentSample.tierColor }">
                 {{ currentSample.similarityScore }}%
               </span>
             </div>
@@ -168,18 +168,18 @@ function selectSample(id: "T1" | "T2" | "T3") {
 
             <div class="pt-2.5 border-t border-[#ededed] space-y-1.5 text-[11px]">
               <div class="flex items-center justify-between">
-                <span class="text-[#737373]">Metrik Teknis</span>
-                <span class="font-mono font-medium text-[#262626] tabular-nums">{{ currentSample.metricValue }}</span>
+                <span class="text-[#737373] font-medium">Metrik Teknis</span>
+                <span class="font-bold text-[#262626] tabular-nums">{{ currentSample.metricValue }}</span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-[#737373]">Algoritma</span>
-                <span class="font-mono text-[#262626]">{{ currentSample.metricLabel }}</span>
+                <span class="text-[#737373] font-medium">Algoritma</span>
+                <span class="text-[#262626] font-semibold">{{ currentSample.metricLabel }}</span>
               </div>
             </div>
           </div>
 
           <div class="p-3 rounded-[4px] bg-white border border-[#ededed] text-[11px] text-[#515151] leading-normal">
-            <span class="font-semibold text-[#262626] block mb-0.5">Diagnosa Engine:</span>
+            <span class="font-bold text-[#262626] block mb-0.5">Diagnosa Engine:</span>
             {{ currentSample.diagnostic }}
           </div>
         </div>

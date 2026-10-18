@@ -46,7 +46,7 @@ function handleSubmit() {
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-audyr-ink tracking-tight">
+        <label class="block text-xs font-bold text-audyr-ink tracking-tight">
           Alamat Email Kampus / Institusi
         </label>
         <input
@@ -60,7 +60,7 @@ function handleSubmit() {
 
       <div class="space-y-1">
         <div class="flex items-center justify-between">
-          <label class="block text-xs font-semibold text-audyr-ink tracking-tight">
+          <label class="block text-xs font-bold text-audyr-ink tracking-tight">
             Kata Sandi
           </label>
           <a href="#" class="text-[11px] text-audyr-ash hover:text-audyr-ink hover:underline tracking-tight">

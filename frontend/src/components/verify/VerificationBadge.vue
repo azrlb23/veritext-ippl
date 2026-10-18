@@ -19,7 +19,7 @@ defineProps<Props>();
     </div>
 
     <h1
-      class="text-xl sm:text-2xl font-bold tracking-tight text-audyr-ink"
+      class="text-xl sm:text-2xl font-extrabold tracking-tight text-audyr-ink"
       :class="{ '!text-red-700': !isValid }"
     >
       {{ isValid ? "SERTIFIKAT TERVERIFIKASI ASLI" : "SERTIFIKAT TIDAK VALID" }}
@@ -33,8 +33,8 @@ defineProps<Props>();
       }}
     </p>
 
-    <div class="text-[11px] font-mono text-audyr-ash pt-1">
-      Kode Verifikasi: <span class="font-bold text-audyr-ink">{{ uuid }}</span>
+    <div class="text-[11px] text-audyr-ash pt-1">
+      Kode Verifikasi: <span class="font-extrabold text-audyr-ink tabular-nums">{{ uuid }}</span>
     </div>
   </div>
 </template>

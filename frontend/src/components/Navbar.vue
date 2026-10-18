@@ -71,20 +71,22 @@ async function handleLogout() {
         class="flex items-center space-x-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] rounded-[4px]"
         @click="closeMobileMenu"
       >
-        <div class="w-7 h-7 rounded-[4px] bg-[#262626] flex items-center justify-center text-white font-semibold font-mono text-xs">
+        <div class="w-7 h-7 rounded-[4px] bg-[#262626] flex items-center justify-center text-white font-extrabold text-xs">
           V
         </div>
         <div class="flex items-center">
-          <span class="text-base font-semibold tracking-tight text-[#262626]">VeriText<span class="text-[#686868] font-normal">AI</span></span>
+          <span class="text-base font-extrabold tracking-tight text-[#262626]">
+            VeriText<span class="italic font-bold text-[#686868] ml-0.5">AI</span>
+          </span>
           <span
             v-if="isSuperAdmin"
-            class="hidden sm:inline-block ml-2 text-[10px] font-mono font-semibold uppercase px-2 py-0.5 rounded-full bg-[#262626] text-white border border-[#262626]"
+            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#262626] text-white border border-[#262626] tracking-wide"
           >
             Admin Console
           </span>
           <span
             v-else
-            class="hidden sm:inline-block ml-2 text-[10px] font-mono font-medium uppercase px-2 py-0.5 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]"
+            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed] tracking-wide"
           >
             Hybrid Engine
           </span>
@@ -92,7 +94,7 @@ async function handleLogout() {
       </router-link>
 
       <!-- Desktop Navigation Links (Segmented) -->
-      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium tracking-tight">
+      <nav class="hidden md:flex items-center space-x-6 text-sm tracking-tight">
         <router-link
           v-for="item in navLinks"
           :key="item.to"
@@ -100,8 +102,8 @@ async function handleLogout() {
           class="px-1 py-1 rounded-[4px] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
           :class="[
             isItemActive(item.to)
-              ? 'text-[#262626] font-semibold'
-              : 'text-[#686868] hover:text-[#262626]',
+              ? 'text-[#262626] font-bold border-b border-[#262626]'
+              : 'text-[#686868] font-medium hover:text-[#262626]',
           ]"
         >
           {{ item.name }}
@@ -115,13 +117,13 @@ async function handleLogout() {
           <div class="hidden md:flex items-center space-x-2">
             <router-link
               to="/login"
-              class="text-sm font-medium text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Masuk
             </router-link>
             <router-link
               to="/register"
-              class="text-sm font-medium text-white bg-[#262626] hover:bg-[#171717] px-4 py-1.5 rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] focus-visible:ring-offset-1 transition-colors duration-150 ease-out"
+              class="text-xs font-bold text-white bg-[#262626] hover:bg-[#171717] px-4 py-1.5 rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] focus-visible:ring-offset-1 transition-colors duration-150 ease-out"
             >
               Daftar Gratis
             </router-link>
@@ -132,26 +134,26 @@ async function handleLogout() {
         <template v-else-if="isSuperAdmin">
           <div class="hidden md:flex items-center space-x-2.5">
             <!-- Backend Status indicator -->
-            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-xs font-mono text-[#262626]">
+            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-xs text-[#262626]">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span class="text-[11px] font-semibold text-[#065f46]">200 OK</span>
+              <span class="text-[11px] font-bold text-[#065f46] tracking-wide">200 OK</span>
             </div>
 
-            <div class="flex items-center space-x-2 text-xs font-medium text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[10px] font-semibold flex-shrink-0">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                 {{ userInitial }}
               </div>
               <span class="truncate max-w-[120px]" :title="userDisplayName">{{ userDisplayName }}</span>
             </div>
 
-            <span class="px-2.5 py-1 text-[11px] font-mono font-semibold rounded-full bg-[#262626] text-white border border-[#262626] uppercase tracking-wider shadow-sm">
+            <span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full bg-[#262626] text-white border border-[#262626] uppercase tracking-wider shadow-sm">
               Super Admin
             </span>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-medium text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Keluar
             </button>
@@ -159,28 +161,29 @@ async function handleLogout() {
         </template>
 
 
+
         <!-- Kondisi 3: Dosen / Reviewer (Role: REVIEWER) -->
         <template v-else-if="isReviewer">
           <div class="hidden md:flex items-center space-x-2.5">
-            <div class="flex items-center space-x-2 text-xs font-medium text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[10px] font-semibold flex-shrink-0">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                 {{ userInitial }}
               </div>
               <span class="truncate max-w-[110px]" :title="userDisplayName">{{ userDisplayName }}</span>
-              <span class="text-[10px] font-mono font-medium px-1.5 py-0.5 bg-[#ededed] text-[#262626] rounded">
+              <span class="text-[10px] font-bold px-1.5 py-0.5 bg-[#ededed] text-[#262626] rounded">
                 Dosen
               </span>
             </div>
 
-            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-xs font-medium tracking-tight">
+            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-xs tracking-tight">
               <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
-              <span>Saldo: <strong class="font-mono tabular-nums font-semibold">{{ authStore.tokenBalance }}</strong> Token</span>
+              <span>Saldo: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
             </div>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-medium text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Keluar
             </button>
@@ -191,21 +194,21 @@ async function handleLogout() {
         <template v-else>
           <div class="hidden md:flex items-center space-x-2.5">
             <!-- Chip Profil Terpadu: Avatar + Nama + Saldo Token Aktif -->
-            <div class="flex items-center space-x-2 text-xs font-medium text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
-              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[10px] font-semibold flex-shrink-0">
+            <div class="flex items-center space-x-2 text-xs font-semibold text-[#262626] pl-1.5 pr-2.5 py-1 rounded-[4px] border border-[#ededed] bg-[#fafafa]">
+              <div class="w-5 h-5 rounded-full bg-[#262626] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                 {{ userInitial }}
               </div>
               <span class="truncate max-w-[120px]" :title="userDisplayName">{{ userDisplayName }}</span>
               <span class="text-[#8c8c8c]">·</span>
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
-                <strong class="tabular-nums font-semibold">{{ authStore.tokenBalance }}</strong>&nbsp;Token
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
+                <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong>&nbsp;Token
               </span>
             </div>
 
             <button
               type="button"
               @click="handleLogout"
-              class="text-xs font-medium text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] border border-[#ededed] hover:border-[#d4d4d4] hover:bg-[#fafafa] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
             >
               Keluar
             </button>
@@ -275,19 +278,19 @@ async function handleLogout() {
         <template v-else-if="isSuperAdmin">
           <div class="flex items-center justify-between px-3 py-2 bg-[#fafafa] border border-[#ededed] rounded-[4px]">
             <div class="flex items-center space-x-2.5 truncate">
-              <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[11px] font-semibold flex-shrink-0">
+              <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center text-[11px] font-extrabold flex-shrink-0">
                 {{ userInitial }}
               </div>
               <div class="flex flex-col text-xs leading-tight truncate">
-                <span class="font-semibold text-[#262626] truncate">{{ userDisplayName }}</span>
-                <span class="text-[10px] text-[#737373] truncate">{{ authStore.user?.email || 'admin@veritext.ai' }}</span>
+                <span class="font-bold text-[#262626] truncate">{{ userDisplayName }}</span>
+                <span class="text-[10px] text-[#737373] truncate font-medium">{{ authStore.user?.email || 'admin@veritext.ai' }}</span>
               </div>
             </div>
             <div class="flex items-center space-x-1.5 flex-shrink-0">
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] italic font-bold bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
                 200 OK
               </span>
-              <span class="px-2 py-0.5 text-[10px] font-mono font-semibold rounded-full bg-[#262626] text-white uppercase">
+              <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-[#262626] text-white uppercase">
                 Admin
               </span>
             </div>
@@ -296,7 +299,7 @@ async function handleLogout() {
           <button
             type="button"
             @click="handleLogout"
-            class="w-full text-center py-2 text-xs font-medium text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
+            class="w-full text-center py-2 text-xs font-bold text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
           >
             Keluar Akun
           </button>
@@ -305,24 +308,24 @@ async function handleLogout() {
         <!-- Kondisi 3: Dosen / Reviewer -->
         <template v-else-if="isReviewer">
           <div class="flex items-center space-x-2.5 px-3 py-2 bg-[#fafafa] border border-[#ededed] rounded-[4px]">
-            <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[11px] font-semibold flex-shrink-0">
+            <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center text-[11px] font-extrabold flex-shrink-0">
               {{ userInitial }}
             </div>
             <div class="flex flex-col text-xs leading-tight truncate">
-              <span class="font-semibold text-[#262626] truncate">{{ userDisplayName }}</span>
-              <span class="text-[10px] text-[#737373] truncate">{{ authStore.user?.institution || 'Dosen / Reviewer Terverifikasi' }}</span>
+              <span class="font-bold text-[#262626] truncate">{{ userDisplayName }}</span>
+              <span class="text-[10px] text-[#737373] truncate font-medium">{{ authStore.user?.institution || 'Dosen / Reviewer Terverifikasi' }}</span>
             </div>
           </div>
 
           <div class="flex items-center justify-between px-3 py-1.5 bg-[#ecfdf5] border border-[#a7f3d0] rounded-[4px] text-xs text-[#065f46] font-medium">
-            <span>Saldo Kuota: <strong class="font-mono tabular-nums font-semibold">{{ authStore.tokenBalance }}</strong> Token</span>
-            <span class="text-[10px] font-mono uppercase font-semibold px-2 py-0.5 bg-[#ededed] text-[#262626] rounded-full">Reviewer</span>
+            <span>Saldo Kuota: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
+            <span class="text-[10px] uppercase italic font-bold px-2 py-0.5 bg-[#ededed] text-[#262626] rounded-full">Reviewer</span>
           </div>
 
           <button
             type="button"
             @click="handleLogout"
-            class="w-full text-center py-2 text-xs font-medium text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
+            class="w-full text-center py-2 text-xs font-bold text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
           >
             Keluar Akun
           </button>
@@ -331,24 +334,24 @@ async function handleLogout() {
         <!-- Kondisi 2: Mahasiswa (TRIAL / PREMIUM / USER) -->
         <template v-else>
           <div class="flex items-center space-x-2.5 px-3 py-2 bg-[#fafafa] border border-[#ededed] rounded-[4px]">
-            <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center font-mono text-[11px] font-semibold flex-shrink-0">
+            <div class="w-6 h-6 rounded-full bg-[#262626] text-white flex items-center justify-center text-[11px] font-extrabold flex-shrink-0">
               {{ userInitial }}
             </div>
             <div class="flex flex-col text-xs leading-tight truncate">
-              <span class="font-semibold text-[#262626] truncate">{{ userDisplayName }}</span>
-              <span class="text-[10px] text-[#737373] truncate">{{ authStore.user?.institution || authStore.user?.email || 'Mahasiswa' }}</span>
+              <span class="font-bold text-[#262626] truncate">{{ userDisplayName }}</span>
+              <span class="text-[10px] text-[#737373] truncate font-medium">{{ authStore.user?.institution || authStore.user?.email || 'Mahasiswa' }}</span>
             </div>
           </div>
 
           <div class="flex items-center justify-between px-3 py-1.5 bg-[#ecfdf5] border border-[#a7f3d0] rounded-[4px] text-xs text-[#065f46] font-medium">
-            <span>Saldo Kuota: <strong class="font-mono tabular-nums font-semibold">{{ authStore.tokenBalance }}</strong> Token</span>
-            <span class="text-[10px] font-mono uppercase font-semibold px-2 py-0.5 bg-[#ededed] text-[#262626] rounded-full">{{ authStore.role }}</span>
+            <span>Saldo Kuota: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
+            <span class="text-[10px] uppercase font-bold px-2 py-0.5 bg-[#ededed] text-[#262626] rounded-full">{{ authStore.role }}</span>
           </div>
 
           <button
             type="button"
             @click="handleLogout"
-            class="w-full text-center py-2 text-xs font-medium text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
+            class="w-full text-center py-2 text-xs font-bold text-[#262626] bg-[#fafafa] hover:bg-[#ededed] border border-[#ededed] rounded-[4px] active:scale-[0.98] transition-colors duration-150 ease-out"
           >
             Keluar Akun
           </button>

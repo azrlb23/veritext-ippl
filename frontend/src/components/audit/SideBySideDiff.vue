@@ -30,11 +30,11 @@ function selectItem(idx: number) {
   <div class="bg-white border border-[#ededed] rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-6 space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#ededed] pb-4">
       <div>
-        <h3 class="text-sm font-semibold uppercase tracking-wide text-[#262626]">
+        <h3 class="text-sm font-extrabold uppercase tracking-wide text-[#262626]">
           Komparasi Berdampingan (Side-by-Side Diff)
         </h3>
         <p class="text-xs text-[#737373] mt-0.5">
-          Perbandingan kalimat naskah dengan segmen kutipan korpus yang cocok
+          Perbandingan kalimat naskah dengan segmen kutipan korpus yang <span class="italic font-bold text-[#262626]">terdeteksi kemiripan</span>
         </p>
       </div>
 
@@ -43,7 +43,7 @@ function selectItem(idx: number) {
           v-for="(_, idx) in annotations"
           :key="idx"
           @click="selectItem(idx)"
-          class="w-7 h-7 rounded-[4px] text-xs font-mono font-medium transition-all"
+          class="w-7 h-7 rounded-[4px] text-xs font-bold tabular-nums transition-all"
           :class="selectedIndex === idx ? 'bg-[#262626] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)]' : 'bg-[#fafafa] hover:bg-[#ededed] text-[#515151] border border-[#ededed]'"
         >
           #{{ idx + 1 }}
@@ -71,11 +71,11 @@ function selectItem(idx: number) {
             {{ annotations[selectedIndex].tier }} &bull; {{ annotations[selectedIndex].color }}
           </Badge>
           <span class="text-xs font-medium text-[#515151]">
-            Sumber: <strong class="text-[#262626]">{{ annotations[selectedIndex].source_title || 'Bank Korpus' }}</strong>
+            Sumber: <strong class="text-[#262626] font-bold">{{ annotations[selectedIndex].source_title || 'Bank Korpus' }}</strong>
           </span>
         </div>
 
-        <div class="text-xs font-mono font-semibold px-2.5 py-1 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]">
+        <div class="text-xs font-extrabold tabular-nums px-2.5 py-1 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]">
           Skor: {{ (annotations[selectedIndex].similarity * 100).toFixed(1) }}%
         </div>
       </div>
@@ -84,10 +84,10 @@ function selectItem(idx: number) {
         <!-- Original Document Sentence -->
         <div class="border border-[#ededed] rounded-[8px] p-4 bg-[#fafafa] space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-[#515151] uppercase tracking-wider">
+            <span class="text-[11px] font-bold text-[#515151] uppercase tracking-wider">
               Naskah yang Diuji
             </span>
-            <span class="text-[10px] font-mono text-[#929292]">
+            <span class="text-[10px] tabular-nums font-medium text-[#929292]">
               Offset {{ annotations[selectedIndex].start }}-{{ annotations[selectedIndex].end }}
             </span>
           </div>
@@ -105,10 +105,10 @@ function selectItem(idx: number) {
         <!-- Matched Corpus Source -->
         <div class="border border-[#ededed] rounded-[8px] p-4 bg-white space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-[#515151] uppercase tracking-wider">
+            <span class="text-[11px] font-bold text-[#515151] uppercase tracking-wider">
               Koleksi Sumber Pembanding
             </span>
-            <span class="text-[10px] font-mono text-[#737373]">
+            <span class="text-[10px] italic font-bold text-[#737373]">
               HNSW Cosine Match
             </span>
           </div>

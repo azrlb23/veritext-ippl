@@ -13,11 +13,11 @@ defineProps<Props>();
       <!-- Brand & Title -->
       <div class="text-center space-y-2">
         <router-link to="/" class="inline-block">
-          <div class="w-9 h-9 rounded-[4px] bg-audyr-ink text-white font-bold flex items-center justify-center text-sm mx-auto shadow-audyr-button tracking-tight">
+          <div class="w-9 h-9 rounded-[4px] bg-audyr-ink text-white font-extrabold flex items-center justify-center text-sm mx-auto shadow-audyr-button tracking-tight">
             V
           </div>
         </router-link>
-        <h2 class="text-2xl font-bold text-audyr-ink tracking-tight">
+        <h2 class="text-2xl font-extrabold text-audyr-ink tracking-tight">
           {{ title }}
         </h2>
         <p v-if="subtitle" class="text-xs text-audyr-ash">

@@ -33,7 +33,7 @@ function handleVerify() {
         v-model="inputUuid"
         type="text"
         placeholder="Masukkan UUID Sertifikat VeriText (contoh: f47ac10b-58cc-4372-a567-0e02b2c3d479)"
-        class="w-full px-3.5 py-2 pl-9 rounded-[4px] border border-[#ededed] text-xs font-mono text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white tracking-tight"
+        class="w-full px-3.5 py-2 pl-9 rounded-[4px] border border-[#ededed] text-xs font-medium text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white tracking-tight"
         @keyup.enter="handleVerify"
       />
       <span class="absolute left-3 top-2.5 text-audyr-ash text-xs">🔍</span>

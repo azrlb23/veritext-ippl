@@ -67,10 +67,10 @@ defineExpose({
 <template>
   <div class="bg-white border border-[#ededed] rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-[#262626]">
-        1. Unggah Berkas Naskah (.pdf, .docx, .txt)
+      <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#262626]">
+        1. Unggah Berkas Naskah <span class="italic font-bold text-[#686868]">(.pdf, .docx, .txt)</span>
       </h2>
-      <span class="text-xs text-[#737373]">Maks. 50 MB / berkas</span>
+      <span class="text-xs text-[#737373] font-medium">Maks. 50 MB / berkas</span>
     </div>
 
     <!-- Alert on error -->
@@ -108,27 +108,27 @@ defineExpose({
         </div>
 
         <div v-if="selectedFile" class="space-y-1">
-          <div class="text-sm font-semibold text-[#262626]">
+          <div class="text-sm font-extrabold text-[#262626]">
             {{ selectedFile.name }}
           </div>
-          <div class="text-xs text-[#737373] font-mono">
+          <div class="text-xs text-[#737373] font-medium">
             Ukuran: {{ (selectedFile.size / 1024).toFixed(1) }} KB
           </div>
           <button
             type="button"
             @click.stop.prevent="handleFileReset"
-            class="text-xs text-red-600 hover:underline pt-1"
+            class="text-xs text-red-600 hover:underline pt-1 font-bold"
           >
             Ganti berkas
           </button>
         </div>
 
         <div v-else class="space-y-1">
-          <div class="text-sm font-medium text-[#262626]">
+          <div class="text-sm font-bold text-[#262626]">
             Klik untuk memilih berkas atau seret naskah ke sini
           </div>
-          <p class="text-xs text-[#737373]">
-            Format yang didukung: Dokumen Teks PDF, Microsoft Word DOCX, atau Plain Text TXT
+          <p class="text-xs text-[#737373] font-normal">
+            Format yang didukung: Dokumen Teks <strong class="italic font-bold text-[#515151]">PDF</strong>, Microsoft Word <strong class="italic font-bold text-[#515151]">DOCX</strong>, atau Plain Text <strong class="italic font-bold text-[#515151]">TXT</strong>
           </p>
         </div>
       </label>
@@ -137,24 +137,24 @@ defineExpose({
     <!-- Depth selector & Action -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-[#ededed]">
       <div class="flex flex-wrap items-center gap-4">
-        <span class="text-xs font-medium text-[#737373]">Pilihan Tingkat Kedalaman:</span>
-        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#262626] cursor-pointer">
+        <span class="text-xs font-semibold text-[#737373]">Pilihan Tingkat Kedalaman:</span>
+        <label class="inline-flex items-center space-x-2 text-xs font-semibold text-[#262626] cursor-pointer">
           <input
             type="radio"
             value="FULL"
             v-model="auditDepth"
             class="text-[#262626] focus:ring-[#262626]"
           />
-          <span>Penuh (Tier 1 - 4) &bull; <strong class="text-[#262626]">2 Token</strong></span>
+          <span>Penuh (Tier 1 - 4) &bull; <strong class="italic font-bold text-[#262626]">2 Token</strong></span>
         </label>
-        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#262626] cursor-pointer">
+        <label class="inline-flex items-center space-x-2 text-xs font-semibold text-[#262626] cursor-pointer">
           <input
             type="radio"
             value="TIER1_ONLY"
             v-model="auditDepth"
             class="text-[#262626] focus:ring-[#262626]"
           />
-          <span>Hanya Leksikal (Tier 1) &bull; <strong class="text-[#262626]">1 Token</strong></span>
+          <span>Hanya Leksikal (Tier 1) &bull; <strong class="italic font-bold text-[#262626]">1 Token</strong></span>
         </label>
       </div>
 

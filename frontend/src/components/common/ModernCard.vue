@@ -79,10 +79,10 @@ defineEmits<{
     <div v-if="statValue || $slots.footer" class="pt-4 mt-5 border-t border-[#ededed] flex items-center justify-between">
       <slot name="footer">
         <div>
-          <div class="text-sm font-semibold font-mono text-[#262626] tabular-nums">
+          <div class="text-sm font-extrabold text-[#262626] tabular-nums">
             {{ statValue }}
           </div>
-          <div v-if="statLabel" class="text-[10px] text-[#737373] font-medium">
+          <div v-if="statLabel" class="text-[10px] text-[#737373] font-bold">
             {{ statLabel }}
           </div>
         </div>

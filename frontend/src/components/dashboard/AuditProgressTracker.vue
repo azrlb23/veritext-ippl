@@ -26,8 +26,8 @@ const emit = defineEmits<{
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <span class="w-2 h-2 rounded-full bg-[#262626] animate-pulse"></span>
-        <h3 class="text-sm font-semibold text-[#262626] uppercase tracking-wide">
-          Proses Deteksi Sedang Berjalan ({{ activeTasks.length }} Dokumen)
+        <h3 class="text-sm font-extrabold text-[#262626] uppercase tracking-wide">
+          Proses Deteksi Sedang Berjalan <span class="italic font-bold text-[#515151]">({{ activeTasks.length }} Dokumen)</span>
         </h3>
       </div>
       <Badge variant="mint" size="sm" dot dotPulse>
@@ -43,18 +43,18 @@ const emit = defineEmits<{
       >
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div class="space-y-0.5">
-            <span class="text-xs font-semibold text-[#262626]">
+            <span class="text-xs font-bold text-[#262626]">
               {{ task.document_title }}
             </span>
             <div class="text-[11px] text-[#737373] flex items-center space-x-2">
-              <span class="font-mono">ID: {{ task.id }}</span>
+              <span class="font-medium">ID: {{ task.id }}</span>
               <span>&bull;</span>
-              <span>Kedalaman: {{ task.audit_depth }}</span>
+              <span class="font-medium">Kedalaman: <strong class="font-bold text-[#262626]">{{ task.audit_depth }}</strong></span>
             </div>
           </div>
 
           <div class="flex items-center space-x-3">
-            <span class="text-xs font-mono font-semibold text-[#262626] tabular-nums">
+            <span class="text-sm font-extrabold text-[#262626] tabular-nums">
               {{ task.progress_pct }}%
             </span>
             <Button
@@ -77,7 +77,7 @@ const emit = defineEmits<{
 
         <div class="flex items-center justify-between text-[11px] text-[#737373]">
           <span>Tahap: {{ task.current_stage || "Memproses Representasi Vektor Kalimat..." }}</span>
-          <span class="font-mono">pgvector & Rabin-Karp Pipeline</span>
+          <span class="italic font-bold text-[#262626]">pgvector &amp; Rabin-Karp Pipeline</span>
         </div>
       </div>
     </div>

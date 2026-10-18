@@ -72,12 +72,12 @@ function selectAnno(anno: HeatmapAnnotation) {
     <!-- Heatmap Document Text Viewer -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <div class="lg:col-span-2 bg-white border border-[#ededed] rounded-[14px] p-6 shadow-audyr-subtle leading-relaxed text-sm text-audyr-ink space-y-4">
-        <h3 class="text-sm font-semibold text-audyr-ink uppercase tracking-tight mb-2">
-          Naskah Dokumen dengan Interactive Heatmap
+        <h3 class="text-sm font-extrabold text-[#262626] uppercase tracking-wide mb-2">
+          Naskah Dokumen dengan <span class="italic font-bold text-[#686868]">Interactive Heatmap</span>
         </h3>
 
         <!-- Text snippets rendered with highlights -->
-        <div class="prose max-w-none text-audyr-slate space-y-3 font-normal">
+        <div class="prose max-w-none text-audyr-slate space-y-3 font-normal leading-[1.75]">
           <p>
             Perkembangan teknologi kecerdasan buatan telah mengubah lanskap publikasi ilmiah secara dramatis.
             <span
@@ -117,14 +117,14 @@ function selectAnno(anno: HeatmapAnnotation) {
 
       <!-- Detail Card on Selected Highlight -->
       <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-4">
-        <h4 class="text-xs font-semibold uppercase tracking-tight text-audyr-ash">
+        <h4 class="text-xs font-extrabold uppercase tracking-wide text-audyr-ash">
           Detail Temuan Terpilih
         </h4>
 
         <div v-if="selectedAnnotation" class="space-y-3">
           <div class="flex items-center justify-between">
             <span
-              class="px-2.5 py-0.5 text-xs font-medium rounded-full"
+              class="px-2.5 py-0.5 text-xs font-bold rounded-full"
               :class="
                 selectedAnnotation.tier === 'T1'
                   ? 'bg-red-50 text-red-700 border border-red-200'
@@ -135,7 +135,7 @@ function selectAnno(anno: HeatmapAnnotation) {
             >
               {{ selectedAnnotation.tier }}: {{ selectedAnnotation.color }}
             </span>
-            <span class="text-xs font-mono font-medium text-audyr-ink">
+            <span class="text-sm font-extrabold text-audyr-ink tabular-nums">
               Sim: {{ (selectedAnnotation.similarity * 100).toFixed(1) }}%
             </span>
           </div>

@@ -36,27 +36,27 @@ const emit = defineEmits<{
     <!-- Audyr Mint Whisper Popular Pill Badge -->
     <div
       v-if="plan.popular"
-      class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-[11px] font-medium tracking-tight"
+      class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-[10px] italic font-bold uppercase tracking-wider"
     >
       Paling Populer
     </div>
 
     <div class="space-y-3">
       <h3
-        class="text-base font-semibold tracking-tight"
+        class="text-lg font-extrabold tracking-tight"
         :class="plan.popular ? 'text-white' : 'text-[#262626]'"
       >
         {{ plan.name }}
       </h3>
       <div class="flex items-baseline space-x-2">
         <span
-          class="text-3xl font-semibold font-mono tracking-tight"
+          class="text-3xl sm:text-4xl font-extrabold tracking-tight tabular-nums"
           :class="plan.popular ? 'text-white' : 'text-[#262626]'"
         >
           {{ plan.price }}
         </span>
         <span
-          class="text-xs"
+          class="text-xs font-medium"
           :class="plan.popular ? 'text-[#cbcbcb]' : 'text-[#686868]'"
         >
           / {{ plan.tokens }} Token

@@ -61,10 +61,10 @@ function onRoleSelect(userId: string, event: Event) {
     <!-- Header & Search Controls -->
     <div class="p-5 border-b border-[#ededed] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h3 class="text-sm font-semibold uppercase tracking-tight text-audyr-ink">
+        <h3 class="text-sm font-extrabold uppercase tracking-wider text-audyr-ink">
           Manajemen Pengguna & Kuota Token
         </h3>
-        <p class="text-xs text-audyr-ash mt-0.5">Daftar akun dan hak akses pengguna sistem VeriText AI</p>
+        <p class="text-xs text-audyr-ash mt-0.5 font-normal">Daftar akun dan hak akses pengguna sistem VeriText AI</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-2.5">
@@ -73,14 +73,14 @@ function onRoleSelect(userId: string, event: Event) {
             v-model="searchQuery"
             type="text"
             placeholder="Cari nama / email..."
-            class="px-3 py-1.5 pl-7 rounded-[4px] border border-[#ededed] text-xs text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white w-44 sm:w-56"
+            class="px-3 py-1.5 pl-7 rounded-[4px] border border-[#ededed] text-xs text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white w-44 sm:w-56 font-medium"
           />
           <span class="absolute left-2 top-2 text-audyr-ash text-xs">🔍</span>
         </div>
 
         <select
           v-model="roleFilter"
-          class="px-2.5 py-1.5 rounded-[4px] border border-[#ededed] text-xs bg-white text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          class="px-2.5 py-1.5 rounded-[4px] border border-[#ededed] text-xs bg-white text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink font-semibold"
         >
           <option value="ALL">Semua Peran</option>
           <option value="ADMIN">Admin</option>
@@ -89,7 +89,7 @@ function onRoleSelect(userId: string, event: Event) {
           <option value="TRIAL">Trial</option>
         </select>
 
-        <span class="text-xs text-audyr-ash font-mono hidden md:inline">
+        <span class="text-xs text-audyr-ash font-bold hidden md:inline">
           ({{ filteredUsers.length }}/{{ users.length }})
         </span>
       </div>
@@ -113,7 +113,7 @@ function onRoleSelect(userId: string, event: Event) {
     <div v-else class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-white border-y border-[#ededed] text-audyr-ash font-medium uppercase text-[11px] tracking-tight">
+          <tr class="bg-white border-y border-[#ededed] text-audyr-ash font-bold uppercase text-[11px] tracking-wider">
             <th class="py-3 px-5">Nama & Email</th>
             <th class="py-3 px-4">Institusi</th>
             <th class="py-3 px-4">Peran (Role)</th>
@@ -125,10 +125,10 @@ function onRoleSelect(userId: string, event: Event) {
         <tbody class="divide-y divide-[#ededed]">
           <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-[#fafafa] transition-colors">
             <td class="py-3.5 px-5">
-              <div class="font-semibold text-audyr-ink">{{ user.full_name }}</div>
-              <div class="text-[11px] text-audyr-ash font-mono">{{ user.email }}</div>
+              <div class="font-bold text-audyr-ink">{{ user.full_name }}</div>
+              <div class="text-[11px] text-audyr-ash font-medium">{{ user.email }}</div>
             </td>
-            <td class="py-3.5 px-4 text-audyr-slate">{{ user.institution || '-' }}</td>
+            <td class="py-3.5 px-4 text-audyr-slate font-medium">{{ user.institution || '-' }}</td>
             <td class="py-3.5 px-4">
               <div class="flex items-center space-x-1.5">
                 <Badge :variant="getRoleVariant(user.role)" size="xs">
@@ -137,7 +137,7 @@ function onRoleSelect(userId: string, event: Event) {
                 <select
                   :value="user.role"
                   @change="onRoleSelect(user.id, $event)"
-                  class="text-[10px] bg-white border border-[#ededed] rounded-[4px] px-1.5 py-0.5 text-audyr-ink focus:outline-none focus:border-audyr-ink cursor-pointer"
+                  class="text-[10px] bg-white border border-[#ededed] rounded-[4px] px-1.5 py-0.5 text-audyr-ink focus:outline-none focus:border-audyr-ink cursor-pointer font-semibold"
                   title="Ubah peran pengguna"
                 >
                   <option value="TRIAL">TRIAL</option>
@@ -147,13 +147,13 @@ function onRoleSelect(userId: string, event: Event) {
                 </select>
               </div>
             </td>
-            <td class="py-3.5 px-4 font-mono font-bold text-audyr-ink">
+            <td class="py-3.5 px-4 font-extrabold text-sm text-audyr-ink tabular-nums">
               <div class="flex items-center space-x-2">
                 <span>{{ user.token_balance }}</span>
                 <button
                   type="button"
                   @click="emit('adjustTokens', user.id, 5)"
-                  class="text-[10px] bg-transparent border border-[#ededed] hover:bg-[#ededed] text-audyr-ink px-1.5 py-0.5 rounded-[4px] font-mono transition-colors"
+                  class="text-[10px] bg-transparent border border-[#ededed] hover:bg-[#ededed] text-audyr-ink px-1.5 py-0.5 rounded-[4px] font-bold transition-colors"
                   title="Tambah 5 token"
                 >
                   +5
@@ -169,7 +169,7 @@ function onRoleSelect(userId: string, event: Event) {
               <button
                 type="button"
                 @click="emit('toggleStatus', user.id)"
-                class="text-xs font-medium px-2.5 py-1 rounded-[4px] border transition-colors tracking-tight"
+                class="text-xs font-bold px-2.5 py-1 rounded-[4px] border transition-colors tracking-tight"
                 :class="user.is_active ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-[#065f46] border-[#a7f3d0] hover:bg-audyr-mint-whisper'"
               >
                 {{ user.is_active ? 'Suspend' : 'Aktifkan' }}

@@ -267,18 +267,18 @@ async function handleRefresh() {
     <!-- Header -->
     <div>
       <div class="flex flex-wrap items-center gap-2.5">
-        <h1 class="text-2xl sm:text-3xl font-bold text-audyr-ink tracking-tight">
-          Dashboard Audit Naskah
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
+          Workspace Audit Naskah
         </h1>
         <span
           v-if="authStore.user"
-          class="text-xs px-2.5 py-0.5 font-mono font-medium rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]"
+          class="text-xs px-2.5 py-0.5 font-bold rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]"
         >
           {{ authStore.user.institution || 'VeriText Academic' }}
         </span>
       </div>
-      <p class="text-xs sm:text-sm text-audyr-ash mt-1">
-        Selamat datang, <strong class="font-medium text-[#262626]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong>. Unggah dokumen akademik untuk diproses oleh 4-Tier Hybrid Plagiarism Detection Pipeline.
+      <p class="text-xs sm:text-sm text-audyr-ash mt-1 font-normal">
+        Selamat datang, <strong class="italic font-bold text-[#262626]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong>. Unggah dokumen akademik untuk diproses oleh <strong class="font-bold text-[#262626]">4-Tier Hybrid Detection Pipeline</strong>.
       </p>
     </div>
 

@@ -269,45 +269,44 @@ onMounted(() => {
     <!-- Header Konsol Super Administrator -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ededed] pb-6">
       <div>
-        <div class="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-[#262626] text-white text-xs font-mono font-medium uppercase tracking-tight mb-2">
+        <div class="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-[#262626] text-white text-xs font-bold uppercase tracking-wider mb-2">
           <span>🛡️</span>
           <span>Konsol Tata Kelola Administrator</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-[#262626] tracking-tight">
-          Pusat Kontrol Infrastruktur & Kebijakan VeriText AI
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
+          Pusat Kontrol Infrastruktur &amp; <span class="italic font-bold text-[#262626]">Tata Kelola VeriText AI</span>
         </h1>
-        <p class="text-xs sm:text-sm text-[#686868] mt-1 max-w-3xl">
-          Konsol tata kelola terpadu untuk pengawasan server backend FastAPI, topologi pgvector HNSW,
-          antrean Celery worker, manajemen kuota pengguna, serta kepatuhan UU PDP No. 27/2022.
+        <p class="text-xs sm:text-sm text-[#686868] mt-1 max-w-3xl font-normal">
+          Konsol tata kelola terpadu untuk pengawasan server backend <strong class="font-bold text-[#262626]">FastAPI</strong>, topologi <strong class="font-bold text-[#262626]">pgvector HNSW</strong>, antrean Celery worker, manajemen kuota pengguna, serta kepatuhan <strong class="italic font-bold text-[#262626]">UU PDP No. 27/2022</strong>.
         </p>
       </div>
 
       <!-- Quick Status Badges -->
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start">
-        <div class="flex items-center space-x-2 text-xs font-mono font-medium bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
+        <div class="flex items-center space-x-2 text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>Backend FastAPI: Sehat (200 OK)</span>
         </div>
-        <div class="flex items-center space-x-2 text-xs font-mono font-medium bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
+        <div class="flex items-center space-x-2 text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
           <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
-          <span>Celery & Redis: Aktif</span>
+          <span>Celery &amp; Redis: Aktif</span>
         </div>
       </div>
     </div>
 
     <!-- Quick Navigation Anchor Subnav -->
-    <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-medium text-[#686868]">
+    <div class="flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-bold text-[#686868]">
       <a
         href="#overview"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        📊 Overview & Metrik
+        📊 Overview &amp; Metrik
       </a>
       <a
         href="#users"
         class="px-3 py-1.5 rounded-[4px] border border-[#ededed] bg-white hover:bg-[#fafafa] hover:text-[#262626] whitespace-nowrap transition-colors duration-150"
       >
-        👥 Kelola Pengguna & Saldo
+        👥 Kelola Pengguna &amp; Saldo
       </a>
       <a
         href="#corpus"
@@ -333,10 +332,10 @@ onMounted(() => {
     <section id="overview" class="space-y-4 pt-2">
       <div class="flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-[#262626] tracking-tight">
-            Metrik Sistem & Kapasitas Layanan
+          <h2 class="text-lg font-extrabold text-[#262626] tracking-tight">
+            Metrik Sistem &amp; Kapasitas Layanan
           </h2>
-          <p class="text-xs text-[#686868]">
+          <p class="text-xs text-[#686868] font-normal">
             Telemetri throughput deteksi, latensi rata-rata, dan pemanfaatan indeks pgvector HNSW.
           </p>
         </div>
@@ -356,34 +355,34 @@ onMounted(() => {
         <!-- Worker Celery -->
         <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[#262626] tracking-tight">Antrean Worker Celery</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">4 Worker Aktif</span>
+            <span class="text-xs font-bold text-[#262626] tracking-tight">Antrean Worker Celery</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">4 Worker Aktif</span>
           </div>
-          <div class="text-2xl font-bold font-mono text-[#262626] tabular-nums">0 <span class="text-xs font-normal text-[#686868]">antrean tertunda</span></div>
+          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">0 <span class="text-xs font-normal text-[#686868]">antrean tertunda</span></div>
           <p class="text-[11px] text-[#737373] leading-relaxed">
-            Broker Redis berjalan di port 6379. Rata-rata waktu konsumsi tugas audit hybrid: <strong>1.4 detik</strong>.
+            Broker Redis berjalan di port 6379. Rata-rata waktu konsumsi tugas audit hybrid: <span class="font-extrabold text-[#262626]">1.4 detik</span>.
           </p>
         </div>
 
         <!-- pgvector HNSW Engine -->
         <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[#262626] tracking-tight">pgvector HNSW Index</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">m=16, ef=64</span>
+            <span class="text-xs font-bold text-[#262626] tracking-tight">pgvector HNSW Index</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">m=16, ef=64</span>
           </div>
-          <div class="text-2xl font-bold font-mono text-[#262626] tabular-nums">24,500 <span class="text-xs font-normal text-[#686868]">vektor terindeks</span></div>
+          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">24,500 <span class="text-xs font-normal text-[#686868]">vektor terindeks</span></div>
           <p class="text-[11px] text-[#737373] leading-relaxed">
-            Metrik jarak: <strong>Kosinus (Cosine Distance)</strong>. Indeks tersinkronisasi 100% dengan tabel korpus.
+            Metrik jarak: <span class="italic font-bold text-[#262626]">Kosinus (Cosine Distance)</span>. Indeks tersinkronisasi 100% dengan tabel korpus.
           </p>
         </div>
 
         <!-- Security & Privacy Guard -->
         <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-semibold text-[#262626] tracking-tight">Kepatuhan UU PDP No. 27/2022</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Compliant</span>
+            <span class="text-xs font-bold text-[#262626] tracking-tight">Kepatuhan UU PDP No. 27/2022</span>
+            <span class="text-[10px] italic font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Compliant</span>
           </div>
-          <div class="text-2xl font-bold font-mono text-[#262626] tabular-nums">30 Hari <span class="text-xs font-normal text-[#686868]">retensi otomatis</span></div>
+          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">30 Hari <span class="text-xs font-normal text-[#686868]">retensi otomatis</span></div>
           <p class="text-[11px] text-[#737373] leading-relaxed">
             Naskah mahasiswa otomatis dibersihkan dari server sementara sidik jari hash kriptografi dipertahankan.
           </p>
@@ -406,15 +405,15 @@ onMounted(() => {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div class="flex items-center space-x-2">
-            <h2 class="text-base font-semibold text-[#262626] tracking-tight">
+            <h2 class="text-base font-extrabold text-[#262626] tracking-tight">
               Tata Kelola Bank Korpus Pembanding Institusi
             </h2>
-            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-[#fafafa] text-[#262626] border border-[#ededed]">
+            <span class="text-[10px] italic font-bold uppercase px-2 py-0.5 rounded-full bg-[#fafafa] text-[#262626] border border-[#ededed]">
               Tier 1 & Tier 2 Ground Truth
             </span>
           </div>
           <p class="text-xs text-[#686868] mt-1">
-            Bank naskah rujukan skripsi, tesis, dan artikel ilmiah internal yang diindeks ke dalam tabel <code class="font-mono bg-[#f4f4f4] px-1 py-0.5 rounded text-[11px]">document_chunks</code> dan <code class="font-mono bg-[#f4f4f4] px-1 py-0.5 rounded text-[11px]">lexical_fingerprints</code>.
+            Bank naskah rujukan skripsi, tesis, dan artikel ilmiah internal yang diindeks ke dalam tabel <code class="bg-[#f4f4f4] px-1 py-0.5 rounded text-[11px] font-bold">document_chunks</code> dan <code class="bg-[#f4f4f4] px-1 py-0.5 rounded text-[11px] font-bold">lexical_fingerprints</code>.
           </p>
         </div>
 
@@ -429,16 +428,16 @@ onMounted(() => {
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
         <div class="p-3.5 bg-[#fafafa] rounded-[4px] border border-[#ededed]">
-          <span class="text-[11px] text-[#686868] block">Total Dokumen Rujukan</span>
-          <span class="text-lg font-bold font-mono text-[#262626]">68 Naskah</span>
+          <span class="text-[11px] text-[#686868] font-medium block">Total Dokumen Rujukan</span>
+          <span class="text-lg font-extrabold text-[#262626] tabular-nums">68 Naskah</span>
         </div>
         <div class="p-3.5 bg-[#fafafa] rounded-[4px] border border-[#ededed]">
-          <span class="text-[11px] text-[#686868] block">Ukuran Korpus Terproses</span>
-          <span class="text-lg font-bold font-mono text-[#262626]">42.5 MB</span>
+          <span class="text-[11px] text-[#686868] font-medium block">Ukuran Korpus Terproses</span>
+          <span class="text-lg font-extrabold text-[#262626] tabular-nums">42.5 MB</span>
         </div>
         <div class="p-3.5 bg-[#fafafa] rounded-[4px] border border-[#ededed]">
-          <span class="text-[11px] text-[#686868] block">Hak Kelola Upload</span>
-          <span class="text-lg font-bold font-mono text-[#262626]">Admin & Reviewer</span>
+          <span class="text-[11px] text-[#686868] font-medium block">Hak Kelola Upload</span>
+          <span class="text-lg font-extrabold text-[#262626]">Admin & Reviewer</span>
         </div>
       </div>
     </section>

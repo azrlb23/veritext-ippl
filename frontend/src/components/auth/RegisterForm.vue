@@ -58,7 +58,7 @@ function handleSubmit() {
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Nama Lengkap & Gelar</label>
+        <label class="block text-xs font-bold text-audyr-ink tracking-tight">Nama Lengkap & Gelar</label>
         <input
           v-model="fullName"
           type="text"
@@ -69,7 +69,7 @@ function handleSubmit() {
       </div>
 
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Email Institusi / Pribadi</label>
+        <label class="block text-xs font-bold text-audyr-ink tracking-tight">Email Institusi / Pribadi</label>
         <input
           v-model="email"
           type="email"
@@ -80,7 +80,7 @@ function handleSubmit() {
       </div>
 
       <div class="space-y-1">
-        <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Asal Universitas / Lembaga Riset</label>
+        <label class="block text-xs font-bold text-audyr-ink tracking-tight">Asal Universitas / Lembaga Riset</label>
         <input
           v-model="institution"
           type="text"
@@ -91,7 +91,7 @@ function handleSubmit() {
 
       <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1">
-          <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Kata Sandi</label>
+          <label class="block text-xs font-bold text-audyr-ink tracking-tight">Kata Sandi</label>
           <input
             v-model="password"
             type="password"
@@ -101,7 +101,7 @@ function handleSubmit() {
           />
         </div>
         <div class="space-y-1">
-          <label class="block text-xs font-semibold text-audyr-ink tracking-tight">Konfirmasi Sandi</label>
+          <label class="block text-xs font-bold text-audyr-ink tracking-tight">Konfirmasi Sandi</label>
           <input
             v-model="confirmPassword"
             type="password"
@@ -120,7 +120,7 @@ function handleSubmit() {
           class="mt-1 rounded-[2px] text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
         />
         <label for="regPrivacyConsent" class="text-[11px] text-audyr-ash leading-tight">
-          Saya menyetujui pemrosesan dokumen sesuai ketentuan Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27/2022) dengan hak penghapusan permanen.
+          Saya menyetujui pemrosesan dokumen sesuai ketentuan <span class="italic font-bold text-audyr-ink">Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27/2022)</span> dengan hak penghapusan permanen.
         </label>
       </div>
 

@@ -50,14 +50,14 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
   <div class="bg-white border border-[#ededed] rounded-[14px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden space-y-4">
     <div class="p-5 border-b border-[#ededed] flex items-center justify-between">
       <div>
-        <h3 class="text-sm font-semibold text-[#262626] uppercase tracking-wide">
-          Riwayat Tugas Audit Terakhir
+        <h3 class="text-sm font-extrabold text-[#262626] uppercase tracking-wide">
+          Riwayat Pengujian Naskah Akademik
         </h3>
-        <p class="text-xs text-[#737373] mt-0.5">Daftar naskah akademik yang telah diuji oleh sistem</p>
+        <p class="text-xs text-[#737373] mt-0.5 font-normal">Daftar naskah akademik yang telah diuji oleh sistem</p>
       </div>
 
       <div class="flex items-center space-x-3">
-        <span class="text-xs text-[#737373] font-mono">Total: {{ tasks.length }} dokumen</span>
+        <span class="text-xs text-[#737373] font-medium">Total: <strong class="font-bold text-[#262626]">{{ tasks.length }}</strong> dokumen</span>
         <Button
           variant="outline"
           size="xs"
@@ -86,7 +86,7 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
     <div v-else class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-[#fafafa] border-y border-[#ededed] text-[#515151] font-medium uppercase tracking-wider text-[11px]">
+          <tr class="bg-[#fafafa] border-y border-[#ededed] text-[#515151] font-bold uppercase tracking-wider text-[11px]">
             <th class="py-3 px-5">Nama Dokumen</th>
             <th class="py-3 px-4">Kedalaman</th>
             <th class="py-3 px-4">Status & Progres</th>
@@ -101,7 +101,7 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
             :key="task.id"
             class="hover:bg-[#fafafa] transition-colors duration-150 ease-out"
           >
-            <td class="py-3.5 px-5 font-medium text-[#262626] max-w-xs truncate" :title="task.document_title">
+            <td class="py-3.5 px-5 font-bold text-[#262626] max-w-xs truncate" :title="task.document_title">
               {{ task.document_title }}
             </td>
 
@@ -124,23 +124,23 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
                 >
                   {{ task.status }}
                 </Badge>
-                <span v-if="task.status === 'PROCESSING'" class="text-[10px] text-audyr-ash font-mono">
+                <span v-if="task.status === 'PROCESSING'" class="text-[10px] text-audyr-ash font-bold">
                   ({{ task.progress_pct }}%)
                 </span>
               </div>
             </td>
 
-            <td class="py-3.5 px-4 font-mono font-bold">
+            <td class="py-3.5 px-4 font-extrabold text-sm tabular-nums">
               <span
                 v-if="task.score_composite !== null"
                 :class="task.score_composite > 25 ? 'text-amber-700' : 'text-[#065f46]'"
               >
                 {{ task.score_composite.toFixed(1) }}%
               </span>
-              <span v-else class="text-audyr-ash">&mdash;</span>
+              <span v-else class="text-audyr-ash font-normal">&mdash;</span>
             </td>
 
-            <td class="py-3.5 px-4 text-audyr-ash whitespace-nowrap">
+            <td class="py-3.5 px-4 text-audyr-ash whitespace-nowrap font-medium">
               {{ task.created_at }}
             </td>
 

@@ -109,11 +109,11 @@ function handleConfirmTopup(payload: { packageId: string; paymentMethod: string 
     <!-- Pricing Packages Grid -->
     <div class="space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-2xl font-bold text-audyr-ink tracking-tight">
+        <h2 class="text-2xl font-extrabold text-audyr-ink tracking-tight">
           Pilihan Paket Top-Up Token
         </h2>
         <p class="text-xs text-audyr-ash">
-          Pilih paket kuota audit sesuai kebutuhan pengujian naskah akademik Anda.
+          Pilih paket kuota audit sesuai kebutuhan pengujian naskah akademik Anda tanpa biaya langganan berulang (<span class="italic font-bold text-audyr-ink">Pay-as-you-go</span>).
         </p>
       </div>
 

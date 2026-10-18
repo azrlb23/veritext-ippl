@@ -87,15 +87,15 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
     <div class="px-6 pt-6 pb-4 border-b border-[#ededed] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <div class="flex items-center space-x-2">
-          <h2 class="text-base font-semibold text-[#262626] tracking-tight">
+          <h2 class="text-base font-extrabold text-[#262626] tracking-tight">
             Log Jejak Audit & Forensik Keamanan
           </h2>
-          <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
+          <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0] italic">
             UU PDP No. 27/2022
           </span>
         </div>
-        <p class="text-xs text-[#686868] mt-1">
-          Rekaman aktivitas administratif yang tidak dapat dimanipulasi (immutable audit trail) untuk transparansi tata kelola.
+        <p class="text-xs text-[#686868] mt-1 font-normal">
+          Rekaman aktivitas administratif yang tidak dapat dimanipulasi (<strong class="italic font-bold text-[#262626]">immutable audit trail</strong>) untuk transparansi tata kelola.
         </p>
       </div>
 
@@ -103,14 +103,14 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
         <button
           type="button"
           @click="emit('refresh')"
-          class="text-xs font-medium text-[#262626] bg-white hover:bg-[#fafafa] border border-[#ededed] px-3 py-1.5 rounded-[4px] shadow-audyr-subtle active:scale-[0.98] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+          class="text-xs font-bold text-[#262626] bg-white hover:bg-[#fafafa] border border-[#ededed] px-3 py-1.5 rounded-[4px] shadow-audyr-subtle active:scale-[0.98] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
         >
           Perbarui Log
         </button>
         <button
           type="button"
           @click="emit('exportCsv')"
-          class="text-xs font-medium text-white bg-[#262626] hover:bg-[#171717] px-3.5 py-1.5 rounded-[4px] shadow-audyr-subtle active:scale-[0.98] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+          class="text-xs font-bold text-white bg-[#262626] hover:bg-[#171717] px-3.5 py-1.5 rounded-[4px] shadow-audyr-subtle active:scale-[0.98] transition-colors duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
         >
           Ekspor CSV
         </button>
@@ -190,14 +190,14 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
         <tbody class="divide-y divide-[#ededed] bg-white">
           <tr v-for="log in filteredLogs" :key="log.id" class="hover:bg-[#fafafa] transition-colors duration-150">
             <!-- Timestamp -->
-            <td class="px-6 py-3.5 whitespace-nowrap font-mono text-[#686868] text-[11px]">
+            <td class="px-6 py-3.5 whitespace-nowrap tabular-nums text-[#686868] text-[11px] font-medium">
               {{ log.timestamp }}
             </td>
 
             <!-- Actor -->
             <td class="px-6 py-3.5 whitespace-nowrap">
-              <div class="font-medium text-[#262626]">{{ log.actor_name }}</div>
-              <div class="text-[10px] text-[#737373] font-mono">{{ log.actor_email }}</div>
+              <div class="font-bold text-[#262626]">{{ log.actor_name }}</div>
+              <div class="text-[10px] text-[#737373] tabular-nums font-medium">{{ log.actor_email }}</div>
             </td>
 
             <!-- Action -->
@@ -208,17 +208,17 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
             </td>
 
             <!-- Target Resource -->
-            <td class="px-6 py-3.5 whitespace-nowrap font-mono text-[#262626] text-[11px]">
-              <span class="px-1.5 py-0.5 rounded bg-[#f4f4f4] border border-[#e5e5e5]">
+            <td class="px-6 py-3.5 whitespace-nowrap text-[#262626] text-[11px]">
+              <span class="px-1.5 py-0.5 rounded bg-[#f4f4f4] border border-[#e5e5e5] font-bold tabular-nums">
                 {{ log.target_resource }}
               </span>
-              <span v-if="log.details" class="block text-[10px] text-[#737373] mt-0.5 font-sans">
+              <span v-if="log.details" class="block text-[10px] text-[#737373] mt-0.5">
                 {{ log.details }}
               </span>
             </td>
 
             <!-- IP Address -->
-            <td class="px-6 py-3.5 whitespace-nowrap font-mono text-[#686868] text-[11px]">
+            <td class="px-6 py-3.5 whitespace-nowrap tabular-nums font-bold text-[#686868] text-[11px]">
               {{ log.ip_address }}
             </td>
 
@@ -226,13 +226,13 @@ function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "seco
             <td class="px-6 py-3.5 whitespace-nowrap text-center">
               <span
                 v-if="log.status === 'SUCCESS'"
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] italic font-bold bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]"
               >
                 SUCCESS
               </span>
               <span
                 v-else
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#fef2f2] text-[#991b1b] border border-[#fecaca]"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] italic font-bold bg-[#fef2f2] text-[#991b1b] border border-[#fecaca]"
               >
                 FAILED
               </span>

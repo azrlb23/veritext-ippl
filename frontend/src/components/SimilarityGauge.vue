@@ -67,15 +67,15 @@ const severityLevel = computed(() => {
         />
       </svg>
       <div class="absolute flex flex-col items-center">
-        <span class="text-2xl font-bold tracking-tight font-mono text-audyr-ink">
+        <span class="text-2xl font-extrabold tracking-tight tabular-nums text-audyr-ink">
           {{ score.toFixed(1) }}%
         </span>
-        <span class="text-[10px] text-audyr-ash font-medium tracking-tight">SIMILARITY</span>
+        <span class="text-[10px] text-audyr-ash font-bold tracking-tight">SIMILARITY</span>
       </div>
     </div>
 
     <div
-      class="mt-3 px-3 py-0.5 rounded-full text-xs font-medium border tracking-tight"
+      class="mt-3 px-3 py-0.5 rounded-full text-xs italic font-bold border tracking-tight"
       :class="[severityLevel.textColor, severityLevel.bgColor, severityLevel.borderColor]"
     >
       {{ severityLevel.category }}

@@ -44,10 +44,10 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
 <template>
   <div class="bg-white border border-[#ededed] rounded-[14px] shadow-audyr-subtle overflow-hidden space-y-4">
     <div class="p-5 border-b border-[#ededed] flex items-center justify-between">
-      <h3 class="text-sm font-semibold uppercase tracking-tight text-audyr-ink">
+      <h3 class="text-sm font-extrabold uppercase tracking-tight text-audyr-ink">
         Daftar Repositori Naskah Terindeks
       </h3>
-      <span class="text-xs text-audyr-ash font-mono">Total: {{ items.length }} dokumen</span>
+      <span class="text-xs text-audyr-ash font-bold tabular-nums">Total: {{ items.length }} dokumen</span>
     </div>
 
     <!-- Skeleton -->
@@ -68,7 +68,7 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
     <div v-else class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-white border-y border-[#ededed] text-audyr-ash font-medium uppercase text-[11px] tracking-tight">
+          <tr class="bg-white border-y border-[#ededed] text-audyr-ash font-bold uppercase text-[11px] tracking-tight">
             <th class="py-3 px-5">Judul Dokumen / Koleksi</th>
             <th class="py-3 px-4">Kategori Bidang</th>
             <th class="py-3 px-4">Tahun Akademik</th>
@@ -80,12 +80,12 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
         </thead>
         <tbody class="divide-y divide-[#ededed]">
           <tr v-for="item in items" :key="item.id" class="hover:bg-[#fafafa] transition-colors">
-            <td class="py-3.5 px-5 font-semibold text-audyr-ink max-w-xs truncate" :title="item.title">
+            <td class="py-3.5 px-5 font-bold text-audyr-ink max-w-xs truncate" :title="item.title">
               {{ item.title }}
             </td>
             <td class="py-3.5 px-4 text-audyr-slate">{{ item.category || '-' }}</td>
-            <td class="py-3.5 px-4 font-mono text-audyr-slate">{{ item.academic_year || '-' }}</td>
-            <td class="py-3.5 px-4 font-mono font-bold text-audyr-ink">
+            <td class="py-3.5 px-4 tabular-nums text-audyr-slate">{{ item.academic_year || '-' }}</td>
+            <td class="py-3.5 px-4 tabular-nums font-extrabold text-audyr-ink">
               {{ item.total_chunks ? item.total_chunks.toLocaleString() : '0' }}
             </td>
             <td class="py-3.5 px-4">
@@ -93,7 +93,7 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
                 {{ item.status }}
               </Badge>
             </td>
-            <td class="py-3.5 px-4 text-audyr-ash font-mono whitespace-nowrap">{{ item.created_at }}</td>
+            <td class="py-3.5 px-4 text-audyr-ash tabular-nums whitespace-nowrap">{{ item.created_at }}</td>
             <td class="py-3.5 px-5 text-right whitespace-nowrap">
               <button
                 type="button"

@@ -57,12 +57,12 @@ const iconBgClass = computed(() => {
 <template>
   <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-3 hover:border-[#d4d4d4] transition-colors">
     <div class="flex items-center justify-between">
-      <span class="text-[11px] font-semibold text-[#515151] uppercase tracking-wider">
+      <span class="text-[11px] font-bold text-[#515151] uppercase tracking-wider">
         {{ title }}
       </span>
       <div
         v-if="icon || $slots.icon"
-        class="w-9 h-9 rounded-[4px] flex items-center justify-center font-semibold text-sm"
+        class="w-9 h-9 rounded-[4px] flex items-center justify-center font-bold text-sm"
         :class="iconBgClass"
       >
         <slot name="icon">
@@ -72,10 +72,10 @@ const iconBgClass = computed(() => {
     </div>
 
     <div class="space-y-1">
-      <div class="text-2xl font-black font-mono tracking-tight" :class="valueColorClass">
+      <div class="text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums" :class="valueColorClass">
         {{ value }}
       </div>
-      <p v-if="subtitle" class="text-xs text-audyr-ash">
+      <p v-if="subtitle" class="text-xs text-audyr-ash font-normal">
         {{ subtitle }}
       </p>
     </div>

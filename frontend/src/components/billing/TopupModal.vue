@@ -41,22 +41,22 @@ function handleConfirm() {
       <!-- Order Summary Card -->
       <div class="bg-white border border-[#ededed] rounded-[14px] p-4 space-y-2.5 shadow-audyr-subtle">
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-audyr-ash">Paket Terpilih</span>
-          <span class="text-xs font-semibold text-audyr-ink font-mono">{{ selectedPackage.name }}</span>
+          <span class="text-xs font-bold text-audyr-ash">Paket Terpilih</span>
+          <span class="text-xs font-extrabold text-audyr-ink">{{ selectedPackage.name }}</span>
         </div>
         <div class="flex items-center justify-between">
-          <span class="text-xs font-medium text-audyr-ash">Jumlah Kuota</span>
-          <span class="text-sm font-bold text-audyr-ink font-mono">{{ selectedPackage.tokens }} Token</span>
+          <span class="text-xs font-bold text-audyr-ash">Jumlah Kuota</span>
+          <span class="text-sm font-extrabold text-audyr-ink tabular-nums">{{ selectedPackage.tokens }} Token</span>
         </div>
         <div class="border-t border-[#ededed] pt-2 flex items-center justify-between">
-          <span class="text-xs font-semibold text-audyr-ink">Total Pembayaran</span>
-          <span class="text-base font-bold text-audyr-ink font-mono">{{ selectedPackage.price }}</span>
+          <span class="text-xs font-bold text-audyr-ink">Total Pembayaran</span>
+          <span class="text-base font-extrabold text-audyr-ink tabular-nums">{{ selectedPackage.price }}</span>
         </div>
       </div>
 
       <!-- Payment Method Selection -->
       <div class="space-y-2">
-        <label class="block text-xs font-semibold uppercase tracking-tight text-audyr-ash">
+        <label class="block text-xs font-extrabold uppercase tracking-tight text-audyr-ash">
           Pilih Jalur Pembayaran (Midtrans Sandbox)
         </label>
 
@@ -72,9 +72,9 @@ function handleConfirm() {
                 v-model="selectedPaymentMethod"
                 class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
               />
-              <span class="font-medium text-audyr-ink">QRIS (GoPay, OVO, ShopeePay, DANA)</span>
+              <span class="font-bold text-audyr-ink">QRIS (GoPay, OVO, ShopeePay, DANA)</span>
             </div>
-            <span class="text-[10px] bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0] px-2.5 py-0.5 rounded-full font-medium uppercase tracking-tight">Instan</span>
+            <span class="text-[10px] bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0] px-2.5 py-0.5 rounded-full italic font-bold uppercase tracking-tight">Instan</span>
           </label>
 
           <label
@@ -88,9 +88,9 @@ function handleConfirm() {
                 v-model="selectedPaymentMethod"
                 class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
               />
-              <span class="font-medium text-audyr-ink">BCA Virtual Account</span>
+              <span class="font-bold text-audyr-ink">BCA Virtual Account</span>
             </div>
-            <span class="text-[10px] text-audyr-ash font-mono">Otomatis</span>
+            <span class="text-[10px] text-audyr-ash font-medium">Otomatis</span>
           </label>
 
           <label
@@ -104,9 +104,9 @@ function handleConfirm() {
                 v-model="selectedPaymentMethod"
                 class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
               />
-              <span class="font-medium text-audyr-ink">Mandiri / BRI / BNI VA</span>
+              <span class="font-bold text-audyr-ink">Mandiri / BRI / BNI VA</span>
             </div>
-            <span class="text-[10px] text-audyr-ash font-mono">Otomatis</span>
+            <span class="text-[10px] text-audyr-ash font-medium">Otomatis</span>
           </label>
         </div>
       </div>
