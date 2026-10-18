@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "veritext-ai-super-secret-key-development-minimum-32-chars!"
     JWT_SECRET_KEY: str = "veritext-jwt-signing-secret-key-development-secure-random!"
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours in development
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # Database (PostgreSQL + pgvector)

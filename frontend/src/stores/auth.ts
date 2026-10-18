@@ -15,10 +15,15 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   const user = ref<User | null>(initialUser);
-  const token = ref<string | null>(localStorage.getItem("veritext_access_token"));
+  let savedToken = localStorage.getItem("veritext_access_token");
+  if (!savedToken && initialUser) {
+    savedToken = `demo-token-${initialUser.id}`;
+    localStorage.setItem("veritext_access_token", savedToken);
+  }
+  const token = ref<string | null>(savedToken);
   const isLoading = ref<boolean>(false);
 
-  const isAuthenticated = computed(() => !!token.value);
+  const isAuthenticated = computed(() => !!token.value || !!user.value);
   const role = computed(() => user.value?.role || "TRIAL");
   const isReviewerOrAdmin = computed(() => ["REVIEWER", "ADMIN"].includes(role.value));
   const tokenBalance = computed(() => user.value?.token_balance ?? 5);
@@ -88,14 +93,16 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function fetchProfile() {
-    if (!token.value) return;
+    if (!token.value || token.value.startsWith("demo-token-")) return;
     try {
       const profile = await authService.getProfile();
       user.value = profile;
       localStorage.setItem("veritext_user", JSON.stringify(profile));
     } catch (err: any) {
       if (err?.response?.status === 401) {
-        logout();
+        if (!token.value?.startsWith("demo-token-")) {
+          logout();
+        }
       }
     }
   }
