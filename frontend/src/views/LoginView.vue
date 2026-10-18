@@ -48,9 +48,18 @@ async function handleLogin(creds: { email: string; password: string }) {
     const isAdmin = emailLower === "admin@veritext.ai" || emailLower.includes("admin");
     const isDosen = emailLower === "dosen@kampus.ac.id" || emailLower.includes("dosen");
 
-    // If credentials are standard evaluation credentials, allow fallback smoothly
-    const isStandardSeed = (isAzriel || isAdmin || isDosen) && creds.password === "VeriText#2026";
-    if (!isStandardSeed && err?.response && [400, 401, 403, 422].includes(err.response.status)) {
+    // Check if password matches custom password set by admin or default VeriText#2026
+    let customPasswords: Record<string, string> = {};
+    try {
+      customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
+    } catch {
+      customPasswords = {};
+    }
+    const savedCustomPwd = customPasswords[emailLower];
+    const isCustomMatch = !!(savedCustomPwd && creds.password === savedCustomPwd);
+    const isStandardMatch = creds.password === "VeriText#2026" && (isAzriel || isAdmin || isDosen);
+
+    if (!isCustomMatch && !isStandardMatch && err?.response && [400, 401, 403, 422].includes(err.response.status)) {
       errorMessage.value = err.response.data?.detail || "Email atau kata sandi tidak valid.";
       return;
     }

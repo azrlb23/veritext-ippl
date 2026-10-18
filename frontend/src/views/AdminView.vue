@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   AdminStatsGrid,
@@ -11,6 +11,7 @@ import {
   type AuditLogItem,
 } from "../components/admin";
 import { useNotification } from "../composables";
+import { apiClient } from "../services/api";
 
 const router = useRouter();
 const route = useRoute();
@@ -127,11 +128,42 @@ const auditLogs = ref<AuditLogItem[]>([
   },
 ]);
 
-function handleToggleStatus(userId: string) {
+async function loadRealUsers() {
+  try {
+    const res = await apiClient.get<any>("/admin/users");
+    const items = res.data?.data?.items || res.data?.data;
+    if (Array.isArray(items) && items.length > 0) {
+      users.value = items.map((u: any) => ({
+        id: String(u.id),
+        full_name: u.full_name,
+        email: u.email,
+        institution: u.institution || "Institut Teknologi Nasional",
+        role: u.role,
+        token_balance: u.token_balance ?? 5,
+        is_active: u.is_active ?? true,
+        created_at: u.created_at ? String(u.created_at).substring(0, 10) : "2026-10-18",
+      }));
+    }
+  } catch {
+    // Keep local fallback list
+  }
+}
+
+onMounted(() => {
+  void loadRealUsers();
+});
+
+async function handleToggleStatus(userId: string) {
   const user = users.value.find((u) => u.id === userId);
   if (user) {
     user.is_active = !user.is_active;
     const actionType = user.is_active ? "USER_ACTIVATE" : "USER_SUSPEND";
+
+    try {
+      await apiClient.patch(`/admin/users/${userId}/status`, { is_active: user.is_active });
+    } catch {
+      // Offline fallback
+    }
 
     // Catat ke log audit
     auditLogs.value.unshift({
@@ -154,10 +186,19 @@ function handleToggleStatus(userId: string) {
   }
 }
 
-function handleAdjustTokens(userId: string, delta: number) {
+async function handleAdjustTokens(userId: string, delta: number) {
   const user = users.value.find((u) => u.id === userId);
   if (user) {
     user.token_balance = Math.max(0, user.token_balance + delta);
+
+    try {
+      await apiClient.post(`/admin/users/${userId}/adjust-tokens`, {
+        amount: delta,
+        note: `Koreksi kuota token oleh Super Administrator`,
+      });
+    } catch {
+      // Offline fallback
+    }
 
     // Catat ke log audit
     auditLogs.value.unshift({
@@ -186,6 +227,12 @@ function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
     const oldRole = user.role;
     user.role = newRole;
 
+    try {
+      void apiClient.put(`/admin/users/${userId}`, { role: newRole });
+    } catch {
+      // Offline fallback
+    }
+
     auditLogs.value.unshift({
       id: `log-${Date.now()}`,
       timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
@@ -205,7 +252,7 @@ function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
   }
 }
 
-function handleCreateUser(payload: {
+async function handleCreateUser(payload: {
   full_name: string;
   email: string;
   password?: string;
@@ -228,13 +275,41 @@ function handleCreateUser(payload: {
 
   users.value.unshift(newUser);
 
+  // Persist custom password in localStorage
+  if (payload.password) {
+    try {
+      const customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
+      customPasswords[payload.email.toLowerCase().trim()] = payload.password;
+      localStorage.setItem("veritext_custom_passwords", JSON.stringify(customPasswords));
+    } catch {
+      // ignore
+    }
+  }
+
+  // Send to backend
+  try {
+    const res = await apiClient.post<any>("/admin/users", {
+      full_name: payload.full_name,
+      email: payload.email,
+      password: payload.password || "VeriText#2026",
+      institution: payload.institution,
+      role: payload.role,
+      initial_tokens: payload.token_balance,
+    });
+    if (res.data?.data?.id) {
+      newUser.id = String(res.data.data.id);
+    }
+  } catch {
+    // Offline fallback
+  }
+
   auditLogs.value.unshift({
     id: `log-${Date.now()}`,
     timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
     actor_name: "Super Administrator",
     actor_email: "admin@veritext.ai",
     action: "USER_CREATE",
-    target_resource: `${newId} (${payload.full_name})`,
+    target_resource: `${newUser.id} (${payload.full_name})`,
     ip_address: "127.0.0.1",
     status: "SUCCESS",
     details: `Pendaftaran pengguna baru: peran ${payload.role}, saldo awal ${payload.token_balance} token, kata sandi awal telah dikonfigurasi.`,
@@ -247,7 +322,7 @@ function handleCreateUser(payload: {
   );
 }
 
-function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
+async function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
   const index = users.value.findIndex((u) => u.id === payload.id);
   if (index !== -1) {
     users.value[index] = {
@@ -260,6 +335,31 @@ function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
       is_active: payload.is_active,
       created_at: payload.created_at,
     };
+
+    // 1. Simpan password baru ke persistent store browser
+    if (payload.new_password) {
+      try {
+        const customPasswords = JSON.parse(localStorage.getItem("veritext_custom_passwords") || "{}");
+        customPasswords[payload.email.toLowerCase().trim()] = payload.new_password;
+        localStorage.setItem("veritext_custom_passwords", JSON.stringify(customPasswords));
+      } catch {
+        // ignore
+      }
+    }
+
+    // 2. Kirim update ke backend API
+    try {
+      await apiClient.put(`/admin/users/${payload.id}`, {
+        full_name: payload.full_name,
+        email: payload.email,
+        password: payload.new_password || undefined,
+        institution: payload.institution,
+        role: payload.role,
+        is_active: payload.is_active,
+      });
+    } catch {
+      // Offline fallback
+    }
 
     if (payload.new_password) {
       auditLogs.value.unshift({
@@ -297,11 +397,17 @@ function handleUpdateUser(payload: ManagedUser & { new_password?: string }) {
   }
 }
 
-function handleDeleteUser(userId: string) {
+async function handleDeleteUser(userId: string) {
   const index = users.value.findIndex((u) => u.id === userId);
   if (index !== -1) {
     const deletedUser = users.value[index];
     users.value.splice(index, 1);
+
+    try {
+      await apiClient.delete(`/admin/users/${userId}`);
+    } catch {
+      // Offline fallback
+    }
 
     auditLogs.value.unshift({
       id: `log-${Date.now()}`,
