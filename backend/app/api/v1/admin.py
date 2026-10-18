@@ -269,6 +269,18 @@ async def get_health_metrics(db: AsyncSession = Depends(get_db)):
         db_status = "DEGRADED"
     latency = (datetime.now(timezone.utc) - t0).total_seconds() * 1000
 
+    from app.models.audit import AuditTask
+    from app.models.corpus import CorpusDocument, DocumentChunk
+
+    try:
+        audits_count = (await db.execute(select(func.count(AuditTask.id)))).scalar() or 0
+        corpus_count = (await db.execute(select(func.count(CorpusDocument.id)))).scalar() or 0
+        chunks_count = (await db.execute(select(func.count(DocumentChunk.id)))).scalar() or 0
+    except Exception:
+        audits_count = 0
+        corpus_count = 0
+        chunks_count = 0
+
     return APIResponse(
         message="System health metrics retrieved",
         data=SystemHealthMetricsResponse(
@@ -279,6 +291,9 @@ async def get_health_metrics(db: AsyncSession = Depends(get_db)):
             celery_active_tasks=0,
             db_latency_ms=round(latency, 2),
             timestamp=datetime.now(timezone.utc),
+            total_audits=audits_count,
+            total_corpus_docs=corpus_count,
+            total_vector_chunks=chunks_count,
         ),
     )
 

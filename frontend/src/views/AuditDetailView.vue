@@ -55,16 +55,16 @@ onMounted(async () => {
     if (data) {
       reportData.value = {
         id: data.id || reportId,
-        document_title: (data as any).document_title || (data as any).document?.original_filename || "Naskah Akademik",
+        document_title: data.document_title || "Naskah Akademik",
         verification_uuid: data.verification_uuid || "-",
-        generated_at: (data as any).created_at || (data as any).generated_at
-          ? new Date((data as any).created_at || (data as any).generated_at).toLocaleString("id-ID", {
+        generated_at: data.generated_at
+          ? new Date(data.generated_at).toLocaleString("id-ID", {
               dateStyle: "long",
               timeStyle: "short",
             })
           : "Waktu tidak tersedia",
-        user_name: (data as any).user_name || authStore.user?.full_name || "Pengguna VeriText",
-        institution: (data as any).institution || authStore.user?.institution || "Institusi",
+        user_name: data.user_name || authStore.user?.full_name || "Pengguna VeriText",
+        institution: data.institution || authStore.user?.institution || "Institusi",
         score_lexical: data.score_lexical ?? 0,
         score_semantic: data.score_semantic ?? 0,
         score_stylometric: data.score_stylometric ?? 0,

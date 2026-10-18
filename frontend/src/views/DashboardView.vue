@@ -21,6 +21,7 @@ const { showNotification } = useNotification();
 const isUploading = ref(false);
 
 const tasks = ref<AuditTaskItem[]>([]);
+const totalTasksCount = ref(0);
 
 const activeTasks = computed(() =>
   tasks.value
@@ -53,6 +54,7 @@ async function fetchTasks(): Promise<boolean> {
   try {
     const data = await auditService.getTasks(1, 20);
     if (data && Array.isArray(data.items)) {
+      totalTasksCount.value = typeof data.total === "number" ? data.total : data.items.length;
       const prevTasks = new Map(tasks.value.map((t) => [t.id, t.status]));
       tasks.value = data.items.map((item) => ({
         id: item.task_id || item.id || "",
@@ -216,7 +218,7 @@ async function handleRefresh() {
     <!-- Stats Grid -->
     <DashboardStatsGrid
       :tokenBalance="authStore.tokenBalance"
-      :totalAudits="tasks.length"
+      :totalAudits="totalTasksCount || tasks.length"
       :completedAudits="completedCount"
       :inProgressAudits="activeTasks.length"
       @topup="handleTopup"

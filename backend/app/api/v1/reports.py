@@ -21,8 +21,16 @@ async def get_report(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(AuditReport).where(
-        (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+    from sqlalchemy.orm import selectinload
+    stmt = (
+        select(AuditReport)
+        .options(
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.document),
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.user),
+        )
+        .where(
+            (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
+        )
     )
     report = (await db.execute(stmt)).scalar_one_or_none()
 

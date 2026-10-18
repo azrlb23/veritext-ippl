@@ -33,6 +33,9 @@ export interface AuditReport {
   matched_sources: MatchedSource[];
   pdf_path?: string | null;
   generated_at: string;
+  document_title?: string | null;
+  user_name?: string | null;
+  institution?: string | null;
 }
 
 export interface AuditTask {

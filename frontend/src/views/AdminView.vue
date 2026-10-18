@@ -96,6 +96,9 @@ async function loadMetrics() {
       systemMetrics.value.databaseStatus = d.database_status || "HEALTHY";
       systemMetrics.value.redisStatus = d.redis_status || "HEALTHY";
       systemMetrics.value.celeryActiveTasks = d.celery_active_tasks || 0;
+      systemMetrics.value.totalAudits = d.total_audits ?? 0;
+      systemMetrics.value.totalCorpusDocs = d.total_corpus_docs ?? 0;
+      systemMetrics.value.vectorCount = d.total_vector_chunks ?? 0;
     }
   } catch {
     // Keep defaults
@@ -441,11 +444,11 @@ function setSection(section: AdminSection) {
         <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-[#262626] tracking-tight">Antrean Worker Celery</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">4 Worker Aktif</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Worker Aktif</span>
           </div>
-          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">0 <span class="text-xs font-normal text-[#686868]">antrean tertunda</span></div>
+          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">{{ systemMetrics.celeryActiveTasks }} <span class="text-xs font-normal text-[#686868]">antrean aktif</span></div>
           <p class="text-[11px] text-[#737373] leading-relaxed">
-            Broker Redis berjalan di port 6379. Rata-rata waktu konsumsi tugas audit hybrid: <span class="font-extrabold text-[#262626]">1.4 detik</span>.
+            Broker Redis: <span class="font-extrabold text-[#262626]">{{ systemMetrics.redisStatus }}</span>. Database: <span class="font-extrabold text-[#262626]">{{ systemMetrics.databaseStatus }}</span>.
           </p>
         </div>
 
@@ -455,9 +458,9 @@ function setSection(section: AdminSection) {
             <span class="text-xs font-bold text-[#262626] tracking-tight">pgvector HNSW Index</span>
             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">m=16, ef=64</span>
           </div>
-          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">24,500 <span class="text-xs font-normal text-[#686868]">vektor terindeks</span></div>
+          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">{{ systemMetrics.vectorCount.toLocaleString('id-ID') }} <span class="text-xs font-normal text-[#686868]">vektor terindeks</span></div>
           <p class="text-[11px] text-[#737373] leading-relaxed">
-            Metrik jarak: <span class="italic font-bold text-[#262626]">Kosinus (Cosine Distance)</span>. Indeks tersinkronisasi 100% dengan tabel korpus.
+            Metrik jarak: <span class="italic font-bold text-[#262626]">Kosinus (Cosine Distance)</span>. Indeks tersinkronisasi 100% dengan repositori korpus.
           </p>
         </div>
 

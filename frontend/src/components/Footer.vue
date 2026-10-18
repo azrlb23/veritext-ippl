@@ -39,7 +39,7 @@
 
       <div class="border-t border-[#ededed] mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#737373]">
         <div>&copy; 2026 Tim Pengembang VeriText AI. Hak Cipta Dilindungi Undang-Undang.</div>
-        <div class="mt-2 sm:mt-0 tabular-nums text-[11px] text-[#737373]">Versi <span class="font-extrabold text-[#262626]">v1.0.0-rc1</span> | Mode <span class="italic font-bold text-[#262626]">Sandbox IPPL</span></div>
+        <div class="mt-2 sm:mt-0 tabular-nums text-[11px] text-[#737373]">Versi <span class="font-extrabold text-[#262626]">v1.0.0-rc1</span> | Mode <span class="italic font-bold text-[#059669]">Real Mode (Live Production API)</span></div>
       </div>
     </div>
   </footer>

@@ -57,6 +57,9 @@ class SystemHealthMetricsResponse(BaseModel):
     celery_active_tasks: int
     db_latency_ms: float
     timestamp: datetime
+    total_audits: int = 0
+    total_corpus_docs: int = 0
+    total_vector_chunks: int = 0
 
 
 class AuditLogResponse(BaseModel):

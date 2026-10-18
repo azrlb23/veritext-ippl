@@ -59,6 +59,9 @@ class AuditReportResponse(BaseModel):
     matched_sources: List[Any] = Field(default_factory=list)
     pdf_path: Optional[str] = None
     generated_at: datetime
+    document_title: Optional[str] = None
+    user_name: Optional[str] = None
+    institution: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

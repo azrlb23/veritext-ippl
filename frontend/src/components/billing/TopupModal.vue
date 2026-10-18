@@ -57,7 +57,7 @@ function handleConfirm() {
       <!-- Payment Method Selection -->
       <div class="space-y-2">
         <label class="block text-xs font-extrabold uppercase tracking-tight text-audyr-ash">
-          Pilih Jalur Pembayaran (Midtrans Sandbox)
+          Pilih Jalur Pembayaran (Midtrans Payment Gateway)
         </label>
 
         <div class="grid grid-cols-1 gap-2">

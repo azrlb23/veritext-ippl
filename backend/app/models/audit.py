@@ -114,3 +114,25 @@ class AuditReport(Base):
 
     # Relationship
     audit_task = relationship("AuditTask", back_populates="report")
+
+    @property
+    def document_title(self) -> Optional[str]:
+        try:
+            return self.audit_task.document.original_filename if self.audit_task and self.audit_task.document else None
+        except Exception:
+            return None
+
+    @property
+    def user_name(self) -> Optional[str]:
+        try:
+            return self.audit_task.user.full_name if self.audit_task and self.audit_task.user else None
+        except Exception:
+            return None
+
+    @property
+    def institution(self) -> Optional[str]:
+        try:
+            return self.audit_task.user.institution if self.audit_task and self.audit_task.user else None
+        except Exception:
+            return None
+

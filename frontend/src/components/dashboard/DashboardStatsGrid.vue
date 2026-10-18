@@ -9,10 +9,10 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  tokenBalance: 5,
-  totalAudits: 3,
-  completedAudits: 1,
-  inProgressAudits: 2,
+  tokenBalance: 0,
+  totalAudits: 0,
+  completedAudits: 0,
+  inProgressAudits: 0,
 });
 
 defineEmits<{

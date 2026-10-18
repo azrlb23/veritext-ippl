@@ -645,6 +645,85 @@ class TestVeriTextBackend(unittest.TestCase):
         reset_req = AdminResetPasswordRequest(new_password="AdminReset#2026")
         self.assertEqual(reset_req.new_password, "AdminReset#2026")
 
+    def test_audit_report_properties_and_response_schema(self):
+        """Validates AuditReport properties and serialization into AuditReportResponse."""
+        from app.schemas.audit import AuditReportResponse
+        from datetime import datetime
+        import uuid
+
+        user = User(
+            id=uuid.uuid4(),
+            full_name="Mochammad Azriel",
+            email="azriel@kampus.ac.id",
+            institution="Institut Teknologi Nasional",
+        )
+        doc = Document(
+            id=uuid.uuid4(),
+            original_filename="Tesis_Azriel_Final.pdf",
+            stored_filename="tesis_001.pdf",
+            file_size_bytes=4096,
+        )
+        task = AuditTask(
+            id=uuid.uuid4(),
+            document_id=doc.id,
+            user_id=user.id,
+            audit_depth="FULL",
+            status="SUCCESS",
+            progress_pct=100,
+        )
+        task.document = doc
+        task.user = user
+
+        now = datetime.now()
+        report = AuditReport(
+            id=uuid.uuid4(),
+            audit_task_id=task.id,
+            verification_uuid=uuid.uuid4(),
+            score_lexical=12.5,
+            score_semantic=18.0,
+            score_stylometric=8.5,
+            score_composite=14.2,
+            heatmap_annotations=[],
+            matched_sources=[],
+            generated_at=now,
+        )
+        report.audit_task = task
+
+        # Check model dynamic properties
+        self.assertEqual(report.document_title, "Tesis_Azriel_Final.pdf")
+        self.assertEqual(report.user_name, "Mochammad Azriel")
+        self.assertEqual(report.institution, "Institut Teknologi Nasional")
+
+        # Check response schema
+        resp = AuditReportResponse.model_validate(report)
+        self.assertEqual(resp.id, report.id)
+        self.assertEqual(resp.document_title, "Tesis_Azriel_Final.pdf")
+        self.assertEqual(resp.user_name, "Mochammad Azriel")
+        self.assertEqual(resp.institution, "Institut Teknologi Nasional")
+        self.assertEqual(resp.score_composite, 14.2)
+        self.assertEqual(resp.generated_at, now)
+
+    def test_system_health_metrics_response_counts(self):
+        """Validates SystemHealthMetricsResponse includes real audit, corpus, and vector chunk counts."""
+        from app.schemas.admin import SystemHealthMetricsResponse
+        from datetime import datetime
+
+        metrics = SystemHealthMetricsResponse(
+            cpu_percent=12.5,
+            memory_percent=38.0,
+            database_status="HEALTHY",
+            redis_status="HEALTHY",
+            celery_active_tasks=0,
+            db_latency_ms=1.25,
+            timestamp=datetime.now(),
+            total_audits=42,
+            total_corpus_docs=15,
+            total_vector_chunks=1500,
+        )
+        self.assertEqual(metrics.total_audits, 42)
+        self.assertEqual(metrics.total_corpus_docs, 15)
+        self.assertEqual(metrics.total_vector_chunks, 1500)
+
 
 if __name__ == "__main__":
     unittest.main()

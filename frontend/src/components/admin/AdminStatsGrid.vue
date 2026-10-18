@@ -11,12 +11,12 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  totalUsers: 124,
-  totalAudits: 842,
-  totalCorpusDocs: 68,
-  vectorCount: 24500,
-  avgLatencyMs: 120,
-  systemLoadPct: 34,
+  totalUsers: 0,
+  totalAudits: 0,
+  totalCorpusDocs: 0,
+  vectorCount: 0,
+  avgLatencyMs: 0,
+  systemLoadPct: 0,
 });
 </script>
 
@@ -40,7 +40,7 @@ withDefaults(defineProps<Props>(), {
 
     <StatCard
       title="Vektor pgvector (HNSW)"
-      :value="`${(vectorCount / 1000).toFixed(1)}k`"
+      :value="vectorCount >= 1000 ? `${(vectorCount / 1000).toFixed(1)}k` : String(vectorCount)"
       subtitle="384-dimensi embeddings"
       badge="HNSW 384D"
       variant="warning"

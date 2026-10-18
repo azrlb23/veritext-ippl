@@ -118,22 +118,17 @@ function handleSave() {
         />
       </div>
 
-      <!-- Mode Sandbox -->
+      <!-- Mode Operasional Sistem -->
       <div class="space-y-1.5 p-4 rounded-[8px] bg-white border border-[#ededed] shadow-audyr-subtle flex flex-col justify-between">
         <div>
-          <label class="font-semibold text-audyr-ink tracking-tight block">Mode Sandbox IPPL</label>
-          <p class="text-[11px] text-audyr-ash">Simulasi Midtrans dan Celery mock worker</p>
+          <label class="font-bold text-audyr-ink tracking-tight block">Mode Operasional Sistem</label>
+          <p class="text-[11px] text-audyr-ash">Pipeline Celery worker &amp; database pgvector</p>
         </div>
         <div class="flex items-center space-x-2 pt-2">
-          <input
-            v-model="config.sandbox_mode"
-            type="checkbox"
-            id="sandboxMode"
-            class="rounded-[2px] text-audyr-ink focus:ring-audyr-ink accent-[#262626] w-4 h-4"
-          />
-          <label for="sandboxMode" class="font-medium text-audyr-ink">
-            {{ config.sandbox_mode ? 'Sandbox Aktif (Mocking)' : 'Production (Live API)' }}
-          </label>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="font-bold text-xs text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-2 py-0.5 rounded-full">
+            Real Mode (Live Production API)
+          </span>
         </div>
       </div>
     </div>
