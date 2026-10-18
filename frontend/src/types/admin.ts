@@ -35,6 +35,9 @@ export interface AuditLogItem {
   action:
     | "USER_SUSPEND"
     | "USER_ACTIVATE"
+    | "USER_CREATE"
+    | "USER_UPDATE"
+    | "USER_DELETE"
     | "TOKEN_ADJUST"
     | "ROLE_CHANGE"
     | "CONFIG_UPDATE"

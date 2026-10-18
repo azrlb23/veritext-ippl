@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import Badge from "../common/Badge.vue";
+import Button from "../common/Button.vue";
+import Modal from "../common/Modal.vue";
 import EmptyState from "../common/EmptyState.vue";
 import SkeletonLoader from "../common/SkeletonLoader.vue";
 import type { ManagedUser } from "../../types/admin";
@@ -18,10 +20,101 @@ const emit = defineEmits<{
   (e: "toggleStatus", userId: string): void;
   (e: "adjustTokens", userId: string, delta: number): void;
   (e: "changeRole", userId: string, role: ManagedUser["role"]): void;
+  (
+    e: "createUser",
+    payload: {
+      full_name: string;
+      email: string;
+      institution: string;
+      role: ManagedUser["role"];
+      token_balance: number;
+    }
+  ): void;
+  (e: "updateUser", payload: ManagedUser): void;
+  (e: "deleteUser", userId: string): void;
 }>();
 
 const searchQuery = ref("");
 const roleFilter = ref<string>("ALL");
+
+// Modal states
+const isCreateOpen = ref(false);
+const isEditOpen = ref(false);
+const isDeleteOpen = ref(false);
+
+const createForm = ref({
+  full_name: "",
+  email: "",
+  institution: "Institut Teknologi Nasional",
+  role: "TRIAL" as ManagedUser["role"],
+  token_balance: 10,
+});
+
+const editForm = ref<ManagedUser>({
+  id: "",
+  full_name: "",
+  email: "",
+  institution: "",
+  role: "TRIAL",
+  token_balance: 0,
+  is_active: true,
+  created_at: "",
+});
+
+const deletingUser = ref<ManagedUser | null>(null);
+
+function openCreate() {
+  createForm.value = {
+    full_name: "",
+    email: "",
+    institution: "Institut Teknologi Nasional",
+    role: "TRIAL",
+    token_balance: 10,
+  };
+  isCreateOpen.value = true;
+}
+
+function submitCreate() {
+  if (!createForm.value.full_name.trim() || !createForm.value.email.trim()) return;
+  emit("createUser", {
+    full_name: createForm.value.full_name.trim(),
+    email: createForm.value.email.trim().toLowerCase(),
+    institution: createForm.value.institution.trim() || "Institut Teknologi Nasional",
+    role: createForm.value.role,
+    token_balance: Number(createForm.value.token_balance) || 0,
+  });
+  isCreateOpen.value = false;
+}
+
+function openEdit(user: ManagedUser) {
+  editForm.value = { ...user };
+  isEditOpen.value = true;
+}
+
+function submitEdit() {
+  if (!editForm.value.full_name.trim() || !editForm.value.email.trim()) return;
+  emit("updateUser", {
+    ...editForm.value,
+    full_name: editForm.value.full_name.trim(),
+    email: editForm.value.email.trim().toLowerCase(),
+    institution: editForm.value.institution?.trim() || "Institut Teknologi Nasional",
+    token_balance: Number(editForm.value.token_balance) || 0,
+  });
+  isEditOpen.value = false;
+}
+
+function confirmDelete(user: ManagedUser) {
+  deletingUser.value = user;
+  isDeleteOpen.value = true;
+}
+
+function submitDelete() {
+  if (deletingUser.value) {
+    emit("deleteUser", deletingUser.value.id);
+    isDeleteOpen.value = false;
+    deletingUser.value = null;
+  }
+}
 
 const filteredUsers = computed(() => {
   return props.users.filter((user) => {
@@ -90,6 +183,15 @@ function onRoleSelect(userId: string, event: Event) {
           <option value="PREMIUM">Premium</option>
           <option value="TRIAL">Trial</option>
         </select>
+
+        <Button
+          variant="primary"
+          size="sm"
+          @click="openCreate"
+          class="text-xs"
+        >
+          + Tambah Pengguna
+        </Button>
 
         <span class="text-xs text-audyr-ash font-bold hidden md:inline">
           ({{ filteredUsers.length }}/{{ users.length }})
@@ -166,19 +268,271 @@ function onRoleSelect(userId: string, event: Event) {
                 {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
               </Badge>
             </td>
-            <td class="py-3.5 px-5 text-right whitespace-nowrap space-x-2">
+            <td class="py-3.5 px-5 text-right whitespace-nowrap space-x-1.5">
+              <button
+                type="button"
+                @click="openEdit(user)"
+                class="text-xs font-semibold px-2 py-1 rounded-[4px] border border-[#ededed] text-audyr-ink hover:bg-[#ededed] transition-colors tracking-tight"
+                title="Edit data pengguna"
+              >
+                Edit
+              </button>
               <button
                 type="button"
                 @click="emit('toggleStatus', user.id)"
-                class="text-xs font-bold px-2.5 py-1 rounded-[4px] border transition-colors tracking-tight"
+                class="text-xs font-bold px-2 py-1 rounded-[4px] border transition-colors tracking-tight"
                 :class="user.is_active ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-[#065f46] border-[#a7f3d0] hover:bg-audyr-mint-whisper'"
               >
                 {{ user.is_active ? 'Suspend' : 'Aktifkan' }}
+              </button>
+              <button
+                type="button"
+                @click="confirmDelete(user)"
+                class="text-xs font-bold px-2 py-1 rounded-[4px] border border-red-200 text-red-600 hover:bg-red-50 transition-colors tracking-tight"
+                title="Hapus akun pengguna"
+              >
+                Hapus
               </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Modal 1: Tambah Pengguna Baru (Create) -->
+    <Modal
+      :isOpen="isCreateOpen"
+      title="Tambah Akun Pengguna Baru"
+      maxWidth="md"
+      @close="isCreateOpen = false"
+    >
+      <form @submit.prevent="submitCreate" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Nama Lengkap <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="createForm.full_name"
+            type="text"
+            required
+            placeholder="misal: Dr. Irfan Hakim, M.Kom"
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Alamat Email <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="createForm.email"
+            type="email"
+            required
+            placeholder="misal: irfan.hakim@kampus.ac.id"
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Institusi / Universitas
+          </label>
+          <input
+            v-model="createForm.institution"
+            type="text"
+            placeholder="Institut Teknologi Nasional"
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-audyr-ink mb-1">
+              Peran Akun
+            </label>
+            <select
+              v-model="createForm.role"
+              class="w-full px-2.5 py-2 text-xs rounded-[4px] border border-[#ededed] bg-white text-audyr-ink focus:outline-none focus:border-audyr-ink font-semibold"
+            >
+              <option value="TRIAL">TRIAL (Mahasiswa)</option>
+              <option value="PREMIUM">PREMIUM (Peneliti)</option>
+              <option value="REVIEWER">REVIEWER (Dosen)</option>
+              <option value="ADMIN">ADMIN (Super Admin)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-audyr-ink mb-1">
+              Saldo Token Awal
+            </label>
+            <input
+              v-model.number="createForm.token_balance"
+              type="number"
+              min="0"
+              class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink font-bold tabular-nums"
+            />
+          </div>
+        </div>
+      </form>
+
+      <template #footer>
+        <button
+          type="button"
+          @click="isCreateOpen = false"
+          class="px-3 py-1.5 text-xs font-semibold rounded-[4px] border border-[#ededed] text-audyr-ash hover:text-audyr-ink transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          @click="submitCreate"
+          class="px-4 py-1.5 text-xs font-bold rounded-[4px] bg-audyr-ink text-white hover:bg-audyr-charcoal transition-colors"
+        >
+          Simpan Pengguna
+        </button>
+      </template>
+    </Modal>
+
+    <!-- Modal 2: Edit Data Pengguna (Update) -->
+    <Modal
+      :isOpen="isEditOpen"
+      title="Edit Profil & Kuota Pengguna"
+      maxWidth="md"
+      @close="isEditOpen = false"
+    >
+      <form @submit.prevent="submitEdit" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Nama Lengkap <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="editForm.full_name"
+            type="text"
+            required
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Alamat Email <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="editForm.email"
+            type="email"
+            required
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-audyr-ink mb-1">
+            Institusi / Universitas
+          </label>
+          <input
+            v-model="editForm.institution"
+            type="text"
+            class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-audyr-ink mb-1">
+              Peran Akun
+            </label>
+            <select
+              v-model="editForm.role"
+              class="w-full px-2.5 py-2 text-xs rounded-[4px] border border-[#ededed] bg-white text-audyr-ink focus:outline-none focus:border-audyr-ink font-semibold"
+            >
+              <option value="TRIAL">TRIAL</option>
+              <option value="PREMIUM">PREMIUM</option>
+              <option value="REVIEWER">REVIEWER</option>
+              <option value="ADMIN">ADMIN</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-audyr-ink mb-1">
+              Saldo Kuota Token
+            </label>
+            <input
+              v-model.number="editForm.token_balance"
+              type="number"
+              min="0"
+              class="w-full px-3 py-2 text-xs rounded-[4px] border border-[#ededed] text-audyr-ink focus:outline-none focus:border-audyr-ink font-bold tabular-nums"
+            />
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-between border-t border-[#ededed]">
+          <span class="text-xs font-bold text-audyr-ink">Status Akun Aktif</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              v-model="editForm.is_active"
+              type="checkbox"
+              class="sr-only peer"
+            />
+            <div class="w-9 h-5 bg-[#ededed] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[#ededed] after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#262626]"></div>
+          </label>
+        </div>
+      </form>
+
+      <template #footer>
+        <button
+          type="button"
+          @click="isEditOpen = false"
+          class="px-3 py-1.5 text-xs font-semibold rounded-[4px] border border-[#ededed] text-audyr-ash hover:text-audyr-ink transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          @click="submitEdit"
+          class="px-4 py-1.5 text-xs font-bold rounded-[4px] bg-audyr-ink text-white hover:bg-audyr-charcoal transition-colors"
+        >
+          Simpan Perubahan
+        </button>
+      </template>
+    </Modal>
+
+    <!-- Modal 3: Konfirmasi Hapus Akun (Delete) -->
+    <Modal
+      :isOpen="isDeleteOpen"
+      title="Konfirmasi Penghapusan Akun"
+      maxWidth="sm"
+      @close="isDeleteOpen = false"
+    >
+      <div class="space-y-3" v-if="deletingUser">
+        <p class="text-xs text-audyr-slate leading-relaxed">
+          Apakah Anda yakin ingin menghapus akun pengguna berikut secara permanen?
+        </p>
+        <div class="p-3 bg-[#fafafa] rounded-[4px] border border-[#ededed] text-xs">
+          <div class="font-bold text-audyr-ink">{{ deletingUser.full_name }}</div>
+          <div class="text-[11px] text-audyr-ash">{{ deletingUser.email }}</div>
+          <div class="text-[11px] text-audyr-slate mt-1">Peran: {{ deletingUser.role }} &bull; Saldo: {{ deletingUser.token_balance }} Token</div>
+        </div>
+        <p class="text-[11px] text-red-600 font-semibold leading-relaxed">
+          Peringatan: Seluruh data riwayat audit, dompet token, dan catatan terkait pengguna ini akan dihapus dari basis data sesuai ketentuan UU PDP No. 27/2022.
+        </p>
+      </div>
+
+      <template #footer>
+        <button
+          type="button"
+          @click="isDeleteOpen = false"
+          class="px-3 py-1.5 text-xs font-semibold rounded-[4px] border border-[#ededed] text-audyr-ash hover:text-audyr-ink transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          type="button"
+          @click="submitDelete"
+          class="px-4 py-1.5 text-xs font-bold rounded-[4px] bg-red-600 text-white hover:bg-red-700 transition-colors shadow-audyr-subtle"
+        >
+          Ya, Hapus Pengguna
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>

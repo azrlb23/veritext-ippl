@@ -11,7 +11,9 @@ from app.models.audit_log import AuditLog
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.admin import (
+    AdminUserCreateRequest,
     AdminUserResponse,
+    AdminUserUpdateRequest,
     AuditLogResponse,
     SystemHealthMetricsResponse,
     TokenAdjustmentRequest,
@@ -55,6 +57,39 @@ async def list_users_admin(
     )
 
 
+@router.post("/users", response_model=APIResponse[AdminUserResponse], status_code=status.HTTP_201_CREATED)
+async def create_user_admin(
+    req: AdminUserCreateRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = select(User).where(User.email == req.email.lower().strip())
+    existing = (await db.execute(stmt)).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email is already registered")
+
+    from app.core.security import get_password_hash
+    new_user = User(
+        full_name=req.full_name,
+        email=req.email.lower().strip(),
+        institution=req.institution,
+        password_hash=get_password_hash(req.password),
+        role=req.role.upper(),
+        is_active=True,
+    )
+    db.add(new_user)
+    await db.flush()
+
+    wallet = TokenWallet(user_id=new_user.id, balance=req.initial_tokens)
+    db.add(wallet)
+    await db.commit()
+    await db.refresh(new_user)
+
+    return APIResponse(
+        message="User created successfully",
+        data=AdminUserResponse.model_validate(new_user),
+    )
+
+
 @router.get("/users/{user_id}", response_model=APIResponse[AdminUserResponse])
 async def get_user_detail_admin(
     user_id: uuid.UUID,
@@ -64,6 +99,51 @@ async def get_user_detail_admin(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return APIResponse(message="User detail retrieved", data=AdminUserResponse.model_validate(user))
+
+
+@router.put("/users/{user_id}", response_model=APIResponse[AdminUserResponse])
+async def update_user_admin(
+    user_id: uuid.UUID,
+    req: AdminUserUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if req.full_name is not None:
+        user.full_name = req.full_name
+    if req.email is not None:
+        user.email = req.email.lower().strip()
+    if req.institution is not None:
+        user.institution = req.institution
+    if req.role is not None:
+        user.role = req.role.upper()
+    if req.is_active is not None:
+        user.is_active = req.is_active
+
+    await db.commit()
+    await db.refresh(user)
+    return APIResponse(message="User updated successfully", data=AdminUserResponse.model_validate(user))
+
+
+@router.delete("/users/{user_id}", response_model=APIResponse[dict])
+async def delete_user_admin(
+    user_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user_id)
+    wallet = (await db.execute(wallet_stmt)).scalar_one_or_none()
+    if wallet:
+        await db.delete(wallet)
+
+    await db.delete(user)
+    await db.commit()
+    return APIResponse(message=f"User {user.full_name} deleted successfully", data={"deleted_id": str(user_id)})
 
 
 @router.patch("/users/{user_id}/status", response_model=APIResponse[dict])

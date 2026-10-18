@@ -205,6 +205,98 @@ function handleChangeRole(userId: string, newRole: ManagedUser["role"]) {
   }
 }
 
+function handleCreateUser(payload: {
+  full_name: string;
+  email: string;
+  institution: string;
+  role: ManagedUser["role"];
+  token_balance: number;
+}) {
+  const newId = `usr-${String(users.value.length + 1).padStart(3, "0")}`;
+  const today = new Date().toISOString().substring(0, 10);
+  const newUser: ManagedUser = {
+    id: newId,
+    full_name: payload.full_name,
+    email: payload.email,
+    institution: payload.institution,
+    role: payload.role,
+    token_balance: payload.token_balance,
+    is_active: true,
+    created_at: today,
+  };
+
+  users.value.unshift(newUser);
+
+  auditLogs.value.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
+    actor_name: "Super Administrator",
+    actor_email: "admin@veritext.ai",
+    action: "USER_CREATE",
+    target_resource: `${newId} (${payload.full_name})`,
+    ip_address: "127.0.0.1",
+    status: "SUCCESS",
+    details: `Pendaftaran pengguna baru: peran ${payload.role}, saldo awal ${payload.token_balance} token.`,
+  });
+
+  showNotification(
+    `Pengguna ${payload.full_name} (${payload.email}) berhasil ditambahkan ke sistem.`,
+    "success",
+    "Tambah Pengguna"
+  );
+}
+
+function handleUpdateUser(payload: ManagedUser) {
+  const index = users.value.findIndex((u) => u.id === payload.id);
+  if (index !== -1) {
+    users.value[index] = { ...payload };
+
+    auditLogs.value.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
+      actor_name: "Super Administrator",
+      actor_email: "admin@veritext.ai",
+      action: "USER_UPDATE",
+      target_resource: `${payload.id} (${payload.full_name})`,
+      ip_address: "127.0.0.1",
+      status: "SUCCESS",
+      details: `Pembaruan data profil & saldo kuota: peran ${payload.role}, saldo ${payload.token_balance} token, status ${payload.is_active ? "Aktif" : "Nonaktif"}.`,
+    });
+
+    showNotification(
+      `Data pengguna ${payload.full_name} berhasil diperbarui.`,
+      "success",
+      "Perbarui Pengguna"
+    );
+  }
+}
+
+function handleDeleteUser(userId: string) {
+  const index = users.value.findIndex((u) => u.id === userId);
+  if (index !== -1) {
+    const deletedUser = users.value[index];
+    users.value.splice(index, 1);
+
+    auditLogs.value.unshift({
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
+      actor_name: "Super Administrator",
+      actor_email: "admin@veritext.ai",
+      action: "USER_DELETE",
+      target_resource: `${deletedUser.id} (${deletedUser.full_name})`,
+      ip_address: "127.0.0.1",
+      status: "SUCCESS",
+      details: `Penghapusan akun permanen pengguna dan data dompet terkait sesuai UU PDP No. 27/2022.`,
+    });
+
+    showNotification(
+      `Akun pengguna ${deletedUser.full_name} telah dihapus permanen dari sistem.`,
+      "warning",
+      "Hapus Pengguna"
+    );
+  }
+}
+
 function handleSaveConfig(newConfig: SystemConfig) {
   auditLogs.value.unshift({
     id: `log-${Date.now()}`,
@@ -420,6 +512,9 @@ function setSection(section: AdminSection) {
         @toggleStatus="handleToggleStatus"
         @adjustTokens="handleAdjustTokens"
         @changeRole="handleChangeRole"
+        @createUser="handleCreateUser"
+        @updateUser="handleUpdateUser"
+        @deleteUser="handleDeleteUser"
       />
     </section>
 

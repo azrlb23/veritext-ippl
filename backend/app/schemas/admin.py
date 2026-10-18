@@ -22,6 +22,23 @@ class UserStatusUpdateRequest(BaseModel):
     reason: Optional[str] = None
 
 
+class AdminUserCreateRequest(BaseModel):
+    full_name: str = Field(..., min_length=2)
+    email: EmailStr
+    password: str = Field(default="VeriText#2026", min_length=6)
+    institution: Optional[str] = None
+    role: str = Field(default="TRIAL")
+    initial_tokens: int = Field(default=10, ge=0)
+
+
+class AdminUserUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    institution: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
 class TokenAdjustmentRequest(BaseModel):
     amount: int = Field(..., description="Positive to credit, negative to debit")
     note: str = Field(..., min_length=3)

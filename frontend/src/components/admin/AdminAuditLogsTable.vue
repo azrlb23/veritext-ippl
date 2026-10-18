@@ -45,6 +45,12 @@ function getActionLabel(action: AuditLogItem["action"]): string {
       return "Suspensi Pengguna";
     case "USER_ACTIVATE":
       return "Aktivasi Pengguna";
+    case "USER_CREATE":
+      return "Pendaftaran Pengguna";
+    case "USER_UPDATE":
+      return "Pembaruan Pengguna";
+    case "USER_DELETE":
+      return "Penghapusan Pengguna";
     case "TOKEN_ADJUST":
       return "Penyesuaian Token";
     case "ROLE_CHANGE":
@@ -65,13 +71,16 @@ function getActionLabel(action: AuditLogItem["action"]): string {
 function getActionBadgeVariant(action: AuditLogItem["action"]): "danger" | "secondary" | "primary" | "neutral" {
   switch (action) {
     case "USER_SUSPEND":
+    case "USER_DELETE":
     case "DOCUMENT_PURGE":
       return "danger";
     case "CONFIG_UPDATE":
     case "ROLE_CHANGE":
+    case "USER_UPDATE":
       return "secondary";
     case "TOKEN_ADJUST":
     case "CORPUS_INGEST":
+    case "USER_CREATE":
       return "primary";
     case "USER_ACTIVATE":
     case "AUTH_LOGIN":
