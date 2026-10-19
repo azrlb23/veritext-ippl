@@ -68,15 +68,15 @@ async function handleLogout() {
       <!-- Brand Logo -->
       <router-link
         :to="isSuperAdmin ? '/admin' : '/'"
-        class="flex items-center space-x-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626] rounded-[4px]"
+        class="flex items-center space-x-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c] rounded-full"
         @click="closeMobileMenu"
       >
-        <div class="w-7 h-7 rounded-[4px] bg-[#262626] flex items-center justify-center text-white font-extrabold text-xs">
+        <div class="w-7 h-7 rounded-full bg-[#17191c] flex items-center justify-center text-white font-semibold text-xs shadow-sm">
           V
         </div>
         <div class="flex items-center">
-          <span class="text-base font-extrabold tracking-tight text-[#262626]">
-            VeriText<span class="italic font-bold text-[#686868] ml-0.5">AI</span>
+          <span class="text-base font-semibold tracking-tight text-[#17191c]">
+            VeriText<span class="italic font-normal text-[#777b86] ml-0.5">AI</span>
           </span>
           <span
             v-if="isSuperAdmin"
