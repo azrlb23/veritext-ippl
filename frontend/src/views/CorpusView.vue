@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router";
 import {
   CorpusStatsGrid,
   CorpusFilterBar,
@@ -8,8 +9,11 @@ import {
   type CorpusItemData,
 } from "../components/corpus";
 import { useModal, useNotification } from "../composables";
+import { useAuthStore } from "../stores/auth";
 import { corpusService } from "../services/corpusService";
 
+const router = useRouter();
+const authStore = useAuthStore();
 const { showNotification } = useNotification();
 const { isOpen: isUploadModalOpen, open: openUploadModal, close: closeUploadModal } = useModal();
 
@@ -66,6 +70,10 @@ async function loadCorpus() {
 }
 
 onMounted(() => {
+  if (authStore.isAuthenticated && authStore.role === "ADMIN") {
+    router.replace({ path: "/admin", hash: "#corpus" });
+    return;
+  }
   void loadCorpus();
 });
 

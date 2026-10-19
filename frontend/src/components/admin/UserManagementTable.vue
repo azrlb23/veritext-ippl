@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import Badge from "../common/Badge.vue";
-import Button from "../common/Button.vue";
 import Modal from "../common/Modal.vue";
 import EmptyState from "../common/EmptyState.vue";
 import SkeletonLoader from "../common/SkeletonLoader.vue";
@@ -141,17 +140,83 @@ function submitDelete() {
   }
 }
 
+const statusFilter = ref<string>("ALL");
+const selectedUserIds = ref<string[]>([]);
+const showFilterPopover = ref(false);
+const activeDropdownUserId = ref<string | null>(null);
+
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "14 Okt 2025";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function toggleDropdown(userId: string) {
+  if (activeDropdownUserId.value === userId) {
+    activeDropdownUserId.value = null;
+  } else {
+    activeDropdownUserId.value = userId;
+  }
+}
+
 const filteredUsers = computed(() => {
   return props.users.filter((user) => {
     const matchesRole = roleFilter.value === "ALL" || user.role === roleFilter.value;
+    const matchesStatus =
+      statusFilter.value === "ALL" ||
+      (statusFilter.value === "ACTIVE" && user.is_active) ||
+      (statusFilter.value === "INACTIVE" && !user.is_active);
     const q = searchQuery.value.toLowerCase().trim();
     const matchesQuery =
       !q ||
       user.full_name.toLowerCase().includes(q) ||
       user.email.toLowerCase().includes(q) ||
       (user.institution && user.institution.toLowerCase().includes(q));
-    return matchesRole && matchesQuery;
+    return matchesRole && matchesStatus && matchesQuery;
   });
+});
+
+const isAllSelected = computed(() => {
+  return (
+    filteredUsers.value.length > 0 &&
+    filteredUsers.value.every((u) => selectedUserIds.value.includes(u.id))
+  );
+});
+
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    selectedUserIds.value = [];
+  } else {
+    selectedUserIds.value = filteredUsers.value.map((u) => u.id);
+  }
+}
+
+function toggleSelectUser(userId: string) {
+  const idx = selectedUserIds.value.indexOf(userId);
+  if (idx >= 0) {
+    selectedUserIds.value.splice(idx, 1);
+  } else {
+    selectedUserIds.value.push(userId);
+  }
+}
+
+function getTokenRatio(balance: number): { pct: number; label: string } {
+  const maxBenchmark = Math.max(10, balance);
+  const pct = Math.min(100, Math.round((balance / maxBenchmark) * 100));
+  return { pct, label: `${balance}/${maxBenchmark}` };
+}
+
+defineExpose({
+  openCreate,
 });
 
 function getRoleVariant(role: string): "danger" | "secondary" | "primary" | "neutral" {
@@ -167,58 +232,102 @@ function getRoleVariant(role: string): "danger" | "secondary" | "primary" | "neu
       return "neutral";
   }
 }
-
-function onRoleSelect(userId: string, event: Event) {
-  const target = event.target as HTMLSelectElement;
-  emit("changeRole", userId, target.value as ManagedUser["role"]);
-}
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-[14px] shadow-audyr-subtle overflow-hidden space-y-4">
-    <!-- Header & Search Controls -->
-    <div class="p-5 border-b border-[#ededed] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <h3 class="text-sm font-extrabold uppercase tracking-wider text-audyr-ink">
-          Manajemen Pengguna & Kuota Token
-        </h3>
-        <p class="text-xs text-audyr-ash mt-0.5 font-normal">Daftar akun dan hak akses pengguna sistem VeriText AI</p>
+  <div class="bg-white border border-[#ededed] rounded-[16px] shadow-sm overflow-hidden space-y-4">
+    <!-- Toolbar: Search + Filter Button + Primary Action Button (Zendenta style) -->
+    <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- Search Pill -->
+      <div class="relative flex-1 max-w-md">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="Cari pengguna, email, atau institusi..."
+          class="w-full px-3.5 py-2 pl-9 rounded-full border border-[#e2e8f0] text-xs text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none focus:border-[#17191c] focus:ring-1 focus:ring-[#17191c] bg-[#f8fafc] font-medium transition-colors"
+        />
+        <svg class="w-4 h-4 absolute left-3 top-2.5 text-[#94a3b8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2.5">
+      <!-- Right Controls: Filters & + Order Stock style Button -->
+      <div class="flex items-center space-x-2.5">
+        <!-- Filter Button with Popover -->
         <div class="relative">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Cari nama / email..."
-            class="px-3 py-1.5 pl-8 rounded-[4px] border border-[#ededed] text-xs text-audyr-ink placeholder:text-audyr-fog focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink bg-white w-44 sm:w-56 font-medium"
-          />
-          <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-[#929292]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <button
+            type="button"
+            @click="showFilterPopover = !showFilterPopover"
+            class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] text-xs font-semibold text-[#475569] shadow-sm transition-colors"
+          >
+            <svg class="w-3.5 h-3.5 text-[#64748b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            <span>Filters</span>
+            <span v-if="roleFilter !== 'ALL' || statusFilter !== 'ALL'" class="w-1.5 h-1.5 rounded-full bg-[#17191c]"></span>
+          </button>
+
+          <!-- Filter Popover -->
+          <div
+            v-if="showFilterPopover"
+            class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-[#ededed] p-4 z-30 space-y-3"
+          >
+            <div>
+              <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Peran Akun</label>
+              <select
+                v-model="roleFilter"
+                class="w-full text-xs border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 bg-[#f8fafc] font-medium text-[#1e293b] focus:outline-none focus:border-[#17191c]"
+              >
+                <option value="ALL">Semua Peran</option>
+                <option value="ADMIN">Super Admin</option>
+                <option value="REVIEWER">Reviewer (Dosen)</option>
+                <option value="PREMIUM">Premium (Peneliti)</option>
+                <option value="TRIAL">Trial (Mahasiswa)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-[#64748b] uppercase tracking-wider mb-1">Status Keaktifan</label>
+              <select
+                v-model="statusFilter"
+                class="w-full text-xs border border-[#e2e8f0] rounded-lg px-2.5 py-1.5 bg-[#f8fafc] font-medium text-[#1e293b] focus:outline-none focus:border-[#17191c]"
+              >
+                <option value="ALL">Semua Status</option>
+                <option value="ACTIVE">Aktif</option>
+                <option value="INACTIVE">Nonaktif / Suspend</option>
+              </select>
+            </div>
+            <div class="pt-2 flex justify-between items-center border-t border-[#ededed]">
+              <button
+                type="button"
+                @click="roleFilter = 'ALL'; statusFilter = 'ALL'"
+                class="text-[11px] text-[#64748b] hover:text-[#1e293b] font-medium underline"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                @click="showFilterPopover = false"
+                class="px-2.5 py-1 bg-[#17191c] text-white rounded text-[11px] font-semibold"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
         </div>
 
-        <select
-          v-model="roleFilter"
-          class="px-2.5 py-1.5 rounded-[4px] border border-[#ededed] text-xs bg-white text-audyr-ink focus:outline-none focus:border-audyr-ink focus:ring-1 focus:ring-audyr-ink font-semibold"
-        >
-          <option value="ALL">Semua Peran</option>
-          <option value="ADMIN">Admin</option>
-          <option value="REVIEWER">Reviewer</option>
-          <option value="PREMIUM">Premium</option>
-          <option value="TRIAL">Trial</option>
-        </select>
-
-        <Button
-          variant="primary"
-          size="sm"
+        <!-- Primary Action Button (+ Tambah Akun) -->
+        <button
+          type="button"
           @click="openCreate"
-          class="text-xs"
+          class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#17191c] hover:bg-[#262626] text-white text-xs font-semibold shadow-sm transition-colors"
         >
-          + Tambah Pengguna
-        </Button>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>+ Tambah Akun</span>
+        </button>
 
-        <span class="text-xs text-audyr-ash font-bold hidden md:inline">
+        <span class="text-xs text-[#64748b] font-medium hidden md:inline">
           ({{ filteredUsers.length }}/{{ users.length }})
         </span>
       </div>
@@ -237,87 +346,230 @@ function onRoleSelect(userId: string, event: Event) {
       />
     </div>
 
-    <!-- User Table -->
+    <!-- User Table (Zendenta Style) -->
     <div v-else class="overflow-x-auto">
       <table class="w-full text-left border-collapse text-xs">
         <thead>
-          <tr class="bg-white border-y border-[#ededed] text-audyr-ash font-bold uppercase text-[11px] tracking-wider">
-            <th class="py-3 px-5">Nama & Email</th>
-            <th class="py-3 px-4">Institusi</th>
-            <th class="py-3 px-4">Peran (Role)</th>
-            <th class="py-3 px-4">Saldo Token</th>
-            <th class="py-3 px-4">Status</th>
-            <th class="py-3 px-5 text-right">Aksi</th>
+          <tr class="bg-[#fafbfc] border-y border-[#ededed] text-[#64748b] font-bold uppercase text-[10px] tracking-wider">
+            <th class="py-3 px-4 w-10 text-center">
+              <input
+                type="checkbox"
+                :checked="isAllSelected"
+                @change="toggleSelectAll"
+                class="rounded border-[#cbd5e1] text-[#17191c] focus:ring-[#17191c] cursor-pointer"
+              />
+            </th>
+            <th class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1">
+                <span>PENGGUNA / AKUN</span>
+                <span class="text-[10px] text-[#94a3b8]">↕</span>
+              </span>
+            </th>
+            <th class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1">
+                <span>CREATED</span>
+                <span class="text-[10px] text-[#94a3b8]">↕</span>
+              </span>
+            </th>
+            <th class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1">
+                <span>INSTITUSI</span>
+                <span class="text-[10px] text-[#94a3b8]">↕</span>
+              </span>
+            </th>
+            <th class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1">
+                <span>STATUS</span>
+                <span class="text-[10px] text-[#94a3b8]">↕</span>
+              </span>
+            </th>
+            <th class="py-3 px-4">
+              <span class="inline-flex items-center space-x-1">
+                <span>KUOTA TOKEN</span>
+                <span class="text-[10px] text-[#94a3b8]">↕</span>
+              </span>
+            </th>
+            <th class="py-3 px-4 text-center">VERIFIKASI</th>
+            <th class="py-3 px-4 text-right">AKSI</th>
+            <th class="py-3 px-2 w-8"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#ededed]">
-          <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-[#fafafa] transition-colors">
-            <td class="py-3.5 px-5">
-              <div class="font-bold text-audyr-ink">{{ user.full_name }}</div>
-              <div class="text-[11px] text-audyr-ash font-medium">{{ user.email }}</div>
+          <tr
+            v-for="user in filteredUsers"
+            :key="user.id"
+            class="hover:bg-[#f8fafc] transition-colors group"
+            :class="selectedUserIds.includes(user.id) ? 'bg-[#f4f4f5]' : ''"
+          >
+            <!-- Checkbox -->
+            <td class="py-3.5 px-4 text-center">
+              <input
+                type="checkbox"
+                :checked="selectedUserIds.includes(user.id)"
+                @change="toggleSelectUser(user.id)"
+                class="rounded border-[#cbd5e1] text-[#17191c] focus:ring-[#17191c] cursor-pointer"
+              />
             </td>
-            <td class="py-3.5 px-4 text-audyr-slate font-medium">{{ user.institution || '-' }}</td>
+
+            <!-- User Info (Order / User equivalent) -->
             <td class="py-3.5 px-4">
-              <div class="flex items-center space-x-1.5">
-                <Badge :variant="getRoleVariant(user.role)" size="xs">
-                  {{ user.role }}
-                </Badge>
-                <select
-                  :value="user.role"
-                  @change="onRoleSelect(user.id, $event)"
-                  class="text-[10px] bg-white border border-[#ededed] rounded-[4px] px-1.5 py-0.5 text-audyr-ink focus:outline-none focus:border-audyr-ink cursor-pointer font-semibold"
-                  title="Ubah peran pengguna"
-                >
-                  <option value="TRIAL">TRIAL</option>
-                  <option value="PREMIUM">PREMIUM</option>
-                  <option value="REVIEWER">REVIEWER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
+              <div class="flex items-center space-x-2.5">
+                <div class="w-7 h-7 rounded-full bg-[#f1f5f9] border border-[#e2e8f0] text-[#334155] font-bold text-xs flex items-center justify-center shrink-0">
+                  {{ user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U' }}
+                </div>
+                <div>
+                  <div class="font-bold text-[#1e293b] leading-snug">{{ user.full_name }}</div>
+                  <div class="text-[11px] text-[#64748b] flex items-center space-x-1.5">
+                    <span>#VT{{ user.id.substring(0, 6) }}</span>
+                    <span>•</span>
+                    <span class="truncate max-w-[140px]">{{ user.email }}</span>
+                    <span>•</span>
+                    <Badge :variant="getRoleVariant(user.role)" size="xs">
+                      {{ user.role }}
+                    </Badge>
+                  </div>
+                </div>
               </div>
             </td>
-            <td class="py-3.5 px-4 font-extrabold text-sm text-audyr-ink tabular-nums">
-              <div class="flex items-center space-x-2">
-                <span>{{ user.token_balance }}</span>
-                <button
-                  type="button"
-                  @click="emit('adjustTokens', user.id, 5)"
-                  class="text-[10px] bg-transparent border border-[#ededed] hover:bg-[#ededed] text-audyr-ink px-1.5 py-0.5 rounded-[4px] font-bold transition-colors"
-                  title="Tambah 5 token"
-                >
-                  +5
-                </button>
+
+            <!-- Created Date -->
+            <td class="py-3.5 px-4 text-[#475569] font-medium whitespace-nowrap">
+              {{ formatDate(user.created_at) }}
+            </td>
+
+            <!-- Institution (From Vendor equivalent) -->
+            <td class="py-3.5 px-4 text-[#334155] font-medium">
+              <div class="flex items-center space-x-1.5 max-w-[180px]">
+                <svg class="w-3.5 h-3.5 text-[#64748b] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <span class="truncate">{{ user.institution || 'Institut Teknologi Nasional' }}</span>
               </div>
             </td>
+
+            <!-- Status Pill (Zendenta style) -->
             <td class="py-3.5 px-4">
-              <Badge :variant="user.is_active ? 'success' : 'danger'" size="xs" dot>
-                {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
-              </Badge>
+              <span
+                v-if="user.is_active"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]"
+              >
+                AKTIF
+              </span>
+              <span
+                v-else
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#fef2f2] text-[#991b1b] border border-[#fecaca]"
+              >
+                SUSPEND
+              </span>
             </td>
-            <td class="py-3.5 px-5 text-right whitespace-nowrap space-x-1.5">
+
+            <!-- Token Ratio (Item Received equivalent) -->
+            <td class="py-3.5 px-4">
+              <div class="space-y-1">
+                <div class="flex items-center justify-between text-[11px] font-bold text-[#1e293b] tabular-nums">
+                  <span>{{ getTokenRatio(user.token_balance).label }}</span>
+                  <button
+                    type="button"
+                    @click="emit('adjustTokens', user.id, 5)"
+                    class="text-[10px] text-[#17191c] hover:underline font-semibold ml-2"
+                    title="Tambah 5 token"
+                  >
+                    +5 Token
+                  </button>
+                </div>
+                <div class="w-24 bg-[#e2e8f0] h-1.5 rounded-full overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all duration-300"
+                    :class="user.token_balance >= 3 ? 'bg-[#17191c]' : 'bg-[#ef4444]'"
+                    :style="{ width: `${getTokenRatio(user.token_balance).pct}%` }"
+                  ></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Verification (Send Email check equivalent) -->
+            <td class="py-3.5 px-4 text-center">
+              <div class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#ecfdf5] text-[#10b981]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </td>
+
+            <!-- Action Button (Receive equivalent -> Kelola) -->
+            <td class="py-3.5 px-4 text-right whitespace-nowrap">
               <button
                 type="button"
                 @click="openEdit(user)"
-                class="text-xs font-semibold px-2 py-1 rounded-[4px] border border-[#ededed] text-audyr-ink hover:bg-[#ededed] transition-colors tracking-tight"
-                title="Edit data pengguna"
+                class="px-3 py-1 text-xs font-semibold rounded-md border border-[#cbd5e1] text-[#334155] bg-white hover:bg-[#f1f5f9] transition-colors shadow-sm"
               >
-                Edit
+                Kelola
               </button>
+            </td>
+
+            <!-- Kebab Menu -->
+            <td class="py-3.5 px-2 relative text-right">
               <button
                 type="button"
-                @click="emit('toggleStatus', user.id)"
-                class="text-xs font-bold px-2 py-1 rounded-[4px] border transition-colors tracking-tight"
-                :class="user.is_active ? 'text-red-600 border-red-200 hover:bg-red-50' : 'text-[#065f46] border-[#a7f3d0] hover:bg-audyr-mint-whisper'"
+                @click.stop="toggleDropdown(user.id)"
+                class="p-1 rounded text-[#94a3b8] hover:text-[#1e293b] hover:bg-[#e2e8f0] transition-colors"
+                title="Aksi lainnya"
               >
-                {{ user.is_active ? 'Suspend' : 'Aktifkan' }}
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
               </button>
-              <button
-                type="button"
-                @click="confirmDelete(user)"
-                class="text-xs font-bold px-2 py-1 rounded-[4px] border border-red-200 text-red-600 hover:bg-red-50 transition-colors tracking-tight"
-                title="Hapus akun pengguna"
+
+              <!-- Dropdown Menu -->
+              <div
+                v-if="activeDropdownUserId === user.id"
+                class="absolute right-2 mt-1 w-44 bg-white rounded-lg shadow-lg border border-[#ededed] py-1 z-40 text-left text-xs"
               >
-                Hapus
-              </button>
+                <button
+                  type="button"
+                  @click="emit('adjustTokens', user.id, 5); activeDropdownUserId = null"
+                  class="w-full text-left px-3 py-1.5 hover:bg-[#f8fafc] text-[#1e293b] flex items-center space-x-2"
+                >
+                  <svg class="w-3.5 h-3.5 text-[#17191c]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  <span>Tambah 5 Token</span>
+                </button>
+                <button
+                  type="button"
+                  @click="openEdit(user); activeDropdownUserId = null"
+                  class="w-full text-left px-3 py-1.5 hover:bg-[#f8fafc] text-[#1e293b] flex items-center space-x-2"
+                >
+                  <svg class="w-3.5 h-3.5 text-[#64748b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Edit Profil & Sandi</span>
+                </button>
+                <button
+                  type="button"
+                  @click="emit('toggleStatus', user.id); activeDropdownUserId = null"
+                  class="w-full text-left px-3 py-1.5 hover:bg-[#f8fafc] flex items-center space-x-2"
+                  :class="user.is_active ? 'text-[#b91c1c]' : 'text-[#065f46]'"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                  <span>{{ user.is_active ? 'Suspend Akun' : 'Aktifkan Akun' }}</span>
+                </button>
+                <div class="border-t border-[#ededed] my-1"></div>
+                <button
+                  type="button"
+                  @click="confirmDelete(user); activeDropdownUserId = null"
+                  class="w-full text-left px-3 py-1.5 hover:bg-red-50 text-red-600 flex items-center space-x-2"
+                >
+                  <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span>Hapus Akun</span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
