@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import TierLegend from "../components/TierLegend.vue";
 import {
   HeroSection,
   DashboardShowcaseWindow,
@@ -18,15 +17,10 @@ import {
     <!-- Live Application Window Showcase (Steep Image 1 & 3 macOS Window Mockup) -->
     <DashboardShowcaseWindow />
 
-    <!-- Live Interactive Diagnostic Demo (Anti-Slop Utility) -->
+    <!-- Live Interactive Diagnostic Demo (Editorial Manuscript Inspection) -->
     <InteractiveDemoSnippet />
 
-    <!-- Visual Tier Overview -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Legenda Ringkasan Tier">
-      <TierLegend />
-    </section>
-
-    <!-- 4-Tier Detection Pipeline Grid -->
+    <!-- 4-Tier Detection Pipeline Grid (Editorial Bento Grid) -->
     <PipelineTiersGrid />
 
     <!-- Inverted Ink-Black High-Contrast Section (Steep Image 2 Reference) -->

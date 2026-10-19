@@ -1,207 +1,220 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
-interface TierCardItem {
-  tierId: string;
-  category: string;
-  engine: string;
-  title: string;
-  tags: string[];
-  description: string;
-  statValue: string;
-  statLabel: string;
-  iconBg: string;
-  iconColor: string;
-  accentBorder: string;
-  badgeHex: string;
-  isSaved: boolean;
-}
-
-const tiers = ref<TierCardItem[]>([
-  {
-    tierId: "T1",
-    category: "Leksikal Engine",
-    engine: "Rabin-Karp 64b",
-    title: "Winnowing Fingerprint",
-    tags: ["k=5, w=4", "Verbatim Match", "Bobot 50%"],
-    description: "Ekstraksi k-gram dan sidik jari hash leksikal untuk mendeteksi penjiplakan salin-tempel langsung kata demi kata secara presisi.",
-    statValue: "100% Akurat",
-    statLabel: "Hashing Verbatim · Latensi < 10ms",
-    iconBg: "bg-rose-50",
-    iconColor: "text-rose-600",
-    accentBorder: "border-rose-100",
-    badgeHex: "#EF4444",
-    isSaved: true,
-  },
-  {
-    tierId: "T2",
-    category: "Semantik Engine",
-    engine: "MiniLM-L12-v2",
-    title: "pgvector HNSW Cosine",
-    tags: ["384 Dimensi", "Jarak Kosinus", "Bobot 35%"],
-    description: "Model representasi embedding dense untuk menangkap parafrasa cerdas dan substitusi sinonim yang lolos dari filter kata.",
-    statValue: "384 Dimensi",
-    statLabel: "HNSW ANN Search · Latensi < 1.500ms",
-    iconBg: "bg-orange-50",
-    iconColor: "text-orange-600",
-    accentBorder: "border-orange-100",
-    badgeHex: "#F97316",
-    isSaved: true,
-  },
-  {
-    tierId: "T3",
-    category: "Stilometri AI",
-    engine: "Analisis Pola Sintaksis",
-    title: "Pola & Sintaksis LLM",
-    tags: ["Burstiness", "Type-Token Ratio", "Bobot 15%"],
-    description: "Mengevaluasi varians panjang kalimat dan kekayaan leksikal guna mendeteksi naskah yang digenerasi oleh model bahasa AI.",
-    statValue: "Sintaksis AI",
-    statLabel: "Varians Panjang Kalimat & TTR",
-    iconBg: "bg-amber-50",
-    iconColor: "text-amber-600",
-    accentBorder: "border-amber-100",
-    badgeHex: "#EAB308",
-    isSaved: false,
-  },
-  {
-    tierId: "T4",
-    category: "Komposit Agregasi",
-    engine: "UU PDP & Sertifikasi",
-    title: "Sertifikat QR & Audit",
-    tags: ["UUID v4", "Interactive Heatmap", "PDF Resmi"],
-    description: "Penggabungan skor terbobot dengan penerbitan sertifikat integritas akademik ber-QR code kriptografis yang valid publik.",
-    statValue: "Formula 4-Tier",
-    statLabel: "0.50 T1 + 0.35 T2 + 0.15 T3",
-    iconBg: "bg-[#ededed]",
-    iconColor: "text-audyr-ink",
-    accentBorder: "border-[#ededed]",
-    badgeHex: "#262626",
-    isSaved: true,
-  },
-]);
-
-function toggleSave(tier: TierCardItem) {
-  tier.isSaved = !tier.isSaved;
-}
+// PipelineTiersGrid.vue - Modern Editorial Bento Architecture Grid
 </script>
 
 <template>
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" aria-label="Tingkat Perlindungan Integritas Akademik">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 select-none" aria-label="Arsitektur Deteksi 4-Tier">
     <!-- Header -->
-    <div class="text-center max-w-2xl mx-auto space-y-3">
+    <div class="text-center max-w-2xl mx-auto space-y-3 mb-10">
       <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider bg-[#fafafb] text-[#17191c] border border-[#ededed]">
         <span>Arsitektur Deteksi 4-Tier</span>
       </div>
       <h2 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
-        Empat Tingkat Perlindungan <span class="italic font-normal text-[#17191c]">Integritas Akademik</span>
+        Tiga lapis kecerdasan untuk satu <span class="italic font-normal text-[#17191c]">kepastian integritas</span>
       </h2>
       <p class="text-sm text-[#777b86] leading-relaxed font-normal">
-        Dirancang untuk mendeteksi mulai dari salin-tempel <strong class="font-medium text-[#17191c]">verbatim langsung</strong> hingga parafrasa cerdas berbasis model bahasa besar (<strong class="italic font-medium text-[#17191c]">LLM</strong>).
+        Dirancang khusus untuk membedakan antara salin-tempel langsung, parafrasa cerdas berbasis sinonim, dan sintesis otomatis model bahasa AI.
       </p>
     </div>
 
-    <!-- Steep Cards Grid (24px radius, pure paper, hairline borders) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div
-        v-for="tier in tiers"
-        :key="tier.tierId"
-        class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] hover:border-[#17191c] transition-all duration-150 ease-out flex flex-col justify-between group"
-      >
-        <div>
-          <!-- Top Row: Circular Brand/Tier Icon + Save Pill Button -->
-          <div class="flex items-center justify-between mb-4">
-            <!-- Circular Icon Avatar with soft ring -->
-            <div
-              :class="[
-                'w-10 h-10 rounded-full flex items-center justify-center border transition-transform duration-150 group-hover:scale-105',
-                tier.iconBg,
-                tier.accentBorder,
-                tier.iconColor
-              ]"
-            >
-              <!-- Tier 1 Hash Icon -->
-              <svg v-if="tier.tierId === 'T1'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-              </svg>
-              <!-- Tier 2 Vector/Brain Icon -->
-              <svg v-else-if="tier.tierId === 'T2'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <!-- Tier 3 Feather/Syntax Icon -->
-              <svg v-else-if="tier.tierId === 'T3'" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              <!-- Tier 4 Shield/Check Icon -->
-              <svg v-else class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+    <!-- Bento Grid Container -->
+    <div class="space-y-5">
+      <!-- Row 1: Dual Large Cards (Hero Hybrid Comparison + Formula Gauge) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Card 1: Hybrid Lexical + Semantic Synergy (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-[24px] p-6 sm:p-8 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_35px_-10px_rgba(0,0,0,0.06)] flex flex-col justify-between space-y-6">
+          <div class="space-y-3">
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fbe1d1] text-[#5d2a1a]">
+                Sinergi Dua Mesin
+              </span>
+              <span class="text-xs text-[#777b86]">&bull;</span>
+              <span class="text-xs text-[#777b86] font-mono">Tier 1 + Tier 2</span>
+            </div>
+            <h3 class="font-serif text-2xl font-normal text-[#17191c] tracking-tight">
+              Mengapa satu algoritma saja tidak pernah cukup?
+            </h3>
+            <p class="text-xs sm:text-sm text-[#777b86] leading-relaxed font-normal">
+              Pemeriksa plagiarisme konvensional hanya mengandalkan pencocokan teks langsung (*string matching*), sehingga mudah dikelabui oleh sinonim dan parafrasa. VeriText AI menggabungkan <strong class="font-medium text-[#17191c]">Winnowing hash</strong> berkecepatan tinggi dengan <strong class="font-medium text-[#17191c]">penalaran semantik dense 384D</strong> melalui pgvector.
+            </p>
+          </div>
+
+          <!-- Micro Comparison Graphic -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <!-- Winnowing Box -->
+            <div class="p-4 rounded-[16px] bg-[#fafafb] border border-[#ededed] space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-[#17191c]">Winnowing Hashing</span>
+                <span class="text-[10px] text-[#EF4444] font-medium font-mono">100% Identik</span>
+              </div>
+              <div class="h-1.5 bg-[#ededed] rounded-full overflow-hidden">
+                <div class="h-full bg-[#EF4444] rounded-full w-full"></div>
+              </div>
+              <p class="text-[11px] text-[#777b86] leading-tight">
+                Mendeteksi salin-tempel langsung kalimat demi kalimat tanpa distorsi.
+              </p>
             </div>
 
-            <!-- Steep Pill Action Button -->
-            <button
-              type="button"
-              class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full border text-xs font-medium tracking-tight transition-colors duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
-              :class="tier.isSaved ? 'bg-[#17191c] border-[#17191c] text-white' : 'bg-transparent border-[#ededed] text-[#17191c] hover:bg-[#f2f2f3]'"
-              @click="toggleSave(tier)"
-            >
-              <span>{{ tier.isSaved ? 'Aktif' : 'Detail' }}</span>
-              <svg class="w-3.5 h-3.5" :fill="tier.isSaved ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
-            </button>
+            <!-- pgvector Box -->
+            <div class="p-4 rounded-[16px] bg-[#fafafb] border border-[#ededed] space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-[#17191c]">pgvector HNSW</span>
+                <span class="text-[10px] text-[#F97316] font-medium font-mono">Semantik &ge; 0.75</span>
+              </div>
+              <div class="h-1.5 bg-[#ededed] rounded-full overflow-hidden">
+                <div class="h-full bg-[#F97316] rounded-full w-[85%]"></div>
+              </div>
+              <p class="text-[11px] text-[#777b86] leading-tight">
+                Menangkap parafrasa pintar dan sinonim dalam ruang vektor dense.
+              </p>
+            </div>
           </div>
-
-          <!-- Company/Category + Engine Subtitle -->
-          <div class="flex items-center text-xs font-medium text-[#777b86]">
-            <span>{{ tier.category }}</span>
-            <span class="text-[#979799] font-normal ml-1.5 text-[11px] italic">{{ tier.engine }}</span>
-          </div>
-
-          <!-- Main Title -->
-          <h3 class="text-base sm:text-lg font-semibold text-[#17191c] tracking-tight mt-0.5">
-            {{ tier.title }}
-          </h3>
-
-          <!-- Tags in Steep pill containers -->
-          <div class="flex flex-wrap gap-1.5 mt-3">
-            <span
-              v-for="tag in tier.tags"
-              :key="tag"
-              :class="[
-                'px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-tight border',
-                tier.tierId === 'T2' && tag === 'Bobot 35%'
-                  ? 'bg-[#ecfdf5] border-[#a7f3d0] text-[#065f46]'
-                  : 'bg-[#f2f2f3] border-[#ededed] text-[#17191c]'
-              ]"
-            >
-              {{ tag }}
-            </span>
-          </div>
-
-          <!-- Description paragraph -->
-          <p class="text-xs text-[#777b86] leading-relaxed mt-3.5 font-normal">
-            {{ tier.description }}
-          </p>
         </div>
 
-        <!-- Footer Row with Metric on Left and Black Pill Button on Right -->
-        <div class="pt-4 mt-5 border-t border-[#ededed] flex items-center justify-between">
-          <div>
-            <div class="text-sm font-semibold text-[#17191c] tabular-nums">
-              {{ tier.statValue }}
+        <!-- Card 2: Composite Score Formula & Latency Gauge (5 cols) -->
+        <div class="lg:col-span-5 bg-white rounded-[24px] p-6 sm:p-8 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_35px_-10px_rgba(0,0,0,0.06)] flex flex-col justify-between space-y-6">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#fafafb] text-[#17191c] border border-[#ededed]">
+                Formula Agregasi
+              </span>
+              <span class="text-[11px] text-[#059669] font-medium">&lt; 1.500 ms Latensi</span>
             </div>
-            <div class="text-[10px] text-[#777b86] font-normal">
-              {{ tier.statLabel }}
+
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <div class="text-[11px] text-[#777b86] font-medium">Formula Pembobotan Komposit</div>
+                <div class="text-xl sm:text-2xl font-serif font-normal text-[#17191c] tracking-tight mt-0.5">
+                  0.50 T1 + 0.35 T2 + 0.15 T3
+                </div>
+              </div>
+
+              <!-- Circular Donut Gauge -->
+              <div class="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    class="text-[#fbe1d1]"
+                    stroke-width="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    stroke="#5d2a1a"
+                    stroke-dasharray="100, 100"
+                    stroke-linecap="round"
+                    stroke-width="3.5"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div class="absolute flex flex-col items-center text-center">
+                  <span class="text-[10px] font-bold text-[#17191c] leading-none">100%</span>
+                  <span class="text-[6px] text-[#777b86] font-medium">Valid</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Steep Dark Pill Action Button -->
-          <router-link
-            to="/dashboard"
-            class="px-4 py-1.5 bg-[#17191c] hover:bg-[#2e3138] text-white text-xs font-medium rounded-full active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
-          >
-            Uji Coba
-          </router-link>
+          <!-- Weight Distribution Bars -->
+          <div class="space-y-2 pt-2 border-t border-[#ededed] text-xs">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-[#EF4444]"></span>
+                <span class="text-[#777b86]">Tier 1: Hashing Leksikal</span>
+              </span>
+              <span class="font-mono font-medium text-[#17191c]">50%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-[#F97316]"></span>
+                <span class="text-[#777b86]">Tier 2: Parafrasa Semantik</span>
+              </span>
+              <span class="font-mono font-medium text-[#17191c]">35%</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-[#EAB308]"></span>
+                <span class="text-[#777b86]">Tier 3: Stilometri AI</span>
+              </span>
+              <span class="font-mono font-medium text-[#17191c]">15%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Three Clean Engine Cards (3 cols) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Tier 1 Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_15px_30px_-10px_rgba(0,0,0,0.05)] hover:border-[#17191c] transition-all duration-150 ease-out space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#EF4444] px-2.5 py-0.5 rounded-full bg-red-50 border border-red-100">
+              Tier 1 &bull; Leksikal
+            </span>
+            <span class="text-xs font-mono font-medium text-[#777b86]">k=5, w=4</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <h4 class="font-serif text-lg font-normal text-[#17191c] tracking-tight">
+              Winnowing Fingerprinting
+            </h4>
+            <p class="text-xs text-[#777b86] leading-relaxed font-normal">
+              Algoritma Rabin-Karp 64-bit membentuk jendela geser (*sliding window*) untuk mendeteksi penjiplakan salin-tempel langsung dengan efisiensi memori optimal.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-[#ededed] flex items-center justify-between text-[11px]">
+            <span class="text-[#777b86]">Kompleksitas: <strong class="text-[#17191c] font-mono font-normal">O(n)</strong></span>
+            <span class="font-medium text-[#17191c]">Latensi &lt; 10 ms</span>
+          </div>
+        </div>
+
+        <!-- Tier 2 Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_15px_30px_-10px_rgba(0,0,0,0.05)] hover:border-[#17191c] transition-all duration-150 ease-out space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F97316] px-2.5 py-0.5 rounded-full bg-orange-50 border border-orange-100">
+              Tier 2 &bull; Semantik
+            </span>
+            <span class="text-xs font-mono font-medium text-[#777b86]">384 Dimensi</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <h4 class="font-serif text-lg font-normal text-[#17191c] tracking-tight">
+              pgvector HNSW Cosine
+            </h4>
+            <p class="text-xs text-[#777b86] leading-relaxed font-normal">
+              Memproyeksikan makna naskah ke ruang vektor dense (*MiniLM-L12-v2*) untuk mengungkap parafrasa cerdas dan restrukturisasi kalimat pasif-aktif.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-[#ededed] flex items-center justify-between text-[11px]">
+            <span class="text-[#777b86]">Indeks Vektor: <strong class="text-[#17191c] font-mono font-normal">HNSW (m=16)</strong></span>
+            <span class="font-medium text-[#17191c]">Sim &ge; 0.75</span>
+          </div>
+        </div>
+
+        <!-- Tier 3 Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_15px_30px_-10px_rgba(0,0,0,0.05)] hover:border-[#17191c] transition-all duration-150 ease-out space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono font-bold uppercase tracking-wider text-[#b45309] px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-100">
+              Tier 3 &bull; Stilometri
+            </span>
+            <span class="text-xs font-mono font-medium text-[#777b86]">Burstiness</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <h4 class="font-serif text-lg font-normal text-[#17191c] tracking-tight">
+              Pola Sintaksis Model LLM
+            </h4>
+            <p class="text-xs text-[#777b86] leading-relaxed font-normal">
+              Mengevaluasi varians panjang kalimat dan kekayaan leksikal (*Type-Token Ratio*) untuk membedakan ritme tulisan manusia asli dengan teks robotik AI.
+            </p>
+          </div>
+
+          <div class="pt-3 border-t border-[#ededed] flex items-center justify-between text-[11px]">
+            <span class="text-[#777b86]">Metrik: <strong class="text-[#17191c] font-mono font-normal">TTR &amp; Varians</strong></span>
+            <span class="font-medium text-[#17191c]">Anomali &lt; 0.20</span>
+          </div>
         </div>
       </div>
     </div>
