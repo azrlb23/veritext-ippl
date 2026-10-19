@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables/useNotification";
@@ -9,7 +9,11 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { showNotification } = useNotification();
+
+// State for Mobile Drawer & Capsule Collapse
 const isMobileMenuOpen = ref(false);
+const isCollapsed = ref(false);
+const isScrolled = ref(false);
 
 const userDisplayName = computed(() => authStore.user?.full_name || "Pengguna");
 const userInitial = computed(() => {
@@ -25,6 +29,14 @@ const isReviewer = computed(() => authStore.isAuthenticated && authStore.role ==
 
 // Navigasi Tengah Tersegmentasi Berdasarkan 4 Kondisi Pengguna
 const navLinks = computed(() => getSegmentedNavLinks(authStore.isAuthenticated, authStore.role));
+
+// Active Route Name for Collapsed Micro-Pill
+const activeRouteName = computed(() => {
+  const active = navLinks.value.find((item) => isItemActive(item.to));
+  if (active) return active.name;
+  if (route.path.startsWith("/audits/")) return "Laporan Audit";
+  return "Menu";
+});
 
 function isItemActive(targetPath: string): boolean {
   if (targetPath.includes("#")) {
@@ -47,6 +59,26 @@ function closeMobileMenu() {
   isMobileMenuOpen.value = false;
 }
 
+function toggleCollapse() {
+  isCollapsed.value = !isCollapsed.value;
+  if (isCollapsed.value) {
+    isMobileMenuOpen.value = false;
+  }
+}
+
+// Auto scroll tracking for smart collapse
+function handleScroll() {
+  isScrolled.value = window.scrollY > 80;
+}
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
+});
+
 watch(
   () => [route.path, route.hash],
   () => {
@@ -63,329 +95,272 @@ async function handleLogout() {
 </script>
 
 <template>
-  <!-- Floating Dark Navbar (Symbol Dark Theme Reference) -->
-  <header class="sticky top-0 z-50 py-2 sm:py-3 px-3 sm:px-6 lg:px-8 bg-transparent pointer-events-none select-none">
-    <div class="max-w-7xl mx-auto pointer-events-auto">
-      <div class="bg-[#12151c]/95 backdrop-blur-md rounded-[20px] border border-white/10 px-4 sm:px-6 h-16 flex items-center justify-between shadow-[0_12px_36px_-10px_rgba(0,0,0,0.6)] transition-all duration-200">
-        
-        <!-- Left: Brand Logo & Symbol Badge -->
+  <!-- Floating Capsule Container (Centered at top with gentle clearance) -->
+  <header class="fixed top-3 sm:top-4 left-0 right-0 z-50 flex justify-center px-3 sm:px-4 pointer-events-none select-none">
+    <div
+      class="pointer-events-auto transition-all duration-300 ease-out"
+      :class="[
+        // Base Glass Island Styling
+        'bg-white/90 backdrop-blur-md border border-[#ededed] shadow-[0_6px_24px_-4px_rgba(4,23,43,0.08),0_1px_2px_rgba(0,0,0,0.04)]',
+        // Desktop Collapsed vs Expanded Shapes
+        isCollapsed
+          ? 'rounded-full px-3 py-1.5 flex items-center space-x-2.5 max-w-fit'
+          : isMobileMenuOpen
+            ? 'rounded-[24px] sm:rounded-full w-full max-w-4xl px-3.5 sm:px-5 py-2'
+            : 'rounded-full w-full max-w-4xl px-3.5 sm:px-5 py-2 flex items-center justify-between',
+        // Hover state when collapsed
+        isCollapsed ? 'hover:bg-white hover:shadow-md cursor-pointer' : ''
+      ]"
+    >
+      <!-- ============================================================ -->
+      <!-- STATE A: COLLAPSED MICRO-CAPSULE (Compact Island Pill)      -->
+      <!-- ============================================================ -->
+      <template v-if="isCollapsed">
+        <!-- Logo Icon -->
         <router-link
           :to="isSuperAdmin ? '/admin' : '/'"
-          class="flex items-center space-x-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2563EB] rounded-full group"
-          @click="closeMobileMenu"
+          class="flex items-center space-x-2 focus:outline-none"
+          title="VeriText AI"
         >
-          <!-- Cobalt Blue Round Icon with White Glyph -->
-          <div class="w-8 h-8 rounded-full bg-[#2563EB] group-hover:bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-xs shadow-md border border-white/20 transition-colors">
+          <div class="w-6 h-6 rounded-full bg-[#17191c] flex items-center justify-center text-white font-semibold text-xs shadow-sm">
             V
           </div>
-          <div class="flex items-center">
-            <span class="text-sm sm:text-base font-semibold tracking-tight text-white">
-              VeriText<span class="italic font-normal text-[#9ba1b0] ml-0.5">AI</span>
-            </span>
-            <span
-              v-if="isSuperAdmin"
-              class="hidden sm:inline-block ml-2 text-[10px] font-mono font-medium uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/10 tracking-wider"
-            >
-              Admin
-            </span>
-            <span
-              v-else
-              class="hidden sm:inline-block ml-2 text-[10px] font-mono font-medium uppercase px-2 py-0.5 rounded-full bg-white/10 text-[#9ba1b0] border border-white/10 tracking-wider"
-            >
-              Hybrid
-            </span>
-          </div>
+          <span class="text-xs font-semibold text-[#17191c] tracking-tight hidden sm:inline-block">
+            VeriText
+          </span>
         </router-link>
 
-        <!-- Center: Desktop Navigation Links (Dark Pill Menu) -->
-        <nav class="hidden md:flex items-center space-x-1 text-xs tracking-tight">
+        <span class="text-[#ededed]">&bull;</span>
+
+        <!-- Active Page Chip -->
+        <span class="text-[11px] font-medium text-[#17191c] px-2.5 py-0.5 rounded-full bg-[#f2f2f3]">
+          {{ activeRouteName }}
+        </span>
+
+        <!-- Expand Button (+) -->
+        <button
+          type="button"
+          @click.stop="toggleCollapse"
+          class="w-6 h-6 rounded-full bg-[#17191c] hover:bg-[#2e3138] text-white flex items-center justify-center transition-transform active:scale-95"
+          title="Buka Navigasi Penuh (Expand Navbar)"
+          aria-label="Expand Navbar"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </template>
+
+      <!-- ============================================================ -->
+      <!-- STATE B: EXPANDED FULL CAPSULE NAVBAR                       -->
+      <!-- ============================================================ -->
+      <template v-else>
+        <!-- Top Bar Row inside Capsule -->
+        <div class="flex items-center justify-between w-full">
+          <!-- 1. Brand Logo (Left) -->
           <router-link
-            v-for="item in navLinks"
-            :key="item.to"
-            :to="item.to"
-            class="whitespace-nowrap px-3.5 py-1.5 rounded-full font-medium transition-all duration-150 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-white/50"
-            :class="[
-              isItemActive(item.to)
-                ? 'bg-white/15 text-white font-semibold border border-white/15 shadow-sm'
-                : 'text-[#9ba1b0] hover:text-white hover:bg-white/5',
-            ]"
+            :to="isSuperAdmin ? '/admin' : '/'"
+            class="flex items-center space-x-2.5 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c] rounded-full flex-shrink-0"
+            @click="closeMobileMenu"
           >
-            {{ item.name }}
-          </router-link>
-        </nav>
-
-        <!-- Right: Actions, Search Pill & Profile Chip -->
-        <div class="flex items-center space-x-2.5 flex-shrink-0">
-          <!-- Kondisi 1: Tamu (Belum Login / !authStore.isAuthenticated) -->
-          <template v-if="isGuest">
-            <div class="hidden md:flex items-center space-x-2.5">
-              <!-- Quick Verify Search Pill -->
-              <router-link
-                to="/verify/sample"
-                class="hidden lg:flex items-center space-x-2 bg-[#1c212d] hover:bg-[#252b3a] border border-white/10 px-3.5 py-1.5 rounded-full text-xs text-[#9ba1b0] hover:text-white transition-colors"
+            <div class="w-7 h-7 rounded-full bg-[#17191c] flex items-center justify-center text-white font-semibold text-xs shadow-sm">
+              V
+            </div>
+            <div class="flex items-center">
+              <span class="text-sm font-semibold tracking-tight text-[#17191c]">
+                VeriText<span class="italic font-normal text-[#777b86] ml-0.5">AI</span>
+              </span>
+              <span
+                v-if="isSuperAdmin"
+                class="hidden lg:inline-block ml-1.5 text-[9px] font-medium uppercase px-2 py-0.5 rounded-full bg-[#f2f2f3] text-[#17191c] tracking-wider"
               >
-                <svg class="w-3.5 h-3.5 text-[#9ba1b0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>Cari Sertifikat...</span>
-              </router-link>
+                Admin
+              </span>
+            </div>
+          </router-link>
 
+          <!-- 2. Segmented Pill Links (Center - Desktop) -->
+          <nav class="hidden md:flex items-center space-x-1 text-xs tracking-tight">
+            <router-link
+              v-for="item in navLinks"
+              :key="item.to"
+              :to="item.to"
+              class="whitespace-nowrap px-3.5 py-1.5 rounded-full font-medium transition-all duration-150 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c]"
+              :class="[
+                isItemActive(item.to)
+                  ? 'bg-[#17191c] text-white font-medium shadow-sm'
+                  : 'text-[#777b86] hover:text-[#17191c] hover:bg-[#f2f2f3]/80',
+              ]"
+            >
+              {{ item.name }}
+            </router-link>
+          </nav>
+
+          <!-- 3. Actions & Collapse Controls (Right) -->
+          <div class="flex items-center space-x-2 flex-shrink-0">
+            <!-- Condition 1: Tamu (Belum Login) -->
+            <template v-if="isGuest">
+              <div class="hidden md:flex items-center space-x-2">
+                <router-link
+                  to="/login"
+                  class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-3 py-1.5 transition-colors"
+                >
+                  Masuk
+                </router-link>
+                <router-link
+                  to="/register"
+                  class="text-xs font-medium text-white bg-[#17191c] hover:bg-[#2b2e34] px-4 py-1.5 rounded-full active:scale-[0.98] transition-all shadow-sm"
+                >
+                  Daftar
+                </router-link>
+              </div>
+            </template>
+
+            <!-- Condition 4: Super Administrator (ADMIN) -->
+            <template v-else-if="isSuperAdmin">
+              <div class="hidden md:flex items-center space-x-2 text-xs">
+                <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#f2f2f3] border border-[#ededed] text-[#17191c] font-medium">
+                  <div class="w-4 h-4 rounded-full bg-[#17191c] text-white flex items-center justify-center text-[9px] font-bold">
+                    {{ userInitial }}
+                  </div>
+                  <span class="truncate max-w-[100px]">{{ userDisplayName }}</span>
+                </div>
+                <button
+                  type="button"
+                  @click="handleLogout"
+                  class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                >
+                  Keluar
+                </button>
+              </div>
+            </template>
+
+            <!-- Condition 3: Dosen / Reviewer (REVIEWER) -->
+            <template v-else-if="isReviewer">
+              <div class="hidden md:flex items-center space-x-2 text-xs">
+                <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#f2f2f3] border border-[#ededed] text-[#17191c] font-medium">
+                  <span class="truncate max-w-[100px]">{{ userDisplayName }}</span>
+                  <span class="text-[10px] text-[#059669] font-bold tabular-nums">({{ authStore.tokenBalance }} T)</span>
+                </div>
+                <button
+                  type="button"
+                  @click="handleLogout"
+                  class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                >
+                  Keluar
+                </button>
+              </div>
+            </template>
+
+            <!-- Condition 2: Mahasiswa (TRIAL / PREMIUM / USER) -->
+            <template v-else>
+              <div class="hidden md:flex items-center space-x-2 text-xs">
+                <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#f2f2f3] border border-[#ededed] text-[#17191c] font-medium">
+                  <div class="w-4 h-4 rounded-full bg-[#17191c] text-white flex items-center justify-center text-[9px] font-bold">
+                    {{ userInitial }}
+                  </div>
+                  <span class="truncate max-w-[100px]">{{ userDisplayName }}</span>
+                  <span class="text-[10px] text-[#059669] font-bold tabular-nums">{{ authStore.tokenBalance }} T</span>
+                </div>
+                <button
+                  type="button"
+                  @click="handleLogout"
+                  class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                >
+                  Keluar
+                </button>
+              </div>
+            </template>
+
+            <!-- Desktop Collapse Button (-) -->
+            <button
+              type="button"
+              @click="toggleCollapse"
+              class="hidden md:flex w-7 h-7 rounded-full bg-[#f2f2f3] hover:bg-[#ededed] text-[#777b86] hover:text-[#17191c] items-center justify-center transition-colors"
+              title="Kecilkan Navbar (Collapse Capsule)"
+              aria-label="Collapse Navbar"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+              </svg>
+            </button>
+
+            <!-- Mobile Drawer Toggle (Hamburger / Close) -->
+            <button
+              type="button"
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              class="md:hidden p-1.5 rounded-full text-[#777b86] hover:text-[#17191c] hover:bg-[#f2f2f3] focus:outline-none transition-colors"
+              aria-label="Toggle menu navigasi"
+            >
+              <svg v-if="!isMobileMenuOpen" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Drawer Unfolded Panel (Clean Dropdown Inside the Capsule) -->
+        <div
+          v-if="isMobileMenuOpen"
+          class="md:hidden pt-4 pb-2 border-t border-[#ededed] mt-3 space-y-3"
+        >
+          <!-- Nav Links for Mobile -->
+          <nav class="flex flex-col space-y-1 text-xs font-medium">
+            <router-link
+              v-for="item in navLinks"
+              :key="item.to"
+              :to="item.to"
+              class="px-3.5 py-2 rounded-full transition-colors"
+              :class="[
+                isItemActive(item.to)
+                  ? 'bg-[#17191c] text-white font-medium'
+                  : 'text-[#777b86] hover:text-[#17191c] hover:bg-[#f2f2f3]',
+              ]"
+              @click="closeMobileMenu"
+            >
+              {{ item.name }}
+            </router-link>
+          </nav>
+
+          <!-- Auth Actions for Mobile -->
+          <div class="pt-2 border-t border-[#ededed] flex items-center justify-between">
+            <template v-if="isGuest">
               <router-link
                 to="/login"
-                class="text-xs font-medium text-[#9ba1b0] hover:text-white px-3 py-1.5 transition-colors duration-150 ease-out"
+                class="text-xs font-medium text-[#777b86] px-3 py-1.5"
+                @click="closeMobileMenu"
               >
                 Masuk
               </router-link>
-
-              <!-- Blue Primary CTA Pill (Symbol Reference) -->
               <router-link
                 to="/register"
-                class="text-xs font-medium text-white bg-[#2563EB] hover:bg-[#1d4ed8] px-4 py-2 rounded-full active:scale-[0.98] shadow-md transition-all duration-150 ease-out"
+                class="text-xs font-medium text-white bg-[#17191c] px-4 py-1.5 rounded-full"
+                @click="closeMobileMenu"
               >
                 Daftar Gratis
               </router-link>
-            </div>
-          </template>
-
-          <!-- Kondisi 4: Super Administrator (Role: ADMIN) -->
-          <template v-else-if="isSuperAdmin">
-            <div class="hidden md:flex items-center space-x-2.5">
-              <!-- 200 OK Green Pill -->
-              <div class="hidden xl:flex items-center px-2.5 py-1 bg-emerald-950/60 border border-emerald-500/30 rounded-full text-[10px] text-emerald-400 font-mono">
-                <span class="font-bold">200 OK</span>
-              </div>
-
-              <!-- Admin User Chip -->
-              <div class="flex items-center space-x-2 text-xs font-semibold text-white pl-2 pr-2.5 py-1 rounded-full border border-white/10 bg-[#1c212d]">
-                <div class="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+            </template>
+            <template v-else>
+              <div class="flex items-center space-x-2 text-xs">
+                <div class="w-5 h-5 rounded-full bg-[#17191c] text-white flex items-center justify-center font-bold text-[10px]">
                   {{ userInitial }}
                 </div>
-                <span class="truncate max-w-[110px] text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
-                <span class="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded-full bg-white/20 text-white tracking-wider">
-                  Admin
-                </span>
+                <span class="font-medium text-[#17191c]">{{ userDisplayName }}</span>
               </div>
-
               <button
                 type="button"
                 @click="handleLogout"
-                class="text-xs font-medium text-[#9ba1b0] hover:text-white px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                class="text-xs text-[#b91c1c] font-medium px-2 py-1"
               >
                 Keluar
               </button>
-            </div>
-          </template>
-
-          <!-- Kondisi 3: Dosen / Reviewer (Role: REVIEWER) -->
-          <template v-else-if="isReviewer">
-            <div class="hidden md:flex items-center space-x-2.5">
-              <!-- Token Balance Pill -->
-              <div class="flex items-center px-3 py-1 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 rounded-full text-xs">
-                <span class="text-[11px] font-mono">Saldo: <strong class="tabular-nums font-bold">{{ authStore.tokenBalance }}</strong> Token</span>
-              </div>
-
-              <!-- Reviewer User Chip -->
-              <div class="flex items-center space-x-2 text-xs font-semibold text-white pl-2 pr-2.5 py-1 rounded-full border border-white/10 bg-[#1c212d]">
-                <div class="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                  {{ userInitial }}
-                </div>
-                <span class="truncate max-w-[110px] text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
-                <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-white/20 text-white tracking-wider">
-                  Dosen
-                </span>
-              </div>
-
-              <button
-                type="button"
-                @click="handleLogout"
-                class="text-xs font-medium text-[#9ba1b0] hover:text-white px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                Keluar
-              </button>
-            </div>
-          </template>
-
-          <!-- Kondisi 2: Mahasiswa Terautentikasi (Role: TRIAL / PREMIUM / USER) -->
-          <template v-else>
-            <div class="hidden md:flex items-center space-x-2.5">
-              <!-- Token Balance Pill -->
-              <div class="flex items-center px-3 py-1 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 rounded-full text-xs">
-                <span class="text-[11px] font-mono"><strong class="tabular-nums font-bold">{{ authStore.tokenBalance }}</strong> Token</span>
-              </div>
-
-              <!-- Student Profile Chip -->
-              <div class="flex items-center space-x-2 text-xs font-semibold text-white pl-2 pr-2.5 py-1 rounded-full border border-white/10 bg-[#1c212d]">
-                <div class="w-5 h-5 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                  {{ userInitial }}
-                </div>
-                <span class="truncate max-w-[120px] text-xs" :title="userDisplayName">{{ userDisplayName }}</span>
-                <span
-                  v-if="authStore.role === 'PREMIUM'"
-                  class="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#2563EB] text-white"
-                >
-                  PREMIUM
-                </span>
-                <span
-                  v-else
-                  class="px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/15 text-[#9ba1b0]"
-                >
-                  TRIAL
-                </span>
-              </div>
-
-              <button
-                type="button"
-                @click="handleLogout"
-                class="text-xs font-medium text-[#9ba1b0] hover:text-white px-3 py-1.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                Keluar
-              </button>
-            </div>
-          </template>
-
-          <!-- Mobile Hamburger Toggle -->
-          <button
-            type="button"
-            @click="isMobileMenuOpen = !isMobileMenuOpen"
-            class="md:hidden p-2 rounded-full text-[#9ba1b0] hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Toggle navigasi mobile"
-          >
-            <svg v-if="!isMobileMenuOpen" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+            </template>
+          </div>
         </div>
-      </div>
-
-      <!-- Mobile Dark Drawer -->
-      <div
-        v-if="isMobileMenuOpen"
-        class="md:hidden mt-2 bg-[#12151c]/98 backdrop-blur-lg border border-white/10 rounded-[20px] p-4 text-white shadow-2xl space-y-3"
-      >
-        <!-- Nav Links -->
-        <nav class="flex flex-col space-y-1 text-sm font-medium tracking-tight">
-          <router-link
-            v-for="item in navLinks"
-            :key="item.to"
-            :to="item.to"
-            class="px-3 py-2 rounded-full transition-colors"
-            :class="[
-              isItemActive(item.to)
-                ? 'text-white font-semibold bg-white/15'
-                : 'text-[#9ba1b0] hover:text-white hover:bg-white/5',
-            ]"
-            @click="closeMobileMenu"
-          >
-            {{ item.name }}
-          </router-link>
-        </nav>
-
-        <div class="border-t border-white/10 pt-3 flex flex-col space-y-2">
-          <!-- Kondisi 1: Tamu (Belum Login) -->
-          <template v-if="isGuest">
-            <router-link
-              to="/login"
-              class="w-full text-center py-2.5 text-xs font-medium text-[#9ba1b0] hover:text-white bg-white/5 border border-white/10 rounded-full transition-colors"
-              @click="closeMobileMenu"
-            >
-              Masuk
-            </router-link>
-            <router-link
-              to="/register"
-              class="w-full text-center py-2.5 text-xs font-medium text-white bg-[#2563EB] hover:bg-[#1d4ed8] rounded-full shadow-md transition-colors"
-              @click="closeMobileMenu"
-            >
-              Daftar Gratis
-            </router-link>
-          </template>
-
-          <!-- Kondisi 4: Super Admin -->
-          <template v-else-if="isSuperAdmin">
-            <div class="flex items-center justify-between px-3 py-2 bg-white/5 border border-white/10 rounded-[14px]">
-              <div class="flex items-center space-x-2.5 truncate">
-                <div class="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                  {{ userInitial }}
-                </div>
-                <div class="flex flex-col text-xs leading-tight truncate">
-                  <span class="font-bold text-white truncate">{{ userDisplayName }}</span>
-                  <span class="text-[10px] text-[#9ba1b0] truncate">{{ authStore.user?.email || 'admin@veritext.ai' }}</span>
-                </div>
-              </div>
-              <div class="flex items-center space-x-1.5 flex-shrink-0">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] bg-emerald-950 border border-emerald-500/30 text-emerald-400 font-mono">
-                  200 OK
-                </span>
-                <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-white/20 text-white uppercase">
-                  Admin
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              @click="handleLogout"
-              class="w-full text-center py-2 text-xs font-medium text-[#9ba1b0] hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
-            >
-              Keluar Akun
-            </button>
-          </template>
-
-          <!-- Kondisi 3: Dosen / Reviewer -->
-          <template v-else-if="isReviewer">
-            <div class="flex items-center space-x-2.5 px-3 py-2 bg-white/5 border border-white/10 rounded-[14px]">
-              <div class="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                {{ userInitial }}
-              </div>
-              <div class="flex flex-col text-xs leading-tight truncate">
-                <span class="font-bold text-white truncate">{{ userDisplayName }}</span>
-                <span class="text-[10px] text-[#9ba1b0] truncate">{{ authStore.user?.institution || 'Dosen / Reviewer' }}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between px-3 py-1.5 bg-emerald-950/60 border border-emerald-500/30 rounded-full text-xs text-emerald-400">
-              <span class="font-mono">Saldo: <strong class="tabular-nums font-bold">{{ authStore.tokenBalance }}</strong> Token</span>
-              <span class="text-[10px] uppercase font-mono px-2 py-0.5 bg-white/20 text-white rounded-full">Reviewer</span>
-            </div>
-
-            <button
-              type="button"
-              @click="handleLogout"
-              class="w-full text-center py-2 text-xs font-medium text-[#9ba1b0] hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
-            >
-              Keluar Akun
-            </button>
-          </template>
-
-          <!-- Kondisi 2: Mahasiswa (TRIAL / PREMIUM / USER) -->
-          <template v-else>
-            <div class="flex items-center space-x-2.5 px-3 py-2 bg-white/5 border border-white/10 rounded-[14px]">
-              <div class="w-6 h-6 rounded-full bg-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-                {{ userInitial }}
-              </div>
-              <div class="flex flex-col text-xs leading-tight truncate">
-                <span class="font-bold text-white truncate">{{ userDisplayName }}</span>
-                <span class="text-[10px] text-[#9ba1b0] truncate">{{ authStore.user?.institution || authStore.user?.email || 'Mahasiswa' }}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between px-3 py-1.5 bg-emerald-950/60 border border-emerald-500/30 rounded-full text-xs text-emerald-400">
-              <span class="font-mono">Saldo: <strong class="tabular-nums font-bold">{{ authStore.tokenBalance }}</strong> Token</span>
-              <span class="text-[10px] uppercase font-mono px-2 py-0.5 bg-white/20 text-white rounded-full">{{ authStore.role }}</span>
-            </div>
-
-            <button
-              type="button"
-              @click="handleLogout"
-              class="w-full text-center py-2 text-xs font-medium text-[#9ba1b0] hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-full transition-colors"
-            >
-              Keluar Akun
-            </button>
-          </template>
-        </div>
-      </div>
+      </template>
     </div>
   </header>
 </template>

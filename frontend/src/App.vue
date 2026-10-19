@@ -16,7 +16,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col min-h-screen bg-white text-audyr-ink font-sans tracking-tight">
     <Navbar />
-    <main class="flex-grow">
+    <main class="flex-grow pt-20 sm:pt-24">
       <router-view />
     </main>
     <Footer />
