@@ -50,11 +50,16 @@ function closeMobileMenu() {
   isMobileMenuOpen.value = false;
 }
 
-// Otomatis Collapse Berdasarkan Scrolling:
-// Di atas halaman (scrollY <= 40): Besar / Spacious
-// Scroll ke bawah (scrollY > 40): Otomatis Collapse menjadi Kapsul Ramping
+// Seamless Scroll Detection with Hysteresis (Anti-Jitter Buffer):
+// Scroll down > 50px: Smoothly collapse into compact capsule
+// Scroll up < 20px: Smoothly expand back into wide spacious capsule
 function handleScroll() {
-  isScrolled.value = window.scrollY > 40;
+  const y = window.scrollY;
+  if (!isScrolled.value && y > 50) {
+    isScrolled.value = true;
+  } else if (isScrolled.value && y < 20) {
+    isScrolled.value = false;
+  }
 }
 
 onMounted(() => {
@@ -82,27 +87,24 @@ async function handleLogout() {
 </script>
 
 <template>
-  <!-- Floating Capsule Container (Centering wrapper) -->
+  <!-- Floating Capsule Container (Centering wrapper with spring curve) -->
   <header
-    class="fixed left-0 right-0 z-50 flex justify-center px-3 sm:px-4 pointer-events-none select-none transition-all duration-300 ease-out"
+    class="fixed left-0 right-0 z-50 flex justify-center px-4 pointer-events-none select-none transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]"
     :class="isScrolled ? 'top-2.5 sm:top-3' : 'top-4 sm:top-6'"
   >
     <div
-      class="pointer-events-auto transition-all duration-300 ease-out"
+      class="pointer-events-auto w-full transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] border border-[#ededed]"
       :class="[
-        // Base Glass Island Styling
-        'border border-[#ededed]',
-        // SCROLL-COLLAPSED (Kapsul Ramping saat scroll ke bawah)
+        // Seamless Interpolatable Width & Height Morphing
         isScrolled
-          ? 'bg-white/85 backdrop-blur-lg shadow-[0_10px_30px_-5px_rgba(4,23,43,0.1),0_1px_3px_rgba(0,0,0,0.05)] rounded-full px-3.5 sm:px-5 py-1.5 w-auto max-w-fit flex items-center justify-between gap-3 sm:gap-6'
-          // AT TOP (Besar & Lega saat di paling atas)
+          ? 'max-w-[700px] h-12 bg-white/85 backdrop-blur-xl shadow-[0_12px_32px_-6px_rgba(4,23,43,0.12),0_1px_3px_rgba(0,0,0,0.05)] rounded-full px-4 sm:px-5 flex items-center justify-between'
           : isMobileMenuOpen
-            ? 'bg-white/95 backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(4,23,43,0.06)] rounded-[24px] sm:rounded-full w-full max-w-5xl px-4 sm:px-7 py-3'
-            : 'bg-white/95 backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(4,23,43,0.06)] rounded-full w-full max-w-5xl px-4 sm:px-7 py-3 flex items-center justify-between'
+            ? 'max-w-[1020px] bg-white/95 backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(4,23,43,0.06)] rounded-[24px] sm:rounded-full px-5 sm:px-7 py-3'
+            : 'max-w-[1020px] h-14 bg-white/95 backdrop-blur-md shadow-[0_4px_24px_-4px_rgba(4,23,43,0.06)] rounded-full px-5 sm:px-7 flex items-center justify-between'
       ]"
     >
       <!-- Top Row inside Capsule -->
-      <div class="flex items-center justify-between w-full gap-3 sm:gap-6">
+      <div class="flex items-center justify-between w-full h-full gap-3 sm:gap-4">
         <!-- 1. Brand Logo (Left) -->
         <router-link
           :to="isSuperAdmin ? '/admin' : '/'"
@@ -111,45 +113,40 @@ async function handleLogout() {
         >
           <!-- Logo Circle Icon -->
           <div
-            class="rounded-full bg-[#17191c] flex items-center justify-center text-white font-semibold shadow-sm transition-all duration-300"
+            class="rounded-full bg-[#17191c] flex items-center justify-center text-white font-semibold shadow-sm transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]"
             :class="isScrolled ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'"
           >
             V
           </div>
-          <!-- Logo Text -->
+
+          <!-- Logo Brand Text -->
           <div class="flex items-center">
             <span
-              class="font-semibold tracking-tight text-[#17191c] transition-all duration-300"
+              class="font-semibold tracking-tight text-[#17191c] transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]"
               :class="isScrolled ? 'text-xs' : 'text-sm'"
             >
               VeriText<span class="italic font-normal text-[#777b86] ml-0.5">AI</span>
             </span>
-            <!-- Tag hanya muncul saat di atas (belum scroll) -->
-            <span
-              v-if="!isScrolled && isSuperAdmin"
-              class="hidden lg:inline-block ml-2 text-[9px] font-medium uppercase px-2 py-0.5 rounded-full bg-[#f2f2f3] text-[#17191c] tracking-wider transition-opacity duration-300"
+
+            <!-- Badge (Smoothly dissolves and slides, zero layout snapping) -->
+            <div
+              class="transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] overflow-hidden hidden sm:inline-flex items-center"
+              :class="isScrolled ? 'max-w-0 opacity-0 -ml-1' : 'max-w-[90px] opacity-100 ml-2'"
             >
-              Admin
-            </span>
-            <span
-              v-else-if="!isScrolled"
-              class="hidden lg:inline-block ml-2 text-[9px] font-medium uppercase px-2 py-0.5 rounded-full bg-[#f2f2f3] text-[#777b86] tracking-wider transition-opacity duration-300"
-            >
-              Hybrid
-            </span>
+              <span class="text-[9px] font-medium uppercase px-2 py-0.5 rounded-full bg-[#f2f2f3] text-[#777b86] whitespace-nowrap">
+                {{ isSuperAdmin ? 'Admin' : 'Hybrid' }}
+              </span>
+            </div>
           </div>
         </router-link>
 
         <!-- 2. Segmented Navigation Links (Center - Desktop) -->
-        <nav
-          class="hidden md:flex items-center text-xs tracking-tight transition-all duration-300"
-          :class="isScrolled ? 'space-x-0.5' : 'space-x-1.5'"
-        >
+        <nav class="hidden md:flex items-center space-x-1 text-xs tracking-tight">
           <router-link
             v-for="item in navLinks"
             :key="item.to"
             :to="item.to"
-            class="whitespace-nowrap rounded-full font-medium transition-all duration-200 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c]"
+            class="whitespace-nowrap rounded-full font-medium transition-all duration-200 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c]"
             :class="[
               isScrolled ? 'px-3 py-1 text-[11px]' : 'px-3.5 py-1.5 text-xs',
               isItemActive(item.to)
@@ -165,20 +162,26 @@ async function handleLogout() {
         <div class="flex items-center space-x-2 flex-shrink-0">
           <!-- Kondisi 1: Tamu (Belum Login) -->
           <template v-if="isGuest">
-            <div class="hidden md:flex items-center space-x-2">
+            <div class="hidden md:flex items-center space-x-1.5">
               <router-link
                 to="/login"
-                class="font-medium text-[#777b86] hover:text-[#17191c] transition-colors"
+                class="font-medium text-[#777b86] hover:text-[#17191c] transition-colors rounded-full"
                 :class="isScrolled ? 'text-xs px-2.5 py-1' : 'text-xs px-3.5 py-1.5'"
               >
                 Masuk
               </router-link>
               <router-link
                 to="/register"
-                class="font-medium text-white bg-[#17191c] hover:bg-[#2b2e34] rounded-full active:scale-[0.98] transition-all shadow-sm"
+                class="font-medium text-white bg-[#17191c] hover:bg-[#2b2e34] rounded-full active:scale-[0.98] transition-all shadow-sm flex items-center"
                 :class="isScrolled ? 'text-xs px-3 py-1' : 'text-xs px-4 py-1.5'"
               >
-                Daftar
+                <span>Daftar</span>
+                <span
+                  class="transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] overflow-hidden hidden sm:inline-block"
+                  :class="isScrolled ? 'max-w-0 opacity-0' : 'max-w-[45px] opacity-100'"
+                >
+                  &nbsp;Gratis
+                </span>
               </router-link>
             </div>
           </template>
@@ -190,12 +193,12 @@ async function handleLogout() {
                 <div class="w-4 h-4 rounded-full bg-[#17191c] text-white flex items-center justify-center text-[9px] font-bold">
                   {{ userInitial }}
                 </div>
-                <span class="truncate max-w-[90px]">{{ userDisplayName }}</span>
+                <span class="truncate max-w-[85px]">{{ userDisplayName }}</span>
               </div>
               <button
                 type="button"
                 @click="handleLogout"
-                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
               >
                 Keluar
               </button>
@@ -206,13 +209,13 @@ async function handleLogout() {
           <template v-else-if="isReviewer">
             <div class="hidden md:flex items-center space-x-2 text-xs">
               <div class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#f2f2f3] border border-[#ededed] text-[#17191c] font-medium">
-                <span class="truncate max-w-[90px]">{{ userDisplayName }}</span>
+                <span class="truncate max-w-[85px]">{{ userDisplayName }}</span>
                 <span class="text-[10px] text-[#059669] font-bold tabular-nums">({{ authStore.tokenBalance }} T)</span>
               </div>
               <button
                 type="button"
                 @click="handleLogout"
-                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
               >
                 Keluar
               </button>
@@ -226,13 +229,13 @@ async function handleLogout() {
                 <div class="w-4 h-4 rounded-full bg-[#17191c] text-white flex items-center justify-center text-[9px] font-bold">
                   {{ userInitial }}
                 </div>
-                <span class="truncate max-w-[90px]">{{ userDisplayName }}</span>
+                <span class="truncate max-w-[85px]">{{ userDisplayName }}</span>
                 <span class="text-[10px] text-[#059669] font-bold tabular-nums">{{ authStore.tokenBalance }} T</span>
               </div>
               <button
                 type="button"
                 @click="handleLogout"
-                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
+                class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-2.5 py-1 rounded-full hover:bg-[#f2f2f3] transition-colors"
               >
                 Keluar
               </button>
@@ -256,7 +259,7 @@ async function handleLogout() {
         </div>
       </div>
 
-      <!-- Mobile Dropdown Navigation Drawer (Unfolds smoothly inside the capsule on mobile) -->
+      <!-- Mobile Dropdown Navigation Drawer (Smoothly unfolds inside the capsule on mobile) -->
       <div
         v-if="isMobileMenuOpen"
         class="md:hidden pt-4 pb-2 border-t border-[#ededed] mt-3 space-y-3"
