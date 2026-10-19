@@ -65,12 +65,12 @@ defineExpose({
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-6">
+  <div class="bg-white border border-[#ededed] rounded-[24px] p-6 sm:p-8 shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] space-y-6">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-extrabold uppercase tracking-wider text-[#262626]">
-        1. Unggah Berkas Naskah <span class="italic font-bold text-[#686868]">(.pdf, .docx, .txt)</span>
+      <h2 class="text-sm font-semibold uppercase tracking-wider text-[#17191c]">
+        1. Unggah Berkas Naskah <span class="italic font-normal text-[#777b86]">(.pdf, .docx, .txt)</span>
       </h2>
-      <span class="text-xs text-[#737373] font-medium">Maks. 50 MB / berkas</span>
+      <span class="text-xs text-[#777b86] font-normal">Maks. 50 MB / berkas</span>
     </div>
 
     <!-- Alert on error -->
@@ -85,10 +85,10 @@ defineExpose({
 
     <!-- Dropzone -->
     <div
-      class="border border-dashed rounded-[14px] p-8 text-center transition-colors duration-150 ease-out cursor-pointer"
+      class="border border-dashed rounded-[20px] p-8 text-center transition-all duration-150 ease-out cursor-pointer"
       :class="[
-        isDragging ? 'border-[#262626] bg-[#fafafa] scale-[1.005]' : 'border-[#ededed] hover:border-[#cbcbcb] bg-[#fafafa]',
-        selectedFile ? 'border-[#262626] bg-white' : '',
+        isDragging ? 'border-[#17191c] bg-[#fafafb] scale-[1.005]' : 'border-[#ededed] hover:border-[#17191c] bg-[#fafafb]',
+        selectedFile ? 'border-[#17191c] bg-white' : '',
       ]"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
@@ -103,63 +103,63 @@ defineExpose({
         class="hidden"
       />
       <label for="dashboardDocUpload" class="cursor-pointer space-y-2 block">
-        <div class="mx-auto w-12 h-12 rounded-[8px] bg-white border border-[#ededed] text-[#262626] flex items-center justify-center shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-          <svg v-if="selectedFile" class="w-6 h-6 text-[#262626]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="mx-auto w-12 h-12 rounded-full bg-white border border-[#ededed] text-[#17191c] flex items-center justify-center shadow-sm">
+          <svg v-if="selectedFile" class="w-6 h-6 text-[#17191c]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <svg v-else class="w-6 h-6 text-[#686868]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg v-else class="w-6 h-6 text-[#777b86]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
           </svg>
         </div>
 
         <div v-if="selectedFile" class="space-y-1">
-          <div class="text-sm font-extrabold text-[#262626]">
+          <div class="text-sm font-semibold text-[#17191c]">
             {{ selectedFile.name }}
           </div>
-          <div class="text-xs text-[#737373] font-medium">
+          <div class="text-xs text-[#777b86] font-normal">
             Ukuran: {{ (selectedFile.size / 1024).toFixed(1) }} KB
           </div>
           <button
             type="button"
             @click.stop.prevent="handleFileReset"
-            class="text-xs text-red-600 hover:underline pt-1 font-bold"
+            class="text-xs text-red-600 hover:underline pt-1 font-medium"
           >
             Ganti berkas
           </button>
         </div>
 
         <div v-else class="space-y-1">
-          <div class="text-sm font-bold text-[#262626]">
+          <div class="text-sm font-medium text-[#17191c]">
             Klik untuk memilih berkas atau seret naskah ke sini
           </div>
-          <p class="text-xs text-[#737373] font-normal">
-            Format yang didukung: Dokumen Teks <strong class="italic font-bold text-[#515151]">PDF</strong>, Microsoft Word <strong class="italic font-bold text-[#515151]">DOCX</strong>, atau Plain Text <strong class="italic font-bold text-[#515151]">TXT</strong>
+          <p class="text-xs text-[#777b86] font-normal">
+            Format yang didukung: Dokumen Teks <strong class="italic font-medium text-[#17191c]">PDF</strong>, Microsoft Word <strong class="italic font-medium text-[#17191c]">DOCX</strong>, atau Plain Text <strong class="italic font-medium text-[#17191c]">TXT</strong>
           </p>
         </div>
       </label>
     </div>
 
     <!-- Depth selector & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-t border-[#ededed]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-[#ededed]">
       <div class="flex flex-wrap items-center gap-4">
-        <span class="text-xs font-semibold text-[#737373]">Pilihan Tingkat Kedalaman:</span>
-        <label class="inline-flex items-center space-x-2 text-xs font-semibold text-[#262626] cursor-pointer">
+        <span class="text-xs font-medium text-[#777b86]">Pilihan Tingkat Kedalaman:</span>
+        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#17191c] cursor-pointer">
           <input
             type="radio"
             value="FULL"
             v-model="auditDepth"
-            class="text-[#262626] focus:ring-[#262626]"
+            class="text-[#17191c] focus:ring-[#17191c]"
           />
-          <span>Penuh (Tier 1 - 4) &bull; <strong class="italic font-bold text-[#262626]">2 Token</strong></span>
+          <span>Penuh (Tier 1 - 4) &bull; <strong class="italic font-medium text-[#17191c]">2 Token</strong></span>
         </label>
-        <label class="inline-flex items-center space-x-2 text-xs font-semibold text-[#262626] cursor-pointer">
+        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#17191c] cursor-pointer">
           <input
             type="radio"
             value="TIER1_ONLY"
             v-model="auditDepth"
-            class="text-[#262626] focus:ring-[#262626]"
+            class="text-[#17191c] focus:ring-[#17191c]"
           />
-          <span>Hanya Leksikal (Tier 1) &bull; <strong class="italic font-bold text-[#262626]">1 Token</strong></span>
+          <span>Hanya Leksikal (Tier 1) &bull; <strong class="italic font-medium text-[#17191c]">1 Token</strong></span>
         </label>
       </div>
 

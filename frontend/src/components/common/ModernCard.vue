@@ -26,15 +26,15 @@ defineEmits<{
 
 <template>
   <div
-    class="bg-white rounded-[14px] p-6 border border-[#ededed] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:border-[#d4d4d4] transition-all duration-150 ease-out flex flex-col justify-between group"
+    class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] hover:border-[#17191c] transition-all duration-150 ease-out flex flex-col justify-between group"
   >
     <div>
       <!-- Top Row: Icon Avatar + Save Pill -->
       <div class="flex items-center justify-between mb-4">
         <!-- Circular Icon Slot -->
-        <div class="w-10 h-10 rounded-full flex items-center justify-center border border-[#ededed] bg-white text-[#262626] transition-transform duration-150 group-hover:scale-105">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center border border-[#ededed] bg-[#fafafb] text-[#17191c] transition-transform duration-150 group-hover:scale-105">
           <slot name="icon">
-            <svg class="w-4 h-4 text-[#262626]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="w-4 h-4 text-[#17191c]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </slot>
@@ -44,8 +44,8 @@ defineEmits<{
         <button
           v-if="showSaveButton"
           type="button"
-          class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-[4px] border text-xs font-medium tracking-tight transition-colors duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
-          :class="isSaved ? 'bg-[#262626] border-[#262626] text-white' : 'bg-transparent border-[#ededed] text-[#262626] hover:bg-[#fafafa]'"
+          class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full border text-xs font-medium tracking-tight transition-colors duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
+          :class="isSaved ? 'bg-[#17191c] border-[#17191c] text-white' : 'bg-transparent border-[#ededed] text-[#17191c] hover:bg-[#f2f2f3]'"
           @click="$emit('toggleSave')"
         >
           <span>{{ isSaved ? 'Tersimpan' : 'Simpan' }}</span>
@@ -56,13 +56,13 @@ defineEmits<{
       </div>
 
       <!-- Subtitle + Timestamp -->
-      <div v-if="subtitle" class="flex items-center text-xs font-medium text-[#515151]">
+      <div v-if="subtitle" class="flex items-center text-xs font-medium text-[#777b86]">
         <span>{{ subtitle }}</span>
-        <span v-if="timestamp" class="text-[#929292] font-normal ml-1.5 text-[11px]">{{ timestamp }}</span>
+        <span v-if="timestamp" class="text-[#979799] font-normal ml-1.5 text-[11px]">{{ timestamp }}</span>
       </div>
 
       <!-- Main Title -->
-      <h3 v-if="title" class="text-base font-semibold text-[#262626] tracking-tight mt-0.5">
+      <h3 v-if="title" class="text-base font-semibold text-[#17191c] tracking-tight mt-0.5">
         {{ title }}
       </h3>
 
@@ -72,7 +72,7 @@ defineEmits<{
       </div>
 
       <!-- Default Body / Description Slot -->
-      <div class="text-xs text-[#686868] leading-relaxed mt-3.5">
+      <div class="text-xs text-[#777b86] leading-relaxed mt-3.5">
         <slot />
       </div>
     </div>
@@ -81,10 +81,10 @@ defineEmits<{
     <div v-if="statValue || $slots.footer" class="pt-4 mt-5 border-t border-[#ededed] flex items-center justify-between">
       <slot name="footer">
         <div>
-          <div class="text-sm font-extrabold text-[#262626] tabular-nums">
+          <div class="text-sm font-semibold text-[#17191c] tabular-nums">
             {{ statValue }}
           </div>
-          <div v-if="statLabel" class="text-[10px] text-[#737373] font-bold">
+          <div v-if="statLabel" class="text-[10px] text-[#777b86] font-medium">
             {{ statLabel }}
           </div>
         </div>
@@ -92,14 +92,14 @@ defineEmits<{
         <router-link
           v-if="actionTo"
           :to="actionTo"
-          class="px-3.5 py-1.5 bg-[#262626] hover:bg-[#171717] text-white text-xs font-medium rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+          class="px-4 py-1.5 bg-[#17191c] hover:bg-[#2e3138] text-white text-xs font-medium rounded-full active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
         >
           {{ actionLabel }}
         </router-link>
         <button
           v-else
           type="button"
-          class="px-3.5 py-1.5 bg-[#262626] hover:bg-[#171717] text-white text-xs font-medium rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+          class="px-4 py-1.5 bg-[#17191c] hover:bg-[#2e3138] text-white text-xs font-medium rounded-full active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
           @click="$emit('actionClick')"
         >
           {{ actionLabel }}

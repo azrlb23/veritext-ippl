@@ -80,30 +80,30 @@ async function handleLogout() {
           </span>
           <span
             v-if="isSuperAdmin"
-            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-[4px] bg-[#fafafa] text-[#262626] border border-[#ededed] tracking-wider"
+            class="hidden sm:inline-block ml-2 text-[10px] font-medium uppercase px-2.5 py-0.5 rounded-full bg-[#f2f2f3] text-[#17191c] tracking-wider"
           >
-            Admin Console
+            Admin
           </span>
           <span
             v-else
-            class="hidden sm:inline-block ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded-[4px] bg-[#fafafa] text-[#686868] border border-[#ededed] tracking-wider"
+            class="hidden sm:inline-block ml-2 text-[10px] font-medium uppercase px-2.5 py-0.5 rounded-full bg-[#f2f2f3] text-[#777b86] tracking-wider"
           >
             Hybrid Engine
           </span>
         </div>
       </router-link>
 
-      <!-- Desktop Navigation Links (Segmented & Clean Pills) -->
-      <nav class="hidden md:flex items-center space-x-1 lg:space-x-1.5 text-xs tracking-tight">
+      <!-- Desktop Navigation Links (Steep Quiet Pill Nav) -->
+      <nav class="hidden md:flex items-center space-x-1 text-xs tracking-tight">
         <router-link
           v-for="item in navLinks"
           :key="item.to"
           :to="item.to"
-          class="whitespace-nowrap px-2.5 lg:px-3 py-1.5 rounded-[4px] font-semibold transition-all duration-150 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626]"
+          class="whitespace-nowrap px-3.5 py-1.5 rounded-full font-medium transition-all duration-150 ease-out focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c]"
           :class="[
             isItemActive(item.to)
-              ? 'bg-[#262626] text-white font-bold shadow-sm'
-              : 'text-[#686868] hover:text-[#262626] hover:bg-[#f5f5f5]',
+              ? 'bg-[#17191c] text-white font-medium'
+              : 'text-[#777b86] hover:text-[#17191c] hover:bg-[#fafafb]',
           ]"
         >
           {{ item.name }}
@@ -117,13 +117,13 @@ async function handleLogout() {
           <div class="hidden md:flex items-center space-x-2">
             <router-link
               to="/login"
-              class="text-xs font-semibold text-[#686868] hover:text-[#262626] px-3 py-1.5 rounded-[4px] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-medium text-[#777b86] hover:text-[#17191c] px-3.5 py-1.5 transition-colors duration-150 ease-out"
             >
               Masuk
             </router-link>
             <router-link
               to="/register"
-              class="text-xs font-bold text-white bg-[#262626] hover:bg-[#171717] px-3.5 py-1.5 rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#262626] transition-colors duration-150 ease-out"
+              class="text-xs font-medium text-white bg-[#17191c] hover:bg-[#2b2e34] px-4 py-1.5 rounded-full active:scale-[0.98] focus:outline-none focus-visible:ring-1 focus-visible:ring-[#17191c] transition-colors duration-150 ease-out"
             >
               Daftar Gratis
             </router-link>

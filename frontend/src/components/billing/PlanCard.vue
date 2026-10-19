@@ -26,45 +26,45 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="rounded-[14px] p-8 border transition-all relative flex flex-col justify-between space-y-6"
+    class="rounded-[24px] p-8 border transition-all relative flex flex-col justify-between space-y-6"
     :class="[
       plan.popular
-        ? 'bg-[#171717] border-[#262626] text-white shadow-[0_1px_3px_rgba(0,0,0,0.12)]'
-        : 'bg-white border-[#ededed] text-[#262626] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:border-[#d4d4d4]'
+        ? 'bg-[#fbe1d1] border-[#fbe1d1] text-[#5d2a1a] shadow-[0_0_0_1px_rgba(93,42,26,0.1),0_20px_25px_-5px_rgba(93,42,26,0.08)]'
+        : 'bg-white border-[#ededed] text-[#17191c] shadow-[0_0_0_1px_rgba(4,23,43,0.05)] hover:border-[#17191c]'
     ]"
   >
-    <!-- Audyr Mint Whisper Popular Pill Badge -->
+    <!-- Steep Blush Peach / Ink Popular Pill Badge -->
     <div
       v-if="plan.popular"
-      class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-full text-[10px] italic font-bold uppercase tracking-wider"
+      class="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 bg-[#17191c] text-white rounded-full text-[10px] italic font-medium uppercase tracking-wider"
     >
       Paling Populer
     </div>
 
     <div class="space-y-3">
       <h3
-        class="text-lg font-extrabold tracking-tight"
-        :class="plan.popular ? 'text-white' : 'text-[#262626]'"
+        class="text-lg font-semibold tracking-tight"
+        :class="plan.popular ? 'text-[#5d2a1a]' : 'text-[#17191c]'"
       >
         {{ plan.name }}
       </h3>
       <div class="flex items-baseline space-x-2">
         <span
-          class="text-3xl sm:text-4xl font-extrabold tracking-tight tabular-nums"
-          :class="plan.popular ? 'text-white' : 'text-[#262626]'"
+          class="text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums"
+          :class="plan.popular ? 'text-[#5d2a1a]' : 'text-[#17191c]'"
         >
           {{ plan.price }}
         </span>
         <span
-          class="text-xs font-medium"
-          :class="plan.popular ? 'text-[#cbcbcb]' : 'text-[#686868]'"
+          class="text-xs font-normal"
+          :class="plan.popular ? 'text-[#5d2a1a]/80' : 'text-[#777b86]'"
         >
           / {{ plan.tokens }} Token
         </span>
       </div>
       <p
-        class="text-xs leading-relaxed"
-        :class="plan.popular ? 'text-[#cbcbcb]' : 'text-[#686868]'"
+        class="text-xs leading-relaxed font-normal"
+        :class="plan.popular ? 'text-[#5d2a1a]/80' : 'text-[#777b86]'"
       >
         {{ plan.description }}
       </p>
@@ -75,7 +75,7 @@ const emit = defineEmits<{
       size="md"
       block
       :loading="loading"
-      :class="plan.popular ? 'bg-white hover:bg-[#fafafa] !text-[#171717] border-transparent' : ''"
+      :class="plan.popular ? '!bg-[#17191c] hover:!bg-[#2e3138] !text-white border-transparent' : ''"
       @click="emit('select', plan)"
     >
       Beli Paket Ini &rarr;

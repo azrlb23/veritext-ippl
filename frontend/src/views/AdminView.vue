@@ -347,23 +347,23 @@ function setSection(section: AdminSection) {
     <!-- Header Konsol Super Administrator -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#ededed] pb-6">
       <div>
-        <div class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#262626] text-white text-[11px] font-bold uppercase tracking-wider mb-2">
+        <div class="inline-flex items-center px-3 py-0.5 rounded-full bg-[#17191c] text-white text-[11px] font-medium uppercase tracking-wider mb-2">
           <span>Konsol Tata Kelola Administrator</span>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
-          Pusat Kontrol Infrastruktur &amp; <span class="italic font-bold text-[#262626]">Tata Kelola VeriText AI</span>
+        <h1 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
+          Pusat Kontrol Infrastruktur &amp; <span class="italic font-normal text-[#17191c]">Tata Kelola VeriText AI</span>
         </h1>
-        <p class="text-xs sm:text-sm text-[#686868] mt-1 max-w-3xl font-normal">
-          Konsol tata kelola terpadu untuk pengawasan server backend <strong class="font-bold text-[#262626]">FastAPI</strong>, topologi <strong class="font-bold text-[#262626]">pgvector HNSW</strong>, antrean Celery worker, manajemen kuota pengguna, serta kepatuhan <strong class="italic font-bold text-[#262626]">UU PDP No. 27/2022</strong>.
+        <p class="text-xs sm:text-sm text-[#777b86] mt-1.5 max-w-3xl font-normal">
+          Konsol tata kelola terpadu untuk pengawasan server backend <strong class="font-medium text-[#17191c]">FastAPI</strong>, topologi <strong class="font-medium text-[#17191c]">pgvector HNSW</strong>, antrean Celery worker, manajemen kuota pengguna, serta kepatuhan <strong class="italic font-medium text-[#17191c]">UU PDP No. 27/2022</strong>.
         </p>
       </div>
 
       <!-- Quick Status Badges -->
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start">
-        <div class="text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
+        <div class="text-xs font-medium bg-[#fafafb] px-3.5 py-1.5 rounded-full border border-[#ededed] shadow-sm text-[#17191c]">
           <span>Backend FastAPI: Sehat (200 OK)</span>
         </div>
-        <div class="text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
+        <div class="text-xs font-medium bg-[#fafafb] px-3.5 py-1.5 rounded-full border border-[#ededed] shadow-sm text-[#17191c]">
           <span>Celery &amp; Redis: Aktif</span>
         </div>
       </div>
@@ -439,37 +439,37 @@ function setSection(section: AdminSection) {
       <!-- Infrastructure Nodes Status -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Worker Celery -->
-        <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
+        <div class="bg-white border border-[#ededed] rounded-[20px] p-5 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-2 hover:border-[#17191c] transition-all duration-150 ease-out">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#262626] tracking-tight">Antrean Worker Celery</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Worker Aktif</span>
+            <span class="text-xs font-semibold text-[#17191c] tracking-tight">Antrean Worker Celery</span>
+            <span class="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Worker Aktif</span>
           </div>
-          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">{{ systemMetrics.celeryActiveTasks }} <span class="text-xs font-normal text-[#686868]">antrean aktif</span></div>
-          <p class="text-[11px] text-[#737373] leading-relaxed">
-            Broker Redis: <span class="font-extrabold text-[#262626]">{{ systemMetrics.redisStatus }}</span>. Database: <span class="font-extrabold text-[#262626]">{{ systemMetrics.databaseStatus }}</span>.
+          <div class="text-2xl font-semibold text-[#17191c] tabular-nums">{{ systemMetrics.celeryActiveTasks }} <span class="text-xs font-normal text-[#777b86]">antrean aktif</span></div>
+          <p class="text-[11px] text-[#777b86] leading-relaxed font-normal">
+            Broker Redis: <span class="font-medium text-[#17191c]">{{ systemMetrics.redisStatus }}</span>. Database: <span class="font-medium text-[#17191c]">{{ systemMetrics.databaseStatus }}</span>.
           </p>
         </div>
 
         <!-- pgvector HNSW Engine -->
-        <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
+        <div class="bg-white border border-[#ededed] rounded-[20px] p-5 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-2 hover:border-[#17191c] transition-all duration-150 ease-out">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#262626] tracking-tight">pgvector HNSW Index</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">m=16, ef=64</span>
+            <span class="text-xs font-semibold text-[#17191c] tracking-tight">pgvector HNSW Index</span>
+            <span class="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">m=16, ef=64</span>
           </div>
-          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">{{ systemMetrics.vectorCount.toLocaleString('id-ID') }} <span class="text-xs font-normal text-[#686868]">vektor terindeks</span></div>
-          <p class="text-[11px] text-[#737373] leading-relaxed">
-            Metrik jarak: <span class="italic font-bold text-[#262626]">Kosinus (Cosine Distance)</span>. Indeks tersinkronisasi 100% dengan repositori korpus.
+          <div class="text-2xl font-semibold text-[#17191c] tabular-nums">{{ systemMetrics.vectorCount.toLocaleString('id-ID') }} <span class="text-xs font-normal text-[#777b86]">vektor terindeks</span></div>
+          <p class="text-[11px] text-[#777b86] leading-relaxed font-normal">
+            Metrik jarak: <span class="italic font-medium text-[#17191c]">Kosinus (Cosine Distance)</span>. Indeks tersinkronisasi 100% dengan repositori korpus.
           </p>
         </div>
 
         <!-- Security & Privacy Guard -->
-        <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-2">
+        <div class="bg-white border border-[#ededed] rounded-[20px] p-5 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-2 hover:border-[#17191c] transition-all duration-150 ease-out">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-[#262626] tracking-tight">Kepatuhan UU PDP No. 27/2022</span>
-            <span class="text-[10px] italic font-bold px-2 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Compliant</span>
+            <span class="text-xs font-semibold text-[#17191c] tracking-tight">Kepatuhan UU PDP No. 27/2022</span>
+            <span class="text-[10px] italic font-medium px-2.5 py-0.5 rounded-full bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">Compliant</span>
           </div>
-          <div class="text-2xl font-extrabold text-[#262626] tabular-nums">30 Hari <span class="text-xs font-normal text-[#686868]">retensi otomatis</span></div>
-          <p class="text-[11px] text-[#737373] leading-relaxed">
+          <div class="text-2xl font-semibold text-[#17191c] tabular-nums">30 Hari <span class="text-xs font-normal text-[#777b86]">retensi otomatis</span></div>
+          <p class="text-[11px] text-[#777b86] leading-relaxed font-normal">
             Naskah mahasiswa otomatis dibersihkan dari server sementara sidik jari hash kriptografi dipertahankan.
           </p>
         </div>

@@ -46,7 +46,7 @@ const severityLevel = computed(() => {
 </script>
 
 <template>
-  <div class="inline-flex flex-col items-center justify-center p-5 rounded-[14px] bg-white border border-[#ededed] shadow-audyr-subtle">
+  <div class="inline-flex flex-col items-center justify-center p-6 rounded-[20px] bg-white border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05)]">
     <div class="relative flex items-center justify-center w-28 h-28">
       <!-- Circular Ring Mockup -->
       <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -67,15 +67,15 @@ const severityLevel = computed(() => {
         />
       </svg>
       <div class="absolute flex flex-col items-center">
-        <span class="text-2xl font-extrabold tracking-tight tabular-nums text-audyr-ink">
+        <span class="text-2xl font-bold tracking-tight tabular-nums text-[#17191c]">
           {{ score.toFixed(1) }}%
         </span>
-        <span class="text-[10px] text-audyr-ash font-bold tracking-tight">SIMILARITY</span>
+        <span class="text-[10px] text-[#777b86] font-medium tracking-wider uppercase">SIMILARITY</span>
       </div>
     </div>
 
     <div
-      class="mt-3 px-3 py-0.5 rounded-full text-xs italic font-bold border tracking-tight"
+      class="mt-3 px-3 py-0.5 rounded-full text-xs italic font-medium border tracking-tight"
       :class="[severityLevel.textColor, severityLevel.bgColor, severityLevel.borderColor]"
     >
       {{ severityLevel.category }}

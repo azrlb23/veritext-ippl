@@ -137,7 +137,7 @@ async function handleExportPdf() {
       <p class="text-xs text-audyr-ash max-w-md mx-auto">{{ errorMessage }}</p>
       <router-link
         to="/dashboard"
-        class="inline-block px-4 py-2 text-xs font-semibold text-white bg-audyr-ink rounded-[4px] hover:bg-black transition-colors"
+        class="inline-block px-5 py-2 text-xs font-medium text-white bg-[#17191c] rounded-full hover:bg-[#2e3138] transition-colors"
       >
         Kembali ke Workspace Dashboard
       </router-link>
@@ -146,19 +146,19 @@ async function handleExportPdf() {
     <!-- Data Loaded State -->
     <template v-else>
       <!-- Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[14px] border border-[#ededed] shadow-audyr-subtle">
-        <div class="space-y-1.5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-[24px] border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)]">
+        <div class="space-y-2">
           <div class="flex items-center space-x-2">
-            <span class="px-2.5 py-0.5 rounded-full text-[11px] italic font-bold tracking-tight bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0]">
+            <span class="px-3 py-0.5 rounded-full text-[11px] italic font-medium tracking-tight bg-[#ecfdf5] text-[#065f46] border border-[#a7f3d0]">
               Audit Selesai
             </span>
-            <span class="text-xs tabular-nums text-audyr-ash">ID: <span class="font-bold text-audyr-ink">{{ reportData.id }}</span> &bull; UUID: <span class="font-bold text-audyr-ink">{{ reportData.verification_uuid }}</span></span>
+            <span class="text-xs tabular-nums text-[#777b86]">ID: <span class="font-medium text-[#17191c]">{{ reportData.id }}</span> &bull; UUID: <span class="font-medium text-[#17191c]">{{ reportData.verification_uuid }}</span></span>
           </div>
-          <h1 class="text-xl sm:text-2xl font-extrabold text-audyr-ink tracking-tight">
+          <h1 class="font-serif text-2xl sm:text-3xl font-normal text-[#17191c] tracking-tight">
             {{ reportData.document_title }}
           </h1>
-          <p class="text-xs text-audyr-ash">
-            Diperiksa oleh: <span class="font-bold text-audyr-ink">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: <span class="tabular-nums font-medium">{{ reportData.generated_at }}</span>
+          <p class="text-xs text-[#777b86]">
+            Diperiksa oleh: <span class="font-medium text-[#17191c]">{{ reportData.user_name }}</span> ({{ reportData.institution }}) &bull; Waktu: <span class="tabular-nums font-normal">{{ reportData.generated_at }}</span>
           </p>
         </div>
 

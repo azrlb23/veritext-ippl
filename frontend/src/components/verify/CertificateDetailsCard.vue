@@ -21,12 +21,12 @@ defineProps<Props>();
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-[14px] p-6 sm:p-8 shadow-audyr-subtle space-y-6">
+  <div class="bg-white border border-[#ededed] rounded-[24px] p-6 sm:p-8 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-6">
     <div class="flex items-center justify-between border-b border-[#ededed] pb-4">
-      <h2 class="text-sm font-extrabold uppercase tracking-tight text-audyr-ink">
+      <h2 class="text-sm font-semibold uppercase tracking-tight text-[#17191c]">
         Ringkasan Hasil Uji Integritas Akademik
       </h2>
-      <span class="text-[11px] italic font-bold tracking-tight px-3 py-0.5 rounded-full bg-[#ededed] text-audyr-ink">
+      <span class="text-[11px] italic font-medium tracking-tight px-3 py-0.5 rounded-full bg-[#f2f2f3] text-[#17191c]">
         Publik &bull; Read-Only
       </span>
     </div>

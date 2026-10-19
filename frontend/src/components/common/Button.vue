@@ -29,30 +29,30 @@ const emit = defineEmits<{
 const variantClasses = computed(() => {
   switch (props.variant) {
     case "secondary":
-      return "bg-transparent hover:bg-[#fafafa] text-[#262626] border-[#ededed] hover:border-[#d4d4d4] shadow-none";
+      return "bg-transparent hover:bg-[#fafafb] text-[#17191c] border-[#17191c]/20 hover:border-[#17191c] shadow-none";
     case "outline":
-      return "bg-white hover:bg-[#fafafa] text-[#262626] border-[#ededed] hover:border-[#d4d4d4] shadow-none";
+      return "bg-white hover:bg-[#fafafb] text-[#17191c] border-[#ededed] hover:border-[#17191c] shadow-none";
     case "danger":
       return "bg-red-600 hover:bg-red-700 text-white border-transparent shadow-none";
     case "ghost":
-      return "bg-transparent hover:bg-[#f5f5f5] text-[#686868] hover:text-[#262626] border-transparent shadow-none";
+      return "bg-transparent hover:bg-[#f2f2f3] text-[#777b86] hover:text-[#17191c] border-transparent shadow-none";
     case "primary":
     default:
-      return "bg-[#262626] hover:bg-[#171717] text-white border-transparent shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)]";
+      return "bg-[#17191c] hover:bg-[#2e3138] text-white border-transparent shadow-none";
   }
 });
 
 const sizeClasses = computed(() => {
   switch (props.size) {
     case "xs":
-      return "text-xs px-2.5 py-1 rounded-[4px]";
+      return "text-xs px-3 py-1 rounded-full";
     case "sm":
-      return "text-xs px-3.5 py-1.5 rounded-[4px]";
+      return "text-xs px-3.5 py-1.5 rounded-full";
     case "lg":
-      return "text-base px-6 py-2.5 rounded-[4px]";
+      return "text-base px-6 py-2.5 rounded-full";
     case "md":
     default:
-      return "text-sm px-4 py-2 rounded-[4px]";
+      return "text-sm px-5 py-2 rounded-full";
   }
 });
 
@@ -67,7 +67,7 @@ function handleClick(event: MouseEvent) {
   <button
     :type="type"
     :disabled="disabled || loading"
-    class="inline-flex items-center justify-center font-medium tracking-tight border transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#262626]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2"
+    class="inline-flex items-center justify-center font-medium tracking-tight border transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#17191c]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2"
     :class="[
       variantClasses,
       sizeClasses,

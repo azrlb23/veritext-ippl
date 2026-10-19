@@ -88,24 +88,24 @@ function toggleSave(tier: TierCardItem) {
 <template>
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8" aria-label="Tingkat Perlindungan Integritas Akademik">
     <!-- Header -->
-    <div class="text-center max-w-2xl mx-auto space-y-2">
-      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#ededed] text-[#262626] border border-[#ededed]">
+    <div class="text-center max-w-2xl mx-auto space-y-3">
+      <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wider bg-[#fafafb] text-[#17191c] border border-[#ededed]">
         <span>Arsitektur Deteksi 4-Tier</span>
       </div>
-      <h2 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
-        Empat Tingkat Perlindungan <span class="italic font-bold text-[#262626]">Integritas Akademik</span>
+      <h2 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
+        Empat Tingkat Perlindungan <span class="italic font-normal text-[#17191c]">Integritas Akademik</span>
       </h2>
-      <p class="text-sm text-[#686868] leading-relaxed font-normal">
-        Dirancang untuk mendeteksi mulai dari salin-tempel <strong class="font-bold text-[#262626]">verbatim langsung</strong> hingga parafrasa cerdas berbasis model bahasa besar (<strong class="italic font-bold text-[#262626]">LLM</strong>).
+      <p class="text-sm text-[#777b86] leading-relaxed font-normal">
+        Dirancang untuk mendeteksi mulai dari salin-tempel <strong class="font-medium text-[#17191c]">verbatim langsung</strong> hingga parafrasa cerdas berbasis model bahasa besar (<strong class="italic font-medium text-[#17191c]">LLM</strong>).
       </p>
     </div>
 
-    <!-- Audyr Cards Grid (14px radius, pure paper, hairline borders) -->
+    <!-- Steep Cards Grid (24px radius, pure paper, hairline borders) -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div
         v-for="tier in tiers"
         :key="tier.tierId"
-        class="bg-white rounded-[14px] p-6 border border-[#ededed] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_1px_2px_rgba(0,0,0,0.06)] hover:border-[#d4d4d4] transition-all duration-150 ease-out flex flex-col justify-between group"
+        class="bg-white rounded-[24px] p-6 border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] hover:border-[#17191c] transition-all duration-150 ease-out flex flex-col justify-between group"
       >
         <div>
           <!-- Top Row: Circular Brand/Tier Icon + Save Pill Button -->
@@ -137,11 +137,11 @@ function toggleSave(tier: TierCardItem) {
               </svg>
             </div>
 
-            <!-- Audyr 4px Action Button -->
+            <!-- Steep Pill Action Button -->
             <button
               type="button"
-              class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-[4px] border text-xs font-bold tracking-tight transition-colors duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
-              :class="tier.isSaved ? 'bg-[#262626] border-[#262626] text-white' : 'bg-transparent border-[#ededed] text-[#262626] hover:bg-[#fafafa]'"
+              class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full border text-xs font-medium tracking-tight transition-colors duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
+              :class="tier.isSaved ? 'bg-[#17191c] border-[#17191c] text-white' : 'bg-transparent border-[#ededed] text-[#17191c] hover:bg-[#f2f2f3]'"
               @click="toggleSave(tier)"
             >
               <span>{{ tier.isSaved ? 'Aktif' : 'Detail' }}</span>
@@ -152,26 +152,26 @@ function toggleSave(tier: TierCardItem) {
           </div>
 
           <!-- Company/Category + Engine Subtitle -->
-          <div class="flex items-center text-xs font-bold text-[#515151]">
+          <div class="flex items-center text-xs font-medium text-[#777b86]">
             <span>{{ tier.category }}</span>
-            <span class="text-[#929292] font-medium ml-1.5 text-[11px] italic">{{ tier.engine }}</span>
+            <span class="text-[#979799] font-normal ml-1.5 text-[11px] italic">{{ tier.engine }}</span>
           </div>
 
-          <!-- Extra Bold Main Title -->
-          <h3 class="text-base sm:text-lg font-extrabold text-[#262626] tracking-tight mt-0.5">
+          <!-- Main Title -->
+          <h3 class="text-base sm:text-lg font-semibold text-[#17191c] tracking-tight mt-0.5">
             {{ tier.title }}
           </h3>
 
-          <!-- Tags in Audyr pill containers -->
+          <!-- Tags in Steep pill containers -->
           <div class="flex flex-wrap gap-1.5 mt-3">
             <span
               v-for="tag in tier.tags"
               :key="tag"
               :class="[
-                'px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-tight border',
+                'px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-tight border',
                 tier.tierId === 'T2' && tag === 'Bobot 35%'
                   ? 'bg-[#ecfdf5] border-[#a7f3d0] text-[#065f46]'
-                  : 'bg-[#ededed] border-[#ededed] text-[#262626]'
+                  : 'bg-[#f2f2f3] border-[#ededed] text-[#17191c]'
               ]"
             >
               {{ tag }}
@@ -179,7 +179,7 @@ function toggleSave(tier: TierCardItem) {
           </div>
 
           <!-- Description paragraph -->
-          <p class="text-xs text-[#686868] leading-relaxed mt-3.5 font-normal">
+          <p class="text-xs text-[#777b86] leading-relaxed mt-3.5 font-normal">
             {{ tier.description }}
           </p>
         </div>
@@ -187,18 +187,18 @@ function toggleSave(tier: TierCardItem) {
         <!-- Footer Row with Metric on Left and Black Pill Button on Right -->
         <div class="pt-4 mt-5 border-t border-[#ededed] flex items-center justify-between">
           <div>
-            <div class="text-sm font-extrabold text-[#262626] tabular-nums">
+            <div class="text-sm font-semibold text-[#17191c] tabular-nums">
               {{ tier.statValue }}
             </div>
-            <div class="text-[10px] text-[#737373] font-medium">
+            <div class="text-[10px] text-[#777b86] font-normal">
               {{ tier.statLabel }}
             </div>
           </div>
 
-          <!-- Audyr 4px Dark Filled Action Button -->
+          <!-- Steep Dark Pill Action Button -->
           <router-link
             to="/dashboard"
-            class="px-3.5 py-1.5 bg-[#262626] hover:bg-[#171717] text-white text-xs font-bold rounded-[4px] shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#262626]"
+            class="px-4 py-1.5 bg-[#17191c] hover:bg-[#2e3138] text-white text-xs font-medium rounded-full active:scale-[0.98] transition-all duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#17191c]"
           >
             Uji Coba
           </router-link>

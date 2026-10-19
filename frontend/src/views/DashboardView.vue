@@ -200,30 +200,30 @@ async function handleRefresh() {
     <!-- Header -->
     <div>
       <div class="flex flex-wrap items-center gap-2.5">
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-[#262626] tracking-tight">
+        <h1 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
           Workspace Audit Naskah
         </h1>
         <span
           v-if="authStore.user"
-          class="text-xs px-2.5 py-0.5 font-bold rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]"
+          class="text-xs px-3 py-0.5 font-medium rounded-full bg-[#f2f2f3] text-[#17191c] border border-[#ededed]"
         >
           {{ authStore.user.institution || 'VeriText Academic' }}
         </span>
         <span
           v-if="authStore.role === 'PREMIUM'"
-          class="text-xs px-2.5 py-0.5 font-black rounded-full bg-[#262626] text-white border border-[#262626]"
+          class="text-xs px-3 py-0.5 font-medium rounded-full bg-[#17191c] text-white border border-[#17191c]"
         >
           PREMIUM ACCOUNT
         </span>
         <span
           v-else-if="authStore.role === 'TRIAL'"
-          class="text-xs px-2.5 py-0.5 font-bold rounded-full bg-[#fafafa] text-[#737373] border border-[#ededed]"
+          class="text-xs px-3 py-0.5 font-medium rounded-full bg-[#fafafb] text-[#777b86] border border-[#ededed]"
         >
           TRIAL
         </span>
       </div>
-      <p class="text-xs sm:text-sm text-audyr-ash mt-1 font-normal">
-        Selamat datang, <strong class="italic font-bold text-[#262626]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong><span v-if="authStore.role === 'PREMIUM'" class="text-[#262626] font-bold"> (Akun Premium)</span>. Unggah dokumen akademik untuk diproses oleh <strong class="font-bold text-[#262626]">4-Tier Hybrid Detection Pipeline</strong>.
+      <p class="text-xs sm:text-sm text-[#777b86] mt-1.5 font-normal">
+        Selamat datang, <strong class="italic font-medium text-[#17191c]">{{ authStore.user?.full_name || 'Peneliti Mahasiswa' }}</strong><span v-if="authStore.role === 'PREMIUM'" class="text-[#17191c] font-medium"> (Akun Premium)</span>. Unggah dokumen akademik untuk diproses oleh <strong class="font-medium text-[#17191c]">4-Tier Hybrid Detection Pipeline</strong>.
       </p>
     </div>
 

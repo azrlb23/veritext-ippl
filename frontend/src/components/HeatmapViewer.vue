@@ -32,16 +32,16 @@ function selectAnno(anno: HeatmapAnnotation) {
 <template>
   <div class="space-y-4">
     <!-- Tier Filtering Toggles -->
-    <div class="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-[#ededed] rounded-[14px] shadow-audyr-subtle">
-      <div class="flex items-center space-x-2 text-xs font-semibold text-audyr-ink tracking-tight">
+    <div class="flex flex-wrap items-center justify-between gap-3 p-4 bg-white border border-[#ededed] rounded-[20px] shadow-[0_0_0_1px_rgba(4,23,43,0.05)]">
+      <div class="flex items-center space-x-2 text-xs font-medium text-[#17191c] tracking-tight">
         <span>Filter Lapisan Sorotan:</span>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
           @click="showT1 = !showT1"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
-          :class="showT1 ? 'bg-red-50 text-red-700 border-red-300 ring-1 ring-red-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
+          class="px-3.5 py-1 text-xs font-medium rounded-full border transition-all flex items-center"
+          :class="showT1 ? 'bg-red-50 text-red-700 border-red-300 ring-1 ring-red-300' : 'bg-white text-[#777b86] border-[#ededed] hover:border-[#17191c]'"
         >
           <span>Tier 1 Leksikal (Merah)</span>
         </button>
@@ -49,8 +49,8 @@ function selectAnno(anno: HeatmapAnnotation) {
         <button
           type="button"
           @click="showT2 = !showT2"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
-          :class="showT2 ? 'bg-orange-50 text-orange-700 border-orange-300 ring-1 ring-orange-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
+          class="px-3.5 py-1 text-xs font-medium rounded-full border transition-all flex items-center"
+          :class="showT2 ? 'bg-orange-50 text-orange-700 border-orange-300 ring-1 ring-orange-300' : 'bg-white text-[#777b86] border-[#ededed] hover:border-[#17191c]'"
         >
           <span>Tier 2 Semantik (Oranye)</span>
         </button>
@@ -58,8 +58,8 @@ function selectAnno(anno: HeatmapAnnotation) {
         <button
           type="button"
           @click="showT3 = !showT3"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
-          :class="showT3 ? 'bg-yellow-50 text-yellow-800 border-yellow-300 ring-1 ring-yellow-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
+          class="px-3.5 py-1 text-xs font-medium rounded-full border transition-all flex items-center"
+          :class="showT3 ? 'bg-yellow-50 text-yellow-800 border-yellow-300 ring-1 ring-yellow-300' : 'bg-white text-[#777b86] border-[#ededed] hover:border-[#17191c]'"
         >
           <span>Tier 3 AI (Kuning)</span>
         </button>
@@ -67,14 +67,14 @@ function selectAnno(anno: HeatmapAnnotation) {
     </div>
 
     <!-- Heatmap Document Text Viewer -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div class="lg:col-span-2 bg-white border border-[#ededed] rounded-[14px] p-6 shadow-audyr-subtle leading-relaxed text-sm text-audyr-ink space-y-4">
-        <h3 class="text-sm font-extrabold text-[#262626] uppercase tracking-wide mb-2">
-          Naskah Dokumen dengan <span class="italic font-bold text-[#686868]">Interactive Heatmap</span>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div class="lg:col-span-2 bg-white border border-[#ededed] rounded-[24px] p-6 sm:p-8 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] leading-relaxed text-sm text-[#17191c] space-y-4">
+        <h3 class="text-sm font-semibold text-[#17191c] uppercase tracking-wide mb-2">
+          Naskah Dokumen dengan <span class="italic font-normal text-[#777b86]">Interactive Heatmap</span>
         </h3>
 
         <!-- Text snippets rendered with highlights -->
-        <div class="prose max-w-none text-audyr-slate space-y-3 font-normal leading-[1.75]">
+        <div class="prose max-w-none text-[#515151] space-y-3 font-normal leading-[1.8]">
           <p>
             Perkembangan teknologi kecerdasan buatan telah mengubah lanskap publikasi ilmiah secara dramatis.
             <span
@@ -113,15 +113,15 @@ function selectAnno(anno: HeatmapAnnotation) {
       </div>
 
       <!-- Detail Card on Selected Highlight -->
-      <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-audyr-subtle space-y-4">
-        <h4 class="text-xs font-extrabold uppercase tracking-wide text-audyr-ash">
+      <div class="bg-white border border-[#ededed] rounded-[24px] p-6 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-4">
+        <h4 class="text-xs font-semibold uppercase tracking-wide text-[#777b86]">
           Detail Temuan Terpilih
         </h4>
 
-        <div v-if="selectedAnnotation" class="space-y-3">
+        <div v-if="selectedAnnotation" class="space-y-3.5">
           <div class="flex items-center justify-between">
             <span
-              class="px-2.5 py-0.5 text-xs font-bold rounded-full"
+              class="px-2.5 py-0.5 text-xs font-medium rounded-full"
               :class="
                 selectedAnnotation.tier === 'T1'
                   ? 'bg-red-50 text-red-700 border border-red-200'
@@ -132,27 +132,27 @@ function selectAnno(anno: HeatmapAnnotation) {
             >
               {{ selectedAnnotation.tier }}: {{ selectedAnnotation.color }}
             </span>
-            <span class="text-sm font-extrabold text-audyr-ink tabular-nums">
+            <span class="text-sm font-semibold text-[#17191c] tabular-nums">
               Sim: {{ (selectedAnnotation.similarity * 100).toFixed(1) }}%
             </span>
           </div>
 
           <div>
-            <div class="text-[11px] font-semibold text-audyr-ash uppercase tracking-tight">Sumber Pembanding</div>
-            <div class="text-xs font-medium text-audyr-ink mt-0.5">
+            <div class="text-[11px] font-medium text-[#777b86] uppercase tracking-tight">Sumber Pembanding</div>
+            <div class="text-xs font-medium text-[#17191c] mt-0.5">
               {{ selectedAnnotation.source_title || "Pola Korpus Terdaftar" }}
             </div>
           </div>
 
           <div>
-            <div class="text-[11px] font-semibold text-audyr-ash uppercase tracking-tight">Kutipan Teks Sumber</div>
-            <div class="text-xs italic bg-white border border-[#ededed] p-2.5 rounded-[8px] text-audyr-slate mt-0.5 shadow-audyr-subtle">
+            <div class="text-[11px] font-medium text-[#777b86] uppercase tracking-tight">Kutipan Teks Sumber</div>
+            <div class="text-xs italic bg-[#fafafb] border border-[#ededed] p-3 rounded-[14px] text-[#777b86] mt-1">
               "{{ selectedAnnotation.text_snippet }}"
             </div>
           </div>
         </div>
 
-        <div v-else class="text-center py-10 text-xs text-audyr-ash">
+        <div v-else class="text-center py-10 text-xs text-[#777b86] leading-relaxed font-normal">
           Klik salah satu kalimat berwarna pada naskah untuk melihat perbandingan sumber dan skor kemiripan rincian.
         </div>
       </div>

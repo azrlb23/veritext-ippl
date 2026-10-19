@@ -56,14 +56,14 @@ const badgeVariantClass = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-[14px] p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-3 hover:border-[#d4d4d4] transition-colors">
+  <div class="bg-white border border-[#ededed] rounded-[20px] p-5 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] space-y-3 hover:border-[#17191c] transition-all duration-150 ease-out">
     <div class="flex items-center justify-between">
-      <span class="text-[11px] font-bold text-[#515151] uppercase tracking-wider">
+      <span class="text-[11px] font-medium text-[#777b86] uppercase tracking-wider">
         {{ title }}
       </span>
       <span
         v-if="badge || $slots.badge"
-        class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border"
+        class="text-[10px] font-medium tracking-wider uppercase px-2.5 py-0.5 rounded-full border"
         :class="badgeVariantClass"
       >
         <slot name="badge">{{ badge }}</slot>
@@ -71,10 +71,10 @@ const badgeVariantClass = computed(() => {
     </div>
 
     <div class="space-y-1">
-      <div class="text-2xl sm:text-3xl font-extrabold tracking-tight tabular-nums" :class="valueColorClass">
+      <div class="text-2xl sm:text-3xl font-semibold tracking-tight tabular-nums" :class="valueColorClass">
         {{ value }}
       </div>
-      <p v-if="subtitle" class="text-xs text-audyr-ash font-normal">
+      <p v-if="subtitle" class="text-xs text-[#777b86] font-normal">
         {{ subtitle }}
       </p>
     </div>
@@ -86,7 +86,7 @@ const badgeVariantClass = computed(() => {
       >
         {{ trend.isPositive ? '+' : '-' }}{{ trend.value }}
       </span>
-      <span class="text-audyr-ash">vs periode lalu</span>
+      <span class="text-[#777b86]">vs periode lalu</span>
     </div>
   </div>
 </template>

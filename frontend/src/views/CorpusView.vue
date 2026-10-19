@@ -116,11 +116,11 @@ async function handleDeleteItem(id: string) {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     <!-- Header -->
     <div>
-      <h1 class="text-2xl sm:text-3xl font-extrabold text-audyr-ink tracking-tight">
+      <h1 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
         Bank Dokumen Korpus Pembanding
       </h1>
-      <p class="text-xs sm:text-sm text-audyr-ash mt-1">
-        Koleksi repositori naskah akademik terindeks <span class="italic font-bold text-audyr-ink">pgvector HNSW (384D)</span> &amp; <span class="italic font-bold text-audyr-ink">Rabin-Karp Winnowing</span> untuk pembandingan leksikal &amp; semantik.
+      <p class="text-xs sm:text-sm text-[#777b86] mt-1.5 font-normal">
+        Koleksi repositori naskah akademik terindeks <span class="italic font-medium text-[#17191c]">pgvector HNSW (384D)</span> &amp; <span class="italic font-medium text-[#17191c]">Rabin-Karp Winnowing</span> untuk pembandingan leksikal &amp; semantik.
       </p>
     </div>
 
