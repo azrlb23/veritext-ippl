@@ -1,8 +1,7 @@
 <template>
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 pt-4 sm:pt-8">
     <!-- Top Pill Badge (Mint Whisper) -->
-    <div class="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-xs font-semibold tracking-tight shadow-sm">
-      <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+    <div class="inline-flex items-center px-3.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] text-xs font-semibold tracking-tight shadow-sm">
       <span class="text-[11px] uppercase tracking-wide">
         Arsitektur <strong class="italic font-bold">Hybrid Lexical &amp; Semantic AI Engine</strong> (SDD 3.6.2)
       </span>

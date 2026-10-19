@@ -40,30 +40,27 @@ function selectAnno(anno: HeatmapAnnotation) {
         <button
           type="button"
           @click="showT1 = !showT1"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center space-x-1.5"
+          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
           :class="showT1 ? 'bg-red-50 text-red-700 border-red-300 ring-1 ring-red-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-[#EF4444]"></span>
           <span>Tier 1 Leksikal (Merah)</span>
         </button>
 
         <button
           type="button"
           @click="showT2 = !showT2"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center space-x-1.5"
+          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
           :class="showT2 ? 'bg-orange-50 text-orange-700 border-orange-300 ring-1 ring-orange-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-[#F97316]"></span>
           <span>Tier 2 Semantik (Oranye)</span>
         </button>
 
         <button
           type="button"
           @click="showT3 = !showT3"
-          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center space-x-1.5"
+          class="px-2.5 py-1 text-xs font-medium rounded-[4px] border transition-all flex items-center"
           :class="showT3 ? 'bg-yellow-50 text-yellow-800 border-yellow-300 ring-1 ring-yellow-300' : 'bg-white text-audyr-ash border-[#ededed] hover:border-audyr-ink'"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-[#EAB308]"></span>
           <span>Tier 3 AI (Kuning)</span>
         </button>
       </div>

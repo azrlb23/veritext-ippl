@@ -30,7 +30,6 @@ withDefaults(defineProps<Props>(), {
             <span class="text-[10px] font-bold text-[#b91c1c] uppercase tracking-wider">
               Tier 1 &bull; Leksikal (50%)
             </span>
-            <span class="w-2 h-2 rounded-full bg-[#EF4444]"></span>
           </div>
           <div class="text-3xl sm:text-4xl font-extrabold text-[#b91c1c] tabular-nums">
             {{ (scoreLexical ?? 0).toFixed(1) }}%
@@ -48,7 +47,6 @@ withDefaults(defineProps<Props>(), {
             <span class="text-[10px] font-bold text-[#c2410c] uppercase tracking-wider">
               Tier 2 &bull; Semantik (35%)
             </span>
-            <span class="w-2 h-2 rounded-full bg-[#F97316]"></span>
           </div>
           <div class="text-3xl sm:text-4xl font-extrabold text-[#c2410c] tabular-nums">
             {{ (scoreSemantic ?? 0).toFixed(1) }}%
@@ -66,7 +64,6 @@ withDefaults(defineProps<Props>(), {
             <span class="text-[10px] font-bold text-[#854d0e] uppercase tracking-wider">
               Tier 3 &bull; Pola AI (15%)
             </span>
-            <span class="w-2 h-2 rounded-full bg-[#EAB308]"></span>
           </div>
           <div class="text-3xl sm:text-4xl font-extrabold text-[#854d0e] tabular-nums">
             {{ (scoreStylometric ?? 0).toFixed(1) }}%

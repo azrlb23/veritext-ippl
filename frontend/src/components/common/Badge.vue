@@ -78,11 +78,6 @@ const sizeClasses = computed(() => {
     class="inline-flex items-center font-medium tracking-tight rounded-full border transition-colors space-x-1.5"
     :class="[variantClasses.badge, sizeClasses]"
   >
-    <span
-      v-if="dot"
-      class="w-1.5 h-1.5 rounded-full flex-shrink-0"
-      :class="[variantClasses.dot, { 'animate-pulse': dotPulse }]"
-    ></span>
     <span><slot /></span>
   </span>
 </template>

@@ -36,8 +36,7 @@ withDefaults(defineProps<Props>(), {
       <span class="text-[11px] font-bold text-audyr-ash uppercase tracking-tight">
         Status Indeks pgvector
       </span>
-      <div class="text-2xl font-extrabold text-audyr-ink flex items-center space-x-2 pt-1 tracking-tight">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+      <div class="text-2xl font-extrabold text-audyr-ink pt-1 tracking-tight">
         <span>{{ indexStatus }}</span>
       </div>
       <p class="text-xs text-audyr-ash mt-1"><span class="italic font-bold text-audyr-ink">HNSW cosine distance</span> index siap query</p>

@@ -134,8 +134,7 @@ async function handleLogout() {
         <template v-else-if="isSuperAdmin">
           <div class="hidden md:flex items-center space-x-2">
             <!-- Backend Status indicator (clean & compact) -->
-            <div class="hidden xl:flex items-center space-x-1.5 px-2 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-[11px] text-[#065f46]">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div class="hidden xl:flex items-center px-2 py-1 bg-[#fafafa] border border-[#ededed] rounded-[4px] text-[11px] text-[#065f46]">
               <span class="font-bold tracking-tight">200 OK</span>
             </div>
 
@@ -173,8 +172,7 @@ async function handleLogout() {
               </span>
             </div>
 
-            <div class="flex items-center space-x-1.5 px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-[4px] text-xs">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+            <div class="flex items-center px-2.5 py-1 bg-[#ecfdf5] border border-[#a7f3d0] text-[#065f46] rounded-[4px] text-xs">
               <span class="font-medium text-[11px]">Saldo: <strong class="tabular-nums font-extrabold">{{ authStore.tokenBalance }}</strong> Token</span>
             </div>
 

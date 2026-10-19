@@ -360,12 +360,10 @@ function setSection(section: AdminSection) {
 
       <!-- Quick Status Badges -->
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start">
-        <div class="flex items-center space-x-2 text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div class="text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
           <span>Backend FastAPI: Sehat (200 OK)</span>
         </div>
-        <div class="flex items-center space-x-2 text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
-          <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+        <div class="text-xs font-bold bg-white px-3 py-1.5 rounded-[4px] border border-[#ededed] shadow-audyr-subtle text-[#262626]">
           <span>Celery &amp; Redis: Aktif</span>
         </div>
       </div>

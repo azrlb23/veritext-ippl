@@ -119,7 +119,6 @@ function getStatusVariant(status: string): "success" | "primary" | "warning" | "
                   :variant="getStatusVariant(task.status)"
                   size="xs"
                   dot
-                  :dotPulse="task.status === 'PROCESSING'"
                 >
                   {{ task.status }}
                 </Badge>

@@ -52,9 +52,7 @@ function handleToggle(tier: "T1" | "T2" | "T3") {
         @keydown.enter="showControls && handleToggle('T1')"
         @keydown.space.prevent="showControls && handleToggle('T1')"
       >
-        <div class="w-8 h-8 rounded-full bg-[#fef2f2] border border-[#fee2e2] flex items-center justify-center flex-shrink-0 text-[#dc2626]">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
-        </div>
+        <div class="w-4 h-4 rounded-[3px] bg-[#EF4444] flex-shrink-0 mt-0.5"></div>
         <div class="space-y-1 flex-1">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-[#262626]">Tier 1: Leksikal</span>
@@ -79,9 +77,7 @@ function handleToggle(tier: "T1" | "T2" | "T3") {
         @keydown.enter="showControls && handleToggle('T2')"
         @keydown.space.prevent="showControls && handleToggle('T2')"
       >
-        <div class="w-8 h-8 rounded-full bg-[#fff7ed] border border-[#ffedd5] flex items-center justify-center flex-shrink-0 text-[#ea580c]">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#F97316]"></span>
-        </div>
+        <div class="w-4 h-4 rounded-[3px] bg-[#F97316] flex-shrink-0 mt-0.5"></div>
         <div class="space-y-1 flex-1">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-[#262626]">Tier 2: Semantik</span>
@@ -106,9 +102,7 @@ function handleToggle(tier: "T1" | "T2" | "T3") {
         @keydown.enter="showControls && handleToggle('T3')"
         @keydown.space.prevent="showControls && handleToggle('T3')"
       >
-        <div class="w-8 h-8 rounded-full bg-[#fefce8] border border-[#fef08a] flex items-center justify-center flex-shrink-0 text-[#854d0e]">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#EAB308]"></span>
-        </div>
+        <div class="w-4 h-4 rounded-[3px] bg-[#EAB308] flex-shrink-0 mt-0.5"></div>
         <div class="space-y-1 flex-1">
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-[#262626]">Tier 3: Anomali AI</span>

@@ -44,8 +44,7 @@ function handleSave() {
         <p class="text-xs text-audyr-ash mt-0.5 font-normal">Konfigurasi algoritma deteksi plagiarisme dan inferensi semantik</p>
       </div>
 
-      <span v-if="saved" class="text-xs font-bold text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-3 py-0.5 rounded-full tracking-tight inline-flex items-center space-x-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#059669]"></span>
+      <span v-if="saved" class="text-xs font-bold text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-3 py-0.5 rounded-full tracking-tight inline-flex items-center">
         <span>Konfigurasi Tersimpan</span>
       </span>
     </div>
@@ -124,8 +123,7 @@ function handleSave() {
           <label class="font-bold text-audyr-ink tracking-tight block">Mode Operasional Sistem</label>
           <p class="text-[11px] text-audyr-ash">Pipeline Celery worker &amp; database pgvector</p>
         </div>
-        <div class="flex items-center space-x-2 pt-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div class="flex items-center pt-2">
           <span class="font-bold text-xs text-[#065f46] bg-audyr-mint-whisper border border-[#a7f3d0] px-2 py-0.5 rounded-full">
             Real Mode (Live Production API)
           </span>

@@ -110,7 +110,6 @@ function selectSample(id: "T1" | "T2" | "T3") {
           ]"
           @click="selectSample(s.id)"
         >
-          <span class="inline-block w-2 h-2 rounded-full mr-1.5" :style="{ backgroundColor: s.tierColor }"></span>
           <span>{{ s.tierName }}</span>
         </button>
       </div>

@@ -39,10 +39,7 @@ withDefaults(defineProps<Props>(), {
         <tbody class="divide-y divide-[#ededed]">
           <tr v-for="source in sources" :key="source.corpus_doc_id" class="hover:bg-[#fafafa] transition-colors">
             <td class="py-3 px-4 font-bold text-audyr-ink">
-              <div class="flex items-center space-x-2">
-                <span class="w-1.5 h-1.5 rounded-full bg-audyr-ink"></span>
-                <span>{{ source.title }}</span>
-              </div>
+              <span>{{ source.title }}</span>
             </td>
             <td class="py-3 px-4 text-audyr-ash">{{ source.category || '-' }}</td>
             <td class="py-3 px-4 text-right tabular-nums font-extrabold text-audyr-ink">

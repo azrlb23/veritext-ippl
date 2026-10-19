@@ -88,7 +88,7 @@ function getStatusVariant(status: string): "success" | "warning" | "danger" | "n
               {{ item.total_chunks ? item.total_chunks.toLocaleString() : '0' }}
             </td>
             <td class="py-3.5 px-4">
-              <Badge :variant="getStatusVariant(item.status)" size="xs" dot :dotPulse="item.status === 'INDEXING'">
+              <Badge :variant="getStatusVariant(item.status)" size="xs" dot>
                 {{ item.status }}
               </Badge>
             </td>

@@ -44,9 +44,8 @@ defineEmits<{
       <div class="font-bold text-white">Metode Pembayaran Resmi</div>
       <div class="text-audyr-chalk text-[11px] font-normal">Midtrans Payment Gateway (QRIS, VA Bank, E-Wallet)</div>
       <div class="flex items-center justify-between gap-4 pt-1">
-        <span class="text-[10px] text-emerald-400 font-medium flex items-center space-x-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-          <span>Status: Real Mode (Live Wallet)</span>
+        <span class="text-[10px] text-emerald-400 font-medium">
+          Status: Real Mode (Live Wallet)
         </span>
         <button
           type="button"

@@ -24,13 +24,12 @@ const emit = defineEmits<{
 <template>
   <div v-if="activeTasks.length > 0" class="bg-white border border-[#ededed] rounded-[14px] p-6 shadow-[0_1px_3px_rgba(0,0,0,0.04)] space-y-4">
     <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <span class="w-2 h-2 rounded-full bg-[#262626] animate-pulse"></span>
+      <div class="flex items-center">
         <h3 class="text-sm font-extrabold text-[#262626] uppercase tracking-wide">
           Proses Deteksi Sedang Berjalan <span class="italic font-bold text-[#515151]">({{ activeTasks.length }} Dokumen)</span>
         </h3>
       </div>
-      <Badge variant="mint" size="sm" dot dotPulse>
+      <Badge variant="mint" size="sm" dot>
         Worker Celery Aktif
       </Badge>
     </div>
