@@ -124,7 +124,28 @@ async function handleConfirmTopup(payload: { packageId: string; paymentMethod: s
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <!-- Ambient Warm Peach Radial Aura (Steep Signature Glow) -->
+    <div
+      class="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-full max-w-6xl h-[450px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(251,225,209,0.5),rgba(255,255,255,0))] blur-3xl pointer-events-none"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Editorial Header -->
+    <div class="space-y-2">
+      <div class="flex items-center space-x-2">
+        <span class="text-[10px] uppercase font-bold tracking-wider text-[#5d2a1a] bg-[#fbe1d1] px-2.5 py-0.5 rounded-full">
+          Billing &amp; Token Balance
+        </span>
+      </div>
+      <h1 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
+        Dompet Token &amp; Kuota Audit Akademik
+      </h1>
+      <p class="text-xs sm:text-sm text-[#777b86] max-w-2xl font-normal leading-relaxed">
+        Kelola saldo token Anda untuk menguji naskah ilmiah melalui <strong class="font-medium text-[#17191c]">Hybrid 4-Tier Pipeline</strong> tanpa biaya langganan berulang (<span class="italic font-medium text-[#17191c]">Pay-as-you-go</span>).
+      </p>
+    </div>
+
     <!-- Wallet Overview Card -->
     <TokenBalanceCard
       :balance="balance"
@@ -133,13 +154,13 @@ async function handleConfirmTopup(payload: { packageId: string; paymentMethod: s
     />
 
     <!-- Pricing Packages Grid -->
-    <div class="space-y-6">
-      <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-2xl font-extrabold text-audyr-ink tracking-tight">
-          Pilihan Paket Top-Up Token
+    <div class="space-y-8">
+      <div class="text-center max-w-xl mx-auto space-y-2">
+        <h2 class="font-serif text-2xl sm:text-3xl font-normal text-[#17191c] tracking-tight">
+          Pilihan Paket Top-Up Kuota
         </h2>
-        <p class="text-xs text-audyr-ash">
-          Pilih paket kuota audit sesuai kebutuhan pengujian naskah akademik Anda tanpa biaya langganan berulang (<span class="italic font-bold text-audyr-ink">Pay-as-you-go</span>).
+        <p class="text-xs text-[#777b86] font-normal leading-relaxed">
+          Pilih paket kuota audit sesuai intensitas pengujian naskah akademik Anda. Token berlaku selamanya dan dapat digunakan kapan saja.
         </p>
       </div>
 

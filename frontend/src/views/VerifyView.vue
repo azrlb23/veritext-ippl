@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   VerificationBadge,
@@ -8,7 +8,6 @@ import {
   type CertificateDetails,
 } from "../components/verify";
 import { useNotification } from "../composables";
-
 import { auditService } from "../services/auditService";
 
 const route = useRoute();
@@ -51,7 +50,9 @@ async function handleLookup(targetUuid: string) {
       } else {
         showNotification("Kode sertifikat tidak ditemukan atau tidak valid.", "error", "Validasi Gagal");
       }
-      router.replace(`/verify/${targetUuid}`);
+      if (route.params.uuid !== targetUuid) {
+        router.replace(`/verify/${targetUuid}`);
+      }
     }
   } catch (err: any) {
     isValid.value = false;
@@ -64,10 +65,45 @@ async function handleLookup(targetUuid: string) {
     isChecking.value = false;
   }
 }
+
+onMounted(() => {
+  const currentParam = route.params.uuid as string | undefined;
+  if (currentParam && currentParam !== "invalid" && currentParam !== "f47ac10b-58cc-4372-a567-0e02b2c3d479") {
+    void handleLookup(currentParam);
+  }
+});
+
+watch(
+  () => route.params.uuid,
+  (newUuid) => {
+    if (newUuid && typeof newUuid === "string" && newUuid !== certDetails.value.uuid) {
+      void handleLookup(newUuid);
+    }
+  }
+);
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+  <div class="relative max-w-3xl mx-auto px-4 sm:px-6 py-12 space-y-8">
+    <!-- Ambient Warm Peach Radial Glow -->
+    <div
+      class="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-full max-w-4xl h-[420px] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(251,225,209,0.5),rgba(255,255,255,0))] blur-3xl pointer-events-none"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Editorial Header Section -->
+    <div class="text-center space-y-3">
+      <span class="inline-flex items-center px-3.5 py-1 rounded-full bg-[#fbe1d1] text-[#5d2a1a] text-xs font-semibold tracking-wide uppercase">
+        Protokol Validasi Publik
+      </span>
+      <h1 class="font-serif text-3xl sm:text-4xl font-normal text-[#17191c] tracking-tight">
+        Verifikasi Kriptografis Integritas Naskah
+      </h1>
+      <p class="text-xs sm:text-sm text-[#777b86] max-w-lg mx-auto leading-relaxed font-normal">
+        Buktikan keaslian dokumen dan status sertifikasi audit akademik secara transparan tanpa memerlukan autentikasi akun.
+      </p>
+    </div>
+
     <!-- Certificate Lookup Input Bar -->
     <CertificateLookup
       :initialValue="certDetails.uuid"
@@ -81,10 +117,10 @@ async function handleLookup(targetUuid: string) {
       :uuid="certDetails.uuid"
     />
 
-    <!-- Summary Details Card with Gauge -->
+    <!-- Summary Details Card with Steep Donut Gauge -->
     <CertificateDetailsCard v-if="isValid" :details="certDetails" />
 
-    <div class="text-center text-xs text-audyr-ash">
+    <div class="text-center text-xs text-[#777b86] font-normal">
       Halaman ini bersifat terbuka dan dapat diakses siapa saja untuk membuktikan keaslian laporan tanpa memerlukan autentikasi login.
     </div>
   </div>

@@ -9,7 +9,7 @@ defineProps<Props>();
 
 <template>
   <div
-    class="text-center p-8 sm:p-10 rounded-[24px] bg-white border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] space-y-3.5 transition-all"
+    class="text-center p-8 sm:p-10 rounded-[24px] bg-white border border-[#ededed] shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_35px_-10px_rgba(0,0,0,0.08)] space-y-4 transition-all"
   >
     <div
       class="inline-flex items-center justify-center w-12 h-12 rounded-full mb-1 border"
@@ -23,23 +23,33 @@ defineProps<Props>();
       </svg>
     </div>
 
-    <h1
+    <!-- Capsule Status Pill -->
+    <div>
+      <span
+        class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider uppercase border"
+        :class="isValid ? 'bg-[#ecfdf5] text-[#065f46] border-[#a7f3d0]' : 'bg-red-50 text-red-700 border-red-200'"
+      >
+        {{ isValid ? "Valid Kriptografis (SHA-256)" : "Sertifikat Tidak Valid" }}
+      </span>
+    </div>
+
+    <h2
       class="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-[#17191c]"
       :class="{ '!text-red-700': !isValid }"
     >
-      {{ isValid ? "Sertifikat Terverifikasi Asli" : "Sertifikat Tidak Valid" }}
-    </h1>
+      {{ isValid ? "Sertifikat Terverifikasi Asli" : "Sertifikat Tidak Ditemukan" }}
+    </h2>
 
     <p class="text-xs sm:text-sm text-[#777b86] max-w-lg mx-auto leading-relaxed font-normal">
       {{
         isValid
-          ? "Hasil audit ini telah divalidasi secara kriptografis oleh sistem VeriText AI dan tercatat resmi dalam ledger sistem."
+          ? "Hasil audit ini telah divalidasi secara kriptografis oleh sistem VeriText AI dan tercatat resmi dalam ledger sistem berintegritas tinggi."
           : "Sertifikat tidak ditemukan atau naskah telah dihapus permanen oleh pemilik sesuai UU Perlindungan Data Pribadi."
       }}
     </p>
 
     <div class="text-[11px] text-[#777b86] pt-1">
-      Kode Verifikasi: <span class="font-medium text-[#17191c] tabular-nums">{{ uuid }}</span>
+      Kode UUID Verifikasi: <span class="font-medium text-[#17191c] font-mono tabular-nums">{{ uuid }}</span>
     </div>
   </div>
 </template>

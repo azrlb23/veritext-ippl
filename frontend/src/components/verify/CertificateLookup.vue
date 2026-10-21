@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import Button from "../common/Button.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -27,7 +26,7 @@ function handleVerify() {
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-full p-2 pl-4 shadow-[0_0_0_1px_rgba(4,23,43,0.05)] flex flex-col sm:flex-row items-center gap-3">
+  <div class="bg-white border border-[#ededed] rounded-full p-2 pl-4 shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_15px_30px_-10px_rgba(0,0,0,0.06)] flex flex-col sm:flex-row items-center gap-3">
     <div class="relative flex-grow w-full">
       <input
         v-model="inputUuid"
@@ -40,15 +39,14 @@ function handleVerify() {
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
     </div>
-    <Button
-      variant="primary"
-      size="sm"
-      :loading="loading"
+    <button
+      type="button"
       :disabled="!inputUuid.trim() || loading"
       @click="handleVerify"
-      class="w-full sm:w-auto whitespace-nowrap"
+      class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#17191c] hover:bg-[#2e3138] disabled:opacity-50 text-white font-medium text-xs tracking-tight transition-all active:scale-[0.98] shadow-sm whitespace-nowrap"
     >
-      Verifikasi UUID &rarr;
-    </Button>
+      <span v-if="loading">Memvalidasi...</span>
+      <span v-else>Verifikasi UUID &rarr;</span>
+    </button>
   </div>
 </template>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useFileUpload } from "../../composables";
-import Button from "../common/Button.vue";
 import Alert from "../common/Alert.vue";
 
 interface Props {
@@ -59,17 +58,25 @@ function handleStart() {
   });
 }
 
+function triggerFilePicker() {
+  fileInputRef.value?.click();
+}
+
 defineExpose({
   reset: handleFileReset,
+  triggerFilePicker,
 });
 </script>
 
 <template>
-  <div class="bg-white border border-[#ededed] rounded-[24px] p-6 sm:p-8 shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_25px_-5px_rgba(0,0,0,0.06)] space-y-6">
+  <div class="bg-white border border-[#ededed] rounded-[22px] p-6 sm:p-7 shadow-[0_0_0_1px_rgba(4,23,43,0.05),0_20px_35px_-10px_rgba(0,0,0,0.08)] space-y-6">
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-[#17191c]">
-        1. Unggah Berkas Naskah <span class="italic font-normal text-[#777b86]">(.pdf, .docx, .txt)</span>
-      </h2>
+      <div class="flex items-center space-x-2">
+        <span class="w-2 h-2 rounded-full bg-[#17191c]"></span>
+        <h2 class="text-xs font-semibold uppercase tracking-wider text-[#17191c]">
+          Unggah Berkas Naskah <span class="italic font-normal text-[#777b86]">(.pdf, .docx, .txt)</span>
+        </h2>
+      </div>
       <span class="text-xs text-[#777b86] font-normal">Maks. 50 MB / berkas</span>
     </div>
 
@@ -140,38 +147,44 @@ defineExpose({
     </div>
 
     <!-- Depth selector & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-[#ededed]">
-      <div class="flex flex-wrap items-center gap-4">
-        <span class="text-xs font-medium text-[#777b86]">Pilihan Tingkat Kedalaman:</span>
-        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#17191c] cursor-pointer">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#ededed]">
+      <div class="flex flex-wrap items-center gap-3">
+        <span class="text-xs font-medium text-[#777b86]">Tingkat Kedalaman:</span>
+        <label
+          class="inline-flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-full border cursor-pointer transition-colors"
+          :class="auditDepth === 'FULL' ? 'bg-[#17191c] text-white border-[#17191c]' : 'bg-[#fafafb] text-[#17191c] border-[#ededed]'"
+        >
           <input
             type="radio"
             value="FULL"
             v-model="auditDepth"
-            class="text-[#17191c] focus:ring-[#17191c]"
+            class="hidden"
           />
-          <span>Penuh (Tier 1 - 4) &bull; <strong class="italic font-medium text-[#17191c]">2 Token</strong></span>
+          <span>Hybrid Penuh (Tier 1-4) &bull; 2 Token</span>
         </label>
-        <label class="inline-flex items-center space-x-2 text-xs font-medium text-[#17191c] cursor-pointer">
+        <label
+          class="inline-flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-full border cursor-pointer transition-colors"
+          :class="auditDepth === 'TIER1_ONLY' ? 'bg-[#17191c] text-white border-[#17191c]' : 'bg-[#fafafb] text-[#17191c] border-[#ededed]'"
+        >
           <input
             type="radio"
             value="TIER1_ONLY"
             v-model="auditDepth"
-            class="text-[#17191c] focus:ring-[#17191c]"
+            class="hidden"
           />
-          <span>Hanya Leksikal (Tier 1) &bull; <strong class="italic font-medium text-[#17191c]">1 Token</strong></span>
+          <span>Leksikal Saja (Tier 1) &bull; 1 Token</span>
         </label>
       </div>
 
-      <Button
-        variant="primary"
-        size="md"
-        :loading="isUploading"
+      <button
+        type="button"
         :disabled="!selectedFile || isUploading"
         @click="handleStart"
+        class="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#17191c] hover:bg-[#2e3138] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-xs tracking-tight active:scale-[0.98] transition-all duration-150 ease-out shadow-sm"
       >
-        {{ isUploading ? "Memproses Unggahan..." : "Mulai Proses Audit" }}
-      </Button>
+        <span v-if="isUploading">Memproses Unggahan...</span>
+        <span v-else>Mulai Proses Audit &rarr;</span>
+      </button>
     </div>
   </div>
 </template>
