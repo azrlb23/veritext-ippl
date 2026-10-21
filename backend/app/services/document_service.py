@@ -47,7 +47,7 @@ class DocumentService:
         max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
         if file_size > max_bytes:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_MB}MB",
             )
 
@@ -100,7 +100,7 @@ class DocumentService:
         max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
         if file_size > max_bytes:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_MB}MB",
             )
 

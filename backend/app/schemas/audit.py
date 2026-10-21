@@ -22,7 +22,7 @@ class AuditTaskStatusResponse(BaseModel):
     error_message: Optional[str] = None
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    created_at: datetime
+    created_at: Optional[datetime] = None
     document_title: Optional[str] = None
     score_composite: Optional[float] = None
 

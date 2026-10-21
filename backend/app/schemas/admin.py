@@ -10,9 +10,9 @@ class AdminUserResponse(BaseModel):
     email: EmailStr
     institution: Optional[str] = None
     role: str
-    is_active: bool
-    failed_login_count: int
-    created_at: datetime
+    is_active: bool = True
+    failed_login_count: int = 0
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

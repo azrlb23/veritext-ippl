@@ -1,4 +1,5 @@
 import hashlib
+import io
 import re
 import secrets
 import sys
@@ -15,7 +16,9 @@ if BACKEND_DIR not in sys.path:
 # ---------------------------------------------------------------------------
 # Setup robust shims for external dependencies when running in plain Python 3.9
 # ---------------------------------------------------------------------------
-if "fastapi" not in sys.modules:
+try:
+    import fastapi
+except ImportError:
     fastapi_mod = types.ModuleType("fastapi")
     class HTTPException(Exception):
         def __init__(self, status_code, detail=None, headers=None):
@@ -35,12 +38,15 @@ if "fastapi" not in sys.modules:
         HTTP_403_FORBIDDEN = 403
         HTTP_404_NOT_FOUND = 404
         HTTP_413_REQUEST_ENTITY_TOO_LARGE = 413
+        HTTP_413_CONTENT_TOO_LARGE = 413
     fastapi_mod.HTTPException = HTTPException
     fastapi_mod.UploadFile = UploadFile
     fastapi_mod.status = Status()
     sys.modules["fastapi"] = fastapi_mod
 
-if "pydantic_settings" not in sys.modules:
+try:
+    import pydantic_settings
+except ImportError:
     ps_mod = types.ModuleType("pydantic_settings")
     class BaseSettings:
         def __init__(self, **kwargs):
@@ -50,7 +56,9 @@ if "pydantic_settings" not in sys.modules:
     ps_mod.SettingsConfigDict = lambda **kw: None
     sys.modules["pydantic_settings"] = ps_mod
 
-if "jwt" not in sys.modules:
+try:
+    import jwt
+except ImportError:
     jwt_mod = types.ModuleType("jwt")
     def _jwt_encode(payload, key, algorithm="HS256"):
         import json, base64
@@ -70,7 +78,10 @@ if "jwt" not in sys.modules:
     jwt_mod.PyJWTError = Exception
     sys.modules["jwt"] = jwt_mod
 
-if "passlib" not in sys.modules:
+try:
+    import passlib
+    import passlib.context
+except ImportError:
     passlib_mod = types.ModuleType("passlib")
     passlib_ctx = types.ModuleType("passlib.context")
     class CryptContext:
@@ -84,7 +95,9 @@ if "passlib" not in sys.modules:
     sys.modules["passlib"] = passlib_mod
     sys.modules["passlib.context"] = passlib_ctx
 
-if "pydantic" not in sys.modules:
+try:
+    import pydantic
+except ImportError:
     pydantic_mod = types.ModuleType("pydantic")
     class BaseModel:
         def __init__(self, **kwargs):
@@ -118,7 +131,13 @@ if "pydantic" not in sys.modules:
     pydantic_mod.field_validator = lambda *a, **k: (lambda fn: fn)
     sys.modules["pydantic"] = pydantic_mod
 
-if "sqlalchemy" not in sys.modules:
+try:
+    import sqlalchemy
+    import sqlalchemy.types
+    import sqlalchemy.dialects.postgresql
+    import sqlalchemy.orm
+    import sqlalchemy.ext.asyncio
+except ImportError:
     sa_mod = types.ModuleType("sqlalchemy")
     sa_mod.create_engine = lambda *a, **k: None
     sa_mod.Column = lambda *a, **k: a[0] if a else None
@@ -609,7 +628,7 @@ class TestVeriTextBackend(unittest.TestCase):
 
         # Valid files
         for valid_name in ["naskah.pdf", "skripsi.docx", "draft.txt", "PAPER.PDF"]:
-            f = UploadFile(filename=valid_name)
+            f = UploadFile(filename=valid_name, file=io.BytesIO())
             try:
                 DocumentService.validate_file(f)
             except HTTPException:
@@ -617,7 +636,7 @@ class TestVeriTextBackend(unittest.TestCase):
 
         # Invalid extensions
         for invalid_name in ["script.exe", "virus.py", "archive.zip", "test.sh", "noextension"]:
-            f = UploadFile(filename=invalid_name)
+            f = UploadFile(filename=invalid_name, file=io.BytesIO())
             with self.assertRaises(HTTPException) as ctx:
                 DocumentService.validate_file(f)
             self.assertEqual(ctx.exception.status_code, 400)
@@ -700,7 +719,7 @@ class TestVeriTextBackend(unittest.TestCase):
         self.assertEqual(resp.document_title, "Tesis_Azriel_Final.pdf")
         self.assertEqual(resp.user_name, "Mochammad Azriel")
         self.assertEqual(resp.institution, "Institut Teknologi Nasional")
-        self.assertEqual(resp.score_composite, 14.2)
+        self.assertEqual(float(resp.score_composite), 14.2)
         self.assertEqual(resp.generated_at, now)
 
     def test_system_health_metrics_response_counts(self):

@@ -1,4 +1,5 @@
-from datetime import datetime, timezone
+import os
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -6,8 +7,10 @@ from sqlalchemy import func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import require_role
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.audit_log import AuditLog
+from app.models.document import Document
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.admin import (
@@ -76,6 +79,8 @@ async def create_user_admin(
         password_hash=get_password_hash(req.password),
         role=req.role.upper(),
         is_active=True,
+        failed_login_count=0,
+        created_at=datetime.now(timezone.utc),
     )
     db.add(new_user)
     await db.flush()
@@ -334,3 +339,49 @@ async def list_audit_logs(
             pages=pages,
         ),
     )
+
+
+@router.post("/purge-retention", response_model=APIResponse[dict])
+async def purge_retention_data(
+    retention_days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db),
+):
+    """Purges expired soft-deleted documents and physical files older than retention period (UU PDP No. 27/2022)."""
+    threshold_date = datetime.now(timezone.utc) - timedelta(days=retention_days)
+    stmt = select(Document).where(
+        (Document.deleted_at.isnot(None) & (Document.deleted_at <= threshold_date))
+        | ((Document.status == "DELETED") & (Document.created_at <= threshold_date))
+    )
+    docs_to_purge = (await db.execute(stmt)).scalars().all()
+    purged_ids = []
+
+    for doc in docs_to_purge:
+        if doc.stored_filename:
+            file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+        purged_ids.append(str(doc.id))
+        await db.delete(doc)
+
+    log_entry = AuditLog(
+        action_type="DOCUMENT_PURGE",
+        resource_type="DOCUMENT",
+        action_result="SUCCESS",
+        meta_data={
+            "retention_days": retention_days,
+            "purged_count": len(purged_ids),
+            "purged_ids": purged_ids,
+            "compliance": "UU PDP No. 27/2022 Pasal 43 & 44",
+        },
+    )
+    db.add(log_entry)
+    await db.commit()
+
+    return APIResponse(
+        message=f"Purge retensi UU PDP berhasil: {len(purged_ids)} dokumen kedaluwarsa dibersihkan secara permanen.",
+        data={"purged_count": len(purged_ids), "purged_ids": purged_ids, "retention_days": retention_days},
+    )
+

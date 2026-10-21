@@ -36,7 +36,34 @@ class CorpusService:
         category: Optional[str] = None,
         academic_year: Optional[str] = None,
     ) -> int:
+        filename = (file.filename or "").strip()
+        if not filename or not filename.lower().endswith(".zip"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unsupported corpus file format. Only ZIP archives (.zip) are allowed.",
+            )
+
         content = await file.read()
+        file_size = len(content)
+        if file_size == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Corpus archive is empty (0 bytes). Please upload a valid ZIP file.",
+            )
+
+        max_corpus_bytes = 100 * 1024 * 1024  # 100 MB
+        if file_size > max_corpus_bytes:
+            raise HTTPException(
+                status_code=getattr(status, "HTTP_413_CONTENT_TOO_LARGE", 413),
+                detail="Corpus archive exceeds maximum allowed size of 100MB.",
+            )
+
+        if not content.startswith(b"PK"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid ZIP archive header. The uploaded file is corrupted or not a valid ZIP archive.",
+            )
+
         sha256 = hashlib.sha256(content).hexdigest()
 
         # Check existing

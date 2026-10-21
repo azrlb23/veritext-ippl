@@ -103,17 +103,21 @@ class BillingService:
             wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == invoice.user_id)
             wallet_res = await db.execute(wallet_stmt)
             wallet = wallet_res.scalar_one_or_none()
-            if wallet:
-                wallet.balance += invoice.token_amount
-                tx = TokenTransaction(
-                    wallet_id=wallet.id,
-                    transaction_type="CREDIT_TOPUP",
-                    amount=invoice.token_amount,
-                    balance_after=wallet.balance,
-                    reference_id=invoice.id,
-                    note=f"Top-up {invoice.package_name}",
-                )
-                db.add(tx)
+            if not wallet:
+                wallet = TokenWallet(user_id=invoice.user_id, balance=0)
+                db.add(wallet)
+                await db.flush()
+
+            wallet.balance += invoice.token_amount
+            tx = TokenTransaction(
+                wallet_id=wallet.id,
+                transaction_type="CREDIT_TOPUP",
+                amount=invoice.token_amount,
+                balance_after=wallet.balance,
+                reference_id=invoice.id,
+                note=f"Top-up {invoice.package_name}",
+            )
+            db.add(tx)
         elif payload.transaction_status in ("cancel", "expire"):
             invoice.status = "EXPIRED" if payload.transaction_status == "expire" else "CANCEL"
         elif payload.transaction_status in ("deny", "failed"):

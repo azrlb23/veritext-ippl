@@ -91,6 +91,15 @@ class HybridAggregator:
         self.tier3_engine = StylometricEngine()
         self.corpus_bank = corpus_bank or ReferenceCorpusBank.get_instance()
 
+    def calculate_composite_score(self, score_t1: float, score_t2: float, score_t3: float) -> float:
+        """Computes the 4-tier composite weighted similarity score."""
+        raw_composite = (
+            self.w_lexical * score_t1 +
+            self.w_semantic * score_t2 +
+            self.w_stylometric * score_t3
+        )
+        return round(min(100.0, max(0.0, raw_composite)), 2)
+
     def run_pipeline(
         self,
         original_text: str,
@@ -165,12 +174,7 @@ class HybridAggregator:
             tier3_anomalies_by_index = {a.sentence_index: a for a in t3_result.sentence_anomalies}
 
             # Step 5: Weighted Composite Score Calculation
-            raw_composite = (
-                self.w_lexical * score_t1 +
-                self.w_semantic * score_t2 +
-                self.w_stylometric * score_t3
-            )
-            score_composite = round(min(100.0, max(0.0, raw_composite)), 2)
+            score_composite = self.calculate_composite_score(score_t1, score_t2, score_t3)
 
         # Build Heatmap Annotations
         heatmap_annotations: List[Dict[str, Any]] = []
