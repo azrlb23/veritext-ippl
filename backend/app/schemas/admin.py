@@ -28,7 +28,7 @@ class AdminUserCreateRequest(BaseModel):
     password: str = Field(default="VeriText#2026", min_length=6)
     institution: Optional[str] = None
     role: str = Field(default="TRIAL")
-    initial_tokens: int = Field(default=10, ge=0)
+    initial_tokens: int = Field(default=10, ge=0, le=1_000_000)
 
 
 class AdminUserUpdateRequest(BaseModel):
@@ -45,7 +45,7 @@ class AdminResetPasswordRequest(BaseModel):
 
 
 class TokenAdjustmentRequest(BaseModel):
-    amount: int = Field(..., description="Positive to credit, negative to debit")
+    amount: int = Field(..., ge=-1_000_000, le=1_000_000, description="Positive to credit, negative to debit")
     note: str = Field(..., min_length=3)
 
 
@@ -85,3 +85,70 @@ class AuditLogResponse(BaseModel):
         return {}
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+
+class SystemConfigRequest(BaseModel):
+    # Aggregation weights Tier 1-3
+    lexical_weight: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices("lexical_weight", "similarity_lexical_weight"),
+    )
+    semantic_weight: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices("semantic_weight", "similarity_semantic_weight"),
+    )
+    stylometric_weight: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices("stylometric_weight", "similarity_stylo_weight"),
+    )
+
+    # Thresholds
+    similarity_threshold: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        validation_alias=AliasChoices("similarity_threshold", "hnsw_similarity_threshold"),
+    )
+    stylometric_burstiness_threshold: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+
+    # Winnowing parameters
+    winnowing_kgram: Optional[int] = Field(default=None, ge=1, le=100)
+    winnowing_window: Optional[int] = Field(default=None, ge=1, le=100)
+
+    # HNSW parameters
+    hnsw_ef_search: Optional[int] = Field(default=None, ge=1, le=1024)
+    hnsw_m: Optional[int] = Field(default=None, ge=2, le=128)
+
+    # Data retention period in days (UU PDP)
+    retention_days: Optional[int] = Field(default=None, ge=1, le=3650)
+
+    # Operational sandbox mode
+    sandbox_mode: Optional[bool] = Field(default=None)
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class SystemConfigResponse(BaseModel):
+    id: Optional[uuid.UUID] = None
+    lexical_weight: float = 0.50
+    semantic_weight: float = 0.35
+    stylometric_weight: float = 0.15
+    similarity_threshold: float = 0.78
+    hnsw_similarity_threshold: float = 0.78
+    stylometric_burstiness_threshold: float = 0.35
+    winnowing_kgram: int = 5
+    winnowing_window: int = 4
+    hnsw_ef_search: int = 64
+    hnsw_m: int = 16
+    retention_days: int = 30
+    sandbox_mode: bool = False
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+

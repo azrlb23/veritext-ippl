@@ -2,28 +2,33 @@ import os
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import require_role
+from app.api.deps import require_role, get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.audit_log import AuditLog
 from app.models.document import Document
+from app.models.system_config import SystemConfig
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
+from app.services.auth_service import AuthService
 from app.schemas.admin import (
     AdminResetPasswordRequest,
     AdminUserCreateRequest,
     AdminUserResponse,
     AdminUserUpdateRequest,
     AuditLogResponse,
+    SystemConfigRequest,
+    SystemConfigResponse,
     SystemHealthMetricsResponse,
     TokenAdjustmentRequest,
     UserStatusUpdateRequest,
 )
 from app.schemas.common import APIResponse, PaginatedData
+
 
 router = APIRouter(prefix="/admin", tags=["Admin Operations"], dependencies=[Depends(require_role("ADMIN"))])
 
@@ -150,6 +155,18 @@ async def update_user_admin(
             return APIResponse(message="User updated successfully", data=AdminUserResponse.model_validate(user))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+    # NEW-REV-04: Admin Self-Lockout Protection
+    will_deactivate = req.is_active is False
+    will_demote = req.role is not None and req.role.upper() != "ADMIN"
+    if (will_deactivate or will_demote) and user.role == "ADMIN" and user.is_active:
+        admin_count_stmt = select(func.count(User.id)).where(User.role == "ADMIN", User.is_active == True)
+        active_admins = (await db.execute(admin_count_stmt)).scalar() or 0
+        if active_admins <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot deactivate or delete the last active administrator",
+            )
+
     if req.full_name is not None:
         user.full_name = req.full_name
     if req.email is not None:
@@ -197,13 +214,7 @@ async def delete_user_admin(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user.id)
-    wallet = (await db.execute(wallet_stmt)).scalar_one_or_none()
-    if wallet:
-        await db.delete(wallet)
-
-    await db.delete(user)
-    await db.commit()
+    await AuthService.delete_user_account(db, user)
     return APIResponse(message=f"User {user.full_name} deleted successfully", data={"deleted_id": str(user.id)})
 
 
@@ -216,6 +227,16 @@ async def update_user_status(
     user = await find_user_by_identifier(user_id, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # NEW-REV-04: Admin Self-Lockout Protection
+    if req.is_active is False and user.role == "ADMIN" and user.is_active:
+        admin_count_stmt = select(func.count(User.id)).where(User.role == "ADMIN", User.is_active == True)
+        active_admins = (await db.execute(admin_count_stmt)).scalar() or 0
+        if active_admins <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot deactivate or delete the last active administrator",
+            )
 
     user.is_active = req.is_active
     await db.commit()
@@ -233,7 +254,11 @@ async def adjust_user_tokens(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user.id)
+    wallet_stmt = (
+        select(TokenWallet)
+        .where(TokenWallet.user_id == user.id)
+        .with_for_update()
+    )
     wallet = (await db.execute(wallet_stmt)).scalar_one_or_none()
     if not wallet:
         wallet = TokenWallet(user_id=user.id, balance=5)
@@ -343,7 +368,9 @@ async def list_audit_logs(
 
 @router.post("/purge-retention", response_model=APIResponse[dict])
 async def purge_retention_data(
+    request: Request = None,
     retention_days: int = Query(30, ge=1, le=365),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Purges expired soft-deleted documents and physical files older than retention period (UU PDP No. 27/2022)."""
@@ -356,17 +383,25 @@ async def purge_retention_data(
     purged_ids = []
 
     for doc in docs_to_purge:
-        if doc.stored_filename:
+        if getattr(doc, "stored_filename", None):
             file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)
                 except OSError:
                     pass
-        purged_ids.append(str(doc.id))
+        if hasattr(doc, "id"):
+            purged_ids.append(str(doc.id))
         await db.delete(doc)
 
+    actor_id = current_user.id if (current_user is not None and hasattr(current_user, "id") and not hasattr(current_user, "dependency")) else None
+    actor_ip = request.client.host if (request is not None and getattr(request, "client", None)) else None
+    actor_user_agent = request.headers.get("user-agent") if (request is not None and getattr(request, "headers", None)) else None
+
     log_entry = AuditLog(
+        actor_id=actor_id,
+        actor_ip=actor_ip,
+        actor_user_agent=actor_user_agent,
         action_type="DOCUMENT_PURGE",
         resource_type="DOCUMENT",
         action_result="SUCCESS",
@@ -384,4 +419,151 @@ async def purge_retention_data(
         message=f"Purge retensi UU PDP berhasil: {len(purged_ids)} dokumen kedaluwarsa dibersihkan secara permanen.",
         data={"purged_count": len(purged_ids), "purged_ids": purged_ids, "retention_days": retention_days},
     )
+
+
+@router.get("/config", response_model=APIResponse[SystemConfigResponse])
+async def get_system_config(db: AsyncSession = Depends(get_db)):
+    """
+    Retrieves current persistent AI engine hyperparameters & system configuration (ROUND4-05).
+    """
+    stmt = select(SystemConfig).order_by(SystemConfig.created_at.desc())
+    config = (await db.execute(stmt)).scalars().first()
+    if not config:
+        config = SystemConfig(
+            lexical_weight=settings.SIMILARITY_LEXICAL_WEIGHT,
+            semantic_weight=settings.SIMILARITY_SEMANTIC_WEIGHT,
+            stylometric_weight=settings.SIMILARITY_STYLO_WEIGHT,
+            similarity_threshold=0.78,
+            stylometric_burstiness_threshold=0.35,
+            winnowing_kgram=settings.WINNOWING_K_GRAM,
+            winnowing_window=settings.WINNOWING_WINDOW_SIZE,
+            hnsw_ef_search=64,
+            hnsw_m=16,
+            retention_days=30,
+            sandbox_mode=False,
+        )
+        db.add(config)
+        await db.commit()
+        await db.refresh(config)
+
+    res_data = SystemConfigResponse(
+        id=config.id,
+        lexical_weight=config.lexical_weight,
+        semantic_weight=config.semantic_weight,
+        stylometric_weight=config.stylometric_weight,
+        similarity_threshold=config.similarity_threshold,
+        hnsw_similarity_threshold=config.similarity_threshold,
+        stylometric_burstiness_threshold=config.stylometric_burstiness_threshold,
+        winnowing_kgram=config.winnowing_kgram,
+        winnowing_window=config.winnowing_window,
+        hnsw_ef_search=config.hnsw_ef_search,
+        hnsw_m=config.hnsw_m,
+        retention_days=config.retention_days,
+        sandbox_mode=config.sandbox_mode,
+        updated_at=config.updated_at,
+    )
+    return APIResponse(message="System configuration retrieved", data=res_data)
+
+
+@router.post("/config", response_model=APIResponse[SystemConfigResponse])
+async def update_system_config(
+    req: SystemConfigRequest,
+    request: Request = None,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Updates persistent AI engine hyperparameters & system settings (ROUND4-05).
+    Applies changes to database and synchronizes runtime settings.
+    """
+    stmt = select(SystemConfig).order_by(SystemConfig.created_at.desc())
+    config = (await db.execute(stmt)).scalars().first()
+    if not config:
+        config = SystemConfig()
+        db.add(config)
+        await db.flush()
+
+    updated_fields = {}
+    if req.lexical_weight is not None:
+        config.lexical_weight = req.lexical_weight
+        settings.SIMILARITY_LEXICAL_WEIGHT = req.lexical_weight
+        updated_fields["lexical_weight"] = req.lexical_weight
+    if req.semantic_weight is not None:
+        config.semantic_weight = req.semantic_weight
+        settings.SIMILARITY_SEMANTIC_WEIGHT = req.semantic_weight
+        updated_fields["semantic_weight"] = req.semantic_weight
+    if req.stylometric_weight is not None:
+        config.stylometric_weight = req.stylometric_weight
+        settings.SIMILARITY_STYLO_WEIGHT = req.stylometric_weight
+        updated_fields["stylometric_weight"] = req.stylometric_weight
+    if req.similarity_threshold is not None:
+        config.similarity_threshold = req.similarity_threshold
+        updated_fields["similarity_threshold"] = req.similarity_threshold
+    if req.stylometric_burstiness_threshold is not None:
+        config.stylometric_burstiness_threshold = req.stylometric_burstiness_threshold
+        updated_fields["stylometric_burstiness_threshold"] = req.stylometric_burstiness_threshold
+    if req.winnowing_kgram is not None:
+        config.winnowing_kgram = req.winnowing_kgram
+        settings.WINNOWING_K_GRAM = req.winnowing_kgram
+        updated_fields["winnowing_kgram"] = req.winnowing_kgram
+    if req.winnowing_window is not None:
+        config.winnowing_window = req.winnowing_window
+        settings.WINNOWING_WINDOW_SIZE = req.winnowing_window
+        updated_fields["winnowing_window"] = req.winnowing_window
+    if req.hnsw_ef_search is not None:
+        config.hnsw_ef_search = req.hnsw_ef_search
+        updated_fields["hnsw_ef_search"] = req.hnsw_ef_search
+    if req.hnsw_m is not None:
+        config.hnsw_m = req.hnsw_m
+        updated_fields["hnsw_m"] = req.hnsw_m
+    if req.retention_days is not None:
+        config.retention_days = req.retention_days
+        updated_fields["retention_days"] = req.retention_days
+    if req.sandbox_mode is not None:
+        config.sandbox_mode = req.sandbox_mode
+        updated_fields["sandbox_mode"] = req.sandbox_mode
+
+    config.updated_at = datetime.now(timezone.utc)
+
+    # Forensic audit log
+    actor_id = current_user.id if (current_user is not None and hasattr(current_user, "id") and not hasattr(current_user, "dependency")) else None
+    actor_ip = request.client.host if (request is not None and getattr(request, "client", None)) else None
+    actor_user_agent = request.headers.get("user-agent") if (request is not None and getattr(request, "headers", None)) else None
+
+    log_entry = AuditLog(
+        actor_id=actor_id,
+        actor_ip=actor_ip,
+        actor_user_agent=actor_user_agent,
+        action_type="CONFIG_UPDATE",
+        resource_type="SYSTEM_CONFIG",
+        resource_id=config.id,
+        action_result="SUCCESS",
+        meta_data={
+            "updated_fields": updated_fields,
+            "hnsw_ef_search": config.hnsw_ef_search,
+            "similarity_threshold": config.similarity_threshold,
+        },
+    )
+    db.add(log_entry)
+    await db.commit()
+    await db.refresh(config)
+
+    res_data = SystemConfigResponse(
+        id=config.id,
+        lexical_weight=config.lexical_weight,
+        semantic_weight=config.semantic_weight,
+        stylometric_weight=config.stylometric_weight,
+        similarity_threshold=config.similarity_threshold,
+        hnsw_similarity_threshold=config.similarity_threshold,
+        stylometric_burstiness_threshold=config.stylometric_burstiness_threshold,
+        winnowing_kgram=config.winnowing_kgram,
+        winnowing_window=config.winnowing_window,
+        hnsw_ef_search=config.hnsw_ef_search,
+        hnsw_m=config.hnsw_m,
+        retention_days=config.retention_days,
+        sandbox_mode=config.sandbox_mode,
+        updated_at=config.updated_at,
+    )
+    return APIResponse(message="System configuration updated successfully", data=res_data)
+
 

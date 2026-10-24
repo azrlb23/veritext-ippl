@@ -9,6 +9,7 @@ from app.models.document import Document
 from app.models.audit import AuditTask, AuditSentence, AuditReport
 from app.models.corpus import CorpusDocument, DocumentChunk, LexicalFingerprint
 from app.models.audit_log import AuditLog
+from app.models.system_config import SystemConfig
 
 __all__ = [
     "Base",
@@ -28,4 +29,6 @@ __all__ = [
     "DocumentChunk",
     "LexicalFingerprint",
     "AuditLog",
+    "SystemConfig",
 ]
+

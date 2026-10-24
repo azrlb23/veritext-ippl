@@ -16,7 +16,7 @@ Base = declarative_base()
 # Asynchronous engine and session for FastAPI endpoints
 async_engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.DEBUG,
+    echo=(settings.DEBUG and settings.ENVIRONMENT.lower() != "production"),
     future=True,
     pool_pre_ping=True,
 )
@@ -32,9 +32,10 @@ AsyncSessionLocal = async_sessionmaker(
 # Synchronous engine for Celery workers & Alembic migrations
 sync_engine = create_engine(
     settings.SYNC_DATABASE_URL,
-    echo=settings.DEBUG,
+    echo=(settings.DEBUG and settings.ENVIRONMENT.lower() != "production"),
     pool_pre_ping=True,
 )
+
 
 SyncSessionLocal = sessionmaker(
     autocommit=False,
