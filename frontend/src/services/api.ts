@@ -23,14 +23,30 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response && error.response.status === 401) {
-      const token = localStorage.getItem("veritext_access_token");
-      if (token) {
-        localStorage.removeItem("veritext_access_token");
-        localStorage.removeItem("veritext_user");
+      localStorage.removeItem("veritext_access_token");
+      localStorage.removeItem("veritext_user");
+      try {
+        const { useAuthStore } = await import("../stores/auth");
+        const authStore = useAuthStore();
+        authStore.logout();
+      } catch {
+        // Safe fallback if invoked outside active pinia context
+      }
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
       }
     }
+
+    // Normalisasi error boundary untuk gateway 502/503/504 & network offline
+    if (!error.response) {
+      error.message = error.message || "Network error: Layanan server tidak dapat dihubungi atau sedang offline.";
+    } else if (error.response.status === 502 || error.response.status === 503 || error.response.status === 504) {
+      error.message = "Gateway Error: Layanan backend sementara tidak tersedia. Silakan coba beberapa saat lagi.";
+    }
+
     return Promise.reject(error);
   }
 );
+

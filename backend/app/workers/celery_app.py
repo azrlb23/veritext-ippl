@@ -35,4 +35,14 @@ celery_app.conf.update(
     task_time_limit=1800,  # 30 minutes hard limit
     task_soft_time_limit=1500,  # 25 minutes soft limit
     worker_prefetch_multiplier=1,
+    task_acks_late=True,
+    task_reject_on_worker_lost=True,
+    result_expires=86400,  # 24 hours TTL to avoid Redis key accumulation
+    broker_connection_retry_on_startup=True,
+    beat_schedule={
+        "reap_zombie_tasks_periodic": {
+            "task": "app.workers.tasks.reap_zombie_tasks",
+            "schedule": 600.0,  # Every 10 minutes
+        },
+    },
 )

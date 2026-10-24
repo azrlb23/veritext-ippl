@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import os
 import uuid
 from typing import Any, Dict, List, Optional
@@ -235,8 +235,23 @@ def index_corpus_document(corpus_doc_id: str) -> Dict[str, Any]:
         file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
         corpus_text = ""
         if os.path.exists(file_path):
-            corpus_text = TextPreprocessor.extract_text_from_file(file_path)
+            if doc.stored_filename and doc.stored_filename.lower().endswith(".zip"):
+                import tempfile
+                from app.services.corpus_service import CorpusService
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    extracted_files = CorpusService.extract_zip_safely(file_path, temp_dir)
+                    texts = []
+                    for f in extracted_files:
+                        t = TextPreprocessor.extract_text_from_file(f)
+                        if t and t.strip():
+                            texts.append(t.strip())
+                    corpus_text = "\n\n".join(texts)
+            else:
+                corpus_text = TextPreprocessor.extract_text_from_file(file_path)
         else:
+            corpus_text = f"Naskah Korpus Pembanding: {doc.title}."
+
+        if not corpus_text.strip():
             corpus_text = f"Naskah Korpus Pembanding: {doc.title}."
 
         # 1. Segment sentences
@@ -285,3 +300,81 @@ def index_corpus_document(corpus_doc_id: str) -> Dict[str, Any]:
         raise e
     finally:
         db.close()
+
+
+def clean_zombie_tasks(db, threshold_minutes: int = 30) -> int:
+    """
+    Finds and cleans up zombie audit tasks stuck in PROCESSING state for more than
+    threshold_minutes. Marks them FAILED with a timeout message and refunds any deducted tokens.
+    """
+    from sqlalchemy import and_, or_
+    from app.models.wallet import TokenWallet, TokenTransaction
+    cutoff = datetime.now(timezone.utc) - timedelta(minutes=threshold_minutes)
+    zombie_tasks = (
+        db.query(AuditTask)
+        .filter(
+            AuditTask.status == "PROCESSING",
+            or_(
+                AuditTask.started_at < cutoff,
+                and_(AuditTask.started_at.is_(None), AuditTask.created_at < cutoff),
+            )
+        )
+        .all()
+    )
+    reaped = 0
+    for task in zombie_tasks:
+        task.status = "FAILED"
+        task.error_message = f"Task execution timed out after exceeding {threshold_minutes} minutes"
+        task.completed_at = datetime.now(timezone.utc)
+
+        # Look up debit transaction to refund deducted tokens
+        debit_tx = (
+            db.query(TokenTransaction)
+            .filter(
+                TokenTransaction.reference_id == task.id,
+                TokenTransaction.transaction_type == "DEBIT_AUDIT",
+            )
+            .first()
+        )
+        already_refunded = (
+            db.query(TokenTransaction)
+            .filter(
+                TokenTransaction.reference_id == task.id,
+                TokenTransaction.transaction_type == "CREDIT_REFUND",
+            )
+            .first()
+        )
+        if debit_tx and not already_refunded and task.user_id:
+            wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()
+            if wallet:
+                refund_amount = abs(debit_tx.amount)
+                wallet.balance += refund_amount
+                refund_tx = TokenTransaction(
+                    wallet_id=wallet.id,
+                    transaction_type="CREDIT_REFUND",
+                    amount=refund_amount,
+                    balance_after=wallet.balance,
+                    reference_id=task.id,
+                    note=f"Automatic refund for timed out audit task {task.id}",
+                )
+                db.add(refund_tx)
+        reaped += 1
+
+    if reaped > 0:
+        db.commit()
+
+    return reaped
+
+
+@celery_app.task(name="app.workers.tasks.reap_zombie_tasks")
+def reap_zombie_tasks() -> Dict[str, Any]:
+    """Periodic Celery Beat task to clean up zombie audit tasks."""
+    logger.info("Executing periodic zombie task cleanup reaper...")
+    db = SyncSessionLocal()
+    try:
+        count = clean_zombie_tasks(db, threshold_minutes=30)
+        logger.info(f"Zombie task cleanup reaper finished. Reaped {count} tasks.")
+        return {"status": "SUCCESS", "reaped_tasks": count}
+    finally:
+        db.close()
+
