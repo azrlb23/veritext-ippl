@@ -99,9 +99,7 @@ async def delete_document(
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
 
-    # UU PDP Compliance: Soft delete document and purge stored file
-    doc.status = "DELETED"
-    doc.deleted_at = datetime.now(timezone.utc)
-    await db.commit()
+    # UU PDP Compliance: Soft delete document and purge physical stored file from disk
+    await DocumentService.delete_document(db, doc)
 
     return APIResponse(message="Document deleted permanently in compliance with UU PDP No. 27/2022", data={})

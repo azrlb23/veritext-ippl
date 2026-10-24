@@ -79,3 +79,23 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         return payload
     except jwt.PyJWTError:
         return None
+
+
+def sanitize_csv_formula(val: Any) -> str:
+    """
+    Sanitizes values against CSV Formula Injection (CWE-1236 / OWASP).
+    If a string begins with '=', '+', '-', '@', '\t', or '\r' (even after leading spaces),
+    it prepends a single quote "'" to neutralize formula execution in spreadsheet software.
+    """
+    if val is None:
+        return ""
+    s = str(val)
+    if not s:
+        return ""
+    if s[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + s
+    stripped = s.lstrip(" ")
+    if stripped and stripped[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + s
+    return s
+

@@ -53,7 +53,10 @@ const systemMetrics = ref({
   celeryActiveTasks: 0,
 });
 
+const systemConfig = ref<SystemConfig | null>(null);
+
 // Computed Metrics for Zendenta Asset Card
+
 const totalTokensInSystem = computed(() => {
   return users.value.reduce((acc, u) => acc + (u.token_balance || 0), 0);
 });
@@ -206,12 +209,34 @@ async function loadMetrics() {
   }
 }
 
+async function loadSystemConfig() {
+  try {
+    const res = await apiClient.get<any>("/admin/config");
+    const d = res.data?.data;
+    if (d) {
+      systemConfig.value = {
+        winnowing_kgram: d.winnowing_kgram ?? 5,
+        winnowing_window: d.winnowing_window ?? 4,
+        hnsw_similarity_threshold: d.hnsw_similarity_threshold ?? d.similarity_threshold ?? 0.78,
+        hnsw_ef_search: d.hnsw_ef_search ?? 64,
+        stylometric_burstiness_threshold: d.stylometric_burstiness_threshold ?? 0.35,
+        sandbox_mode: d.sandbox_mode ?? false,
+      };
+    }
+  } catch {
+    // Keep defaults
+  }
+}
+
 onMounted(() => {
   void loadRealUsers();
   void loadAuditLogs();
   void loadCorpus();
   void loadMetrics();
+  void loadSystemConfig();
 });
+
+
 
 watch(corpusCategory, () => {
   void loadCorpus();
@@ -372,9 +397,11 @@ async function handleDeleteUser(userId: string) {
 
 async function handleSaveConfig(newConfig: SystemConfig) {
   try {
+    await apiClient.post("/admin/config", newConfig);
     await apiClient.post("/admin/reindex-hnsw");
+    systemConfig.value = { ...newConfig };
     showNotification(
-      `Hyperparameter sistem berhasil diperbarui dan re-indexing dijadwalkan. Ambang batas kosinus: ${newConfig.hnsw_similarity_threshold}`,
+      `Hyperparameter sistem berhasil disimpan secara persisten ke basis data & re-indexing dijadwalkan. Ambang batas kosinus: ${newConfig.hnsw_similarity_threshold}`,
       "success",
       "Konfigurasi Tersimpan"
     );
@@ -387,27 +414,40 @@ async function handleSaveConfig(newConfig: SystemConfig) {
   }
 }
 
+
 async function handleRefreshLogs() {
   await loadAuditLogs();
   showNotification("Daftar jejak audit forensik berhasil disinkronkan ulang.", "info", "Sinkronisasi Log");
 }
 
+function sanitizeCsvCell(val: any): string {
+  if (val === null || val === undefined) return '""';
+  let str = String(val);
+  // OWASP CSV Injection: prefix formula characters (=, +, -, @, \t, \r) with single quote (including leading whitespace)
+  if (/^\s*[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
+  // Escape double quotes
+  str = str.replace(/"/g, '""');
+  return `"${str}"`;
+}
+
 function handleExportCsv() {
   const headers = ["ID", "Waktu", "Aktor", "Email", "Aksi", "Target Sumber Daya", "Alamat IP", "Status", "Rincian"];
   const rows = auditLogs.value.map((l) => [
-    l.id,
-    `"${l.timestamp}"`,
-    `"${l.actor_name}"`,
-    `"${l.actor_email}"`,
-    l.action,
-    `"${l.target_resource}"`,
-    l.ip_address,
-    l.status,
-    `"${l.details || ''}"`,
+    sanitizeCsvCell(l.id),
+    sanitizeCsvCell(l.timestamp),
+    sanitizeCsvCell(l.actor_name),
+    sanitizeCsvCell(l.actor_email),
+    sanitizeCsvCell(l.action),
+    sanitizeCsvCell(l.target_resource),
+    sanitizeCsvCell(l.ip_address),
+    sanitizeCsvCell(l.status),
+    sanitizeCsvCell(l.details || ''),
   ]);
 
-  const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-  const encodedUri = encodeURI(csvContent);
+  const csvContent = [headers.map(h => `"${h}"`).join(","), ...rows.map((r) => r.join(","))].join("\n");
+  const encodedUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
   link.setAttribute("download", `audit-trail-veritext-${Date.now()}.csv`);
@@ -1122,8 +1162,17 @@ async function handleLogout() {
 
         <!-- View 4: TUNING ENGINE AI -->
         <section v-else-if="currentSection === 'config'" class="space-y-4">
-          <SystemSettingsCard @saveConfig="handleSaveConfig" />
+          <SystemSettingsCard
+            v-if="systemConfig"
+            :initialConfig="systemConfig"
+            @saveConfig="handleSaveConfig"
+          />
+          <SystemSettingsCard
+            v-else
+            @saveConfig="handleSaveConfig"
+          />
         </section>
+
 
         <!-- View 5: LOG JEJAK FORENSIK -->
         <section v-else-if="currentSection === 'logs'" class="space-y-4">

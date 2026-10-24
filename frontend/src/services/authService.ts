@@ -38,4 +38,9 @@ export const authService = {
     const res = await apiClient.get<{ data: User }>("/auth/me");
     return res.data.data;
   },
+
+  async deleteAccount() {
+    const res = await apiClient.delete("/auth/me");
+    return res.data;
+  },
 };

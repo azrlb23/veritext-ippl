@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.database import get_db
+from app.core.security import sanitize_csv_formula
 from app.models.audit import AuditTask
 from app.models.document import Document
 from app.models.user import User
@@ -133,13 +134,13 @@ async def export_audit_history_csv(
 
     for item in items:
         writer.writerow([
-            str(item.id),
-            str(item.document_id),
-            item.audit_depth,
-            item.status,
-            item.progress_pct,
-            item.started_at.isoformat() if item.started_at else "",
-            item.completed_at.isoformat() if item.completed_at else "",
+            sanitize_csv_formula(str(item.id)),
+            sanitize_csv_formula(str(item.document_id)),
+            sanitize_csv_formula(item.audit_depth),
+            sanitize_csv_formula(item.status),
+            sanitize_csv_formula(item.progress_pct),
+            sanitize_csv_formula(item.started_at.isoformat() if item.started_at else ""),
+            sanitize_csv_formula(item.completed_at.isoformat() if item.completed_at else ""),
         ])
 
     return Response(
