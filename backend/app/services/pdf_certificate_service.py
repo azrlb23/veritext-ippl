@@ -1,5 +1,6 @@
 import io
 import datetime
+import html
 import re
 from typing import Optional, List, Dict, Any
 import qrcode
@@ -10,6 +11,8 @@ from reportlab.platypus import (
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 
+from app.core.config import settings
+
 
 def clean_pdf_filename(document_title: str) -> str:
     """Sanitizes document title to produce a clean, human-readable PDF filename."""
@@ -19,6 +22,11 @@ def clean_pdf_filename(document_title: str) -> str:
     if not name:
         name = "Naskah_Akademik"
     return f"Sertifikat_VeriText_{name}.pdf"
+
+
+# Re-export official invoice PDF generators for Phase 6 hardening
+from app.services.pdf_invoice_service import generate_invoice_pdf, clean_invoice_filename  # noqa: E402
+
 
 
 def generate_pdf_certificate(
@@ -33,12 +41,22 @@ def generate_pdf_certificate(
     score_semantic: float,
     score_stylometric: float,
     matched_sources: Optional[List[Dict[str, Any]]] = None,
-    verify_base_url: str = "http://localhost:5173",
+    verify_base_url: Optional[str] = None,
 ) -> bytes:
     """
     Generates an official academic PDF certificate of originality with QR code,
     similarity breakdown, and cryptographic verification UUID.
     """
+    if not verify_base_url:
+        verify_base_url = settings.FRONTEND_URL.rstrip("/")
+    else:
+        verify_base_url = verify_base_url.rstrip("/")
+
+    # HTML escape user-supplied fields to prevent ReportLab XML parser injection/errors
+    safe_doc_title = html.escape(str(document_title or "Naskah Akademik"))
+    safe_user_name = html.escape(str(user_name or "Pengguna VeriText"))
+    safe_institution = html.escape(str(institution or "Institusi Akademik"))
+
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -214,19 +232,19 @@ def generate_pdf_certificate(
     meta_data = [
         [
             Paragraph("<b>Judul Naskah:</b>", body_style),
-            Paragraph(f"<b>{document_title}</b>", body_bold),
+            Paragraph(f"<b>{safe_doc_title}</b>", body_bold),
             Paragraph("<b>ID Laporan:</b>", body_style),
             Paragraph(f"{str(report_id)[:16]}...", body_style),
         ],
         [
             Paragraph("<b>Penulis / Mahasiswa:</b>", body_style),
-            Paragraph(user_name, body_style),
+            Paragraph(safe_user_name, body_style),
             Paragraph("<b>Tanggal Audit:</b>", body_style),
             Paragraph(date_str, body_style),
         ],
         [
             Paragraph("<b>Institusi:</b>", body_style),
-            Paragraph(institution, body_style),
+            Paragraph(safe_institution, body_style),
             Paragraph("<b>Status Validasi:</b>", body_style),
             Paragraph("<font color='#065f46'><b>Lulus Evaluasi</b></font>", body_bold),
         ],
@@ -323,7 +341,8 @@ def generate_pdf_certificate(
             ]
         ]
         for idx, s in enumerate(matched_sources[:4], 1):
-            src_title = s.get("source_title") or s.get("title") or "Dokumen Korpus Terindeks"
+            raw_title = s.get("source_title") or s.get("title") or "Dokumen Korpus Terindeks"
+            src_title = html.escape(str(raw_title))
             sim_pct = s.get("similarity", 0)
             sim_str = f"{sim_pct * 100:.1f}%" if sim_pct <= 1.0 else f"{sim_pct:.1f}%"
             tier = s.get("tier", "T1")
@@ -405,7 +424,7 @@ def generate_pdf_certificate(
         Paragraph(f"<font color='#2563EB'><u>{verify_url}</u></font>", body_bold),
         Spacer(1, 2),
         Paragraph(
-            f"<font color='#737373'>Kode Verifikasi SHA-256: <b>{verification_uuid}</b></font>",
+            f"<font color='#737373'>ID Sertifikat (UUID): <b>{verification_uuid}</b></font>",
             ParagraphStyle(
                 "Hsh",
                 parent=styles["Normal"],

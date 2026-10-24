@@ -9,16 +9,16 @@
 INSERT INTO users (id, full_name, email, institution, password_hash, role, is_active)
 VALUES 
     -- Super Administrator
-    ('11111111-1111-1111-1111-111111111111', 'Super Administrator VeriText', 'admin@veritext.ai', 'VeriText AI System', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L5.X4S/W6', 'ADMIN', TRUE),
+    ('11111111-1111-1111-1111-111111111111', 'Super Administrator VeriText', 'admin@veritext.ai', 'VeriText AI System', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'ADMIN', TRUE),
     
     -- Dosen / Reviewer Kampus
-    ('22222222-2222-2222-2222-222222222222', 'Dr. Hendra Gunawan, M.Kom.', 'dosen@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L5.X4S/W6', 'REVIEWER', TRUE),
+    ('22222222-2222-2222-2222-222222222222', 'Dr. Hendra Gunawan, M.Kom.', 'dosen@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'REVIEWER', TRUE),
     
     -- Mahasiswa / Trial User
-    ('33333333-3333-3333-3333-333333333333', 'Mochammad Azriel Albian Putra', 'azriel@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L5.X4S/W6', 'TRIAL', TRUE),
+    ('33333333-3333-3333-3333-333333333333', 'Mochammad Azriel Albian Putra', 'azriel@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'TRIAL', TRUE),
 
     -- Mahasiswa / Premium User
-    ('44444444-4444-4444-4444-444444444444', 'Siti Rahmawati', 'siti@kampus.ac.id', 'Universitas Indonesia', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4L5.X4S/W6', 'PREMIUM', TRUE)
+    ('44444444-4444-4444-4444-444444444444', 'Siti Rahmawati', 'siti@kampus.ac.id', 'Universitas Indonesia', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'PREMIUM', TRUE)
 ON CONFLICT (email) DO NOTHING;
 
 -- 2. SEED DOMPET TOKEN (Wallets)

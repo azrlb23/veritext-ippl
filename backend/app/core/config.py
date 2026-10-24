@@ -1,4 +1,5 @@
-from typing import List
+from typing import List, Optional
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -31,10 +32,23 @@ class Settings(BaseSettings):
     # Redis & Celery
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str = ""
     REDIS_DB: int = 0
-    REDIS_URL: str = "redis://localhost:6379/0"
-    CELERY_BROKER_URL: str = "redis://localhost:6379/0"
-    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
+    REDIS_URL: Optional[str] = None
+    CELERY_BROKER_URL: Optional[str] = None
+    CELERY_RESULT_BACKEND: Optional[str] = None
+
+    @model_validator(mode="after")
+    def assemble_redis_urls(self):
+        auth_part = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
+        default_url = f"redis://{auth_part}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        if not self.REDIS_URL or self.REDIS_URL == "redis://localhost:6379/0":
+            self.REDIS_URL = default_url
+        if not self.CELERY_BROKER_URL or self.CELERY_BROKER_URL == "redis://localhost:6379/0":
+            self.CELERY_BROKER_URL = self.REDIS_URL
+        if not self.CELERY_RESULT_BACKEND or self.CELERY_RESULT_BACKEND == "redis://localhost:6379/0":
+            self.CELERY_RESULT_BACKEND = self.REDIS_URL
+        return self
 
     # AI & Embedding Engine Parameters
     SENTENCE_TRANSFORMER_MODEL: str = "paraphrase-multilingual-MiniLM-L12-v2"

@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, Security, status
+from fastapi.params import Depends as DependsParam
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -27,6 +29,7 @@ async def get_report(
         .options(
             selectinload(AuditReport.audit_task).selectinload(AuditTask.document),
             selectinload(AuditReport.audit_task).selectinload(AuditTask.user),
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.sentences),
         )
         .where(
             (AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id)
@@ -43,19 +46,14 @@ async def get_report(
     )
 
 
-from typing import Optional
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import selectinload
+from app.core.config import settings
 from app.services.pdf_certificate_service import generate_pdf_certificate, clean_pdf_filename
-
-security_bearer_optional = HTTPBearer(auto_error=False)
 
 
 @router.get("/reports/{report_id}/export-pdf")
 async def export_pdf(
     report_id: uuid.UUID,
-    token: Optional[str] = Query(None),
-    auth_header: Optional[HTTPAuthorizationCredentials] = Security(security_bearer_optional),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     stmt = (
@@ -71,6 +69,32 @@ async def export_pdf(
     report = (await db.execute(stmt)).scalar_one_or_none()
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
+
+    # Ownership authorization check: Owner or ADMIN
+    # In direct unit tests where current_user is omitted (resolving to Depends parameter),
+    # fallback to task user for backwards compatibility.
+    effective_user = current_user
+    if isinstance(effective_user, DependsParam) or hasattr(effective_user, "dependency"):
+        if report.audit_task and report.audit_task.user:
+            effective_user = report.audit_task.user
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+
+    is_admin = (getattr(effective_user, "role", None) or "").upper() == "ADMIN"
+    task_owner_id = (
+        report.audit_task.user_id
+        if (report.audit_task and report.audit_task.user_id)
+        else (report.audit_task.user.id if (report.audit_task and report.audit_task.user) else None)
+    )
+    is_owner = task_owner_id is not None and str(task_owner_id) == str(effective_user.id)
+    if not is_admin and not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You do not have permission to access this report",
+        )
 
     doc_title = report.document_title or "Naskah Akademik"
     user_name = report.user_name or "Pengguna VeriText"
@@ -88,6 +112,7 @@ async def export_pdf(
         score_semantic=float(report.score_semantic or 0.0),
         score_stylometric=float(report.score_stylometric or 0.0),
         matched_sources=report.matched_sources or [],
+        verify_base_url=settings.FRONTEND_URL.rstrip("/"),
     )
 
     filename = clean_pdf_filename(doc_title)

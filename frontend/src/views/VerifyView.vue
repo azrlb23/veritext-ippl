@@ -14,20 +14,20 @@ const route = useRoute();
 const router = useRouter();
 const { showNotification } = useNotification();
 
-const uuidParam = (route.params.uuid as string) || "f47ac10b-58cc-4372-a567-0e02b2c3d479";
-const isValid = ref(uuidParam !== "invalid");
+const uuidParam = (route.params.uuid as string) || "";
+const isValid = ref(false);
 const isChecking = ref(false);
 
 const certDetails = ref<CertificateDetails>({
   uuid: uuidParam,
-  title: "Pengaruh Algoritma Rekomendasi Terhadap Polaritas Opini Publik.pdf",
-  examiner: "Dr. Budi Santoso",
-  institution: "Universitas Indonesia",
-  auditDate: "11 Oktober 2026, 20:30 WIB",
-  compositeScore: 14.8,
-  lexicalScore: 14.5,
-  semanticScore: 18.2,
-  styloScore: 8.0,
+  title: "",
+  examiner: "",
+  institution: "",
+  auditDate: "",
+  compositeScore: 0,
+  lexicalScore: 0,
+  semanticScore: 0,
+  styloScore: 0,
 });
 
 async function handleLookup(targetUuid: string) {
@@ -37,14 +37,17 @@ async function handleLookup(targetUuid: string) {
     const res = await auditService.verifyCertificate(targetUuid.trim());
     if (res && res.is_valid !== undefined) {
       isValid.value = res.is_valid;
-      certDetails.value.uuid = targetUuid;
-      if (res.title) certDetails.value.title = res.title;
-      if (res.examiner_name) certDetails.value.examiner = res.examiner_name;
-      if (res.institution) certDetails.value.institution = res.institution;
-      if (res.score_composite !== undefined) certDetails.value.compositeScore = res.score_composite;
-      if (res.score_lexical !== undefined) certDetails.value.lexicalScore = res.score_lexical;
-      if (res.score_semantic !== undefined) certDetails.value.semanticScore = res.score_semantic;
-      if (res.score_stylometric !== undefined) certDetails.value.styloScore = res.score_stylometric;
+      certDetails.value = {
+        uuid: targetUuid,
+        title: res.title || "",
+        examiner: res.examiner_name || "",
+        institution: res.institution || "",
+        auditDate: res.audit_date || "",
+        compositeScore: res.score_composite ?? 0,
+        lexicalScore: res.score_lexical ?? 0,
+        semanticScore: res.score_semantic ?? 0,
+        styloScore: res.score_stylometric ?? 0,
+      };
       if (res.is_valid) {
         showNotification(`Sertifikat ${targetUuid.slice(0, 8)}... berhasil divalidasi.`, "success", "Validasi Berhasil");
       } else {
@@ -56,6 +59,17 @@ async function handleLookup(targetUuid: string) {
     }
   } catch (err: any) {
     isValid.value = false;
+    certDetails.value = {
+      uuid: targetUuid,
+      title: "",
+      examiner: "",
+      institution: "",
+      auditDate: "",
+      compositeScore: 0,
+      lexicalScore: 0,
+      semanticScore: 0,
+      styloScore: 0,
+    };
     showNotification(
       err?.response?.data?.detail || err?.message || "Kode sertifikat tidak ditemukan atau tidak valid.",
       "error",
@@ -68,8 +82,8 @@ async function handleLookup(targetUuid: string) {
 
 onMounted(() => {
   const currentParam = route.params.uuid as string | undefined;
-  if (currentParam && currentParam !== "invalid" && currentParam !== "f47ac10b-58cc-4372-a567-0e02b2c3d479") {
-    void handleLookup(currentParam);
+  if (currentParam && currentParam.trim() && currentParam !== "invalid") {
+    void handleLookup(currentParam.trim());
   }
 });
 
@@ -113,12 +127,13 @@ watch(
 
     <!-- Verification Status Banner -->
     <VerificationBadge
+      v-if="certDetails.uuid"
       :isValid="isValid"
       :uuid="certDetails.uuid"
     />
 
     <!-- Summary Details Card with Steep Donut Gauge -->
-    <CertificateDetailsCard v-if="isValid" :details="certDetails" />
+    <CertificateDetailsCard v-if="isValid && certDetails.title" :details="certDetails" />
 
     <div class="text-center text-xs text-[#777b86] font-normal">
       Halaman ini bersifat terbuka dan dapat diakses siapa saja untuk membuktikan keaslian laporan tanpa memerlukan autentikasi login.

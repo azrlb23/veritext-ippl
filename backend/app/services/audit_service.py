@@ -9,6 +9,7 @@ from app.models.audit import AuditTask, AuditReport
 from app.models.document import Document
 from app.models.wallet import TokenWallet, TokenTransaction
 from app.schemas.audit import AuditStartRequest
+from app.services.pdf_certificate_service import generate_pdf_certificate, clean_pdf_filename
 
 
 class AuditService:
@@ -27,8 +28,18 @@ class AuditService:
                 detail="Document not found or access denied",
             )
 
+        if document.status == "DELETED" or document.deleted_at is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cannot audit a deleted document",
+            )
+
         # Check and debit user token wallet
-        wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user_id)
+        wallet_stmt = (
+            select(TokenWallet)
+            .where(TokenWallet.user_id == user_id)
+            .with_for_update()
+        )
         wallet_res = await db.execute(wallet_stmt)
         wallet = wallet_res.scalar_one_or_none()
 
@@ -65,29 +76,26 @@ class AuditService:
         )
         db.add(tx)
 
-        # Dispatch Celery worker task asynchronously
+        # Dispatch Celery worker task asynchronously without web server thread hijacking
         try:
+            from app.workers.celery_app import celery_app
             from app.workers.tasks import preprocess_and_audit
-            celery_res = preprocess_and_audit.delay(str(task.id), str(document.id))
-            task.celery_task_id = celery_res.id
+            inspect = celery_app.control.inspect(timeout=0.3)
+            active_workers = inspect.ping() if inspect else None
+            if active_workers:
+                celery_res = preprocess_and_audit.delay(str(task.id), str(document.id))
+                task.celery_task_id = celery_res.id
+            else:
+                # Celery worker is offline; leave task in QUEUED status in broker queue
+                # so that when the worker starts up, it will automatically consume and process it.
+                # Do NOT spawn an in-process thread that hijacks the web server process.
+                try:
+                    celery_res = preprocess_and_audit.delay(str(task.id), str(document.id))
+                    task.celery_task_id = celery_res.id
+                except Exception:
+                    task.celery_task_id = None
         except Exception:
-            # Fallback if celery is not connected in current test run
-            task.celery_task_id = f"simulated-{uuid.uuid4().hex}"
-            try:
-                import threading
-                from app.workers.tasks import execute_audit_pipeline
-                from app.core.database import SyncSessionLocal
-
-                def _bg_run(t_id=str(task.id), d_id=str(document.id)):
-                    s = SyncSessionLocal()
-                    try:
-                        execute_audit_pipeline(s, t_id, d_id)
-                    finally:
-                        s.close()
-
-                threading.Thread(target=_bg_run, daemon=True).start()
-            except Exception:
-                pass
+            task.celery_task_id = None
 
         await db.commit()
         await db.refresh(task)

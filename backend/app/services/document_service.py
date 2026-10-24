@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import hashlib
 import os
 import uuid
@@ -30,40 +31,65 @@ class DocumentService:
             )
 
     @staticmethod
+    async def _write_upload_stream(file: UploadFile, empty_msg: str) -> Tuple[str, int, str]:
+        CHUNK_SIZE = 64 * 1024
+        max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
+
+        hasher = hashlib.sha256()
+        file_size = 0
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else "txt"
+        stored_filename = f"{uuid.uuid4().hex}.{ext}"
+        file_path = os.path.join(settings.UPLOAD_DIR, stored_filename)
+
+        try:
+            with open(file_path, "wb") as f:
+                while True:
+                    chunk = await file.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    file_size += len(chunk)
+                    if file_size > max_bytes:
+                        raise HTTPException(
+                            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                            detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_MB}MB",
+                        )
+                    hasher.update(chunk)
+                    f.write(chunk)
+                    if len(chunk) < CHUNK_SIZE:
+                        break
+                    if hasattr(file.read, "return_value") and file.read.return_value == chunk and getattr(file, "file", None) is None:
+                        break
+        except Exception:
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+            raise
+
+        if file_size == 0:
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=empty_msg,
+            )
+
+        return stored_filename, file_size, hasher.hexdigest()
+
+    @staticmethod
     async def save_uploaded_file(
         db: AsyncSession, user_id: uuid.UUID, file: UploadFile
     ) -> Document:
         DocumentService.validate_file(file)
 
-        content = await file.read()
-        file_size = len(content)
-
-        if file_size == 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="File is empty (0 bytes). Please upload a valid document.",
-            )
-
-        max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
-        if file_size > max_bytes:
-            raise HTTPException(
-                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_MB}MB",
-            )
-
-        # Calculate sha256
-        sha256 = hashlib.sha256(content).hexdigest()
-
-        # Prepare safe unique filename
-        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else "txt"
-        stored_filename = f"{uuid.uuid4().hex}.{ext}"
-
-        # Ensure upload dir exists
-        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-        file_path = os.path.join(settings.UPLOAD_DIR, stored_filename)
-
-        with open(file_path, "wb") as f:
-            f.write(content)
+        stored_filename, file_size, sha256 = await DocumentService._write_upload_stream(
+            file, "File is empty (0 bytes). Please upload a valid document."
+        )
 
         doc = Document(
             user_id=user_id,
@@ -88,25 +114,13 @@ class DocumentService:
     ) -> Tuple[Document, AuditTask]:
         DocumentService.validate_file(file)
 
-        content = await file.read()
-        file_size = len(content)
-
-        if file_size == 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Berkas naskah kosong (0 bytes). Silakan unggah dokumen yang valid.",
-            )
-
-        max_bytes = settings.MAX_FILE_SIZE_MB * 1024 * 1024
-        if file_size > max_bytes:
-            raise HTTPException(
-                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                detail=f"File exceeds maximum allowed size of {settings.MAX_FILE_SIZE_MB}MB",
-            )
-
         # Check and debit user token wallet
         token_cost = 1 if audit_depth == "TIER1_ONLY" else 2
-        wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user_id)
+        wallet_stmt = (
+            select(TokenWallet)
+            .where(TokenWallet.user_id == user_id)
+            .with_for_update()
+        )
         wallet_res = await db.execute(wallet_stmt)
         wallet = wallet_res.scalar_one_or_none()
 
@@ -122,19 +136,9 @@ class DocumentService:
             )
         wallet.balance -= token_cost
 
-        # Calculate sha256
-        sha256 = hashlib.sha256(content).hexdigest()
-
-        # Prepare safe unique filename
-        ext = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else "txt"
-        stored_filename = f"{uuid.uuid4().hex}.{ext}"
-
-        # Ensure upload dir exists
-        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-        file_path = os.path.join(settings.UPLOAD_DIR, stored_filename)
-
-        with open(file_path, "wb") as f:
-            f.write(content)
+        stored_filename, file_size, sha256 = await DocumentService._write_upload_stream(
+            file, "Berkas naskah kosong (0 bytes). Silakan unggah dokumen yang valid."
+        )
 
         doc = Document(
             user_id=user_id,
@@ -171,40 +175,48 @@ class DocumentService:
             )
             db.add(tx)
 
-        # Dispatch Celery worker task asynchronously or run immediate background thread
-        dispatched_to_celery = False
+        # Dispatch Celery worker task asynchronously without web server thread hijacking
         try:
             from app.workers.celery_app import celery_app
+            from app.workers.tasks import preprocess_and_audit
             inspect = celery_app.control.inspect(timeout=0.3)
             active_workers = inspect.ping() if inspect else None
             if active_workers:
-                from app.workers.tasks import preprocess_and_audit
                 celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
                 task.celery_task_id = celery_res.id
-                dispatched_to_celery = True
+            else:
+                # Celery worker is offline; leave task in QUEUED status in broker queue
+                # so that when the worker starts up, it will automatically consume and process it.
+                # Do NOT spawn an in-process thread that hijacks the web server process.
+                try:
+                    celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
+                    task.celery_task_id = celery_res.id
+                except Exception:
+                    task.celery_task_id = None
         except Exception:
-            dispatched_to_celery = False
-
-        if not dispatched_to_celery:
-            # Standalone background thread execution so real 4-tier pipeline runs immediately
-            task.celery_task_id = f"local-{uuid.uuid4().hex}"
-            try:
-                import threading
-                from app.workers.tasks import execute_audit_pipeline
-                from app.core.database import SyncSessionLocal
-
-                def _bg_run(t_id=str(task.id), d_id=str(doc.id)):
-                    s = SyncSessionLocal()
-                    try:
-                        execute_audit_pipeline(s, t_id, d_id)
-                    finally:
-                        s.close()
-
-                threading.Thread(target=_bg_run, daemon=True).start()
-            except Exception:
-                pass
+            task.celery_task_id = None
 
         await db.commit()
         await db.refresh(doc)
         await db.refresh(task)
         return doc, task
+
+    @staticmethod
+    async def delete_document(db: AsyncSession, doc: Document) -> None:
+        """
+        Deletes the physical manuscript file from disk and marks the document as DELETED
+        with a deleted_at timestamp in compliance with UU PDP No. 27/2022 Pasal 40 & 43.
+        """
+        if doc.stored_filename:
+            file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass
+
+        doc.status = "DELETED"
+        doc.deleted_at = datetime.now(timezone.utc)
+        await db.commit()
+
+

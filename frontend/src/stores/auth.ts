@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import type { User } from "../types";
 import { authService, type LoginDTO, type RegisterDTO } from "../services/authService";
+import { useAuditStore } from "./audit";
 
 export const useAuthStore = defineStore("auth", () => {
   const savedUser = localStorage.getItem("veritext_user");
@@ -69,14 +70,21 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function logout() {
-    user.value = null;
-    token.value = null;
-    localStorage.removeItem("veritext_access_token");
-    localStorage.removeItem("veritext_user");
     try {
       await authService.logout();
     } catch {
       // Ignore network failure on logout
+    } finally {
+      user.value = null;
+      token.value = null;
+      localStorage.removeItem("veritext_access_token");
+      localStorage.removeItem("veritext_user");
+      try {
+        const auditStore = useAuditStore();
+        auditStore.reset();
+      } catch {
+        // Safe fallback if called outside active pinia instance
+      }
     }
   }
 
@@ -93,6 +101,11 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function deleteAccount() {
+    await authService.deleteAccount();
+    await logout();
+  }
+
   return {
     user,
     token,
@@ -106,6 +119,7 @@ export const useAuthStore = defineStore("auth", () => {
     login,
     register,
     logout,
+    deleteAccount,
     fetchProfile,
   };
 });
