@@ -25,6 +25,22 @@ class SemanticAnalysisResult:
     corpus_contributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
 
+from contextlib import nullcontext
+
+
+def get_inference_context():
+    """Provides torch.inference_mode or torch.no_grad context manager to prevent RAM leakage."""
+    try:
+        import torch
+        if hasattr(torch, "inference_mode"):
+            return torch.inference_mode()
+        elif hasattr(torch, "no_grad"):
+            return torch.no_grad()
+    except ImportError:
+        pass
+    return nullcontext()
+
+
 class SemanticEngine:
     """Engine for sentence-level semantic vector embedding and cosine similarity comparison.
     
@@ -167,25 +183,48 @@ class SemanticEngine:
 
         return vec
 
-    def embed_sentence(self, text: str) -> List[float]:
-        """Generates 384-D vector embedding for text (using Transformer if available, or dense generator)."""
-        # Attempt transformer model if present
-        if not self._attempted_transformer_load:
-            self._attempted_transformer_load = True
+    _shared_transformer_model = None
+    _shared_model_attempted = False
+
+    @classmethod
+    def get_shared_model(cls):
+        """Singleton accessor for sentence transformer model."""
+        if not cls._shared_model_attempted:
+            cls._shared_model_attempted = True
             try:
                 from sentence_transformers import SentenceTransformer  # type: ignore
-                self._transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
+                cls._shared_transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
             except Exception:
-                self._transformer_model = None
+                cls._shared_transformer_model = None
+        return cls._shared_transformer_model
 
-        if self._transformer_model is not None:
+    def embed_sentence(self, text: str) -> List[float]:
+        """Generates 384-D vector embedding for text using singleton transformer model with torch inference mode."""
+        model = self.get_shared_model() if self._transformer_model is None else self._transformer_model
+        if model is not None:
             try:
-                emb = self._transformer_model.encode(text, convert_to_numpy=True).tolist()
-                return emb
+                with get_inference_context():
+                    emb = model.encode(text, convert_to_numpy=True).tolist()
+                    return emb
             except Exception:
                 pass
 
         return self.embed_sentence_dense(text)
+
+    def embed_sentences(self, texts: List[str]) -> List[List[float]]:
+        """Batch generates 384-D vector embeddings for multiple sentences efficiently."""
+        if not texts:
+            return []
+        model = self.get_shared_model() if self._transformer_model is None else self._transformer_model
+        if model is not None:
+            try:
+                with get_inference_context():
+                    embs = model.encode(texts, convert_to_numpy=True, batch_size=32).tolist()
+                    return embs
+            except Exception:
+                pass
+
+        return [self.embed_sentence_dense(t) for t in texts]
 
     @staticmethod
     def cosine_similarity(u: Any, v: Any) -> float:
@@ -234,8 +273,8 @@ class SemanticEngine:
         if not sentences or not corpus_chunks:
             return SemanticAnalysisResult(score_t2=0.0)
 
-        # Precompute or retrieve embeddings for document sentences
-        doc_embeddings = [self.embed_sentence(s.text) for s in sentences]
+        # Precompute or retrieve embeddings for document sentences in batch
+        doc_embeddings = self.embed_sentences([s.text for s in sentences])
 
         matched_similarities: List[float] = []
 

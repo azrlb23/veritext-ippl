@@ -136,3 +136,47 @@ class AuditReport(Base):
         except Exception:
             return None
 
+    @property
+    def document_text(self) -> Optional[str]:
+        if hasattr(self, "_document_text") and self._document_text is not None:
+            return self._document_text
+        try:
+            if self.audit_task and self.audit_task.document and self.audit_task.document.stored_filename:
+                import os
+                from app.core.config import settings
+                from app.engine.preprocessor import TextPreprocessor
+                fpath = os.path.join(settings.UPLOAD_DIR, self.audit_task.document.stored_filename)
+                if os.path.exists(fpath):
+                    raw_text = TextPreprocessor.extract_text_from_file(fpath, getattr(self.audit_task.document, "mime_type", None))
+                    if raw_text and raw_text.strip():
+                        return raw_text
+        except Exception:
+            pass
+        try:
+            if self.audit_task and self.audit_task.sentences:
+                sorted_sentences = sorted(self.audit_task.sentences, key=lambda s: getattr(s, "sentence_index", 0))
+                if sorted_sentences:
+                    buf = []
+                    curr_pos = 0
+                    for s in sorted_sentences:
+                        s_text = getattr(s, "sentence_text", "") or ""
+                        s_start = getattr(s, "start_char", curr_pos)
+                        if s_start is None:
+                            s_start = curr_pos
+                        if s_start > curr_pos:
+                            buf.append(" " * (s_start - curr_pos))
+                            curr_pos = s_start
+                        buf.append(s_text)
+                        curr_pos += len(s_text)
+                    reconstructed = "".join(buf)
+                    if reconstructed.strip():
+                        return reconstructed
+        except Exception:
+            pass
+        return None
+
+    @document_text.setter
+    def document_text(self, val: Optional[str]):
+        self._document_text = val
+
+

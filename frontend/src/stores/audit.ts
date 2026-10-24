@@ -8,29 +8,48 @@ export const useAuditStore = defineStore("audit", () => {
   const currentReport = ref<AuditReport | null>(null);
   const isPolling = ref<boolean>(false);
 
+  let pollingTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopPolling() {
+    if (pollingTimer !== null) {
+      clearInterval(pollingTimer);
+      pollingTimer = null;
+    }
+    isPolling.value = false;
+  }
+
   async function pollTaskStatus(taskId: string, onComplete?: (report: AuditReport) => void) {
+    stopPolling();
     isPolling.value = true;
-    const interval = setInterval(async () => {
+    pollingTimer = setInterval(async () => {
       try {
         const task = await auditService.getStatus(taskId);
         currentTask.value = task;
 
         if (task.status === "SUCCESS") {
-          clearInterval(interval);
-          isPolling.value = false;
-          // Fetch report
+          stopPolling();
           if (onComplete) {
-            // Note: report id can be fetched by task id
+            try {
+              const report = await auditService.getReport(taskId);
+              currentReport.value = report;
+              onComplete(report);
+            } catch {
+              // Report fetch handler
+            }
           }
         } else if (["FAILED", "CANCELLED", "REVOKED"].includes(task.status)) {
-          clearInterval(interval);
-          isPolling.value = false;
+          stopPolling();
         }
       } catch {
-        clearInterval(interval);
-        isPolling.value = false;
+        stopPolling();
       }
     }, 2000);
+  }
+
+  function reset() {
+    stopPolling();
+    currentTask.value = null;
+    currentReport.value = null;
   }
 
   return {
@@ -38,5 +57,7 @@ export const useAuditStore = defineStore("audit", () => {
     currentReport,
     isPolling,
     pollTaskStatus,
+    stopPolling,
+    reset,
   };
 });

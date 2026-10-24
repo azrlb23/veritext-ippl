@@ -29,6 +29,7 @@ const selectedAnnotation = ref<HeatmapAnnotation | null>(null);
 const reportData = ref<{
   id: string;
   document_title: string;
+  document_text?: string;
   verification_uuid: string;
   generated_at: string;
   user_name: string;
@@ -56,6 +57,7 @@ onMounted(async () => {
       reportData.value = {
         id: data.id || reportId,
         document_title: data.document_title || "Naskah Akademik",
+        document_text: data.document_text || "",
         verification_uuid: data.verification_uuid || "-",
         generated_at: data.generated_at
           ? new Date(data.generated_at).toLocaleString("id-ID", {
@@ -301,12 +303,14 @@ const keyFindings = computed(() => {
       <!-- Interactive Heatmap Viewer -->
       <HeatmapViewer
         :annotations="annotations"
+        :text="reportData.document_text"
         @selectAnnotation="handleAnnotationSelected"
       />
 
       <!-- Side-by-Side Comparison -->
       <SideBySideDiff
         :annotations="annotations"
+        :document-text="reportData.document_text"
         @selectAnnotation="handleAnnotationSelected"
       />
 

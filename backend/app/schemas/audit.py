@@ -58,6 +58,7 @@ class AuditReportResponse(BaseModel):
     heatmap_annotations: List[Any] = Field(default_factory=list)
     matched_sources: List[Any] = Field(default_factory=list)
     pdf_path: Optional[str] = None
+    document_text: Optional[str] = None
     generated_at: datetime
     document_title: Optional[str] = None
     user_name: Optional[str] = None

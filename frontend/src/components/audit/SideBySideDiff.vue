@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import type { HeatmapAnnotation } from "../../types";
 import Badge from "../common/Badge.vue";
 import EmptyState from "../common/EmptyState.vue";
 
 interface Props {
   annotations: HeatmapAnnotation[];
+  documentText?: string | null;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   annotations: () => [],
+  documentText: null,
 });
 
 const emit = defineEmits<{
@@ -18,12 +20,31 @@ const emit = defineEmits<{
 
 const selectedIndex = ref<number>(0);
 
+const safeIndex = computed<number>(() => {
+  if (props.annotations.length === 0) return 0;
+  return Math.min(Math.max(0, selectedIndex.value), props.annotations.length - 1);
+});
+
+const currentAnnotation = computed<HeatmapAnnotation | null>(() => {
+  return props.annotations[safeIndex.value] || null;
+});
+
 function selectItem(idx: number) {
   selectedIndex.value = idx;
   if (props.annotations[idx]) {
     emit("selectAnnotation", props.annotations[idx]);
   }
 }
+
+const currentSentenceText = computed<string>(() => {
+  const currentAnno = currentAnnotation.value;
+  if (!currentAnno) return "";
+  if (props.documentText && currentAnno.start !== undefined && currentAnno.end !== undefined) {
+    const raw = props.documentText.substring(currentAnno.start, currentAnno.end).trim();
+    if (raw) return raw;
+  }
+  return currentAnno.text_snippet || "Kutipan kalimat naskah asli pengguna.";
+});
 </script>
 
 <template>
@@ -44,7 +65,7 @@ function selectItem(idx: number) {
           :key="idx"
           @click="selectItem(idx)"
           class="w-7 h-7 rounded-[4px] text-xs font-bold tabular-nums transition-all"
-          :class="selectedIndex === idx ? 'bg-[#262626] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)]' : 'bg-[#fafafa] hover:bg-[#ededed] text-[#515151] border border-[#ededed]'"
+          :class="safeIndex === idx ? 'bg-[#262626] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)]' : 'bg-[#fafafa] hover:bg-[#ededed] text-[#515151] border border-[#ededed]'"
         >
           #{{ idx + 1 }}
         </button>
@@ -60,22 +81,22 @@ function selectItem(idx: number) {
     </div>
 
     <!-- Comparison View -->
-    <div v-else-if="annotations[selectedIndex]" class="space-y-4">
+    <div v-else-if="currentAnnotation" class="space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <Badge
-            :variant="annotations[selectedIndex].tier === 'T1' ? 'danger' : annotations[selectedIndex].tier === 'T2' ? 'warning' : 'neutral'"
+            :variant="currentAnnotation.tier === 'T1' ? 'danger' : currentAnnotation.tier === 'T2' ? 'warning' : 'neutral'"
             size="sm"
           >
-            {{ annotations[selectedIndex].tier }} &bull; {{ annotations[selectedIndex].color }}
+            {{ currentAnnotation.tier }} &bull; {{ currentAnnotation.color }}
           </Badge>
           <span class="text-xs font-medium text-[#515151]">
-            Sumber: <strong class="text-[#262626] font-bold">{{ annotations[selectedIndex].source_title || 'Bank Korpus' }}</strong>
+            Sumber: <strong class="text-[#262626] font-bold">{{ currentAnnotation.source_title || 'Bank Korpus' }}</strong>
           </span>
         </div>
 
         <div class="text-xs font-extrabold tabular-nums px-2.5 py-1 rounded-full bg-[#ededed] text-[#262626] border border-[#ededed]">
-          Skor: {{ (annotations[selectedIndex].similarity * 100).toFixed(1) }}%
+          Skor: {{ (currentAnnotation.similarity * 100).toFixed(1) }}%
         </div>
       </div>
 
@@ -87,17 +108,11 @@ function selectItem(idx: number) {
               Naskah yang Diuji
             </span>
             <span class="text-[10px] tabular-nums font-medium text-[#929292]">
-              Offset {{ annotations[selectedIndex].start }}-{{ annotations[selectedIndex].end }}
+              Offset {{ currentAnnotation.start }}-{{ currentAnnotation.end }}
             </span>
           </div>
           <p class="text-xs text-[#262626] leading-relaxed font-normal bg-white p-3 rounded-[4px] border border-[#ededed]">
-            {{
-              annotations[selectedIndex].tier === 'T1'
-                ? 'Implementasi sistem deteksi plagiarisme cerdas memerlukan integrasi antara pemrosesan bahasa alami deterministik dan representasi vektor bernuansa semantik.'
-                : annotations[selectedIndex].tier === 'T2'
-                ? 'pendekatan berbasis representasi vektor padat kalimat membuktikan efektivitas tinggi dalam mengenali parafrasa terstruktur yang lolos dari algoritma leksikal konvensional.'
-                : 'Karakteristik teks memiliki keragaman leksikal yang seragam serta variasi panjang kalimat yang konsisten rendah, mengindikasikan karakteristik khas sintesis otomatis oleh model bahasa generatif.'
-            }}
+            {{ currentSentenceText }}
           </p>
         </div>
 
@@ -112,7 +127,7 @@ function selectItem(idx: number) {
             </span>
           </div>
           <p class="text-xs text-[#262626] leading-relaxed font-normal bg-[#fafafa] p-3 rounded-[4px] border border-[#ededed]">
-            "{{ annotations[selectedIndex].text_snippet }}"
+            "{{ currentAnnotation.text_snippet }}"
           </p>
         </div>
       </div>

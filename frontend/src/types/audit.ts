@@ -34,6 +34,7 @@ export interface AuditReport {
   pdf_path?: string | null;
   generated_at: string;
   document_title?: string | null;
+  document_text?: string | null;
   user_name?: string | null;
   institution?: string | null;
 }
