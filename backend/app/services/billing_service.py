@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import hashlib
+import hmac
 from typing import Optional
 import uuid
 from fastapi import HTTPException, status
@@ -44,7 +45,7 @@ class BillingService:
 
         pkg = PACKAGES[package_id]
         date_str = datetime.now(timezone.utc).strftime("%Y%m%d")
-        order_id = f"VT-{date_str}-{uuid.uuid4().hex[:8].upper()}"
+        order_id = f"VT-{date_str}-{uuid.uuid4().hex[:12].upper()}"
 
         # Demo / Sandbox snap token
         snap_token = f"SNAP-{uuid.uuid4().hex}"
@@ -74,14 +75,15 @@ class BillingService:
         )
         expected_signature = hashlib.sha512(expected_sig_raw.encode("utf-8")).hexdigest()
 
-        # In dev mode, allow simulated webhooks if key doesn't match perfectly
-        if settings.ENVIRONMENT != "development" and payload.signature_key != expected_signature:
+        # Constant-time comparison using hmac.compare_digest
+        if not hmac.compare_digest(payload.signature_key, expected_signature):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid Midtrans signature key",
             )
 
-        stmt = select(Invoice).where(Invoice.order_id == payload.order_id)
+        # Row-level locking on Invoice to prevent race conditions & double-crediting
+        stmt = select(Invoice).where(Invoice.order_id == payload.order_id).with_for_update()
         result = await db.execute(stmt)
         invoice = result.scalar_one_or_none()
 
@@ -91,33 +93,58 @@ class BillingService:
                 detail="Invoice order not found",
             )
 
+        # Strict validation: gross_amount in payload must match invoice record
+        try:
+            payload_amount = float(payload.gross_amount)
+            invoice_amount = float(invoice.gross_amount) if invoice.gross_amount is not None else None
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid gross amount format: {payload.gross_amount}",
+            )
+
+        if invoice_amount is not None and abs(payload_amount - invoice_amount) > 0.01:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Gross amount mismatch: expected {invoice.gross_amount}, got {payload.gross_amount}",
+            )
+
         if invoice.status == "PAID":
             return True
 
         if payload.transaction_status in ("capture", "settlement"):
-            invoice.status = "PAID"
-            invoice.paid_at = datetime.now(timezone.utc)
-            invoice.payment_method = payload.payment_type or "bank_transfer"
+            # If fraud_status is present, verify that it is 'accept'
+            fraud_stat = getattr(payload, "fraud_status", None)
+            if fraud_stat and fraud_stat != "accept":
+                invoice.status = "CHALLENGE" if fraud_stat == "challenge" else "FAILED"
+            else:
+                invoice.status = "PAID"
+                invoice.paid_at = datetime.now(timezone.utc)
+                invoice.payment_method = payload.payment_type or "bank_transfer"
 
-            # Credit wallet
-            wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == invoice.user_id)
-            wallet_res = await db.execute(wallet_stmt)
-            wallet = wallet_res.scalar_one_or_none()
-            if not wallet:
-                wallet = TokenWallet(user_id=invoice.user_id, balance=0)
-                db.add(wallet)
-                await db.flush()
+                # Credit wallet with row-level locking
+                wallet_stmt = (
+                    select(TokenWallet)
+                    .where(TokenWallet.user_id == invoice.user_id)
+                    .with_for_update()
+                )
+                wallet_res = await db.execute(wallet_stmt)
+                wallet = wallet_res.scalar_one_or_none()
+                if not wallet:
+                    wallet = TokenWallet(user_id=invoice.user_id, balance=0)
+                    db.add(wallet)
+                    await db.flush()
 
-            wallet.balance += invoice.token_amount
-            tx = TokenTransaction(
-                wallet_id=wallet.id,
-                transaction_type="CREDIT_TOPUP",
-                amount=invoice.token_amount,
-                balance_after=wallet.balance,
-                reference_id=invoice.id,
-                note=f"Top-up {invoice.package_name}",
-            )
-            db.add(tx)
+                wallet.balance += invoice.token_amount
+                tx = TokenTransaction(
+                    wallet_id=wallet.id,
+                    transaction_type="CREDIT_TOPUP",
+                    amount=invoice.token_amount,
+                    balance_after=wallet.balance,
+                    reference_id=invoice.id,
+                    note=f"Top-up {invoice.package_name}",
+                )
+                db.add(tx)
         elif payload.transaction_status in ("cancel", "expire"):
             invoice.status = "EXPIRED" if payload.transaction_status == "expire" else "CANCEL"
         elif payload.transaction_status in ("deny", "failed"):

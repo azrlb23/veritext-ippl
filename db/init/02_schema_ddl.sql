@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS password_resets (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX IF NOT EXISTS idx_password_resets_user_id ON password_resets (user_id);
+
 -- 4. TABEL: token_wallets (Dompet Saldo Kuota Audit Pengguna)
 CREATE TABLE IF NOT EXISTS token_wallets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -175,7 +177,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_reports_verification_uuid ON audit_reports 
 -- 11. TABEL: corpus_documents (Bank Naskah Korpus Pembanding Internal)
 CREATE TABLE IF NOT EXISTS corpus_documents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    uploaded_by UUID NOT NULL REFERENCES users(id),
+    uploaded_by UUID REFERENCES users(id) ON DELETE SET NULL,
     title VARCHAR(500) NOT NULL,
     category VARCHAR(255),
     academic_year VARCHAR(20),
@@ -191,6 +193,7 @@ CREATE TABLE IF NOT EXISTS corpus_documents (
 CREATE INDEX IF NOT EXISTS idx_corpus_documents_status ON corpus_documents (status);
 CREATE INDEX IF NOT EXISTS idx_corpus_documents_category ON corpus_documents (category);
 CREATE INDEX IF NOT EXISTS idx_corpus_documents_sha256 ON corpus_documents (sha256_hash);
+CREATE INDEX IF NOT EXISTS idx_corpus_documents_uploaded_by ON corpus_documents (uploaded_by);
 
 -- 12. TABEL: document_chunks (Potongan Kalimat Korpus & Vektor 384 Dimensi)
 CREATE TABLE IF NOT EXISTS document_chunks (
@@ -201,7 +204,8 @@ CREATE TABLE IF NOT EXISTS document_chunks (
     embedding vector(384) NOT NULL,
     start_char INTEGER,
     end_char INTEGER,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_document_chunks_corpus_chunk UNIQUE (corpus_doc_id, chunk_index)
 );
 
 -- Indeks HNSW Hierarchical Navigable Small World untuk ANN Jarak Kosinus
@@ -249,5 +253,24 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs (resource_type,
 DROP RULE IF EXISTS audit_logs_no_update ON audit_logs;
 DROP RULE IF EXISTS audit_logs_no_delete ON audit_logs;
 
-CREATE RULE audit_logs_no_update AS ON UPDATE TO audit_logs DO INSTEAD NOTHING;
+CREATE RULE audit_logs_no_update AS ON UPDATE TO audit_logs WHERE NEW.actor_id IS NOT NULL DO INSTEAD NOTHING;
 CREATE RULE audit_logs_no_delete AS ON DELETE TO audit_logs DO INSTEAD NOTHING;
+
+-- 15. TABEL: system_configs (Konfigurasi Persisten & Hyperparameter Engine - ROUND4-05)
+CREATE TABLE IF NOT EXISTS system_configs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    lexical_weight FLOAT NOT NULL DEFAULT 0.50,
+    semantic_weight FLOAT NOT NULL DEFAULT 0.35,
+    stylometric_weight FLOAT NOT NULL DEFAULT 0.15,
+    similarity_threshold FLOAT NOT NULL DEFAULT 0.78,
+    stylometric_burstiness_threshold FLOAT NOT NULL DEFAULT 0.35,
+    winnowing_kgram INT NOT NULL DEFAULT 5,
+    winnowing_window INT NOT NULL DEFAULT 4,
+    hnsw_ef_search INT NOT NULL DEFAULT 64,
+    hnsw_m INT NOT NULL DEFAULT 16,
+    retention_days INT NOT NULL DEFAULT 30,
+    sandbox_mode BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+

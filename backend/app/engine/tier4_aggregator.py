@@ -91,14 +91,30 @@ class HybridAggregator:
         self.tier3_engine = StylometricEngine()
         self.corpus_bank = corpus_bank or ReferenceCorpusBank.get_instance()
 
+    @staticmethod
+    def sanitize_score(val: Any) -> float:
+        """Sanitizes a numeric score against NaN, Inf, and out-of-range floats."""
+        import math
+        try:
+            f_val = float(val)
+            if math.isnan(f_val) or math.isinf(f_val):
+                return 0.0
+            return round(min(100.0, max(0.0, f_val)), 2)
+        except (TypeError, ValueError):
+            return 0.0
+
     def calculate_composite_score(self, score_t1: float, score_t2: float, score_t3: float) -> float:
-        """Computes the 4-tier composite weighted similarity score."""
+        """Computes the 4-tier composite weighted similarity score, sanitized against NaN and Inf values."""
+        s1 = self.sanitize_score(score_t1)
+        s2 = self.sanitize_score(score_t2)
+        s3 = self.sanitize_score(score_t3)
+
         raw_composite = (
-            self.w_lexical * score_t1 +
-            self.w_semantic * score_t2 +
-            self.w_stylometric * score_t3
+            self.w_lexical * s1 +
+            self.w_semantic * s2 +
+            self.w_stylometric * s3
         )
-        return round(min(100.0, max(0.0, raw_composite)), 2)
+        return self.sanitize_score(raw_composite)
 
     def run_pipeline(
         self,
@@ -149,7 +165,7 @@ class HybridAggregator:
         if audit_depth == "TIER1_ONLY":
             score_t2 = 0.0
             score_t3 = 0.0
-            score_composite = score_t1
+            score_composite = self.sanitize_score(score_t1)
             t2_result = None
             t3_result = None
             tier2_matched_indices = {}
@@ -233,10 +249,10 @@ class HybridAggregator:
         )
 
         return HybridAuditResult(
-            score_lexical=score_t1,
-            score_semantic=score_t2,
-            score_stylometric=score_t3,
-            score_composite=score_composite,
+            score_lexical=self.sanitize_score(score_t1),
+            score_semantic=self.sanitize_score(score_t2),
+            score_stylometric=self.sanitize_score(score_t3),
+            score_composite=self.sanitize_score(score_composite),
             audit_depth=audit_depth,
             sentences=sentences,
             heatmap_annotations=heatmap_annotations,
@@ -279,7 +295,7 @@ class HybridAggregator:
                     }
                 source_weights[doc_id]["raw_weight"] += data.get("total_sim", 1.0) * 2.0
 
-        if not source_weights:
+        if not source_weights or score_composite <= 0.0:
             return []
 
         total_weight = sum(item["raw_weight"] for item in source_weights.values())
@@ -289,7 +305,7 @@ class HybridAggregator:
         matched_list: List[Dict[str, Any]] = []
         for item in source_weights.values():
             ratio = item["raw_weight"] / total_weight
-            contrib = round(ratio * max(score_composite, 5.0), 1)
+            contrib = round(ratio * score_composite, 1)
             matched_list.append(MatchedSourceData(
                 corpus_doc_id=item["corpus_doc_id"],
                 title=item["title"],

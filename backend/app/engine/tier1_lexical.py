@@ -203,7 +203,7 @@ class WinnowingLexicalEngine:
                     sentence_index=s.index,
                     matching_fingerprints=len(s_matched),
                     total_fingerprints=len(s_hashes),
-                    similarity=round(min(1.0, max(sim_ratio, 0.70)), 2),
+                    similarity=round(min(1.0, sim_ratio), 2),
                     matched_corpus_doc_id=best_doc_id,
                     matched_source_title=best_title,
                 ))

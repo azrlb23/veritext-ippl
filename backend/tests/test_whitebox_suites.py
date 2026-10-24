@@ -1090,11 +1090,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
             return MockQueryResult([wallet])
 
         mock_db = MockAsyncSession(execute_handler=exec_handler)
+        sig = hashlib.sha512(f"VT-20261021-ORDER12320025000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-20261021-ORDER123",
             status_code="200",
             gross_amount="25000.00",
-            signature_key="dummy_sig",
+            signature_key=sig,
             transaction_status="settlement",
             payment_type="bank_transfer",
         )
@@ -1143,11 +1144,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         invoice = Invoice(order_id="VT-PAID-ALREADY", status="PAID", token_amount=50)
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([invoice]))
 
+        sig = hashlib.sha512(f"VT-PAID-ALREADY200100000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-PAID-ALREADY",
             status_code="200",
             gross_amount="100000.00",
-            signature_key="sig",
+            signature_key=sig,
             transaction_status="settlement",
         )
         res = await BillingService.process_midtrans_webhook(mock_db, payload)
@@ -1168,11 +1170,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         invoice = Invoice(order_id="VT-EXPIRE-001", status="PENDING")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([invoice]))
 
+        sig = hashlib.sha512(f"VT-EXPIRE-00120025000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-EXPIRE-001",
             status_code="200",
             gross_amount="25000.00",
-            signature_key="sig",
+            signature_key=sig,
             transaction_status="expire",
         )
         await BillingService.process_midtrans_webhook(mock_db, payload)
@@ -1182,11 +1185,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
     async def test_tc_bil_008_webhook_nonexistent_invoice_order_bad_case(self):
         """TC-BIL-008 [Bad Case]: Webhook untuk invoice order ID tidak terdaftar memicu HTTP 404."""
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
+        sig = hashlib.sha512(f"VT-TIDAK-ADA-99920025000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-TIDAK-ADA-999",
             status_code="200",
             gross_amount="25000.00",
-            signature_key="sig",
+            signature_key=sig,
             transaction_status="settlement",
         )
         with self.assertRaises(HTTPException) as ctx:
@@ -1195,7 +1199,7 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Invoice order not found", ctx.exception.detail)
 
     async def test_tc_bil_009_midtrans_tampered_signature_blocker(self):
-        """TC-BIL-009 [Blocker]: Webhook Midtrans dengan signature key palsu diblokir HTTP 403 Forbidden."""
+        """TC-BIL-009 [Blocker]: Webhook Midtrans dengan signature key palsu diblokir HTTP 400 Bad Request."""
         mock_db = MockAsyncSession()
         payload = MidtransWebhookPayload(
             order_id="VT-TEST-SIG",
@@ -1204,11 +1208,10 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
             signature_key="signature_palsu_peretas",
             transaction_status="settlement",
         )
-        with patch.object(settings, "ENVIRONMENT", "production"):
-            with self.assertRaises(HTTPException) as ctx:
-                await BillingService.process_midtrans_webhook(mock_db, payload)
-            self.assertEqual(ctx.exception.status_code, status.HTTP_403_FORBIDDEN)
-            self.assertIn("Invalid Midtrans signature key", ctx.exception.detail)
+        with self.assertRaises(HTTPException) as ctx:
+            await BillingService.process_midtrans_webhook(mock_db, payload)
+        self.assertIn(ctx.exception.status_code, (status.HTTP_400_BAD_REQUEST, status.HTTP_403_FORBIDDEN))
+        self.assertIn("Invalid Midtrans signature key", ctx.exception.detail)
 
     async def test_tc_bil_010_insufficient_token_balance_audit_blocker(self):
         """TC-BIL-010 [Blocker]: Audit ditolak HTTP 402 Payment Required jika saldo token tidak mencukupi."""
@@ -1249,11 +1252,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
             return MockQueryResult([])
 
         mock_db = MockAsyncSession(execute_handler=exec_handler)
+        sig = hashlib.sha512(f"VT-NEW-WALLET-0120050000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-NEW-WALLET-01",
             status_code="200",
             gross_amount="50000.00",
-            signature_key="sig",
+            signature_key=sig,
             transaction_status="settlement",
         )
         res = await BillingService.process_midtrans_webhook(mock_db, payload)
@@ -1314,11 +1318,12 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         invoice = Invoice(order_id="VT-DENY-001", status="PENDING")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([invoice]))
 
+        sig = hashlib.sha512(f"VT-DENY-00120025000.00{settings.MIDTRANS_SERVER_KEY}".encode("utf-8")).hexdigest()
         payload = MidtransWebhookPayload(
             order_id="VT-DENY-001",
             status_code="200",
             gross_amount="25000.00",
-            signature_key="sig",
+            signature_key=sig,
             transaction_status="deny",
         )
         await BillingService.process_midtrans_webhook(mock_db, payload)
