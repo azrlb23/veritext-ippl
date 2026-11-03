@@ -15,11 +15,17 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: "submit", payload: { email: string; password: string }): void;
+  (e: "clear-error"): void;
 }>();
 
 const email = ref("");
 const password = ref("");
 const validationError = ref("");
+
+function handleDismiss() {
+  validationError.value = "";
+  emit("clear-error");
+}
 
 function handleSubmit() {
   validationError.value = "";
@@ -41,7 +47,7 @@ function handleSubmit() {
       variant="error"
       :message="errorMessage || validationError"
       dismissible
-      @dismiss="validationError = ''"
+      @dismiss="handleDismiss"
     />
 
     <form class="space-y-4" @submit.prevent="handleSubmit">

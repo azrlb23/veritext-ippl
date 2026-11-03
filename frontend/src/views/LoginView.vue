@@ -66,6 +66,7 @@ async function handleLogin(creds: { email: string; password: string }) {
       :loading="isLoading"
       :errorMessage="errorMessage"
       @submit="handleLogin"
+      @clear-error="errorMessage = ''"
     />
 
     <template #footer>

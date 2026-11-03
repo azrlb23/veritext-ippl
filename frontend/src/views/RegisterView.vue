@@ -49,6 +49,7 @@ async function handleRegister(formData: RegisterDTO) {
       :loading="isLoading"
       :errorMessage="errorMessage"
       @submit="handleRegister"
+      @clear-error="errorMessage = ''"
     />
 
     <template #footer>

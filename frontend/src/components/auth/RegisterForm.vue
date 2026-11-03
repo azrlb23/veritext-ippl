@@ -16,6 +16,7 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: "submit", payload: RegisterDTO): void;
+  (e: "clear-error"): void;
 }>();
 
 const fullName = ref("");
@@ -25,6 +26,11 @@ const password = ref("");
 const confirmPassword = ref("");
 const agreePrivacy = ref(true);
 const validationError = ref("");
+
+function handleDismiss() {
+  validationError.value = "";
+  emit("clear-error");
+}
 
 function handleSubmit() {
   validationError.value = "";
@@ -53,7 +59,7 @@ function handleSubmit() {
       variant="error"
       :message="errorMessage || validationError"
       dismissible
-      @dismiss="validationError = ''"
+      @dismiss="handleDismiss"
     />
 
     <form class="space-y-4" @submit.prevent="handleSubmit">
