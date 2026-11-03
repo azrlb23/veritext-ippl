@@ -38,6 +38,17 @@ Dokumen ini mencatat setiap permintaan perubahan fitur, perbaikan bug, mitigasi 
 - **Hasil & Luaran**:
   - Dokumen `docs/UI_UX_PAGE_STATES_ARCHITECTURE.md` berhasil dibuat dan dipetakan untuk 9 halaman lengkap.
   - Menetapkan batas tegas untuk pembasmian klise desain tiruan (macOS window mockup, floating cards tebal) ke arah editorial workstation berdensitas tinggi (*anti-ai-slop* dan *ui-ux-pro-max*).
+
+---
+
+### [2026-11-03] Docs: Katalog Lengkap State Seluruh Halaman Termasuk OAuth Google & Error Pages (401, 403, 404, 429, 500)
+- **Pengaju**: User
+- **Modul Terkait**:
+  - `docs/DETAILED_PAGES_AND_STATES_CATALOG.md`
+- **Deskripsi Kebutuhan**:
+  Membuat daftar komprehensif berformat enumerasi rinci per halaman (`Login`, `Dashboard`, dst.) mencakup seluruh variasi status operasional, alur Google OAuth, alur lupa sandi, penanganan error code (401, 403, 404, 429, 500), dialog konfirmasi, hingga penyesuaian tampilan smartphone (< 640px).
+- **Hasil & Luaran**:
+  - Berkas dokumentasi `docs/DETAILED_PAGES_AND_STATES_CATALOG.md` diterbitkan mencakup 12 kategori halaman dan 85+ state antarmuka yang terstandarisasi.
   - Tombol (X) pada alert sekarang berfungsi menutup notifikasi error secara reaktif.
 
 ---
@@ -73,3 +84,14 @@ Dokumen ini mencatat setiap permintaan perubahan fitur, perbaikan bug, mitigasi 
 - **Hasil & Luaran**:
   - Dokumen `docs/UI_UX_PAGE_STATES_ARCHITECTURE.md` berhasil dibuat dan dipetakan untuk 9 halaman lengkap.
   - Menetapkan batas tegas untuk pembasmian klise desain tiruan (macOS window mockup, floating cards tebal) ke arah editorial workstation berdensitas tinggi (*anti-ai-slop* dan *ui-ux-pro-max*).
+
+---
+
+### [2026-11-03] Docs: Katalog Lengkap State Seluruh Halaman Termasuk OAuth Google & Error Pages (401, 403, 404, 429, 500)
+- **Pengaju**: User
+- **Modul Terkait**:
+  - `docs/DETAILED_PAGES_AND_STATES_CATALOG.md`
+- **Deskripsi Kebutuhan**:
+  Membuat daftar komprehensif berformat enumerasi rinci per halaman (`Login`, `Dashboard`, dst.) mencakup seluruh variasi status operasional, alur Google OAuth, alur lupa sandi, penanganan error code (401, 403, 404, 429, 500), dialog konfirmasi, hingga penyesuaian tampilan smartphone (< 640px).
+- **Hasil & Luaran**:
+  - Berkas dokumentasi `docs/DETAILED_PAGES_AND_STATES_CATALOG.md` diterbitkan mencakup 12 kategori halaman dan 85+ state antarmuka yang terstandarisasi.
