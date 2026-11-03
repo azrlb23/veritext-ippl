@@ -27,3 +27,25 @@ Dokumen ini mencatat setiap permintaan perubahan fitur, perbaikan bug, mitigasi 
   - `npm test`: 25/25 navigasi & RBAC tests **PASSED (100%)**.
   - `npm run build`: Kompilasi `vue-tsc && vite build` **SUCCEEDED (0 errors)**.
   - Tombol (X) pada alert sekarang berfungsi menutup notifikasi error secara reaktif.
+
+---
+
+### [2026-11-03] Feat: Show/Hide Password Toggle pada Formulir Login & Registrasi
+- **Pengaju**: User
+- **Modul Terkait**:
+  - `frontend/src/components/auth/LoginForm.vue`
+  - `frontend/src/components/auth/RegisterForm.vue`
+- **Deskripsi Kebutuhan**:
+  Menyediakan fitur toggle untuk melihat atau menyembunyikan kata sandi (show/hide password) menggunakan ikon mata (eye icon) pada formulir login dan registrasi akun.
+- **Prinsip Keamanan & Desain (Zero Vulnerability / Anti-Jebolan)**:
+  1. **Tipe Elemen**: Tombol toggle diatur dengan eksplisit `type="button"`. Hal ini mencegah insiden pengiriman form (*inadvertent form submission*) saat tombol mata diklik atau ditekan dengan tombol spasi/enter.
+  2. **Isolasi State**: State visibilitas (`showPassword`, `showConfirmPassword`) diisolasi secara lokal menggunakan `ref(false)` di dalam *setup scope* masing-masing komponen. Password tidak pernah bocor ke storage, URL query, console log, atau state manajemen global (Pinia).
+  3. **Standar Aksesibilitas (A11y)**: Ditambahkan atribut `aria-label` dinamis (*"Tampilkan kata sandi"* / *"Sembunyikan kata sandi"*) untuk kompatibilitas pembaca layar (*screen reader*).
+  4. **Standar Autocomplete**: Tetap mempertahankan standar `autocomplete="current-password"` pada login dan `autocomplete="new-password"` pada registrasi untuk mendukung password manager yang aman.
+  5. **Padding & Tata Letak**: Diberikan class `pr-10` pada input agar karakter password yang panjang tidak tertimpa ikon mata.
+- **Solusi & Perbaikan**:
+  1. Di `LoginForm.vue`: Ditambahkan `showPassword = ref(false)`, container pembungkus `.relative`, dan tombol SVG eye toggle.
+  2. Di `RegisterForm.vue`: Ditambahkan kontrol terpisah `showPassword` dan `showConfirmPassword` agar pengguna dapat memeriksa kedua field kata sandi secara independen.
+- **Hasil Verifikasi**:
+  - `npm test`: 25/25 navigasi & RBAC tests **PASSED (100%)**.
+  - `npm run build`: Kompilasi `vue-tsc && vite build` **SUCCEEDED (0 errors)**.
