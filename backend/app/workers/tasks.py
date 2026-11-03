@@ -26,6 +26,33 @@ logger = get_task_logger(__name__)
 
 def execute_audit_pipeline(db, audit_task_id: str, document_id: str) -> Dict[str, Any]:
     """Core synchronous logic to execute the 4-tier hybrid audit pipeline."""
+    # Synchronize dynamic hyperparameters from system_config table into worker settings runtime
+    try:
+        from app.models.system_config import SystemConfig
+        config = db.query(SystemConfig).order_by(SystemConfig.created_at.desc()).first()
+        if config:
+            if config.lexical_weight is not None:
+                settings.SIMILARITY_LEXICAL_WEIGHT = config.lexical_weight
+            if config.semantic_weight is not None:
+                settings.SIMILARITY_SEMANTIC_WEIGHT = config.semantic_weight
+            if config.stylometric_weight is not None:
+                settings.SIMILARITY_STYLO_WEIGHT = config.stylometric_weight
+            if config.winnowing_kgram is not None:
+                settings.WINNOWING_K_GRAM = config.winnowing_kgram
+            if config.winnowing_window is not None:
+                settings.WINNOWING_WINDOW_SIZE = config.winnowing_window
+            if getattr(config, "similarity_threshold", None) is not None:
+                settings.SIMILARITY_THRESHOLD = config.similarity_threshold
+            if getattr(config, "stylometric_burstiness_threshold", None) is not None:
+                settings.STYLO_BURSTINESS_THRESHOLD = config.stylometric_burstiness_threshold
+            logger.info(
+                f"Worker settings synced from SystemConfig: "
+                f"T1={settings.SIMILARITY_LEXICAL_WEIGHT}, T2={settings.SIMILARITY_SEMANTIC_WEIGHT}, "
+                f"T3={settings.SIMILARITY_STYLO_WEIGHT}, kgram={settings.WINNOWING_K_GRAM}"
+            )
+    except Exception as sync_err:
+        logger.warning(f"Note: Could not sync system_config into worker settings: {sync_err}")
+
     task = db.query(AuditTask).filter(AuditTask.id == uuid.UUID(audit_task_id)).first()
     if not task:
         logger.error(f"Audit task {audit_task_id} not found")
@@ -203,6 +230,43 @@ def execute_audit_pipeline(db, audit_task_id: str, document_id: str) -> Dict[str
             task.status = "FAILED"
             task.error_message = str(exc)
             task.completed_at = datetime.now(timezone.utc)
+
+            # Auto-refund tokens on fatal execution failure if not already refunded
+            try:
+                from app.models.wallet import TokenWallet, TokenTransaction
+                debit_tx = (
+                    db.query(TokenTransaction)
+                    .filter(
+                        TokenTransaction.reference_id == task.id,
+                        TokenTransaction.transaction_type == "DEBIT_AUDIT",
+                    )
+                    .first()
+                )
+                already_refunded = (
+                    db.query(TokenTransaction)
+                    .filter(
+                        TokenTransaction.reference_id == task.id,
+                        TokenTransaction.transaction_type.in_(["CREDIT_REFUND", "REFUND"]),
+                    )
+                    .first()
+                )
+                if debit_tx and not already_refunded and task.user_id:
+                    wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()
+                    if wallet:
+                        refund_amount = abs(debit_tx.amount)
+                        wallet.balance += refund_amount
+                        refund_tx = TokenTransaction(
+                            wallet_id=wallet.id,
+                            transaction_type="CREDIT_REFUND",
+                            amount=refund_amount,
+                            balance_after=wallet.balance,
+                            reference_id=task.id,
+                            note=f"Automatic refund for failed audit task {task.id}",
+                        )
+                        db.add(refund_tx)
+            except Exception as refund_err:
+                logger.error(f"Failed to process auto-refund on task error: {refund_err}")
+
             db.commit()
         raise exc
 

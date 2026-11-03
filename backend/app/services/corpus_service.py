@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.corpus import CorpusDocument
+from app.models.user import User
 from app.schemas.corpus import CorpusDocUpdateRequest
 
 
@@ -103,13 +104,21 @@ class CorpusService:
 
     @staticmethod
     async def update_corpus_doc(
-        db: AsyncSession, doc_id: uuid.UUID, req: CorpusDocUpdateRequest
+        db: AsyncSession, doc_id: uuid.UUID, req: CorpusDocUpdateRequest, current_user: Optional[User] = None
     ) -> CorpusDocument:
         stmt = select(CorpusDocument).where(CorpusDocument.id == doc_id, CorpusDocument.status != "DELETED")
         res = await db.execute(stmt)
         doc = res.scalar_one_or_none()
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Corpus document not found")
+
+        if current_user is not None and not hasattr(current_user, "dependency"):
+            is_admin = (getattr(current_user, "role", "") or "").upper() == "ADMIN"
+            if not is_admin and str(doc.uploaded_by) != str(current_user.id):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden: You can only modify or delete corpus documents you uploaded",
+                )
 
         if req.title:
             doc.title = req.title
@@ -123,12 +132,20 @@ class CorpusService:
         return doc
 
     @staticmethod
-    async def delete_corpus_doc(db: AsyncSession, doc_id: uuid.UUID) -> bool:
+    async def delete_corpus_doc(db: AsyncSession, doc_id: uuid.UUID, current_user: Optional[User] = None) -> bool:
         stmt = select(CorpusDocument).where(CorpusDocument.id == doc_id, CorpusDocument.status != "DELETED")
         res = await db.execute(stmt)
         doc = res.scalar_one_or_none()
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Corpus document not found")
+
+        if current_user is not None and not hasattr(current_user, "dependency"):
+            is_admin = (getattr(current_user, "role", "") or "").upper() == "ADMIN"
+            if not is_admin and str(doc.uploaded_by) != str(current_user.id):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden: You can only modify or delete corpus documents you uploaded",
+                )
 
         # Cascade cleanup: remove child chunks and lexical fingerprints
         from sqlalchemy import delete

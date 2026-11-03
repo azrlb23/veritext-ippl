@@ -11,6 +11,28 @@ from app.core.config import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions
+    if settings.ENVIRONMENT.lower() == "production":
+        insecure_patterns = [
+            "super-secret-key-change-in-production",
+            "insecure-jwt-secret-key-change-in-production",
+            "veritext-ai-super-secret-key-development-minimum-32-chars!",
+            "veritext-jwt-signing-secret-key-development-secure-random!",
+            "secret",
+            "changeme",
+        ]
+        sec_key = (settings.SECRET_KEY or "").strip()
+        jwt_key = (settings.JWT_SECRET_KEY or "").strip()
+
+        if (
+            len(sec_key) < 32
+            or len(jwt_key) < 32
+            or any(pat in sec_key.lower() for pat in ["change-in-production", "development"])
+            or any(pat in jwt_key.lower() for pat in ["change-in-production", "development"])
+            or sec_key in insecure_patterns
+            or jwt_key in insecure_patterns
+        ):
+            raise RuntimeError("FATAL: Insecure SECRET_KEY detected in production environment!")
+
     yield
     # Shutdown actions
 

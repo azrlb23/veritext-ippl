@@ -140,15 +140,31 @@ async def logout(
 
 @router.post("/refresh", response_model=APIResponse[dict])
 async def refresh_token_endpoint(
+    request: Request = None,
     response: Response = None,
-    refresh_token: str = Cookie(None),
+    refresh_token: Optional[str] = Cookie(None),
     db: AsyncSession = Depends(get_db),
 ):
-    if not refresh_token:
+    token = refresh_token
+    if not token and request is not None and not hasattr(request, "dependency"):
+        try:
+            token = request.headers.get("x-refresh-token")
+            if not token:
+                token = request.cookies.get("refresh_token")
+            if not token:
+                body_data = await request.json()
+                if isinstance(body_data, dict):
+                    token = body_data.get("refresh_token")
+        except Exception:
+            pass
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token cookie missing",
         )
+
+    refresh_token = token
 
     hashed = hash_token(refresh_token)
     stmt = select(Session).where(Session.refresh_token_hash == hashed)
@@ -235,7 +251,7 @@ async def forgot_password(req: ForgotPasswordRequest, db: AsyncSession = Depends
 
     return APIResponse(
         message="If this email is registered, a password reset link has been dispatched.",
-        data={"reset_token": raw_token} if raw_token else {},
+        data={},
     )
 
 

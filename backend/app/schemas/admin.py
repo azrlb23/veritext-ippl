@@ -25,7 +25,7 @@ class UserStatusUpdateRequest(BaseModel):
 class AdminUserCreateRequest(BaseModel):
     full_name: str = Field(..., min_length=2)
     email: EmailStr
-    password: str = Field(default="VeriText#2026", min_length=6)
+    password: str = Field(..., min_length=6, description="Initial password set by administrator")
     institution: Optional[str] = None
     role: str = Field(default="TRIAL")
     initial_tokens: int = Field(default=10, ge=0, le=1_000_000)

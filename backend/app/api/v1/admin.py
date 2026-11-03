@@ -1,4 +1,5 @@
 import os
+import secrets
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 import uuid
@@ -142,7 +143,7 @@ async def update_user_admin(
                 full_name=req.full_name or "Pengguna",
                 email=req.email.lower().strip(),
                 institution=req.institution or "Institut Teknologi Nasional",
-                password_hash=get_password_hash(req.password or "VeriText#2026"),
+                password_hash=get_password_hash(req.password or secrets.token_urlsafe(16)),
                 role=(req.role or "TRIAL").upper(),
                 is_active=req.is_active if req.is_active is not None else True,
             )

@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     SIMILARITY_LEXICAL_WEIGHT: float = 0.50
     SIMILARITY_SEMANTIC_WEIGHT: float = 0.35
     SIMILARITY_STYLO_WEIGHT: float = 0.15
+    SIMILARITY_THRESHOLD: float = 0.78
+    STYLO_BURSTINESS_THRESHOLD: float = 0.35
 
     # Payment Gateway (Midtrans)
     MIDTRANS_SERVER_KEY: str = "SB-Mid-server-DemoServerKey1234567890"

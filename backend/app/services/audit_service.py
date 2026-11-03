@@ -147,6 +147,28 @@ class AuditService:
             except Exception:
                 pass
 
+        # Automatic token refund: lock user wallet and credit deducted tokens
+        wallet_stmt = (
+            select(TokenWallet)
+            .where(TokenWallet.user_id == user_id)
+            .with_for_update()
+        )
+        wallet_res = await db.execute(wallet_stmt)
+        wallet = wallet_res.scalar_one_or_none()
+
+        refund_amount = 1 if getattr(task, "audit_depth", "FULL") == "TIER1_ONLY" else 2
+        if wallet:
+            wallet.balance += refund_amount
+            tx = TokenTransaction(
+                wallet_id=wallet.id,
+                transaction_type="CREDIT_REFUND",
+                amount=refund_amount,
+                balance_after=wallet.balance,
+                reference_id=task.id,
+                note=f"Automatic refund for cancelled audit task {task.id}",
+            )
+            db.add(tx)
+
         await db.commit()
         return True
 

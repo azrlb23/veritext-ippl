@@ -45,6 +45,9 @@ export const useAuthStore = defineStore("auth", () => {
       token.value = data.access_token;
       user.value = data.user;
       localStorage.setItem("veritext_access_token", data.access_token);
+      if ((data as any).refresh_token) {
+        localStorage.setItem("veritext_refresh_token", (data as any).refresh_token);
+      }
       localStorage.setItem("veritext_user", JSON.stringify(data.user));
       return data;
     } finally {
@@ -78,6 +81,7 @@ export const useAuthStore = defineStore("auth", () => {
       user.value = null;
       token.value = null;
       localStorage.removeItem("veritext_access_token");
+      localStorage.removeItem("veritext_refresh_token");
       localStorage.removeItem("veritext_user");
       try {
         const auditStore = useAuditStore();

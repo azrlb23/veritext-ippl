@@ -24,8 +24,59 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response && error.response.status === 401) {
+    const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+
+    // Check if 401 Unauthorized and not already retried and not auth routes
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/login") &&
+      !originalRequest.url?.includes("/auth/refresh")
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        const storedRefreshToken = localStorage.getItem("veritext_refresh_token");
+        // Call /auth/refresh silently via standalone axios to avoid interceptor recursion
+        const refreshResponse = await axios.post(
+          `${baseURL}/auth/refresh`,
+          { refresh_token: storedRefreshToken },
+          {
+            withCredentials: true,
+            headers: {
+              "Content-Type": "application/json",
+              ...(storedRefreshToken ? { "X-Refresh-Token": storedRefreshToken } : {}),
+            },
+          }
+        );
+
+        const newAccessToken =
+          refreshResponse.data?.data?.access_token ||
+          refreshResponse.data?.access_token;
+        const newRefreshToken =
+          refreshResponse.data?.data?.refresh_token ||
+          refreshResponse.data?.refresh_token;
+
+        if (newAccessToken) {
+          localStorage.setItem("veritext_access_token", newAccessToken);
+          if (newRefreshToken) {
+            localStorage.setItem("veritext_refresh_token", newRefreshToken);
+          }
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          }
+          // Replay failed request with new access token
+          return apiClient(originalRequest);
+        }
+      } catch {
+        // Silent refresh failed - proceed to clean up and logout
+      }
+
+      // Logout and redirect when refresh fails
       localStorage.removeItem("veritext_access_token");
+      localStorage.removeItem("veritext_refresh_token");
       localStorage.removeItem("veritext_user");
       try {
         const { useAuthStore } = await import("../stores/auth");
@@ -34,6 +85,22 @@ apiClient.interceptors.response.use(
       } catch {
         // Safe fallback if invoked outside active pinia context
       }
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    } else if (
+      error.response &&
+      error.response.status === 401 &&
+      (originalRequest?._retry || originalRequest?.url?.includes("/auth/refresh"))
+    ) {
+      localStorage.removeItem("veritext_access_token");
+      localStorage.removeItem("veritext_refresh_token");
+      localStorage.removeItem("veritext_user");
+      try {
+        const { useAuthStore } = await import("../stores/auth");
+        const authStore = useAuthStore();
+        authStore.logout();
+      } catch {}
       if (typeof window !== "undefined" && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
@@ -49,4 +116,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-

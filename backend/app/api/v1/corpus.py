@@ -58,7 +58,7 @@ async def update_corpus(
     current_user: User = Depends(require_role("REVIEWER", "ADMIN")),
     db: AsyncSession = Depends(get_db),
 ):
-    doc = await CorpusService.update_corpus_doc(db, doc_id, req)
+    doc = await CorpusService.update_corpus_doc(db, doc_id, req, current_user=current_user)
     return APIResponse(message="Corpus metadata updated", data=CorpusDocResponse.model_validate(doc))
 
 
@@ -68,5 +68,5 @@ async def delete_corpus(
     current_user: User = Depends(require_role("REVIEWER", "ADMIN")),
     db: AsyncSession = Depends(get_db),
 ):
-    await CorpusService.delete_corpus_doc(db, doc_id)
+    await CorpusService.delete_corpus_doc(db, doc_id, current_user=current_user)
     return APIResponse(message="Corpus document marked as deleted", data={})

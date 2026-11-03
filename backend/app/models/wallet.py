@@ -42,10 +42,24 @@ class TokenTransaction(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "transaction_type IN ('DEBIT_AUDIT', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN')",
+            "transaction_type IN ('DEBIT_AUDIT', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN', 'REFUND')",
             name="chk_transaction_type",
         ),
     )
+
+    def __init__(self, *args, **kwargs):
+        if "tx_type" in kwargs and "transaction_type" not in kwargs:
+            raw = kwargs.pop("tx_type")
+            kwargs["transaction_type"] = "CREDIT_REFUND" if raw == "REFUND" else raw
+        super().__init__(*args, **kwargs)
+
+    @property
+    def tx_type(self) -> str:
+        return "REFUND" if self.transaction_type == "CREDIT_REFUND" else self.transaction_type
+
+    @tx_type.setter
+    def tx_type(self, value: str):
+        self.transaction_type = "CREDIT_REFUND" if value == "REFUND" else value
 
     # Relationship
     wallet = relationship("TokenWallet", back_populates="transactions")

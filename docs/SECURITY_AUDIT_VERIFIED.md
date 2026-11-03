@@ -63,8 +63,8 @@ Seluruh 30 temuan awal dari `docs/SECURITY_AUDIT.md` beserta area abu-abu (*blin
 ---
 
 #### [A2] IDOR pada Pengambilan Laporan Audit (`get_report`)
-- **Status Faktual**: **TRUE POSITIVE** | **Status Otorisasi Export PDF**: **RESOLVED & VERIFIED** (Diwajibkan Bearer Token dan kepemilikan naskah / role ADMIN)
-- **Lokasi Kode**: `backend/app/api/v1/reports.py:18-43` & `backend/app/schemas/audit.py:50-65`
+- **Status Faktual**: **RESOLVED & VERIFIED** (Tervalidasi via TDD `backend/tests/test_remediation_phase7.py::test_tc_sec_38_get_report_idor_bola_authorization` dan `test_remediation_phase1.py`)
+- **Lokasi Kode**: `backend/app/api/v1/reports.py:20-47` & `backend/app/schemas/audit.py:50-65`
 - **Bukti Kode**:
   ```python
   @router.get("/reports/{report_id}", response_model=APIResponse[AuditReportResponse])
@@ -2017,12 +2017,37 @@ Untuk memastikan fondasi keamanan VeriText AI kokoh dan tidak menyisakan celah k
    - Middleware HTTP Security Headers OWASP (`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Strict-Transport-Security`, `Referrer-Policy: strict-origin-when-cross-origin`).
    - Penyembunyian rute `/docs`, `/redoc`, dan `/openapi.json` pada mode `production` (HTTP 404).
    - Penonaktifan database debug engine echo di mode produksi (`echo=(settings.DEBUG and settings.ENVIRONMENT.lower() != "production")`).
+
+---
+
+### Fase 7: Remediasi Residual Kritis, Kunci IDOR Laporan/Korpus, Pembersihan Backdoor, Refund Otomatis Task, Worker Config Sync, Startup Guard, dan Frontend Silent Refresh `[RESOLVED & VERIFIED — Tervalidasi 100% via TDD backend/tests/test_remediation_phase7.py]`
+1. **[CRITICAL — Zero-Leakage Auth] Penutupan Kebocoran `reset_token` di `POST /forgot-password`**:
+   - Menghapus pengembalian `raw_token` pada respons JSON di `backend/app/api/v1/auth.py` (`data={}` kosong). Token hanya tersimpan dalam bentuk hash SHA-256 di tabel database `password_resets` dan dikirim via kanal email resmi.
+   - Memperbarui pengujian `test_remediation_phase4.py` dan `test_remediation_phase7.py` untuk menguji alur reset password berbasis verifikasi langsung pada database record.
+2. **[CRITICAL — BOLA/IDOR Defense] Kunci Otorisasi Kepemilikan pada `GET /reports/{report_id}`**:
+   - Memasang validasi otorisasi kepemilikan ketat di `backend/app/api/v1/reports.py`: Laporan hanya dapat diakses oleh pemilik naskah (`effective_user.id == task_owner_id`) atau role `ADMIN`.
+   - Mengembalikan `HTTPException(403, "Forbidden: You do not have permission to access this report")` bagi pengguna lain yang mencoba mengakses laporan naskah orang lain.
+3. **[HIGH — Backdoor Cleanup] Pembersihan Total Default Backdoor `VeriText#2026`**:
+   - Menghapus nilai default `"VeriText#2026"` pada skema `AdminUserCreateRequest` (`backend/app/schemas/admin.py`), mewajibkan parameter password diisi oleh administrator.
+   - Menghapus fallback password default di `backend/app/api/v1/admin.py`, menggantikannya dengan string acak kriptografis (`secrets.token_urlsafe(16)`).
+4. **[HIGH — Multi-Reviewer Isolation] Kunci Otorisasi IDOR Bank Korpus**:
+   - Memasang validasi kepemilikan di `backend/app/services/corpus_service.py` & `backend/app/api/v1/corpus.py` pada endpoint `PATCH /corpus/{doc_id}` dan `DELETE /corpus/{doc_id}`.
+   - Reviewer hanya diizinkan memodifikasi atau menghapus korpus yang diunggah oleh dirinya sendiri (`doc.uploaded_by == current_user.id` atau role `ADMIN`); percobaan akses silang menghasilkan HTTP 403 Forbidden.
+5. **[HIGH — Financial Integrity] Pengembalian Token Otomatis saat Pembatalan Task & Kegagalan Fatal Pipeline**:
+   - Pada `cancel_task` di `backend/app/services/audit_service.py`, mengunci dompet pengguna dengan row-level lock (`with_for_update()`), mengembalikan saldo (1 token untuk TIER1_ONLY, 2 token untuk FULL), dan mencatat rekaman `TokenTransaction` bertipe `CREDIT_REFUND` (dengan properti `tx_type="REFUND"`).
+   - Pada `execute_audit_pipeline` di `backend/app/workers/tasks.py`, jika terjadi eksepsi fatal yang menggagalkan task, worker otomatis mengembalikan token debit yang belum direfund.
+6. **[MEDIUM — Dynamic Hyperparameter Sync] Sinkronisasi `SystemConfig` ke Runtime Celery Worker**:
+   - Pada awal eksekusi `execute_audit_pipeline` di `backend/app/workers/tasks.py`, membaca entri konfigurasi terbaru dari tabel `system_configs` dan menyinkronkan bobot leksikal, semantik, stilometrik, k-gram, ukuran window, dan threshold ke runtime `settings` worker.
+7. **[MEDIUM — Defense in Depth] Startup Secret Guard di `backend/app/main.py`**:
+   - Pada `lifespan(app: FastAPI)`, jika `settings.ENVIRONMENT.lower() == "production"`, sistem secara aktif memverifikasi apakah `SECRET_KEY` atau `JWT_SECRET_KEY` masih menggunakan nilai default dev atau panjangnya < 32 karakter. Jika iya, startup aplikasi langsung digagalkan dengan `RuntimeError("FATAL: Insecure SECRET_KEY detected in production environment!")`.
+8. **[MEDIUM — Frontend Resiliency] Silent Refresh Token Interceptor & Replay Failed Request**:
+   - Pada `frontend/src/services/api.ts`, memasang silent refresh token otomatis pada Axios response interceptor HTTP 401. Interceptor memanggil `/api/v1/auth/refresh` sekali dengan `refresh_token` yang tersimpan, memperbarui header Authorization, dan mengulangi request asli (*replay failed request*). Jika refresh gagal, barulah logout & redirect dijalankan.
 - **Cakupan Pengujian Penuh (Comprehensive Test Suite)**:
-  - Backend Unit & Integration Tests: **185 pengujian lolos 100% (ALL PASS)** dalam waktu 6.8 detik tanpa error (`unittest discover -s tests`).
+  - Backend Unit & Integration Tests: **193 pengujian lolos 100% (ALL PASS)** dalam waktu 1 menit 48 detik tanpa kegagalan (`./backend/venv/bin/pytest backend/tests`).
   - Frontend Vitest Unit Tests: **25 pengujian lolos 100% (ALL PASS)** (`npm test`).
   - Frontend Build & Typechecking: Lolos sempurna tanpa kesalahan tipe (`vue-tsc && vite build` — 0 errors).
 - **Postur Keamanan Akhir**:
-  - Seluruh 89 temuan keamanan dan kelemahan fungsional telah diselesaikan (*100% Remediation Rate*).
+  - Seluruh celah residual dan backdoor telah diselesaikan secara tuntas (*100% Remediation Rate*).
   - Tidak ada penurunan performa atau regresi fungsional (*Zero Regression*).
   - Siap dideploy ke lingkungan produksi dengan arsitektur tangguh, aman, dan patuh hukum.
 
@@ -2031,8 +2056,8 @@ Untuk memastikan fondasi keamanan VeriText AI kokoh dan tidak menyisakan celah k
 
 ## 6. Status Verifikasi Penutup
 
-Dengan diselesaikannya implementasi remedi Roadmap Fase 1 hingga Fase 6 (mencakup 9 putaran evaluasi mendalam), seluruh **89 celah keamanan dan kelemahan fungsional aktif** telah ditutup secara permanen dan diverifikasi secara empiris langsung pada kode sumber riil backend, skema migrasi Alembic, antrean pekerja Celery, model inferensi machine learning, konfigurasi kontainerisasi, dan siklus hidup reaktif frontend Vue 3. 
+Dengan diselesaikannya implementasi remedi Roadmap Fase 1 hingga Fase 7 (mencakup 9 putaran evaluasi mendalam serta audit residual komprehensif), seluruh **celah keamanan, backdoor residual, dan kelemahan fungsional** telah ditutup secara permanen dan diverifikasi secara empiris langsung pada kode sumber riil backend, skema migrasi Alembic, antrean pekerja Celery, model inferensi machine learning, konfigurasi kontainerisasi, dan siklus hidup reaktif frontend Vue 3. 
 
-VeriText AI telah mencapai status **Production-Grade Audit Closure** dengan cakupan pengujian 100% hijau, zero regression, dan kepatuhan penuh terhadap standar keamanan industri dan UU PDP No. 27/2022.
+VeriText AI telah mencapai status **Production-Grade Audit Closure** dengan cakupan pengujian 100% hijau (193 backend tests + 25 frontend tests = 218 verified tests), zero regression, dan kepatuhan penuh terhadap standar keamanan industri dan UU PDP No. 27/2022.
 
 

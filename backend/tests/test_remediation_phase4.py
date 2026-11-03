@@ -311,6 +311,8 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
         req_forgot = ForgotPasswordRequest(email="reset_target@kampus.ac.id")
         resp_forgot = await auth_router.forgot_password(req=req_forgot, db=mock_db)
         self.assertEqual(resp_forgot.success, True)
+        self.assertNotIn("reset_token", resp_forgot.data)
+        self.assertEqual(resp_forgot.data, {})
 
         # Verifikasi bahwa objek PasswordReset telah dibuat dan ditambahkan ke database
         added_resets = [r for r in mock_db.added if isinstance(r, PasswordReset)]
@@ -328,10 +330,9 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ctx_inv.exception.status_code, status.HTTP_400_BAD_REQUEST)
 
         # 3. Reset password request dengan token valid
-        # Ambil raw token dari response forgot password data atau mock
-        raw_token = resp_forgot.data.get("reset_token", "sample_test_token_32chars_secure_value!")
-        if "reset_token" not in resp_forgot.data:
-            reset_obj.token_hash = hash_token(raw_token)
+        # Verifikasi alur tanpa kebocoran di response: token hash diverifikasi langsung dari DB PasswordReset
+        raw_token = "secure_reset_token_from_email_simulation_32chars!"
+        reset_obj.token_hash = hash_token(raw_token)
 
         mock_db_reset = MockAsyncSession(
             execute_handler=lambda s: MockQueryResult([reset_obj]),

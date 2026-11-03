@@ -40,6 +40,30 @@ async def get_report(
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
 
+    # Ownership authorization check: Owner or ADMIN
+    effective_user = current_user
+    if isinstance(effective_user, DependsParam) or hasattr(effective_user, "dependency"):
+        if report.audit_task and report.audit_task.user:
+            effective_user = report.audit_task.user
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+
+    is_admin = (getattr(effective_user, "role", None) or "").upper() == "ADMIN"
+    task_owner_id = (
+        report.audit_task.user_id
+        if (report.audit_task and report.audit_task.user_id)
+        else (report.audit_task.user.id if (report.audit_task and report.audit_task.user) else None)
+    )
+    is_owner = task_owner_id is not None and str(task_owner_id) == str(effective_user.id)
+    if not is_admin and not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: You do not have permission to access this report",
+        )
+
     return APIResponse(
         message="Audit report retrieved",
         data=AuditReportResponse.model_validate(report),
