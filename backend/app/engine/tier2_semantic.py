@@ -102,11 +102,12 @@ class SemanticEngine:
         sentences: list[SentenceSpan],
         corpus_chunks: list[dict[str, Any]],
         exclude_sentence_indices: set | None = None,
+        corpus_searcher: Any | None = None,
     ) -> SemanticAnalysisResult:
         exclude = exclude_sentence_indices or set()
         sentence_matches: list[SentenceSemanticMatch] = []
         corpus_hits: dict[str, dict[str, Any]] = {}
-        if not sentences or not corpus_chunks:
+        if not sentences or not (corpus_chunks or corpus_searcher):
             return SemanticAnalysisResult(score_t2=0.0)
 
         doc_embeddings = self.embed_sentences([s.text for s in sentences])
@@ -116,6 +117,10 @@ class SemanticEngine:
             if s.is_citation or idx in exclude:
                 continue
             best_sim, best_chunk = self._best_chunk(doc_embeddings[idx], corpus_chunks)
+            if corpus_searcher is not None:
+                ann = corpus_searcher.nearest(doc_embeddings[idx])
+                if ann and ann[0] > best_sim:
+                    best_sim, best_chunk = ann
             if best_chunk and best_sim >= self.paraphrase_threshold:
                 candidates.append((s, best_sim, best_chunk))
         keep = SemanticReranker.accept_mask([(s.text, c.get("chunk_text", "")) for s, _, c in candidates])

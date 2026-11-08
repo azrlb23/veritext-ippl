@@ -56,9 +56,13 @@ class Settings(BaseSettings):
     # AI & Embedding Engine Parameters
     SENTENCE_TRANSFORMER_MODEL: str = "paraphrase-multilingual-MiniLM-L12-v2"
     EMBEDDING_DIMENSION: int = 384
+    HNSW_EF_SEARCH: int = 64
     RERANKER_ENABLED: bool = True
     RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
     RERANKER_THRESHOLD: float = 0.5
+    INDOBERT_ENABLED: bool = True
+    INDOBERT_MODEL: str = "LazarusNLP/all-indobert-base-v4"
+    INDOBERT_MIN_SIM: float = 0.45
     WINNOWING_K_GRAM: int = 5
     WINNOWING_WINDOW_SIZE: int = 4
     SIMILARITY_LEXICAL_WEIGHT: float = 0.50

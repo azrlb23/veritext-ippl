@@ -15,6 +15,7 @@ except ImportError:
 
 from app.core.config import settings
 from app.core.database import SyncSessionLocal
+from app.engine.corpus_ann import PgvectorChunkSearch
 from app.engine.preprocessor import TextPreprocessor
 from app.engine.reference_corpus import ReferenceCorpusBank
 from app.engine.tier4_aggregator import HybridAggregator
@@ -82,7 +83,7 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
         result = aggregator.run_pipeline(
             original_text=doc_text, audit_depth=task.audit_depth,
             custom_corpus_index=corpus_index, custom_corpus_chunks=corpus_chunks,
-            on_progress=update_progress,
+            on_progress=update_progress, corpus_searcher=PgvectorChunkSearch(db),
         )
 
         handle_web_scan_refund(db, task, result, logger)

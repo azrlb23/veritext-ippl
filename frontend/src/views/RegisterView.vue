@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { readableDetail } from "../utils/errorMessage";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { AuthCard, RegisterForm, type RegisterDTO } from "../components/auth";
@@ -28,7 +29,7 @@ async function handleRegister(formData: RegisterDTO) {
   } catch (err: any) {
     if (err?.response?.data) {
       errorMessage.value =
-        err.response.data?.detail ||
+        readableDetail(err.response.data?.detail, "") ||
         err.response.data?.message ||
         "Pendaftaran gagal. Silakan periksa kembali data Anda.";
     } else {

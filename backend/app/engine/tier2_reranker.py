@@ -3,12 +3,13 @@ from __future__ import annotations
 import logging
 
 from app.core.config import settings
+from app.engine.tier2_indobert import IndoBertScorer
 
 logger = logging.getLogger(__name__)
 
 
 class SemanticReranker:
-    """Cross-encoder yang menilai ulang kandidat Tier 2 agar pasangan berlawanan makna tidak lolos."""
+    """Re-ranker Tier 2 dua lapis: cross-encoder (antonim ditolak), lalu ambang bawah IndoBERT (pasangan tak berkaitan ditolak)."""
 
     _model = None
     _attempted = False
@@ -42,6 +43,7 @@ class SemanticReranker:
     @classmethod
     def accept_mask(cls, pairs: list[tuple[str, str]]) -> list[bool]:
         scores = cls.score_pairs(pairs)
-        if scores is None:
-            return [True] * len(pairs)
-        return [s >= settings.RERANKER_THRESHOLD for s in scores]
+        cross = [True] * len(pairs) if scores is None else [s >= settings.RERANKER_THRESHOLD for s in scores]
+        survivors = [pair for pair, ok in zip(pairs, cross) if ok]
+        floor = iter(IndoBertScorer.accept_mask(survivors))
+        return [ok and next(floor) for ok in cross]

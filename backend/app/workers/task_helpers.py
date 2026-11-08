@@ -22,6 +22,7 @@ def load_corpus_indexes(
     db: Any, corpus_bank: Any, logger: Any
 ) -> tuple[dict[int, list[dict[str, Any]]], list[dict[str, Any]]]:
     corpus_index: dict[int, list[dict[str, Any]]] = dict(corpus_bank.get_fingerprint_index())
+    # Potongan korpus basis data dicari lewat indeks HNSW pgvector (lihat PgvectorChunkSearch), bukan dimuat ke memori.
     corpus_chunks: list[dict[str, Any]] = list(corpus_bank.get_corpus_chunks())
     try:
         q_fps = db.query(LexicalFingerprint, CorpusDocument.title, CorpusDocument.category)
@@ -30,15 +31,6 @@ def load_corpus_indexes(
             corpus_index.setdefault(fp.fingerprint_hash, []).append({
                 "doc_id": str(fp.corpus_doc_id), "title": title,
                 "category": cat or "General", "position": fp.position_start,
-            })
-
-        q_chunks = db.query(DocumentChunk, CorpusDocument.title, CorpusDocument.category)
-        db_chunks = q_chunks.join(CorpusDocument, DocumentChunk.corpus_doc_id == CorpusDocument.id).filter(CorpusDocument.status == "INDEXED").all()
-        for chunk, title, cat in db_chunks:
-            corpus_chunks.append({
-                "chunk_id": str(chunk.id), "corpus_doc_id": str(chunk.corpus_doc_id),
-                "title": title, "category": cat or "General", "chunk_text": chunk.chunk_text,
-                "embedding": chunk.embedding, "start_char": chunk.start_char, "end_char": chunk.end_char,
             })
     except Exception as e:  # noqa: BLE001
         logger.warning("Database corpus query fallback to ReferenceCorpusBank: %s", e)

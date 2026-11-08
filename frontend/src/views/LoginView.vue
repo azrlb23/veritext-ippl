@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { readableDetail } from "../utils/errorMessage";
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AuthCard, LoginForm } from "../components/auth";
@@ -57,7 +58,7 @@ async function handleLogin(creds: { email: string; password: string; remember: b
       errorMessage.value = "Akun terkunci sementara demi keamanan.";
     } else if (err?.response?.data) {
       errorMessage.value =
-        err.response.data?.detail ||
+        readableDetail(err.response.data?.detail, "") ||
         err.response.data?.message ||
         "Email atau kata sandi yang Anda masukkan tidak cocok.";
     } else {

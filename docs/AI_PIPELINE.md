@@ -70,8 +70,10 @@ Deteksi plagiarisme VeriText AI dirancang untuk memecahkan kelemahan metode leks
 * **Model Vektor Primer**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
   * Menghasilkan representasi vektor padat 384 dimensi (`vector(384)`).
   * Diindeks menggunakan graf HNSW pada PostgreSQL pgvector dengan operator jarak kosinus (`<=>`).
-* **Model Re-ranker Sekunder**: `LazarusNLP/all-indobert-base-v4`
-  * Menguji 5 kandidat teratas khusus naskah berbahasa Indonesia untuk memastikan akurasi nuansa konteks lokal.
+  * **Implementasi (2026-11-08):** `engine/corpus_ann.py` (`PgvectorChunkSearch`) menjalankan `ORDER BY embedding <=> :vec LIMIT 1` per kalimat dengan `SET hnsw.ef_search = HNSW_EF_SEARCH` (default 64). Potongan korpus basis data tidak lagi dimuat ke memori; hanya korpus bawaan (`ReferenceCorpusBank`) yang dibandingkan di memori, lalu hasil terbaik dari keduanya dipakai. Bila basis data tidak tersedia, pencarian dimatikan untuk sisa audit dan sistem memakai korpus bawaan.
+* **Re-ranker dua lapis**, dijalankan hanya pada kandidat yang lolos ambang 0,75:
+  1. **Cross-encoder** `BAAI/bge-reranker-v2-m3` (ambang `RERANKER_THRESHOLD` = 0,5). Lapis ini yang menolak pasangan berlawanan makna.
+  2. **IndoBERT** `LazarusNLP/all-indobert-base-v4` (768 dimensi, `engine/tier2_indobert.py`). Kosinus embedding harus minimal `INDOBERT_MIN_SIM` = 0,45. Catatan jujur: bi-encoder tidak bisa membedakan antonim (kosinus pasangan berlawanan makna pada set evaluasi 0,86 sampai 0,95), jadi lapis ini hanya ambang bawah untuk pasangan yang tidak berkaitan (kosinus maksimal 0,21 pada set evaluasi) dan tidak menaikkan akurasi set evaluasi 52 pasangan (tetap di atas 96%).
 * **Kriteria Pelanggaran**:
   Kalimat yang memiliki skor kemiripan kosinus (*Cosine Similarity*) $\ge 0.75$ (75%) dan lolos verifikasi re-ranker ditandai sebagai **Tag Oranye** (parafrase konsep terdeteksi).
 

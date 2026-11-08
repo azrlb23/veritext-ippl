@@ -92,6 +92,7 @@ class HybridAggregator:
         custom_corpus_index: dict[int, list[dict[str, Any]]] | None = None,
         custom_corpus_chunks: list[dict[str, Any]] | None = None,
         on_progress: Any | None = None,
+        corpus_searcher: Any | None = None,
     ) -> HybridAuditResult:
         if not original_text or not original_text.strip():
             return HybridAuditResult(
@@ -112,7 +113,8 @@ class HybridAggregator:
             web_matches, web_avail, web_note = [], False, "Mode pindaian cepat (TIER1_ONLY) tidak mencakup pemindaian web."
         else:
             t2_res = self.tier2_engine.analyze_document(
-                sentences=sentences, corpus_chunks=c_chunks, exclude_sentence_indices=set(t1_idx.keys())
+                sentences=sentences, corpus_chunks=c_chunks, exclude_sentence_indices=set(t1_idx.keys()),
+                corpus_searcher=corpus_searcher,
             )
             score_t2, t2_idx = t2_res.score_t2, {m.sentence_index: m for m in t2_res.sentence_matches}
             web_matches, web_avail, web_note = scan_web_sources(self.web_scanner, sentences, on_progress)

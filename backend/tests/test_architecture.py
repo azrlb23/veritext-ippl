@@ -89,7 +89,7 @@ class TestVeriTextArchitecture(unittest.TestCase):
 
     def test_all_python_files_ast_syntax_validity(self):
         for root, dirs, files in os.walk(BACKEND_DIR):
-            dirs[:] = [d for d in dirs if d not in (".venv", "venv", "__pycache__", ".pytest_cache")]
+            dirs[:] = [d for d in dirs if not d.startswith(("venv", ".venv")) and d not in ("__pycache__", ".pytest_cache")]
             for f in files:
                 if f.endswith(".py"):
                     full_path = os.path.join(root, f)

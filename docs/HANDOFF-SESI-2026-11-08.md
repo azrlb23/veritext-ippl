@@ -1,3 +1,5 @@
+> PEMBARUAN: keadaan terkini dan semua perubahan sesudah serah-terima ini dicatat di `docs/CHANGELOG-2026-11-08.md`. Bagian 4 dan 6 di bawah sebagian besar sudah dikerjakan.
+
 # Serah-terima sesi 2026-11-08 (untuk sesi baru)
 
 Baca urutan ini dahulu: `AGENTS.md`, berkas ini, `docs/design/VIOLET-KACA.md`, `tasks/todo.md` (Phase 8 dan 9), lalu `docs/API_CONTRACT.md`, `docs/DATABASE_SCHEMA.md`, `docs/ATOMIC_CODING_STANDARDS.md`. Bahasa pengguna dan UI: Indonesia. Pengguna: Azriel (proyek IPPL, VeriText AI).

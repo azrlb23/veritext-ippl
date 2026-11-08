@@ -96,4 +96,5 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
 - [x] Antrean: tugas dikirim ke Celery SETELAH commit (sebelumnya worker gagal "Task not found"). Redis dan worker berjalan.
 - [x] Midtrans Snap: transaksi dibuat di server bila kunci asli terisi; frontend membuka `snap.js`. Kunci sandbox asli harus diisi pengguna di `.env`.
 - [x] `db/init/02_schema_ddl.sql` memuat `chat_session_documents`; test web-scan dibuat deterministik; komponen lama (Modal, EmptyState, useModal) dihapus.
-- [ ] Tier 2 belum memakai pgvector HNSW; re-ranker IndoBERT belum ada; Python 3.11 belum terpasang; pengujian visual `/admin` dengan akun ADMIN.
+- [x] Tier 2 memakai pgvector HNSW; re-ranker IndoBERT ditambahkan; venv Python 3.12; `/admin` diperiksa dengan peran ADMIN (rincian: `docs/CHANGELOG-2026-11-08.md`).
+- [ ] Kunci sandbox Midtrans asli, PDF sertifikat gaya Violet Kaca, label aksi log admin.
