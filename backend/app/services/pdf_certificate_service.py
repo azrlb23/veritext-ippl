@@ -64,7 +64,7 @@ def generate_pdf_certificate(
         Spacer(1, 10),
         build_certificate_qr_table(f"{base_url}/verify/{verification_uuid}", verification_uuid, s["body_style"], s["body_bold"], styles),
         Spacer(1, 8),
-        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#E2E8F0"), spaceAfter=5),
+        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#E4DDF0"), spaceAfter=5),
         Paragraph(
             "Sertifikat ini diterbitkan secara otomatis oleh sistem VeriText AI dan menjaga data pribadi pengguna: naskah tidak ditambahkan ke basis pembanding. "
             "Keaslian sertifikat dapat diperiksa melalui portal verifikasi publik. Hak Cipta VeriText AI.",

@@ -51,7 +51,9 @@ def test_dual_engine_llm_gateway_and_assistant_e2e():
     deepseek_mock.model = "deepseek-v4.1-flash"
     gemini_mock.generate_json.return_value = {"ai_probability": 12.5, "suspicious_sentences": []}
     gemini_mock.generate_text.return_value = (
-        '[{"option_id": 1, "style": "Formal", "text": "Hasil kajian menunjukkan.", "predicted_score": 7.0}]'
+        '[{"option_id": 1, "style": "Formal", "text": "Hasil kajian menunjukkan.", "predicted_score": 7.0},'
+        ' {"option_id": 2, "style": "Ringkas", "text": "Kajian ini menunjukkan.", "predicted_score": 6.0},'
+        ' {"option_id": 3, "style": "Analitis", "text": "Telaah ini menunjukkan.", "predicted_score": 8.0}]'
     )
 
     gateway = DualEngineLLMGateway(gemini_client=gemini_mock, deepseek_client=deepseek_mock, strategy="gemini_first")

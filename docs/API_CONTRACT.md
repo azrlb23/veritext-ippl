@@ -141,6 +141,7 @@ Seluruh endpoint API VeriText AI wajib mengembalikan respons dalam format pembun
 | `AUDIT_002` | `400 Bad Request` | Batas kata Free User terlampaui (maksimal 2.500 kata per dokumen). | `POST /api/v1/audits/execute` |
 | `CHAT_001` | `400 Bad Request` | Pelanggaran Guardrail: Permintaan di luar etika akademik ditolak. | `POST /api/v1/chat/message` |
 | `CHAT_002` | `402 Payment Required` | Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis. | `POST /api/v1/chat/*` |
+| `AI_001` | `503 Service Unavailable` | Tidak ada mesin AI (Gemini maupun cadangan) yang menjawab. Kuota dan saldo tidak dipotong (transaksi di-rollback). Tidak ada jawaban atau variasi tiruan yang dikembalikan. | `POST /api/v1/chat/message`, `POST /api/v1/chat/paraphrase` |
 | `BILL_001` | `403 Forbidden` | Verifikasi signature SHA-512 webhook Midtrans gagal (untrusted source). | `POST /api/v1/billing/webhook` |
 | `BILL_002` | `404 Not Found` | Nomor order transaksi pembayaran tidak ditemukan di basis data. | `POST /api/v1/billing/webhook` |
 | `BILL_003` | `400 Bad Request` | Transaksi pembayaran telah kedaluwarsa atau dibatalkan oleh pengguna. | `POST /api/v1/billing/checkout` |

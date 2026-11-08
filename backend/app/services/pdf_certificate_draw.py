@@ -13,24 +13,23 @@ def build_certificate_header_table(
     verification_uuid: str, brand_style: Any, brand_sub: Any, badge_style: Any, styles: Any
 ) -> list[Any]:
     left_header = [
-        Paragraph("VERITEXT AI", brand_style),
-        Paragraph("SISTEM AUDIT ORISINALITAS NASKAH", brand_sub),
-        Paragraph("Layanan Validasi Orisinalitas Naskah Digital", brand_sub),
+        Paragraph("VeriText <font color='#8A3FE0'>AI</font>", brand_style),
+        Paragraph("Sistem audit orisinalitas naskah", brand_sub),
+        Paragraph("Periksa kata, makna, dan pola tulisan", brand_sub),
     ]
     right_header = [
         Table(
-            [[Paragraph("TERVERIFIKASI RESMI", badge_style)]],
+            [[Paragraph("TERVERIFIKASI", badge_style)]],
             colWidths=[160],
             style=TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#ECFDF5")),
-                ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#10B981")),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3EEFA")),
                 ("TOPPADDING", (0, 0), (-1, -1), 4),
                 ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ]),
         ),
         Spacer(1, 4),
         Paragraph(
-            f"<font color='#737373'>UUID: {verification_uuid!s}</font>",
+            f"<font color='#5E5A6B'>UUID: {verification_uuid!s}</font>",
             ParagraphStyle("Uid", parent=styles["Normal"], fontName="Helvetica", fontSize=7, leading=9, alignment=1),
         ),
     ]
@@ -43,7 +42,7 @@ def build_certificate_header_table(
     return [
         header_table,
         Spacer(1, 6),
-        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#E2E8F0"), spaceAfter=10),
+        HRFlowable(width="100%", thickness=1, color=colors.HexColor("#E4DDF0"), spaceAfter=10),
     ]
 
 
@@ -68,9 +67,8 @@ def build_certificate_meta_table(
     ]
     meta_table = Table(meta_data, colWidths=[110, 180, 80, 152])
     meta_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
-        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
-        ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#F1F5F9")),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3EEFA")),
+        ("INNERGRID", (0, 0), (-1, -1), 1.5, colors.white),
         ("TOPPADDING", (0, 0), (-1, -1), 5),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
         ("LEFTPADDING", (0, 0), (-1, -1), 6),
@@ -84,26 +82,25 @@ def build_certificate_qr_table(verify_url: str, verification_uuid: str, body_sty
     qr = qrcode.QRCode(version=1, box_size=3, border=1)
     qr.add_data(verify_url)
     qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="#171717", back_color="white")
+    qr_img = qr.make_image(fill_color="#14111C", back_color="white")
     qr_buf = io.BytesIO()
     qr_img.save(qr_buf, format="PNG")
     qr_buf.seek(0)
     qr_flowable = Image(qr_buf, width=78, height=78)
 
     qr_text = [
-        Paragraph("<b>VERIFIKASI KEASLIAN DIGITAL DENGAN KODE QR</b>", ParagraphStyle("QrH", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=colors.HexColor("#171717"))),
+        Paragraph("<b>VERIFIKASI KEASLIAN DIGITAL DENGAN KODE QR</b>", ParagraphStyle("QrH", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=colors.HexColor("#14111C"))),
         Spacer(1, 2),
         Paragraph("Pindai kode QR atau buka tautan di bawah ini untuk mengonfirmasi keabsahan sertifikat ini langsung dari basis data server:", body_style),
         Spacer(1, 2),
-        Paragraph(f"<font color='#2563EB'><u>{verify_url}</u></font>", body_bold),
+        Paragraph(f"<font color='#6D28D9'><u>{verify_url}</u></font>", body_bold),
         Spacer(1, 2),
-        Paragraph(f"<font color='#737373'>ID Sertifikat (UUID): <b>{verification_uuid}</b></font>", ParagraphStyle("Hsh", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10)),
+        Paragraph(f"<font color='#5E5A6B'>ID Sertifikat (UUID): <b>{verification_uuid}</b></font>", ParagraphStyle("Hsh", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10)),
     ]
 
     qr_table = Table([[qr_flowable, qr_text]], colWidths=[90, 432])
     qr_table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
-        ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3EEFA")),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ("LEFTPADDING", (0, 0), (-1, -1), 6),

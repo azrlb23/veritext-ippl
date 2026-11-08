@@ -86,3 +86,24 @@ def test_attach_sentence_ids_matches_annotation_by_char_range():
     assert out[0]["sentence_id"] == str(second.id)
     assert out[1]["sentence_id"] == str(first.id)
     assert "sentence_id" not in out[2]
+
+
+async def test_send_message_returns_503_and_rolls_back_when_no_ai_engine_answers():
+    from fastapi import HTTPException
+
+    user = SimpleNamespace(id=uuid.uuid4(), role="PREMIUM")
+    session = SimpleNamespace(id=uuid.uuid4(), updated_at=None)
+    wallet = TokenWallet(user_id=user.id, balance=5, ai_trial_remaining=3)
+    db = MagicMock()
+    db.add, db.commit, db.rollback = MagicMock(), AsyncMock(), AsyncMock()
+    gateway = MagicMock()
+    gateway.generate_text_with_failover.return_value = (None, "")
+    with patch.object(chat_module, "_resolve_session", AsyncMock(return_value=(session, [], []))), \
+         patch.object(chat_module, "build_document_context_async", AsyncMock(return_value="")), \
+         patch.object(chat_module, "_lock_wallet", AsyncMock(return_value=wallet)), \
+         patch.object(chat_module, "DualEngineLLMGateway", return_value=gateway):
+        with pytest.raises(HTTPException) as exc:
+            await chat_module.send_chat_message(ChatMessageRequest(prompt="halo"), user, db)
+    assert exc.value.status_code == 503
+    db.rollback.assert_awaited()
+    db.commit.assert_not_awaited()

@@ -47,7 +47,7 @@ class TestPdfCertificateService(unittest.TestCase):
         doc = pypdfium2.PdfDocument(pdf_bytes)
         self.assertEqual(len(doc), 1)
         text = doc[0].get_textpage().get_text_range()
-        self.assertIn("VERITEXT AI", text)
+        self.assertIn("VeriText AI", text)
         self.assertIn("LPJ FPK.docx", text)
         self.assertIn("Ibnu Dwiki Hermawan", text)
         self.assertIn("35.3%", text)

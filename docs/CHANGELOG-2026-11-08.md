@@ -37,7 +37,13 @@ Semua perubahan sesi ini, per area. Cabang `feat/violet-kaca`. Rujukan kontrak: 
 ## 7. Antarmuka Violet Kaca
 Ringkasan, Periksa naskah, Riwayat, Asisten AI, Akun, Token, ruang kerja `/audits/:id`, dan `/admin` sudah memakai gaya Violet Kaca (lihat `design/VIOLET-KACA.md`, tabel status). Navbar: Ringkasan, Periksa naskah, Riwayat, Asisten AI, Token; Akun dan Verifikasi QR ada di menu avatar. Komponen lama dihapus (dashboard lama, billing lama, HeatmapViewer, TierLegend, Modal, EmptyState, useModal).
 
-## 8. Masih terbuka
+## 8. Tahap penutup
+- Sertifikat PDF digayakan ulang Violet Kaca (tinta, tint lilac, aksen violet, tanpa garis kotak); diperiksa lewat render poppler.
+- Chat dan tulis ulang tidak lagi memberi jawaban tiruan: tanpa mesin AI, API mengembalikan 503 `AI_001` dan kuota tidak terpotong. Penyebab saat ini: kuota Gemini habis dan 9Router mati (lihat `PENUTUP-SESI-2026-11-08.md` bagian 5.1).
+- `GEMINI_MODEL` default `gemini-3.8-flash` (2.5 Flash dipensiunkan untuk kunci baru). Label aksi log admin berbahasa Indonesia.
+- Dokumen penutup lengkap: `docs/PENUTUP-SESI-2026-11-08.md`.
+
+## 9. Masih terbuka
 - Kunci sandbox Midtrans asli (uji pembayaran Snap).
 - PDF sertifikat belum bergaya Violet Kaca.
 - Label aksi log audit mentah (misalnya `SYSTEM_INIT`) di `/admin`.

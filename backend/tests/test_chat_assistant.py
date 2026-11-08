@@ -58,19 +58,13 @@ def test_consume_quota_premium_allowance_and_full_page():
     assert "AUDIT_001" in exc.value.detail
 
 
-def test_generate_paraphrase_variations_fallback():
+def test_paraphrase_without_ai_engine_returns_503_not_fake_variations():
     mock_gw = MagicMock()
     mock_gw.generate_text_with_failover.return_value = (None, "")
-    variations, engine = AssistantService.generate_paraphrase_variations(
-        "Model ini meningkatkan akurasi klasifikasi secara signifikan.",
-        gateway=mock_gw,
-    )
-    assert len(variations) == 3
-    assert variations[0]["style"] == "Formal"
-    assert variations[1]["style"] == "Ringkas & Padat"
-    assert variations[2]["style"] == "Analitis Ekspansif"
-    assert "Berdasarkan telaah konseptual" in variations[0]["text"]
-    assert engine == "Synthesis Engine"
+    with pytest.raises(HTTPException) as exc:
+        AssistantService.generate_paraphrase_variations("Model ini meningkatkan akurasi.", gateway=mock_gw)
+    assert exc.value.status_code == 503
+    assert "AI_001" in exc.value.detail
 
 
 def test_generate_paraphrase_variations_gateway():

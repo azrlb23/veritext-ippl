@@ -73,7 +73,7 @@ class Settings(BaseSettings):
 
     # Gemini AI & Web Plagiarism Scanner (Jalur 1)
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
     WEB_SCAN_ENABLED: bool = True
     WEB_SCAN_MAX_SENTENCES: int = 120
     WEB_SCAN_TIMEOUT_S: int = 25

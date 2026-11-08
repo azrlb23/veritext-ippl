@@ -12,18 +12,18 @@ def get_certificate_styles() -> dict[str, Any]:
     styles = getSampleStyleSheet()
     return {
         "styles": styles,
-        "brand_style": ParagraphStyle("Brand", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=18, leading=22, textColor=colors.HexColor("#171717")),
-        "brand_sub": ParagraphStyle("BrandSub", parent=styles["Normal"], fontName="Helvetica", fontSize=8, leading=11, textColor=colors.HexColor("#737373")),
-        "badge_style": ParagraphStyle("Badge", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8.5, leading=11, alignment=1, textColor=colors.HexColor("#065f46")),
-        "title_style": ParagraphStyle("Title", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=13, leading=17, textColor=colors.HexColor("#171717")),
-        "body_style": ParagraphStyle("Body", parent=styles["Normal"], fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#404040")),
-        "body_bold": ParagraphStyle("BodyBold", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8.5, leading=12, textColor=colors.HexColor("#171717")),
-        "score_num_comp": ParagraphStyle("ScoreComp", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=26, leading=30, alignment=1, textColor=colors.HexColor("#171717")),
+        "brand_style": ParagraphStyle("Brand", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=18, leading=22, textColor=colors.HexColor("#14111C")),
+        "brand_sub": ParagraphStyle("BrandSub", parent=styles["Normal"], fontName="Helvetica", fontSize=8, leading=11, textColor=colors.HexColor("#5E5A6B")),
+        "badge_style": ParagraphStyle("Badge", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8.5, leading=11, alignment=1, textColor=colors.HexColor("#6D28D9")),
+        "title_style": ParagraphStyle("Title", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=13, leading=17, textColor=colors.HexColor("#14111C")),
+        "body_style": ParagraphStyle("Body", parent=styles["Normal"], fontName="Helvetica", fontSize=8.5, leading=12, textColor=colors.HexColor("#4B4757")),
+        "body_bold": ParagraphStyle("BodyBold", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=8.5, leading=12, textColor=colors.HexColor("#14111C")),
+        "score_num_comp": ParagraphStyle("ScoreComp", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=26, leading=30, alignment=1, textColor=colors.HexColor("#14111C")),
         "score_num_lex": ParagraphStyle("ScoreLex", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=20, leading=24, alignment=1, textColor=colors.HexColor("#DC2626")),
         "score_num_sem": ParagraphStyle("ScoreSem", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=20, leading=24, alignment=1, textColor=colors.HexColor("#EA580C")),
         "score_num_sty": ParagraphStyle("ScoreSty", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=20, leading=24, alignment=1, textColor=colors.HexColor("#CA8A04")),
-        "score_sub": ParagraphStyle("ScoreSub", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10, alignment=1, textColor=colors.HexColor("#737373")),
-        "sec_title": ParagraphStyle("SecTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9.5, leading=13, textColor=colors.HexColor("#171717")),
+        "score_sub": ParagraphStyle("ScoreSub", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10, alignment=1, textColor=colors.HexColor("#5E5A6B")),
+        "sec_title": ParagraphStyle("SecTitle", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9.5, leading=13, textColor=colors.HexColor("#14111C")),
     }
 
 
@@ -35,14 +35,11 @@ def build_scores_table(score_comp: float, score_lex: float, score_sem: float, sc
 
     table = Table([[box_comp, box_lex, box_sem, box_sty]], colWidths=[140, 126, 126, 130])
     table.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#F8FAFC")),
+        ("BACKGROUND", (0, 0), (0, 0), colors.HexColor("#F3EEFA")),
         ("BACKGROUND", (1, 0), (1, 0), colors.HexColor("#FEF2F2")),
         ("BACKGROUND", (2, 0), (2, 0), colors.HexColor("#FFF7ED")),
         ("BACKGROUND", (3, 0), (3, 0), colors.HexColor("#FEFCE8")),
-        ("BOX", (0, 0), (0, 0), 1, colors.HexColor("#E2E8F0")),
-        ("BOX", (1, 0), (1, 0), 1, colors.HexColor("#FECACA")),
-        ("BOX", (2, 0), (2, 0), 1, colors.HexColor("#FFEDD5")),
-        ("BOX", (3, 0), (3, 0), 1, colors.HexColor("#FEF08A")),
+        ("INNERGRID", (0, 0), (-1, -1), 3, colors.white),
         ("TOPPADDING", (0, 0), (-1, -1), 8),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
@@ -65,9 +62,8 @@ def build_matched_sources_table(matched_sources: list[dict[str, Any]] | None, bo
 
         table = Table(table_rows, colWidths=[28, 304, 95, 95])
         table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1F5F9")),
-            ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
-            ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F3EEFA")),
+            ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.HexColor("#E4DDF0")),
             ("TOPPADDING", (0, 0), (-1, -1), 4),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
             ("LEFTPADDING", (0, 0), (-1, -1), 5),
@@ -80,8 +76,7 @@ def build_matched_sources_table(matched_sources: list[dict[str, Any]] | None, bo
         [[Paragraph("<i>Tidak terdeteksi kecocokan signifikan dengan basis korpus pembanding (Naskah Unik).</i>", body_style)]],
         colWidths=[522],
         style=TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
-            ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F3EEFA")),
             ("TOPPADDING", (0, 0), (-1, -1), 6),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),

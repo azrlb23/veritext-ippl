@@ -5,7 +5,7 @@ Baca berkas ini terlebih dahulu pada setiap sesi baru. Berkas ini adalah rujukan
 ---
 
 ## 1. Tech Stack & Exact Versions
-- **Backend Runtime**: Python 3.11+ (virtualenv di `backend/venv`)
+- **Backend Runtime**: Python 3.11+ (terpasang 3.12.16; virtualenv di `backend/venv`, dibuat dengan `/opt/homebrew/bin/python3.12 -m venv venv`). `requirements.txt` membatasi `fastapi<0.130` dan `sqlalchemy<2.1`
 - **Backend Framework**: FastAPI 0.115.x + Pydantic v2 + Uvicorn ASGI
 - **Asynchronous Task Queue**: Celery 5.4.x + Redis 7.2.x (Message Broker & Result Backend)
 - **Database & Vector Engine**: PostgreSQL 16.x + ekstensi `pgvector` v0.7.0+ (HNSW `vector(384)`, `m = 16`, `ef_construction = 64`)
@@ -13,7 +13,7 @@ Baca berkas ini terlebih dahulu pada setiap sesi baru. Berkas ini adalah rujukan
 - **AI & NLP Engine**:
   - **Step 1 (Lexical)**: Algoritma Winnowing ($k=5, w=4$) + Rabin-Karp Rolling Hash ($b=257, M=10^9+7$)
   - **Step 2 (Semantic)**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384-d) + Re-ranker Indonesia `LazarusNLP/all-indobert-base-v4` (768-d)
-  - **Step 3 (Stylometric & Contextual Judge)**: Goh & Barabasi Burstiness $B = (\sigma_L - \mu_L)/(\sigma_L + \mu_L)$ & TTR + **Dual-Engine LLM Gateway** (Primary: Google Gemini 2.5 Flash; Failover: DeepSeek v4.1 Flash via 9Router `http://localhost:20128/v1`)
+  - **Step 3 (Stylometric & Contextual Judge)**: Goh & Barabasi Burstiness $B = (\sigma_L - \mu_L)/(\sigma_L + \mu_L)$ & TTR + **Dual-Engine LLM Gateway** (Primary: Google Gemini Flash (model aktif `gemini-3.8-flash`; 2.5 Flash sudah dipensiunkan Google untuk kunci baru); Failover: DeepSeek v4.1 Flash via 9Router `http://localhost:20128/v1`)
 - **Frontend Framework**: Vue 3.5.x (Composition API `<script setup lang="ts">`) + Vite 6.x + TypeScript 5.7.x
 - **Frontend State, Routing & Styling**: Pinia 2.3.x + Vue Router 4.5.x + Axios 1.7.x + Tailwind CSS 3.4.x
 - **Payment Gateway**: Midtrans Core & Snap API v2 (Webhook SHA-512 Verification)

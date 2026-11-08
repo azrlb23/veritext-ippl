@@ -18,7 +18,16 @@ const FILTERS = [
   { key: "BILLING_TOPUP", label: "Pembelian" },
   { key: "DOCUMENT_PURGE", label: "Hapus naskah" },
 ];
-const actionLabel = (a: string) => FILTERS.find((f) => f.key === a)?.label || a;
+const LABELS: Record<string, string> = {
+  SYSTEM_INIT: "Sistem dimulai",
+  AUTH_LOGIN: "Masuk akun",
+  AUDIT_SUBMIT: "Naskah diperiksa",
+  TOKEN_DEBIT: "Token terpakai",
+  BILLING_TOPUP: "Pembelian token",
+  DOCUMENT_PURGE: "Naskah dihapus",
+};
+const humanize = (a: string) => a.toLowerCase().replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+const actionLabel = (a: string) => LABELS[a] || humanize(a);
 const date = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-");
 const failed = (r: string) => r.toUpperCase() !== "SUCCESS";
 const nav = "inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-5 text-[14px] font-semibold text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-40";

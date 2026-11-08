@@ -14,6 +14,9 @@ from app.models.wallet import TokenWallet
 logger = logging.getLogger(__name__)
 
 
+AI_UNAVAILABLE = "AI_001: Layanan AI sedang tidak tersedia. Kuota Anda tidak dipotong, coba lagi beberapa saat lagi."
+
+
 class AssistantService:
     FORBIDDEN_PATTERNS: tuple[str, ...] = (
         "tuliskan skripsi penuh",
@@ -99,12 +102,7 @@ class AssistantService:
             logger.debug("Gateway paraphrase parsing fallback: %s", err)
 
         if not variations:
-            txt = (original_text or "").strip().rstrip(".")
-            variations = [
-                {"option_id": 1, "style": "Formal", "text": f"Berdasarkan telaah konseptual, {txt}.", "predicted_score": 8.2},
-                {"option_id": 2, "style": "Ringkas & Padat", "text": f"Secara ringkas, {txt}.", "predicted_score": 6.5},
-                {"option_id": 3, "style": "Analitis Ekspansif", "text": f"Dalam perspektif komparatif, {txt}.", "predicted_score": 9.4},
-            ]
+            raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
         return variations, active_engine
 
     @classmethod

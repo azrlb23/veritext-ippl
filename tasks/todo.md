@@ -98,3 +98,4 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
 - [x] `db/init/02_schema_ddl.sql` memuat `chat_session_documents`; test web-scan dibuat deterministik; komponen lama (Modal, EmptyState, useModal) dihapus.
 - [x] Tier 2 memakai pgvector HNSW; re-ranker IndoBERT ditambahkan; venv Python 3.12; `/admin` diperiksa dengan peran ADMIN (rincian: `docs/CHANGELOG-2026-11-08.md`).
 - [ ] Kunci sandbox Midtrans asli, PDF sertifikat gaya Violet Kaca, label aksi log admin.
+- [ ] Lihat `docs/PENUTUP-SESI-2026-11-08.md` bagian 5 dan 8 untuk daftar lengkap tindakan berikutnya (prioritas: hidupkan mesin AI, kunci Midtrans sandbox, selaraskan dokumen).

@@ -21,7 +21,7 @@ from app.schemas.chat import (
     ParaphraseVariation,
 )
 from app.schemas.common import APIResponse
-from app.services.assistant_service import AssistantService
+from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
 from app.services.chat_context import build_document_context_async, load_owned_documents
 from app.services.chat_prompt import build_prompt
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
@@ -68,11 +68,14 @@ async def send_chat_message(
             balance_after=wallet.balance, reference_id=session.id, note="AI Chatbot token debit",
         ))
 
-    db.add(ChatMessage(session_id=session.id, role="USER", content=payload.prompt, target_sentence_id=payload.sentence_id))
     ai_text, engine = DualEngineLLMGateway().generate_text_with_failover(build_prompt(payload.prompt, context, history))
+    if not ai_text:
+        await db.rollback()
+        raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
+    db.add(ChatMessage(session_id=session.id, role="USER", content=payload.prompt, target_sentence_id=payload.sentence_id))
     assistant_msg = ChatMessage(
         session_id=session.id, role="ASSISTANT",
-        content=ai_text or "Disarankan merevisi struktur kalimat untuk menjaga orisinalitas naskah.",
+        content=ai_text,
         mode="CONSULTATION", target_sentence_id=payload.sentence_id,
     )
     db.add(assistant_msg)
@@ -82,7 +85,7 @@ async def send_chat_message(
 
     return APIResponse(data=ChatMessageResponse(
         message_id=assistant_msg.id, session_id=session.id, role="ASSISTANT",
-        content=assistant_msg.content, active_engine=engine or "Synthesis Engine",
+        content=assistant_msg.content, active_engine=engine,
         ai_trial_remaining=trial_rem, balance=bal, ai_chat_allowance_remaining=allow_rem,
     ))
 
@@ -105,9 +108,13 @@ async def paraphrase_sentence(
             balance_after=wallet.balance, reference_id=sentence.id, note=f"Paraphrase {payload.mode} token debit",
         ))
 
-    variations, active_engine = AssistantService.generate_paraphrase_variations(
-        sentence.current_text or sentence.sentence_text, mode=payload.mode
-    )
+    try:
+        variations, active_engine = AssistantService.generate_paraphrase_variations(
+            sentence.current_text or sentence.sentence_text, mode=payload.mode
+        )
+    except HTTPException:
+        await db.rollback()
+        raise
     await db.commit()
     return APIResponse(data=ParaphraseResponse(
         sentence_id=payload.sentence_id, mode=payload.mode,
