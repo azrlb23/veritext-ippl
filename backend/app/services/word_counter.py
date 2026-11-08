@@ -27,6 +27,15 @@ def count_words_in_file(path: str, mime_type: str | None = None) -> int:
     return count_words(text)
 
 
+def count_strict_words_in_file(path: str, mime_type: str | None = None) -> int:
+    """Hitung kata untuk unggahan baru: PDF/DOCX diekstrak di subproses ber-timeout; kegagalan baca dihitung 0 kata."""
+    if path.rsplit(".", 1)[-1].lower() == "txt":
+        return count_words_in_file(path, mime_type)
+    from app.services.safe_extract import extract_text_limited
+
+    return count_words(extract_text_limited(path, mime_type))
+
+
 def document_word_count(doc) -> int:
     """Jumlah kata dokumen: memakai nilai tersimpan, atau menghitung dari berkas di disk."""
     if getattr(doc, "word_count", None):

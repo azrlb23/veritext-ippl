@@ -111,6 +111,15 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 15
     ALLOWED_EXTENSIONS: str = "pdf,docx,txt"
 
+    # Pembatas beban unggahan
+    MIN_DOCUMENT_WORDS: int = 50
+    MAX_PDF_PAGES: int = 400
+    MAX_DOCX_UNCOMPRESSED_MB: int = 50
+    MAX_DOCX_COMPRESSION_RATIO: int = 100
+    EXTRACTION_TIMEOUT_SECONDS: int = 30
+    MAX_ACTIVE_AUDITS_PER_USER: int = 3
+    UPLOAD_RATE_LIMIT_PER_MINUTE: int = 10
+
     # CORS
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",

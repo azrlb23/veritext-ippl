@@ -4,6 +4,8 @@ import math
 
 from fastapi import HTTPException, status
 
+from app.core.config import settings
+
 WORDS_PER_TOKEN = 2500
 MAX_AUDIT_TOKEN_COST = 5
 FREE_MAX_WORDS = 2500
@@ -34,4 +36,14 @@ def ensure_within_plan(role: str | None, word_count: int | None) -> None:
                 f"Naskah akun FREE maksimal {_dotted(FREE_MAX_WORDS)} kata, sedangkan naskah ini "
                 f"{_dotted(int(word_count or 0))} kata. Upgrade ke Premium untuk naskah yang lebih panjang."
             ),
+        )
+
+
+def ensure_minimum_words(word_count: int | None) -> None:
+    """DOC_003: naskah di bawah batas minimum kata tidak layak dianalisis."""
+    minimum = settings.MIN_DOCUMENT_WORDS
+    if int(word_count or 0) < minimum:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Naskah terlalu pendek: {int(word_count or 0)} kata. Minimal {minimum} kata agar dapat dianalisis.",
         )

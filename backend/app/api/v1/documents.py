@@ -14,6 +14,7 @@ from app.schemas.document import DocumentEstimateResponse, DocumentResponse, Doc
 from app.services.document_service import DocumentService
 from app.services.document_validator import validate_file
 from app.services.upload_charging import estimate_upload
+from app.services.upload_limits import enforce_active_audit_limit, enforce_rate_limit
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -25,6 +26,8 @@ async def upload_document(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    await enforce_rate_limit(current_user.id, "upload")
+    await enforce_active_audit_limit(db, current_user.id)
     depth = audit_depth if audit_depth in ("FULL", "TIER1_ONLY") else "FULL"
     doc, task = await DocumentService.save_uploaded_file_and_create_task(
         db=db,
@@ -50,6 +53,7 @@ async def estimate_document(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
 ):
+    await enforce_rate_limit(current_user.id, "estimate")
     validate_file(file)
     data = await estimate_upload(file, current_user.role)
     return APIResponse(message="Estimasi biaya audit dihitung", data=DocumentEstimateResponse(**data))

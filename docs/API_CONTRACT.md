@@ -127,8 +127,9 @@ Seluruh endpoint API VeriText AI wajib mengembalikan respons dalam format pembun
 | `AUTH_002` | `401 Unauthorized` | Access token JWT telah kedaluwarsa atau signature tidak valid. | Seluruh endpoint terproteksi |
 | `AUTH_003` | `403 Forbidden` | Peran pengguna tidak memiliki hak akses (RBAC violation). | `/api/v1/admin/*`, `/reports/download` |
 | `DOC_001` | `413 Payload Too Large` | Ukuran berkas naskah yang diunggah melebihi batas maksimum 15 MB. | `POST /api/v1/documents/upload` |
-| `DOC_002` | `422 Unprocessable Entity` | Format berkas tidak didukung (hanya menerima `.pdf`, `.docx`, `.txt`). | `POST /api/v1/documents/upload` |
-| `DOC_003` | `422 Unprocessable Entity` | Naskah memiliki kurang dari 50 kata (tidak memenuhi syarat analisis). | `POST /api/v1/documents/upload` |
+| `DOC_002` | `400` / `422` | Berkas ditolak: nama tanpa ekstensi, berjalur, berekstensi ganda, atau ekstensi selain `.pdf`/`.docx`/`.txt` (400); isi tidak sesuai ekstensi atau MIME (PDF harus diawali `%PDF-`, DOCX harus ZIP berisi `word/document.xml`, TXT tanpa byte NUL dan dapat didekode), DOCX berpotensi ZIP bomb (hasil dekompresi > 50 MB atau rasio > 100x), atau PDF > 400 halaman (422). | `POST /api/v1/documents/upload`, `POST /api/v1/documents/estimate` |
+| `DOC_003` | `422 Unprocessable Entity` | Naskah memiliki kurang dari 50 kata (tidak memenuhi syarat analisis). Berkas tidak disimpan dan saldo tidak dipotong. Juga berlaku pada estimasi. | `POST /api/v1/documents/upload`, `POST /api/v1/documents/estimate` |
+| `DOC_006` | `422` / `429` | Pembatas beban: ekstraksi teks melebihi 30 detik (422); pengguna sudah memiliki 3 audit berstatus `QUEUED`/`PROCESSING` (429); lebih dari 10 unggahan atau estimasi per menit per pengguna (429, header `Retry-After: 60`; pembatas dilewati bila Redis tidak tersedia). | `POST /api/v1/documents/upload`, `POST /api/v1/documents/estimate` |
 | `DOC_004` | `404 Not Found` | Dokumen yang diminta tidak ditemukan atau bukan milik pengguna aktif. | `GET/DELETE /api/v1/documents/{id}` |
 | `DOC_005` | `402 Payment Required` | Naskah akun FREE melebihi batas 2.500 kata per dokumen. Berkas tidak disimpan dan saldo tidak dipotong. | `POST /api/v1/documents/upload`, `POST /api/v1/audits/start` |
 | `AUDIT_001` | `402 Payment Required` | Saldo token tidak mencukupi untuk melakukan pemeriksaan naskah. | `POST /api/v1/audits/execute` |

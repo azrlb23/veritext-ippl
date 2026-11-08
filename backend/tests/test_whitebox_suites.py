@@ -1050,9 +1050,9 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         wallet = TokenWallet(user_id=user_id, balance=0)  # Saldo 0, butuh 2
 
         mock_file = AsyncMock()
-        mock_file.filename = "naskah.pdf"
-        mock_file.read.return_value = b"konten teks dokumen uji"
-        mock_file.content_type = "application/pdf"
+        mock_file.filename = "naskah.txt"
+        mock_file.read.return_value = ("konten teks dokumen uji " * 20).encode()
+        mock_file.content_type = "text/plain"
 
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([wallet]))
         with self.assertRaises(HTTPException) as ctx:

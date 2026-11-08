@@ -329,9 +329,9 @@ class TestRemediationPhase2TDD(unittest.IsolatedAsyncioTestCase):
 
         mock_db_doc = MockAsyncSession(execute_handler=doc_handler)
         mock_file = AsyncMock()
-        mock_file.filename = "skripsi_lock_test.pdf"
-        mock_file.read.return_value = b"konten valid pengujian locking dokumen"
-        mock_file.content_type = "application/pdf"
+        mock_file.filename = "skripsi_lock_test.txt"
+        mock_file.read.return_value = ("konten valid pengujian locking dokumen " * 20).encode()
+        mock_file.content_type = "text/plain"
 
         from app.workers.celery_app import celery_app
         with patch.object(celery_app.control, "inspect", return_value=None):

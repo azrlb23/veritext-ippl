@@ -8,22 +8,11 @@ import uuid
 from fastapi import HTTPException, UploadFile, status
 
 from app.core.config import settings
+from app.services.upload_filename import extension_of
 
 
 def validate_file(file: UploadFile) -> None:
-    filename = (file.filename or "").strip()
-    if not filename or "." not in filename:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Filename is missing or has no valid extension.",
-        )
-    ext = filename.rsplit(".", 1)[-1].lower()
-    allowed = [x.strip().lower() for x in settings.ALLOWED_EXTENSIONS.split(",")]
-    if ext not in allowed:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported file format '.{ext}'. Allowed: {', '.join(allowed)}",
-        )
+    extension_of(file.filename)
 
 
 async def write_upload_stream(file: UploadFile, empty_msg: str) -> tuple[str, int, str]:
@@ -33,7 +22,7 @@ async def write_upload_stream(file: UploadFile, empty_msg: str) -> tuple[str, in
     hasher = hashlib.sha256()
     file_size = 0
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else "txt"
+    ext = extension_of(file.filename)
     stored_filename = f"{uuid.uuid4().hex}.{ext}"
     file_path = os.path.join(settings.UPLOAD_DIR, stored_filename)
 

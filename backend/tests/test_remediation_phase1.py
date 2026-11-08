@@ -293,9 +293,9 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
 
         # 1. DocumentService.save_uploaded_file_and_create_task
         mock_file = AsyncMock()
-        mock_file.filename = "research_paper.pdf"
-        mock_file.read.return_value = b"konten valid untuk pengujian TDD eliminasi threading"
-        mock_file.content_type = "application/pdf"
+        mock_file.filename = "research_paper.txt"
+        mock_file.read.return_value = ("konten valid untuk pengujian " * 20).encode()
+        mock_file.content_type = "text/plain"
 
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([wallet]))
 

@@ -10,8 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.models.wallet import TokenWallet
 from app.services.document_validator import write_upload_stream
-from app.services.token_pricing import FREE_MAX_WORDS, compute_audit_cost, ensure_within_plan, exceeds_plan_limit
-from app.services.word_counter import count_words_in_file
+from app.services.token_pricing import FREE_MAX_WORDS, compute_audit_cost, ensure_minimum_words, ensure_within_plan, exceeds_plan_limit
+from app.services.upload_content import verify_content
+from app.services.upload_filename import extension_of
+from app.services.word_counter import count_strict_words_in_file
 
 EMPTY_FILE_MESSAGE = "Berkas naskah kosong (0 bytes). Silakan unggah dokumen yang valid."
 
@@ -27,7 +29,13 @@ async def stage_upload(file: UploadFile, user_role: str | None) -> tuple[str, in
     """Menulis berkas, menghitung kata, dan memvalidasi batas paket. Mengembalikan (nama, ukuran, sha256, kata, biaya)."""
     stored_fn, file_size, sha256 = await write_upload_stream(file, EMPTY_FILE_MESSAGE)
     try:
-        words = count_words_in_file(os.path.join(settings.UPLOAD_DIR, stored_fn), file.content_type)
+        path = os.path.join(settings.UPLOAD_DIR, stored_fn)
+        verify_content(
+            path, extension_of(file.filename), file.content_type,
+            settings.MAX_DOCX_UNCOMPRESSED_MB * 1024 * 1024, settings.MAX_DOCX_COMPRESSION_RATIO,
+        )
+        words = count_strict_words_in_file(path, file.content_type)
+        ensure_minimum_words(words)
         ensure_within_plan(user_role, words)
     except Exception:
         remove_stored_file(stored_fn)
