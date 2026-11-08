@@ -1,9 +1,10 @@
 export type AuditDepth = "TIER1_ONLY" | "FULL";
 export type AuditStatus = "QUEUED" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED" | "REVOKED";
 export type TierLevel = "T1" | "T2" | "T3";
-export type AnnotationColor = "RED" | "ORANGE" | "YELLOW";
+export type AnnotationColor = "RED" | "ORANGE" | "YELLOW" | "RESOLVED_GREEN";
 
 export interface HeatmapAnnotation {
+  sentence_id?: string;
   start: number;
   end: number;
   tier: TierLevel;
@@ -12,6 +13,9 @@ export interface HeatmapAnnotation {
   source_chunk_id?: string;
   similarity: number;
   text_snippet?: string;
+  source_url?: string;
+  reason?: string;
+  is_modified?: boolean;
 }
 
 export interface MatchedSource {
@@ -19,6 +23,7 @@ export interface MatchedSource {
   title: string;
   category?: string;
   contribution_pct: number;
+  source_url?: string;
 }
 
 export interface AuditReport {
@@ -36,7 +41,6 @@ export interface AuditReport {
   document_title?: string | null;
   document_text?: string | null;
   user_name?: string | null;
-  institution?: string | null;
 }
 
 export interface AuditTask {

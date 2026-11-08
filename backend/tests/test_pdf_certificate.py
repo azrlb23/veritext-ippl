@@ -16,7 +16,7 @@ class TestPdfCertificateService(unittest.TestCase):
         )
         self.assertEqual(
             clean_pdf_filename("   "),
-            "Sertifikat_VeriText_Naskah_Akademik.pdf",
+            "Sertifikat_VeriText_Naskah.pdf",
         )
 
     def test_generate_pdf_certificate_valid_pdf(self):
@@ -25,7 +25,6 @@ class TestPdfCertificateService(unittest.TestCase):
             verification_uuid="13c206aa-8c48-46c1-bfe7-05dad59b5a98",
             document_title="LPJ FPK.docx",
             user_name="Ibnu Dwiki Hermawan",
-            institution="Universitas Airlangga",
             generated_at=datetime.datetime.now(),
             score_composite=35.31,
             score_lexical=47.37,

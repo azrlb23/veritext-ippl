@@ -38,7 +38,6 @@ from app.models.document import Document
 from app.models.audit import AuditTask, AuditReport
 from app.models.wallet import TokenWallet
 from app.schemas.auth import UserLoginRequest
-from app.schemas.admin import TokenAdjustmentRequest, AdminUserCreateRequest
 from app.schemas.audit import AuditStartRequest
 from app.services.auth_service import AuthService
 from app.services.audit_service import AuditService
@@ -146,7 +145,7 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
             full_name="Mochammad Azriel Albian Putra",
             email="azriel@kampus.ac.id",
             password_hash=real_hash,
-            role="TRIAL",
+            role="FREE",
             is_active=True,
         )
         mock_db_azriel = MockAsyncSession(execute_handler=lambda s: MockQueryResult([user_azriel]))
@@ -181,8 +180,8 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
         other_user_id = uuid.uuid4()
         admin_id = uuid.uuid4()
 
-        owner_user = User(id=owner_id, full_name="Pemilik Naskah", email="owner@kampus.ac.id", role="TRIAL", institution="Institut Teknologi Nasional", is_active=True)
-        other_user = User(id=other_user_id, full_name="User Asing", email="other@kampus.ac.id", role="TRIAL", is_active=True)
+        owner_user = User(id=owner_id, full_name="Pemilik Naskah", email="owner@kampus.ac.id", role="FREE", is_active=True)
+        other_user = User(id=other_user_id, full_name="User Asing", email="other@kampus.ac.id", role="FREE", is_active=True)
         admin_user = User(id=admin_id, full_name="Admin VeriText", email="admin@veritext.ai", role="ADMIN", is_active=True)
 
         doc = Document(id=uuid.uuid4(), user_id=owner_id, original_filename="Skripsi_Akhir.pdf")
@@ -227,7 +226,7 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(res_no_auth.status_code, status.HTTP_401_UNAUTHORIZED)
 
         # 2. Dengan query ?token= tanpa Bearer token -> Tetap 401 (token query parameter diabaikan/ditolak)
-        fake_token = create_access_token(subject=str(owner_id), role="TRIAL")
+        fake_token = create_access_token(subject=str(owner_id), role="FREE")
         res_query_only = client.get(f"/api/v1/reports/{report_id}/export-pdf?token={fake_token}")
         self.assertEqual(res_query_only.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -261,7 +260,6 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
         """
         malicious_title = "<script>alert('XSS')</script><b>Judul Naskah & Riset</b><font color='red'>Malicious</font>"
         malicious_author = "John Doe <script>evil()</script> & Son"
-        malicious_institution = "Institut Teknologi <img src=x onerror=alert(1)>"
         malicious_sources = [
             {"source_title": "<unclosed tag='foo'> & Research Paper 2026", "similarity": 0.45, "tier": "T1"}
         ]
@@ -272,7 +270,6 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
             verification_uuid=str(uuid.uuid4()),
             document_title=malicious_title,
             user_name=malicious_author,
-            institution=malicious_institution,
             generated_at=datetime.now(timezone.utc),
             score_composite=20.0,
             score_lexical=15.0,
@@ -340,43 +337,6 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
             mock_thread_audit.assert_not_called()
             self.assertEqual(audit_task.status, "QUEUED")
 
-    def test_tc_sec_05_token_adjustment_integer_bounds(self):
-        """
-        [ROUND7-03 & FINAL-05] Batasan Numerik Token.
-        Schema TokenAdjustmentRequest menolak nilai integer di luar [-1_000_000, 1_000_000].
-        """
-        # Exceeds maximum 1,000,000
-        with self.assertRaises(ValidationError):
-            TokenAdjustmentRequest(amount=1_000_001, note="Valid note but too high")
-
-        # Below minimum -1,000,000
-        with self.assertRaises(ValidationError):
-            TokenAdjustmentRequest(amount=-1_000_001, note="Valid note but too negative")
-
-        # Boundaries MUST pass
-        req_max = TokenAdjustmentRequest(amount=1_000_000, note="Boundary max")
-        self.assertEqual(req_max.amount, 1_000_000)
-
-        req_min = TokenAdjustmentRequest(amount=-1_000_000, note="Boundary min")
-        self.assertEqual(req_min.amount, -1_000_000)
-
-        req_zero = TokenAdjustmentRequest(amount=0, note="Boundary zero")
-        self.assertEqual(req_zero.amount, 0)
-
-        # AdminUserCreateRequest initial_tokens bounds: 0 <= initial_tokens <= 1_000_000
-        with self.assertRaises(ValidationError):
-            AdminUserCreateRequest(
-                full_name="Overflow Admin",
-                email="overflow@example.com",
-                initial_tokens=1_000_001,
-            )
-
-        with self.assertRaises(ValidationError):
-            AdminUserCreateRequest(
-                full_name="Negative Admin",
-                email="negative@example.com",
-                initial_tokens=-1,
-            )
 
     async def test_tc_sec_06_chunked_upload_file_size_exceeded_413(self):
         """

@@ -1,0 +1,95 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dw_ad4" name="Aktivitas Deteksi Plagiarisme Hybrid 3-Tahap">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="950" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pool_AD4" value="Aktivitas Deteksi Plagiarisme Hybrid 3-Tahap" style="swimlane;html=1;childLayout=stackLayout;startSize=28;horizontal=0;horizontalStack=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="1080" height="890" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_0" value="Pengguna (Free / Premium)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="360" height="890" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_1" value="Hybrid Audit Orchestrator" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="420" y="30" width="360" height="890" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_2" value="Celery Worker, AI Engine &amp; pgvector" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="780" y="30" width="360" height="890" as="geometry" />
+        </mxCell>
+        <mxCell id="n_start" value="" style="ellipse;shape=startState;fillColor=#000000;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="58" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_klik_periksa" value="Klik Tombol &#x27;Mulai Periksa Naskah&#x27;&#xa;setelah Review Estimasi Token" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="115.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_potong_token" value="Validasi Saldo &amp; Potong Token Atomik&#xa;Dispatch Task ke Antrean Celery" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="215.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_step1" value="Step 1: Winnowing Lexical Match&#xa;(Rabin-Karp Rolling Hash, Tag MERAH)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="315.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_step2" value="Step 2: Semantic SBERT + IndoBERT&#xa;(Kueri KNN pgvector HNSW, Tag ORANYE)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="425.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_step3" value="Step 3: Stilometri (Burstiness, TTR)&#xa;&amp; Gemini Contextual AI Judge (Tag KUNING)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="535.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_agregasi" value="Kalkulasi Skor Komposit Akhir:&#xa;(0.50 Leks + 0.35 Sem + 0.15 Stil)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="645.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_tampil_hasil" value="Render Interactive Heatmap &amp;&#xa;Indikator Persentase di Workspace" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="745.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_deteksi" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="848" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e_0" source="n_start" target="n_klik_periksa" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_1" source="n_klik_periksa" target="n_potong_token" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="190.0" />
+              <mxPoint x="600.0" y="190.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_2" source="n_potong_token" target="n_step1" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="290.0" />
+              <mxPoint x="960.0" y="290.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_3" source="n_step1" target="n_step2" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_4" source="n_step2" target="n_step3" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_5" source="n_step3" target="n_agregasi" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_6" source="n_agregasi" target="n_tampil_hasil" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_7" source="n_tampil_hasil" target="n_end_deteksi" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

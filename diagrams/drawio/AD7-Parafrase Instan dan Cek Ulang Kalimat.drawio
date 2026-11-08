@@ -1,0 +1,119 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dw_ad7" name="Aktivitas Parafrase Instan dan Cek Ulang Kalimat">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="910" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pool_AD7" value="Aktivitas Parafrase Instan dan Cek Ulang Kalimat" style="swimlane;html=1;childLayout=stackLayout;startSize=28;horizontal=0;horizontalStack=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="1080" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_0" value="Pengguna (Free / Premium)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_1" value="Paraphrase Engine &amp; Workspace" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="420" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_2" value="Gemini AI Engine &amp; Audit Orchestrator" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="780" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="n_start" value="" style="ellipse;shape=startState;fillColor=#000000;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="58" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_pilih_mode_para" value="Pilih Kalimat/Paragraf di Heatmap &amp;&#xa;Klik &#x27;Parafrase Kalimat / Paragraf / Halaman&#x27;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="115.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_cek_token_para" value="Kredit AI&#xa;Mencukupi?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="545.0" y="204" width="110" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="n_modal_topup_para" value="Tampilkan Notifikasi &#x27;Saldo Kurang&#x27;&#xa;&amp; Arahkan ke Menu Beli Token" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="295.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_para_token_err" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="378" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_gen_3opsi" value="Hasilkan 3 Opsi Variasi Parafrase Ilmiah&#xa;lengkap dengan Estimasi Penurunan Skor" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="295.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_pilih_opsi" value="Tinjau 3 Opsi di Panel Kanan &amp;&#xa;Pilih 1 Variasi Terbaik" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="405.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_apply_rescore" value="Perbarui Teks Naskah Secara In-Place&#xa;dan Hitung Ulang Skor Kemiripan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="505.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_save_db_para" value="Simpan Perubahan ke Database &amp;&#xa;Ubah Sorotan Kalimat Menjadi Hijau" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="605.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_tampil_skor_baru" value="Tampilkan Naskah yang Telah Diperbaiki&#xa;dan Skor Plagiarisme yang Telah Turun" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="705.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_para" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="808" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e_0" source="n_start" target="n_pilih_mode_para" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_1" source="n_pilih_mode_para" target="n_cek_token_para" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="184.5" />
+              <mxPoint x="600.0" y="184.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_2" value="[Tidak Cukup]" source="n_cek_token_para" target="n_modal_topup_para" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_3" source="n_modal_topup_para" target="n_end_para_token_err" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_4" value="[Cukup]" source="n_cek_token_para" target="n_gen_3opsi" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_5" source="n_gen_3opsi" target="n_pilih_opsi" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_6" source="n_pilih_opsi" target="n_apply_rescore" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="480.0" />
+              <mxPoint x="600.0" y="480.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_7" source="n_apply_rescore" target="n_save_db_para" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="580.0" />
+              <mxPoint x="960.0" y="580.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_8" source="n_save_db_para" target="n_tampil_skor_baru" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_9" source="n_tampil_skor_baru" target="n_end_para" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

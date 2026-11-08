@@ -7,7 +7,6 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 class UserRegisterRequest(BaseModel):
     full_name: str = Field(..., min_length=2, max_length=255)
     email: EmailStr
-    institution: Optional[str] = Field(None, max_length=255)
     password: str = Field(..., min_length=8, max_length=128)
 
 
@@ -20,7 +19,6 @@ class UserProfileResponse(BaseModel):
     id: uuid.UUID
     full_name: str
     email: EmailStr
-    institution: Optional[str] = None
     role: str
     is_active: bool
     created_at: datetime
@@ -37,7 +35,6 @@ class TokenResponse(BaseModel):
 
 class UserProfileUpdate(BaseModel):
     full_name: Optional[str] = Field(None, min_length=2, max_length=255)
-    institution: Optional[str] = Field(None, max_length=255)
 
 
 class ChangePasswordRequest(BaseModel):
@@ -52,3 +49,13 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str = Field(..., min_length=8, max_length=128)
+
+
+class GoogleVerifyRequest(BaseModel):
+    credential: str = Field(..., min_length=10)
+
+
+class GoogleCompleteRequest(BaseModel):
+    ticket: str = Field(..., min_length=1)
+    full_name: str = Field(..., min_length=2, max_length=255)
+    password: str = Field(..., min_length=8, max_length=128)

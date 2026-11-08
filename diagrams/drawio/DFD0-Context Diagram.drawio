@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dfd0-diagram" name="DFD Level 0 Context Diagram VeriText AI">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="880" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p0" value="0&#xa;Sistem Deteksi Plagiarisme Cerdas&#xa;VeriText AI" style="ellipse;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontColor=#000000;fontSize=13;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="320" width="320" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_free" value="Free User&#xa;(Pengguna Gratis)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_prem" value="Premium User&#xa;(Pengguna Berbayar)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="370" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_admin" value="Admin (Read-Only)&#xa;(Pengawas Sistem)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="620" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_midtrans" value="Midtrans Payment&#xa;Gateway" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="120" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_apis" value="Dual-Scope Academic APIs&#xa;(OpenAlex, DOAJ, Crossref)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="370" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_ai" value="Google Gemini 2.5 API&#xa;&amp; Search Grounding" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="620" width="190" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="dfd0_e1" value="Naskah, Login, Chat Trial" source="ent_free" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e2" value="Heatmap Web View, Status Kuota" source="p0" target="ent_free" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e3" value="Naskah Skripsi, Order Token, Parafrase" source="ent_prem" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e4" value="Laporan PDF QR, Invoice, 3 Opsi Parafrase" source="p0" target="ent_prem" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e5" value="Permintaan Telemetri (GET)" source="ent_admin" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e6" value="Dasbor Analitik, Log Transaksi" source="p0" target="ent_admin" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e7" value="Request Snap Token" source="p0" target="ent_midtrans" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e8" value="Webhook Settlement Notification" source="ent_midtrans" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e9" value="Kueri Metadata &amp; Abstrak" source="p0" target="ent_apis" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e10" value="Data Publikasi Ilmiah" source="ent_apis" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e11" value="Prompt Evaluasi &amp; Parafrase" source="p0" target="ent_ai" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dfd0_e12" value="Grounding Web &amp; Respon Parafrase" source="ent_ai" target="p0" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

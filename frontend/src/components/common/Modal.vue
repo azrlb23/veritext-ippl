@@ -75,23 +75,23 @@ const maxWidthClass = computed(() => {
     >
       <!-- Backdrop -->
       <div
-        class="fixed inset-0 bg-audyr-charcoal/40 backdrop-blur-xs transition-opacity"
+        class="fixed inset-0 bg-[#0B0F19]/40 backdrop-blur-xs transition-opacity"
         @click="handleClose"
       ></div>
 
       <!-- Modal container -->
       <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div
-          class="relative transform overflow-hidden rounded-[18px] bg-white text-left shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] transition-all w-full border border-[#ededed] my-8"
+          class="relative transform overflow-hidden rounded-[28px] bg-white text-left shadow-[0_20px_50px_rgba(11,15,25,0.16)] transition-all w-full border border-[#E4E8F0] my-8 font-sans"
           :class="maxWidthClass"
         >
           <!-- Header -->
           <div
             v-if="title || $slots.header || closable"
-            class="flex items-center justify-between px-6 py-4 border-b border-[#ededed]"
+            class="flex items-center justify-between px-6 py-4 border-b border-[#E4E8F0]"
           >
             <slot name="header">
-              <h3 class="text-base font-semibold text-[#262626] tracking-tight">
+              <h3 class="text-base font-bold text-[#0B0F19] tracking-tight">
                 {{ title }}
               </h3>
             </slot>
@@ -99,24 +99,24 @@ const maxWidthClass = computed(() => {
               v-if="closable"
               type="button"
               @click="handleClose"
-              class="rounded-[4px] p-1 text-[#686868] hover:text-[#262626] hover:bg-[#ededed] transition-colors"
+              class="rounded-full p-1.5 text-[#5B6475] hover:text-[#0B0F19] hover:bg-[#F3F6FC] transition-colors cursor-pointer active:scale-[0.95]"
               aria-label="Tutup modal"
             >
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
           <!-- Body -->
-          <div class="px-6 py-5 text-sm text-[#262626]">
+          <div class="px-6 py-5 text-sm text-[#0B0F19]">
             <slot />
           </div>
 
           <!-- Footer -->
           <div
             v-if="$slots.footer"
-            class="px-6 py-4 bg-[#fafafa] border-t border-[#ededed] flex items-center justify-end space-x-3"
+            class="px-6 py-4 bg-[#F8FAFC] border-t border-[#E4E8F0] flex items-center justify-end space-x-3"
           >
             <slot name="footer" />
           </div>

@@ -5,38 +5,33 @@
 -- Keterangan: Data awal (Seed) untuk Pengguna Default, Paket Token, dan Sampel Korpus
 
 -- 1. SEED PENGGUNA DEFAULT
--- Password Default: 'VeriText#2026' (bcrypt hash)
-INSERT INTO users (id, full_name, email, institution, password_hash, role, is_active)
+-- Password Default: 'Azrlb123*' (bcrypt hash)
+INSERT INTO users (id, full_name, email, password_hash, role, is_active)
 VALUES 
-    -- Super Administrator
-    ('11111111-1111-1111-1111-111111111111', 'Super Administrator VeriText', 'admin@veritext.ai', 'VeriText AI System', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'ADMIN', TRUE),
+    -- Super Administrator (ADMIN)
+    ('11111111-1111-1111-1111-111111111111', 'Azriel Albian', 'azrielalbian23@gmail.com', '$2b$12$8/4q7HKkppgIsw.gbmuklOE7jG.bL3Jtuft7aSmBS7m.deujuh38a', 'ADMIN', TRUE),
     
-    -- Dosen / Reviewer Kampus
-    ('22222222-2222-2222-2222-222222222222', 'Dr. Hendra Gunawan, M.Kom.', 'dosen@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'REVIEWER', TRUE),
+    -- Akun Berbayar (PREMIUM)
+    ('22222222-2222-2222-2222-222222222222', 'Azriel Albian', 'azrielalbian8@gmail.com', '$2b$12$8/4q7HKkppgIsw.gbmuklOE7jG.bL3Jtuft7aSmBS7m.deujuh38a', 'PREMIUM', TRUE),
     
-    -- Mahasiswa / Trial User
-    ('33333333-3333-3333-3333-333333333333', 'Mochammad Azriel Albian Putra', 'azriel@kampus.ac.id', 'Institut Teknologi Nasional', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'TRIAL', TRUE),
-
-    -- Mahasiswa / Premium User
-    ('44444444-4444-4444-4444-444444444444', 'Siti Rahmawati', 'siti@kampus.ac.id', 'Universitas Indonesia', '$2b$12$bvILEzePtON73aJ/6WCnDuRAxpJ1k9Qkb733SCbHWOPxuahwCJNq6', 'PREMIUM', TRUE)
+    -- Akun Pengguna Gratis (FREE)
+    ('33333333-3333-3333-3333-333333333333', 'Azriel Albian', 'albianazriel3@gmail.com', '$2b$12$8/4q7HKkppgIsw.gbmuklOE7jG.bL3Jtuft7aSmBS7m.deujuh38a', 'FREE', TRUE)
 ON CONFLICT (email) DO NOTHING;
 
 -- 2. SEED DOMPET TOKEN (Wallets)
-INSERT INTO token_wallets (id, user_id, balance)
+INSERT INTO token_wallets (id, user_id, balance, ai_trial_remaining, ai_chat_allowance_remaining)
 VALUES 
-    ('a1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 9999), -- Admin Unlimited
-    ('a2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 100),  -- Dosen Kuota Kelas
-    ('a3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 3),    -- Trial User Sambutan (3 token)
-    ('a4444444-4444-4444-4444-444444444444', '44444444-4444-4444-4444-444444444444', 25)   -- Premium User
+    ('a1111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 9999, 3, 0), -- Admin Unlimited Monitoring
+    ('a2222222-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 100, 3, 10), -- Premium Saldo Awal
+    ('a3333333-3333-3333-3333-333333333333', '33333333-3333-3333-3333-333333333333', 5, 3, 0)     -- Free User Sambutan (5 token)
 ON CONFLICT (user_id) DO NOTHING;
 
 -- 3. SEED MUTASI TOKEN AWAL (Ledger Transactions)
 INSERT INTO token_transactions (wallet_id, transaction_type, amount, balance_after, note)
 VALUES 
-    ('a1111111-1111-1111-1111-111111111111', 'CREDIT_ADMIN', 9999, 9999, 'Alokasi token inisial Administrator'),
-    ('a2222222-2222-2222-2222-222222222222', 'CREDIT_ADMIN', 100, 100, 'Alokasi token verifikasi tugas kuliah'),
-    ('a3333333-3333-3333-3333-333333333333', 'CREDIT_ADMIN', 3, 3, 'Bonus sambutan pendaftaran akun baru (3 token gratis)'),
-    ('a4444444-4444-4444-4444-444444444444', 'CREDIT_TOPUP', 25, 25, 'Top-up paket sidang kilat via Midtrans');
+    ('a1111111-1111-1111-1111-111111111111', 'CREDIT_TOPUP', 9999, 9999, 'Alokasi token inisial Administrator'),
+    ('a2222222-2222-2222-2222-222222222222', 'CREDIT_TOPUP', 100, 100, 'Alokasi token inisial Premium'),
+    ('a3333333-3333-3333-3333-333333333333', 'CREDIT_TOPUP', 5, 5, 'Bonus sambutan pendaftaran akun baru (5 token gratis)');
 
 -- 4. SEED SAMPEL KORPUS PEMBANDING INTERNAL (Corpus Documents)
 INSERT INTO corpus_documents (id, uploaded_by, title, category, academic_year, stored_filename, sha256_hash, status, total_chunks)

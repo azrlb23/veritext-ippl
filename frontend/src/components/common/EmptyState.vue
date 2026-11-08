@@ -18,19 +18,19 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-[14px] border border-dashed border-[#ededed] bg-[#fafafa] space-y-3">
+  <div class="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-[20px] border border-dashed border-[#CBD5E1] bg-[#F8FAFC] space-y-3 font-sans select-none">
     <div
       v-if="icon || $slots.icon"
-      class="w-10 h-10 rounded-[6px] bg-white border border-[#ededed] shadow-sm flex items-center justify-center text-sm text-[#262626]"
+      class="w-11 h-11 rounded-full bg-white border border-[#E4E8F0] shadow-2xs flex items-center justify-center text-sm text-[#5B6475]"
     >
       <slot name="icon">{{ icon }}</slot>
     </div>
 
     <div class="space-y-1 max-w-sm">
-      <h4 class="text-sm font-semibold text-[#262626] tracking-tight">
+      <h4 class="text-sm font-bold text-[#0B0F19] tracking-tight">
         {{ title }}
       </h4>
-      <p v-if="description" class="text-xs text-[#686868] leading-relaxed font-normal">
+      <p v-if="description" class="text-xs text-[#5B6475] leading-relaxed font-normal">
         {{ description }}
       </p>
     </div>
@@ -40,7 +40,7 @@ const emit = defineEmits<{
         <button
           type="button"
           @click="emit('action')"
-          class="px-4 py-2 bg-[#262626] hover:bg-[#171717] text-white rounded-[4px] text-xs font-medium tracking-tight shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.24)] transition-all"
+          class="px-5 py-2 bg-[#1560BD] hover:bg-[#1A73D9] text-white rounded-full text-xs font-semibold tracking-tight shadow-sm transition-all active:scale-[0.98] cursor-pointer"
         >
           {{ actionText }}
         </button>

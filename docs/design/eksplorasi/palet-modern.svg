@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1010" viewBox="0 0 1440 1010" role="img" aria-labelledby="t"><title id="t">Pratinjau palet modern VeriText (gradasi + kaca)</title><defs><style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;display=swap');text{font-family:'Outfit',Arial,sans-serif}</style><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="46"/></filter><filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#6B7194" flood-opacity="0.18"/></filter><filter id="glow" x="-20%" y="-40%" width="140%" height="220%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#1A73D9" flood-opacity="0.35"/></filter>
+<linearGradient id="bgA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E8F0FF"/><stop offset="0.55" stop-color="#DDF4FF"/><stop offset="1" stop-color="#EDE7FF"/></linearGradient>
+<linearGradient id="btA" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1A73D9"/><stop offset="1" stop-color="#3B5BDB"/></linearGradient>
+<clipPath id="cpA"><rect x="48" y="40" width="432" height="930" rx="36"/></clipPath>
+<linearGradient id="bgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EEF0FF"/><stop offset="0.55" stop-color="#F3E8FF"/><stop offset="1" stop-color="#FFE9F1"/></linearGradient>
+<linearGradient id="btB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4F46E5"/><stop offset="1" stop-color="#7E22CE"/></linearGradient>
+<clipPath id="cpB"><rect x="504" y="40" width="432" height="930" rx="36"/></clipPath>
+<linearGradient id="bgC" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6FAF5"/><stop offset="0.55" stop-color="#E3F0FF"/><stop offset="1" stop-color="#EAF7EE"/></linearGradient>
+<linearGradient id="btC" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0F766E"/><stop offset="1" stop-color="#1D4ED8"/></linearGradient>
+<clipPath id="cpC"><rect x="960" y="40" width="432" height="930" rx="36"/></clipPath>
+</defs><rect width="1440" height="1010" fill="#F7F8FB"/>
+<g clip-path="url(#cpA)"><rect x="48" y="40" width="432" height="930" fill="url(#bgA)"/>
+<circle cx="408" cy="140" r="120" fill="#3B82F6" opacity="0.55" filter="url(#blur)"/><circle cx="108" cy="470" r="130" fill="#22D3EE" opacity="0.45" filter="url(#blur)"/><circle cx="388" cy="840" r="130" fill="#A78BFA" opacity="0.5" filter="url(#blur)"/></g>
+<text x="76" y="92" font-size="22" font-weight="600" fill="#0B0F19">A · Aurora Biru</text><text x="76" y="118" font-size="14" fill="#5B6475">Tetap biru merek, tambah kedalaman</text>
+<text x="76" y="190" font-size="14" font-weight="500" fill="#5B6475">Skor orisinalitas</text><text x="76" y="250" font-size="56" font-weight="600" letter-spacing="-1.5" fill="#0B0F19">84,8<tspan fill="#1A73D9">%</tspan></text>
+<rect x="76" y="276" width="200" height="52" rx="26" fill="url(#btA)" filter="url(#glow)"/><text x="176" y="308" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="middle">Mulai audit</text>
+<rect x="76" y="364" width="376" height="206" rx="28" fill="#FFFFFF" fill-opacity="0.72" filter="url(#sh)"/><rect x="76" y="364.5" width="375" height="205" rx="27.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.9"/>
+<text x="100" y="404" font-size="14" font-weight="500" fill="#5B6475">Naskah diaudit</text><text x="100" y="456" font-size="40" font-weight="600" letter-spacing="-1" fill="#0B0F19">3.503</text>
+<path d="M100 540C148 520 178 500 218 510S278 480 318 470S368 478 420 462" fill="none" stroke="url(#btA)" stroke-width="3" stroke-linecap="round"/><circle cx="420" cy="462" r="5" fill="#3B5BDB"/>
+<rect x="76" y="594" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="110" cy="626" r="20" fill="url(#btA)"/><text x="110" y="631" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">UU</text><text x="144" y="622" font-size="15" font-weight="600" fill="#0B0F19">UU PDP 27/2022</text><text x="144" y="641" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<rect x="76" y="670" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="110" cy="702" r="20" fill="url(#btA)"/><text x="110" y="707" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">SK</text><text x="144" y="698" font-size="15" font-weight="600" fill="#0B0F19">SINTA Kemdikbud</text><text x="144" y="717" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<circle cx="98" cy="780" r="22" fill="#1A73D9"/>
+<text x="98" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#1A73D9</text>
+<circle cx="160" cy="780" r="22" fill="#3B5BDB"/>
+<text x="160" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#3B5BDB</text>
+<circle cx="222" cy="780" r="22" fill="#22D3EE"/>
+<text x="222" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#22D3EE</text>
+<circle cx="284" cy="780" r="22" fill="#A78BFA"/>
+<text x="284" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#A78BFA</text>
+<circle cx="346" cy="780" r="22" fill="#E8F0FF"/>
+<text x="346" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#E8F0FF</text>
+<text x="76" y="876" font-size="13" fill="#0B0F19">Gradasi tombol: dua ujung kontras ≥4,5:1</text><text x="76" y="898" font-size="13" fill="#0B0F19">dengan teks putih. Cyan/ungu/pink hanya</text><text x="76" y="920" font-size="13" fill="#0B0F19">untuk orb latar, bukan di bawah teks.</text>
+<g clip-path="url(#cpB)"><rect x="504" y="40" width="432" height="930" fill="url(#bgB)"/>
+<circle cx="864" cy="140" r="120" fill="#6366F1" opacity="0.55" filter="url(#blur)"/><circle cx="564" cy="470" r="130" fill="#A855F7" opacity="0.45" filter="url(#blur)"/><circle cx="844" cy="840" r="130" fill="#F472B6" opacity="0.5" filter="url(#blur)"/></g>
+<text x="532" y="92" font-size="22" font-weight="600" fill="#0B0F19">B · Indigo Senja</text><text x="532" y="118" font-size="14" fill="#5B6475">Lebih berani, kesan produk AI</text>
+<text x="532" y="190" font-size="14" font-weight="500" fill="#5B6475">Skor orisinalitas</text><text x="532" y="250" font-size="56" font-weight="600" letter-spacing="-1.5" fill="#0B0F19">84,8<tspan fill="#4F46E5">%</tspan></text>
+<rect x="532" y="276" width="200" height="52" rx="26" fill="url(#btB)" filter="url(#glow)"/><text x="632" y="308" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="middle">Mulai audit</text>
+<rect x="532" y="364" width="376" height="206" rx="28" fill="#FFFFFF" fill-opacity="0.72" filter="url(#sh)"/><rect x="532" y="364.5" width="375" height="205" rx="27.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.9"/>
+<text x="556" y="404" font-size="14" font-weight="500" fill="#5B6475">Naskah diaudit</text><text x="556" y="456" font-size="40" font-weight="600" letter-spacing="-1" fill="#0B0F19">3.503</text>
+<path d="M556 540C604 520 634 500 674 510S734 480 774 470S824 478 876 462" fill="none" stroke="url(#btB)" stroke-width="3" stroke-linecap="round"/><circle cx="876" cy="462" r="5" fill="#7E22CE"/>
+<rect x="532" y="594" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="566" cy="626" r="20" fill="url(#btB)"/><text x="566" y="631" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">UU</text><text x="600" y="622" font-size="15" font-weight="600" fill="#0B0F19">UU PDP 27/2022</text><text x="600" y="641" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<rect x="532" y="670" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="566" cy="702" r="20" fill="url(#btB)"/><text x="566" y="707" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">SK</text><text x="600" y="698" font-size="15" font-weight="600" fill="#0B0F19">SINTA Kemdikbud</text><text x="600" y="717" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<circle cx="554" cy="780" r="22" fill="#4F46E5"/>
+<text x="554" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#4F46E5</text>
+<circle cx="616" cy="780" r="22" fill="#7E22CE"/>
+<text x="616" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#7E22CE</text>
+<circle cx="678" cy="780" r="22" fill="#A855F7"/>
+<text x="678" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#A855F7</text>
+<circle cx="740" cy="780" r="22" fill="#F472B6"/>
+<text x="740" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#F472B6</text>
+<circle cx="802" cy="780" r="22" fill="#EEF0FF"/>
+<text x="802" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#EEF0FF</text>
+<text x="532" y="876" font-size="13" fill="#0B0F19">Gradasi tombol: dua ujung kontras ≥4,5:1</text><text x="532" y="898" font-size="13" fill="#0B0F19">dengan teks putih. Cyan/ungu/pink hanya</text><text x="532" y="920" font-size="13" fill="#0B0F19">untuk orb latar, bukan di bawah teks.</text>
+<g clip-path="url(#cpC)"><rect x="960" y="40" width="432" height="930" fill="url(#bgC)"/>
+<circle cx="1320" cy="140" r="120" fill="#14B8A6" opacity="0.55" filter="url(#blur)"/><circle cx="1020" cy="470" r="130" fill="#3B82F6" opacity="0.45" filter="url(#blur)"/><circle cx="1300" cy="840" r="130" fill="#86EFAC" opacity="0.5" filter="url(#blur)"/></g>
+<text x="988" y="92" font-size="22" font-weight="600" fill="#0B0F19">C · Hijau Laut</text><text x="988" y="118" font-size="14" fill="#5B6475">Segar, kesan akademik tepercaya</text>
+<text x="988" y="190" font-size="14" font-weight="500" fill="#5B6475">Skor orisinalitas</text><text x="988" y="250" font-size="56" font-weight="600" letter-spacing="-1.5" fill="#0B0F19">84,8<tspan fill="#0F766E">%</tspan></text>
+<rect x="988" y="276" width="200" height="52" rx="26" fill="url(#btC)" filter="url(#glow)"/><text x="1088" y="308" font-size="15" font-weight="600" fill="#FFFFFF" text-anchor="middle">Mulai audit</text>
+<rect x="988" y="364" width="376" height="206" rx="28" fill="#FFFFFF" fill-opacity="0.72" filter="url(#sh)"/><rect x="988" y="364.5" width="375" height="205" rx="27.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.9"/>
+<text x="1012" y="404" font-size="14" font-weight="500" fill="#5B6475">Naskah diaudit</text><text x="1012" y="456" font-size="40" font-weight="600" letter-spacing="-1" fill="#0B0F19">3.503</text>
+<path d="M1012 540C1060 520 1090 500 1130 510S1190 480 1230 470S1280 478 1332 462" fill="none" stroke="url(#btC)" stroke-width="3" stroke-linecap="round"/><circle cx="1332" cy="462" r="5" fill="#1D4ED8"/>
+<rect x="988" y="594" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="1022" cy="626" r="20" fill="url(#btC)"/><text x="1022" y="631" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">UU</text><text x="1056" y="622" font-size="15" font-weight="600" fill="#0B0F19">UU PDP 27/2022</text><text x="1056" y="641" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<rect x="988" y="670" width="376" height="64" rx="22" fill="#FFFFFF" fill-opacity="0.68" filter="url(#sh)"/><circle cx="1022" cy="702" r="20" fill="url(#btC)"/><text x="1022" y="707" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">SK</text><text x="1056" y="698" font-size="15" font-weight="600" fill="#0B0F19">SINTA Kemdikbud</text><text x="1056" y="717" font-size="12.5" fill="#5B6475">Terverifikasi</text>
+<circle cx="1010" cy="780" r="22" fill="#0F766E"/>
+<text x="1010" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#0F766E</text>
+<circle cx="1072" cy="780" r="22" fill="#1D4ED8"/>
+<text x="1072" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#1D4ED8</text>
+<circle cx="1134" cy="780" r="22" fill="#14B8A6"/>
+<text x="1134" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#14B8A6</text>
+<circle cx="1196" cy="780" r="22" fill="#3B82F6"/>
+<text x="1196" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#3B82F6</text>
+<circle cx="1258" cy="780" r="22" fill="#E6FAF5"/>
+<text x="1258" y="826" font-size="12" fill="#5B6475" text-anchor="middle">#E6FAF5</text>
+<text x="988" y="876" font-size="13" fill="#0B0F19">Gradasi tombol: dua ujung kontras ≥4,5:1</text><text x="988" y="898" font-size="13" fill="#0B0F19">dengan teks putih. Cyan/ungu/pink hanya</text><text x="988" y="920" font-size="13" fill="#0B0F19">untuk orb latar, bukan di bawah teks.</text>
+</svg>

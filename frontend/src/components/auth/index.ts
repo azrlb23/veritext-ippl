@@ -1,4 +1,5 @@
 export { default as AuthCard } from "./AuthCard.vue";
+export { default as AuthIllustration } from "./AuthIllustration.vue";
 export { default as LoginForm } from "./LoginForm.vue";
 export { default as RegisterForm } from "./RegisterForm.vue";
 export type { LoginDTO, RegisterDTO, LoginResponse } from "../../services/authService";

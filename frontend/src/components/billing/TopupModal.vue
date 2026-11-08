@@ -37,76 +37,76 @@ function handleConfirm() {
     maxWidth="md"
     @close="emit('close')"
   >
-    <div v-if="selectedPackage" class="space-y-5">
+    <div v-if="selectedPackage" class="space-y-5 font-sans">
       <!-- Order Summary Card -->
-      <div class="bg-white border border-[#ededed] rounded-[14px] p-4 space-y-2.5 shadow-audyr-subtle">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-audyr-ash">Paket Terpilih</span>
-          <span class="text-xs font-extrabold text-audyr-ink">{{ selectedPackage.name }}</span>
+      <div class="bg-[#F8FAFC] border border-[#E4E8F0] rounded-[20px] p-5 space-y-3">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-medium text-[#5B6475]">Paket Terpilih</span>
+          <span class="font-bold text-[#0B0F19]">{{ selectedPackage.name }}</span>
         </div>
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-audyr-ash">Jumlah Kuota</span>
-          <span class="text-sm font-extrabold text-audyr-ink tabular-nums">{{ selectedPackage.tokens }} Token</span>
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-medium text-[#5B6475]">Jumlah Kuota</span>
+          <span class="font-bold text-[#0B0F19] tabular-nums">{{ selectedPackage.tokens }} Token</span>
         </div>
-        <div class="border-t border-[#ededed] pt-2 flex items-center justify-between">
-          <span class="text-xs font-bold text-audyr-ink">Total Pembayaran</span>
-          <span class="text-base font-extrabold text-audyr-ink tabular-nums">{{ selectedPackage.price }}</span>
+        <div class="border-t border-[#E4E8F0] pt-2.5 flex items-center justify-between">
+          <span class="text-xs font-bold text-[#0B0F19]">Total Pembayaran</span>
+          <span class="text-base font-extrabold text-[#1560BD] tabular-nums">{{ selectedPackage.price }}</span>
         </div>
       </div>
 
       <!-- Payment Method Selection -->
-      <div class="space-y-2">
-        <label class="block text-xs font-extrabold uppercase tracking-tight text-audyr-ash">
-          Pilih Jalur Pembayaran (Midtrans Payment Gateway)
+      <div class="space-y-2.5">
+        <label class="block text-xs font-bold uppercase tracking-wider text-[#5B6475]">
+          PILIH JALUR PEMBAYARAN (MIDTRANS)
         </label>
 
-        <div class="grid grid-cols-1 gap-2">
+        <div class="grid grid-cols-1 gap-2.5">
           <label
-            class="flex items-center justify-between p-3 rounded-[8px] border cursor-pointer transition-all text-xs"
-            :class="selectedPaymentMethod === 'qris' ? 'border-audyr-ink bg-white ring-1 ring-audyr-ink' : 'border-[#ededed] hover:border-audyr-ink bg-white'"
+            class="flex items-center justify-between p-3.5 rounded-[16px] border cursor-pointer transition-all text-xs"
+            :class="selectedPaymentMethod === 'qris' ? 'border-[#1560BD] bg-[#EAF3FE]/40 ring-1 ring-[#1560BD]' : 'border-[#E4E8F0] hover:border-[#CBD5E1] bg-white'"
           >
             <div class="flex items-center space-x-3">
               <input
                 type="radio"
                 value="qris"
                 v-model="selectedPaymentMethod"
-                class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
+                class="text-[#1560BD] focus:ring-[#1560BD] accent-[#1560BD]"
               />
-              <span class="font-bold text-audyr-ink">QRIS (GoPay, OVO, ShopeePay, DANA)</span>
+              <span class="font-bold text-[#0B0F19]">QRIS (GoPay, OVO, ShopeePay, DANA)</span>
             </div>
-            <span class="text-[10px] bg-audyr-mint-whisper text-[#065f46] border border-[#a7f3d0] px-2.5 py-0.5 rounded-full italic font-bold uppercase tracking-tight">Instan</span>
+            <span class="text-[10px] bg-[#EAF7EE] text-[#15803D] border border-[#A7F3D0] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-tight">Instan</span>
           </label>
 
           <label
-            class="flex items-center justify-between p-3 rounded-[8px] border cursor-pointer transition-all text-xs"
-            :class="selectedPaymentMethod === 'va_bca' ? 'border-audyr-ink bg-white ring-1 ring-audyr-ink' : 'border-[#ededed] hover:border-audyr-ink bg-white'"
+            class="flex items-center justify-between p-3.5 rounded-[16px] border cursor-pointer transition-all text-xs"
+            :class="selectedPaymentMethod === 'va_bca' ? 'border-[#1560BD] bg-[#EAF3FE]/40 ring-1 ring-[#1560BD]' : 'border-[#E4E8F0] hover:border-[#CBD5E1] bg-white'"
           >
             <div class="flex items-center space-x-3">
               <input
                 type="radio"
                 value="va_bca"
                 v-model="selectedPaymentMethod"
-                class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
+                class="text-[#1560BD] focus:ring-[#1560BD] accent-[#1560BD]"
               />
-              <span class="font-bold text-audyr-ink">BCA Virtual Account</span>
+              <span class="font-bold text-[#0B0F19]">BCA Virtual Account</span>
             </div>
-            <span class="text-[10px] text-audyr-ash font-medium">Otomatis</span>
+            <span class="text-[10px] text-[#5B6475] font-semibold">Otomatis</span>
           </label>
 
           <label
-            class="flex items-center justify-between p-3 rounded-[8px] border cursor-pointer transition-all text-xs"
-            :class="selectedPaymentMethod === 'va_mandiri' ? 'border-audyr-ink bg-white ring-1 ring-audyr-ink' : 'border-[#ededed] hover:border-audyr-ink bg-white'"
+            class="flex items-center justify-between p-3.5 rounded-[16px] border cursor-pointer transition-all text-xs"
+            :class="selectedPaymentMethod === 'va_mandiri' ? 'border-[#1560BD] bg-[#EAF3FE]/40 ring-1 ring-[#1560BD]' : 'border-[#E4E8F0] hover:border-[#CBD5E1] bg-white'"
           >
             <div class="flex items-center space-x-3">
               <input
                 type="radio"
                 value="va_mandiri"
                 v-model="selectedPaymentMethod"
-                class="text-audyr-ink focus:ring-audyr-ink accent-[#262626]"
+                class="text-[#1560BD] focus:ring-[#1560BD] accent-[#1560BD]"
               />
-              <span class="font-bold text-audyr-ink">Mandiri / BRI / BNI VA</span>
+              <span class="font-bold text-[#0B0F19]">Mandiri / BRI / BNI VA</span>
             </div>
-            <span class="text-[10px] text-audyr-ash font-medium">Otomatis</span>
+            <span class="text-[10px] text-[#5B6475] font-semibold">Otomatis</span>
           </label>
         </div>
       </div>

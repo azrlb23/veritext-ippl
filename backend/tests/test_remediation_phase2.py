@@ -40,7 +40,6 @@ from app.models.invoice import Invoice
 from app.models.password_reset import PasswordReset
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
-from app.schemas.admin import TokenAdjustmentRequest
 from app.schemas.audit import AuditStartRequest
 from app.schemas.billing import MidtransWebhookPayload
 from app.services.billing_service import BillingService
@@ -49,7 +48,6 @@ from app.services.document_service import DocumentService
 from app.engine.preprocessor import TextPreprocessor
 from app.engine.tier1_lexical import WinnowingLexicalEngine
 from app.engine.tier4_aggregator import HybridAggregator, MatchedSourceData
-from app.api.v1 import admin as admin_module
 from app.api.v1 import billing as billing_router
 
 
@@ -378,31 +376,6 @@ class TestRemediationPhase2TDD(unittest.IsolatedAsyncioTestCase):
             "Query TokenWallet pada AuditService wajib memanggil .with_for_update()",
         )
 
-        # 4. Verify Admin adjust_user_tokens uses with_for_update() on TokenWallet
-        admin_stmts = []
-        target_user = User(id=user_id, full_name="Mahasiswa", email="mhs@kampus.id", role="TRIAL")
-        admin_idx = 0
-        def admin_handler(stmt):
-            nonlocal admin_idx
-            admin_idx += 1
-            admin_stmts.append(stmt)
-            if admin_idx == 1:
-                return MockQueryResult([target_user])
-            return MockQueryResult([wallet])
-
-        mock_db_admin = MockAsyncSession(execute_handler=admin_handler)
-        adj_req = TokenAdjustmentRequest(amount=5, note="Bonus apresiasi riset")
-        await admin_module.adjust_user_tokens(user_id=str(user_id), req=adj_req, db=mock_db_admin)
-
-        admin_wallet_selects = [
-            s for s in admin_stmts
-            if hasattr(s, "column_descriptions") and any(d.get("name") == "TokenWallet" or d.get("type") == TokenWallet for d in s.column_descriptions)
-        ]
-        self.assertGreaterEqual(len(admin_wallet_selects), 1)
-        self.assertIsNotNone(
-            getattr(admin_wallet_selects[0], "_for_update_arg", None),
-            "Query TokenWallet pada adjust_user_tokens wajib memanggil .with_for_update()",
-        )
 
     def test_tc_sec_11_alembic_fk_indices_and_unique_constraint(self):
         """

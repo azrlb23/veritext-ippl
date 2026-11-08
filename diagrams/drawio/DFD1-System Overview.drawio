@@ -1,0 +1,89 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dfd1-diagram" name="DFD Level 1 System Overview VeriText AI">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1380" pageHeight="780" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p1" value="1.0&#xa;Autentikasi &amp; Akun" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="160" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" value="2.0&#xa;Unggah &amp; Validasi" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="80" width="170" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" value="3.0&#xa;Deteksi Hybrid 3-Tahap" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="670" y="80" width="190" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" value="4.0&#xa;AI Chatbot &amp; Parafrase" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="990" y="80" width="190" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p6" value="6.0&#xa;Token &amp; Midtrans Billing" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="360" width="190" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" value="5.0&#xa;Pelaporan &amp; QR PDF" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="580" y="360" width="190" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="p7" value="7.0&#xa;Monitoring Layanan (Admin)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="960" y="360" width="200" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="ds1" value="D1: Users &amp; TokenWallets" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="230" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ds2" value="D2: Documents &amp; AuditTasks" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="360" y="230" width="230" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ds3" value="D3: Corpus &amp; Vector Embeddings" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="670" y="230" width="240" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ds5" value="D5: ChatSessions &amp; Messages" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="990" y="230" width="240" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ds6" value="D6: Invoices &amp; Transactions" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="520" width="230" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ds4" value="D4: AuditReports &amp; Certificates" style="html=1;dashed=0;whiteSpace=wrap;shape=partialRectangle;right=0;left=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="580" y="520" width="240" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_p1_d1" value="Simpan Akun &amp; Saldo" source="p1" target="ds1" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p2_d2" value="Simpan Naskah" source="p2" target="ds2" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p3_d2" value="Update Skor" source="p3" target="ds2" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d3_p3" value="Vektor Korpus" source="ds3" target="p3" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p4_d5" value="Riwayat Percakapan" source="p4" target="ds5" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_d2_p5" value="Ambil Hasil Audit" source="ds2" target="p5" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p5_d4" value="Simpan Sertifikat" source="p5" target="ds4" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p6_d6" value="Catat Transaksi" source="p6" target="ds6" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p6_d1" value="Tambah Saldo Token" source="p6" target="ds1" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_p7_read" value="Agregasi Log Transaksi" source="p7" target="ds6" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

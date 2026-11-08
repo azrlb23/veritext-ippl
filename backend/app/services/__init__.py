@@ -1,13 +1,11 @@
-from app.services.auth_service import AuthService
-from app.services.document_service import DocumentService
 from app.services.audit_service import AuditService
+from app.services.auth_service import AuthService
 from app.services.billing_service import BillingService
-from app.services.corpus_service import CorpusService
+from app.services.document_service import DocumentService
 
 __all__ = [
-    "AuthService",
-    "DocumentService",
     "AuditService",
+    "AuthService",
     "BillingService",
-    "CorpusService",
+    "DocumentService",
 ]

@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 from typing import Any, List, Optional
 import uuid
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
@@ -38,6 +37,8 @@ class HeatmapAnnotation(BaseModel):
     source_chunk_id: Optional[str] = None
     similarity: float
     text_snippet: Optional[str] = None
+    source_url: Optional[str] = None
+    reason: Optional[str] = None
 
 
 class MatchedSource(BaseModel):
@@ -45,16 +46,17 @@ class MatchedSource(BaseModel):
     title: str
     category: Optional[str] = None
     contribution_pct: float
+    source_url: Optional[str] = None
 
 
 class AuditReportResponse(BaseModel):
     id: uuid.UUID
     audit_task_id: uuid.UUID
     verification_uuid: uuid.UUID
-    score_lexical: Optional[Decimal] = None
-    score_semantic: Optional[Decimal] = None
-    score_stylometric: Optional[Decimal] = None
-    score_composite: Optional[Decimal] = None
+    score_lexical: Optional[float] = None
+    score_semantic: Optional[float] = None
+    score_stylometric: Optional[float] = None
+    score_composite: Optional[float] = None
     heatmap_annotations: List[Any] = Field(default_factory=list)
     matched_sources: List[Any] = Field(default_factory=list)
     pdf_path: Optional[str] = None
@@ -62,7 +64,6 @@ class AuditReportResponse(BaseModel):
     generated_at: datetime
     document_title: Optional[str] = None
     user_name: Optional[str] = None
-    institution: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -72,7 +73,6 @@ class AuditVerificationResponse(BaseModel):
     verification_uuid: str
     document_title: Optional[str] = None
     user_name: Optional[str] = None
-    institution: Optional[str] = None
     audit_date: Optional[datetime] = None
     score_composite: Optional[float] = None
     tier_scores: Optional[dict] = None

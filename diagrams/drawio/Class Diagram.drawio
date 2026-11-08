@@ -1,0 +1,112 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="class-diagram" name="Class Diagram VeriText AI">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="980" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="cls_session" value="Session&#xa;---&#xa;+ id: UUID&#xa;+ user_id: UUID&#xa;+ refresh_token_hash: String&#xa;+ ip_address: String&#xa;+ expires_at: Timestamp&#xa;---&#xa;+ create_session()&#xa;+ revoke_session()&#xa;+ is_valid(): Boolean" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="40" width="270" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_user" value="User&#xa;---&#xa;+ id: UUID&#xa;+ email: String&#xa;+ full_name: String&#xa;+ role: UserRole (FREE/PREMIUM/ADMIN)&#xa;+ password_hash: String&#xa;+ is_active: Boolean&#xa;+ created_at: Timestamp&#xa;---&#xa;+ register()&#xa;+ authenticate()&#xa;+ update_profile()&#xa;+ change_password()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="270" height="210" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_tokenwallet" value="TokenWallet&#xa;---&#xa;+ id: UUID&#xa;+ user_id: UUID&#xa;+ balance: Integer&#xa;+ ai_trial_remaining: Integer = 3&#xa;+ ai_chat_allowance_remaining: Integer = 0&#xa;+ updated_at: Timestamp&#xa;---&#xa;+ debit_tokens(amount)&#xa;+ debit_ai_chat_credit()&#xa;+ credit_tokens(amount)&#xa;+ get_balance(): Integer" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="710" y="40" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_tokentransaction" value="TokenTransaction&#xa;---&#xa;+ id: UUID&#xa;+ wallet_id: UUID&#xa;+ amount: Integer&#xa;+ transaction_type: TxType&#xa;+ reference_id: String&#xa;+ created_at: Timestamp&#xa;---&#xa;+ record_transaction()&#xa;+ get_history()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="40" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_document" value="Document&#xa;---&#xa;+ id: UUID&#xa;+ user_id: UUID&#xa;+ title: String&#xa;+ file_path: String&#xa;+ word_count: Integer&#xa;+ file_size: Integer&#xa;+ created_at: Timestamp&#xa;---&#xa;+ upload_document()&#xa;+ count_words(): Integer&#xa;+ hard_delete()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="280" width="270" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_audittask" value="AuditTask&#xa;---&#xa;+ id: UUID&#xa;+ document_id: UUID&#xa;+ status: TaskStatus&#xa;+ lexical_score: Float&#xa;+ semantic_score: Float&#xa;+ stylometric_score: Float&#xa;+ composite_score: Float&#xa;+ execution_time_sec: Float&#xa;---&#xa;+ dispatch_audit()&#xa;+ calculate_composite()&#xa;+ complete_audit()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="380" y="280" width="270" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_auditreport" value="AuditReport&#xa;---&#xa;+ id: UUID&#xa;+ task_id: UUID&#xa;+ certificate_uuid: UUID&#xa;+ qr_code_url: String&#xa;+ pdf_report_path: String&#xa;+ generated_at: Timestamp&#xa;---&#xa;+ generate_pdf_report()&#xa;+ verify_certificate(): Boolean" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="710" y="280" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_invoice" value="Invoice&#xa;---&#xa;+ id: UUID&#xa;+ user_id: UUID&#xa;+ order_id: String&#xa;+ purchase_scheme: PurchaseScheme&#xa;+ token_amount: Integer&#xa;+ gross_amount: Decimal&#xa;+ status: InvoiceStatus&#xa;+ snap_token: String&#xa;---&#xa;+ create_invoice()&#xa;+ mark_settled()&#xa;+ mark_expired()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="280" width="280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_auditsentence" value="AuditSentence&#xa;---&#xa;+ id: UUID&#xa;+ task_id: UUID&#xa;+ sentence_text: Text&#xa;+ sentence_order: Integer&#xa;+ match_type: MatchType (RED/ORANGE/YELLOW)&#xa;+ similarity_score: Float&#xa;+ matched_source_id: UUID&#xa;---&#xa;+ mark_highlight()&#xa;+ update_in_place_text()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="50" y="510" width="270" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_chatsession" value="ChatSession&#xa;---&#xa;+ id: UUID&#xa;+ user_id: UUID&#xa;+ document_id: UUID&#xa;+ title: String&#xa;+ created_at: Timestamp&#xa;---&#xa;+ start_session()&#xa;+ hard_delete_session()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="380" y="510" width="270" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_chatmessage" value="ChatMessage&#xa;---&#xa;+ id: UUID&#xa;+ session_id: UUID&#xa;+ role: MessageRole (USER/ASSISTANT)&#xa;+ content: Text&#xa;+ mode: ParaphraseMode&#xa;+ suggested_options: JSONB&#xa;+ applied_to_document: Boolean&#xa;---&#xa;+ send_message()&#xa;+ generate_3_options()&#xa;+ apply_to_sentence()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="710" y="510" width="280" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_auditlog" value="AuditLog&#xa;---&#xa;+ id: UUID&#xa;+ actor_id: UUID&#xa;+ event_type: String&#xa;+ ip_address: String&#xa;+ description: Text&#xa;+ created_at: Timestamp&#xa;---&#xa;+ log_event()&#xa;+ get_admin_logs()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="510" width="280" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_corpusdocument" value="CorpusDocument&#xa;---&#xa;+ id: UUID&#xa;+ source_name: String&#xa;+ doi_or_url: String&#xa;+ title: String&#xa;+ author: String&#xa;+ year: Integer&#xa;+ language: String&#xa;---&#xa;+ harvest_from_api()&#xa;+ extract_chunks()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="380" y="740" width="270" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="cls_documentchunk" value="DocumentChunk&#xa;---&#xa;+ id: UUID&#xa;+ corpus_doc_id: UUID&#xa;+ chunk_text: Text&#xa;+ embedding: vector(384)&#xa;+ kgram_hashes: BigInt[]&#xa;---&#xa;+ compute_embedding()&#xa;+ search_knn_hnsw()" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=28;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="710" y="740" width="280" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="c_user_session" value="1..*" source="cls_user" target="cls_session" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_user_wallet" value="1..1" source="cls_user" target="cls_tokenwallet" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_wallet_tx" value="1..*" source="cls_tokenwallet" target="cls_tokentransaction" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_user_doc" value="1..*" source="cls_user" target="cls_document" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="255" />
+              <mxPoint x="185" y="255" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_wallet_inv" value="1..*" source="cls_tokenwallet" target="cls_invoice" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="850" y="255" />
+              <mxPoint x="1190" y="255" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_doc_task" value="1..*" source="cls_document" target="cls_audittask" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_task_rep" value="1..1" source="cls_audittask" target="cls_auditreport" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_task_sent" value="1..*" source="cls_audittask" target="cls_auditsentence" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="495" />
+              <mxPoint x="185" y="495" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_doc_chat" value="1..*" source="cls_document" target="cls_chatsession" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="495" />
+              <mxPoint x="515" y="495" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_chat_msg" value="1..*" source="cls_chatsession" target="cls_chatmessage" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_corp_chunk" value="1..*" source="cls_corpusdocument" target="cls_documentchunk" style="strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

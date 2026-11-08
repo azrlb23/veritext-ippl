@@ -26,12 +26,9 @@ from app.main import app
 from app.core.config import settings
 from app.models.user import User
 from app.models.invoice import Invoice
-from app.models.system_config import SystemConfig
 from app.models.audit_log import AuditLog
-from app.schemas.admin import SystemConfigRequest, SystemConfigResponse
 from app.services.pdf_invoice_service import generate_invoice_pdf, clean_invoice_filename
 import app.api.v1.billing as billing_router
-import app.api.v1.admin as admin_router
 
 
 class MockQueryResult:
@@ -113,7 +110,6 @@ class TestRemediationPhase6(unittest.IsolatedAsyncioTestCase):
             order_id="VT-ORDER-20261024-TEST",
             user_name="Budi Hartono",
             user_email="budi@campus.ac.id",
-            institution="Institut Teknologi Nasional",
             package_name="Paket 50 Token Audit Akademik",
             token_amount=50,
             gross_amount=100000.0,
@@ -156,13 +152,13 @@ class TestRemediationPhase6(unittest.IsolatedAsyncioTestCase):
             id=owner_id,
             email="owner@campus.ac.id",
             full_name="Pemilik Sah Invoice",
-            role="TRIAL",
+            role="FREE",
         )
         non_owner_user = User(
             id=other_user_id,
             email="attacker@campus.ac.id",
             full_name="Pengguna Lain",
-            role="TRIAL",
+            role="FREE",
         )
         admin_user = User(
             id=uuid.uuid4(),
@@ -240,98 +236,6 @@ class TestRemediationPhase6(unittest.IsolatedAsyncioTestCase):
             )
         self.assertEqual(cm_404.exception.status_code, status.HTTP_404_NOT_FOUND)
 
-    # =========================================================================
-    # TC-SEC-35: Persistensi Konfigurasi & Hyperparameter Engine Admin (ROUND4-05)
-    # =========================================================================
-    async def test_tc_sec_35_admin_config_persistence(self):
-        """
-        TC-SEC-35: Memvalidasi penyimpanan dan pembacaan konfigurasi sistem persisten via endpoint admin.
-        """
-        admin_user = User(
-            id=uuid.uuid4(),
-            email="admin@veritext.ai",
-            full_name="Super Administrator",
-            role="ADMIN",
-        )
-
-        # 1. GET /admin/config when no record exists yet (Initial Auto-seed)
-        db_records = []
-
-        def mock_execute(stmt):
-            stmt_str = str(stmt).lower()
-            if "system_configs" in stmt_str:
-                return MockQueryResult(db_records)
-            return MockQueryResult([])
-
-        mock_db = MockAsyncSession(execute_handler=mock_execute)
-
-        get_resp = await admin_router.get_system_config(db=mock_db)
-        self.assertTrue(get_resp.success)
-        self.assertEqual(get_resp.data.similarity_threshold, 0.78)
-        self.assertEqual(get_resp.data.hnsw_ef_search, 64)
-        self.assertEqual(get_resp.data.retention_days, 30)
-        self.assertTrue(mock_db.committed)
-        self.assertEqual(len(mock_db.added), 1)
-
-        # Place the created config in db_records
-        db_records.append(mock_db.added[0])
-
-        # 2. POST /admin/config: Update hyperparameters
-        update_req = SystemConfigRequest(
-            similarity_threshold=0.88,
-            hnsw_ef_search=128,
-            hnsw_m=32,
-            retention_days=45,
-            winnowing_kgram=8,
-            winnowing_window=6,
-            lexical_weight=0.40,
-            semantic_weight=0.45,
-            stylometric_weight=0.15,
-            stylometric_burstiness_threshold=0.42,
-            sandbox_mode=True,
-        )
-
-        mock_req = MagicMock()
-        mock_req.client.host = "10.0.0.5"
-        mock_req.headers = {"user-agent": "VeriTextAdminBrowser/1.0"}
-
-        post_resp = await admin_router.update_system_config(
-            req=update_req,
-            request=mock_req,
-            current_user=admin_user,
-            db=mock_db,
-        )
-
-        self.assertTrue(post_resp.success)
-        self.assertEqual(post_resp.data.similarity_threshold, 0.88)
-
-        self.assertEqual(post_resp.data.hnsw_ef_search, 128)
-        self.assertEqual(post_resp.data.hnsw_m, 32)
-        self.assertEqual(post_resp.data.retention_days, 45)
-        self.assertEqual(post_resp.data.winnowing_kgram, 8)
-        self.assertEqual(post_resp.data.winnowing_window, 6)
-        self.assertTrue(post_resp.data.sandbox_mode)
-
-        # Verify runtime settings synchronization
-        self.assertEqual(settings.SIMILARITY_LEXICAL_WEIGHT, 0.40)
-        self.assertEqual(settings.SIMILARITY_SEMANTIC_WEIGHT, 0.45)
-        self.assertEqual(settings.WINNOWING_K_GRAM, 8)
-        self.assertEqual(settings.WINNOWING_WINDOW_SIZE, 6)
-
-        # Verify audit log entry was created
-        audit_logs = [item for item in mock_db.added if isinstance(item, AuditLog)]
-        self.assertTrue(len(audit_logs) >= 1)
-        config_log = audit_logs[-1]
-        self.assertEqual(config_log.action_type, "CONFIG_UPDATE")
-        self.assertEqual(config_log.resource_type, "SYSTEM_CONFIG")
-        self.assertEqual(config_log.action_result, "SUCCESS")
-        self.assertIn("similarity_threshold", config_log.meta_data.get("updated_fields", {}))
-
-        # 3. Subsequent GET returns updated config
-        get_resp_after = await admin_router.get_system_config(db=mock_db)
-        self.assertEqual(get_resp_after.data.similarity_threshold, 0.88)
-        self.assertEqual(get_resp_after.data.hnsw_ef_search, 128)
-        self.assertEqual(get_resp_after.data.retention_days, 45)
 
     # =========================================================================
     # TC-SEC-36: Pengerasan Gateway Produksi, HTTP Security Headers & Swagger (F6 & ROUND7-01)

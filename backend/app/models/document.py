@@ -19,7 +19,7 @@ class Document(Base):
     sha256_hash = Column(String(64), nullable=True)
     status = Column(String(50), nullable=False, default="UPLOADED", index=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), index=True)
-    deleted_at = Column(DateTime(timezone=True), nullable=True)  # Soft-delete for UU PDP audit trail
+    deleted_at = Column(DateTime(timezone=True), nullable=True)  # Soft-delete for audit trail
 
     __table_args__ = (
         CheckConstraint(

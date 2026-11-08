@@ -1,2249 +1,559 @@
-Software Requirements
-Specification
+Software Requirements Specification
 for
-Veritext
+VeriText AI
+Sistem Deteksi Plagiarisme Cerdas Berbasis Arsitektur Hybrid Lexical & Semantic AI Engine
+
 Version 1.0 approved
 Prepared by
-11241045 -Mochammad Azriel Albian Putra
+11241045 - Mochammad Azriel Albian Putra
+Program Studi Informatika
+Institut Teknologi Kalimantan
 24 Juni 2026
 
+
 Table of Contents
-1. Pendahuluan 1
-1.1 Tujuan Penulisan Dokumen 1
-1.2 Audien yang Dituju dan Pembaca yang Disarankan 1
-1.3 Batasan Produk 2
-1.4 Definisi dan Istilah 2
-1.5 Referensi 4
-2. Deskripsi Keseluruhan 6
-2.1 Deskripsi Produk 6
-2.2 Fungsi Produk 6
-2.3 Penggolongan Karakterik Pengguna 7
-2.4 Lingkungan Operasi 9
-2.5 Batasan Desain dan Implementasi 9
-2.6 Dokumentasi Pengguna 9
-3. Kebutuhan Antarmuka Eksternal 10
-3.1 User Interfaces 10
-3.2 Hardware Interface 10
-3.3 Software Interface 10
-3.4 Communication Interface 11
-4. Functional Requirement 12
-4.1 Use Case Diagram 18
-4.2 Use Case Description 19
 Revision History
-Name Date Reason For Changes Version
+1. Pendahuluan
+   1.1 Tujuan Penulisan Dokumen
+   1.2 Audien yang Dituju dan Pembaca yang Disarankan
+   1.3 Batasan Produk
+   1.4 Definisi dan Istilah
+   1.5 Referensi
+2. Deskripsi Keseluruhan
+   2.1 Deskripsi Produk
+   2.2 Fungsi Produk
+   2.3 Penggolongan Karakteristik Pengguna
+   2.4 Lingkungan Operasi
+   2.5 Batasan Desain dan Implementasi
+   2.6 Dokumentasi Pengguna
+3. Kebutuhan Antarmuka Eksternal
+   3.1 User Interfaces
+   3.2 Hardware Interface
+   3.3 Software Interface
+   3.4 Communication Interface
+4. Functional Requirement
+   4.1 Use Case Diagram
+   4.2 Use Case Description
+5. Kebutuhan Non-Fungsional (Non-Functional Requirements)
+Daftar Pustaka
+
+Revision History
+| Name | Date | Reason For Changes | Version |
+| :--- | :--- | :--- | :--- |
+| Mochammad Azriel Albian Putra | 10 Maret 2026 | Draf inisial spesifikasi kebutuhan sistem deteksi plagiarisme leksikal. | 0.1 |
+| Mochammad Azriel Albian Putra | 28 April 2026 | Integrasi deteksi semantik berbasis Sentence Transformers dan pgvector. | 0.5 |
+| Mochammad Azriel Albian Putra | 15 Mei 2026 | Penambahan modul monetisasi token Midtrans dan sertifikasi laporan QR. | 0.9 |
+| Mochammad Azriel Albian Putra | 24 Juni 2026 | Rilis final disetujui: Transformasi penuh ke arsitektur Self-Service SaaS 3-Role (Free, Premium, Admin Read-Only), 3-Step Hybrid AI Pipeline, modul AI Chatbot Asisten Naskah & Parafrase Instan 3-Mode, akuisisi korpus otomatis Dual-Scope, dan Split-Screen Studio Workspace. | 1.0 |
+
+---
 
 1. Pendahuluan
+
 1.1 Tujuan Penulisan Dokumen
-Dokumen Spesifikasi Kebutuhan Perangkat Lunak (Software Requirements
-Specification - SRS) ini bertujuan untuk mendefinisikan secara menyeluruh, terperinci,
-terstruktur, dan terukur seluruh kebutuhan fungsional (functional requirements) dan
-kebutuhan non-fungsional (non-functional requirements) dalam pengembangan sistem
-VeriText AI (Sistem Deteksi Plagiarisme Cerdas Berbasis Arsitektur Hybrid Lexical &
-Semantic AI Engine).
-Dokumen ini menjadi baseline formal bagi seluruh pemangku kepentingan
-(stakeholders), mencakup pengembang perangkat lunak, analis sistem, perancang AI,
-penguji sistem (QA Engineer), dan dosen penilai mata kuliah Implementasi Proses Perangkat
-Lunak (IPPL) selama siklus hidup rekayasa perangkat lunak berlangsung.
+Dokumen Software Requirements Specification (SRS) ini bertujuan untuk mendefinisikan secara komprehensif, terperinci, terstruktur, dan terukur seluruh kebutuhan fungsional (functional requirements) serta kebutuhan non-fungsional (non-functional requirements) dalam perancangan dan pengembangan sistem VeriText AI (Sistem Deteksi Plagiarisme Cerdas Berbasis Arsitektur Hybrid Lexical & Semantic AI Engine). Dokumen ini menjadi baseline acuan formal bagi seluruh pemangku kepentingan (stakeholders), mencakup pengembang backend, insinyur kecerdasan buatan (AI engineer), pengembang frontend, analis sistem, perancang UI/UX, penguji perangkat lunak (QA engineer), serta dosen evaluator mata kuliah Implementasi Proses Perangkat Lunak (IPPL).
+
 1.2 Audien yang Dituju dan Pembaca yang Disarankan
-Dokumen ini disusun untuk dipahami oleh peran-peran berikut sesuai dengan konteks
-tanggung jawab masing-masing:
-1. Pengembang Backend & AI Engineer: Untuk mengimplementasikan pipa
-pemrosesan dokumen bertingkat (Algoritma Winnowing, inferensi model Sentence
-Transformers, penyimpanan dan pencarian vektor di PostgreSQL dengan ekstensi
-pgvector, serta antrean asinkron Celery).
-2. Pengembang Frontend: Untuk mengimplementasikan antarmuka pengguna berbasis
-VUE.js 14, visualisasi Interactive Heatmap multibaris tiga warna, mekanisme smart
-polling status proses analisis menggunakan TanStack Query, serta integrasi modal
-pembayaran paywall.
-3. Analis Sistem & Desainer UI/UX: Untuk memvalidasi kesesuaian alur kerja
-dokumen, pemetaan aktor, diagram use case, serta interaksi pengguna pada setiap
-tingkat akses (Freemium vs Premium).
-4. Penguji Sistem (QA Engineer): Sebagai acuan utama dalam penyusunan skenario
-pengujian unit (unit testing), pengujian integrasi (integration testing), pengujian
-End-to-End (E2E), serta pengujian metrik performa AI (Precision, Recall, F1-Score).
-5. Dosen Penguji dan Asisten Laboratorium IPPL: Sebagai instrumen evaluasi
-akademis terhadap kepatuhan proses rekayasa perangkat lunak, penerapan
+Dokumen ini disusun untuk dipahami oleh pembaca dengan peran dan tanggung jawab teknis sebagai berikut:
+1. Pengembang Backend & AI Engineer: Sebagai panduan implementasi pipa pemrosesan dokumen bertingkat (Algoritma Winnowing Rabin-Karp, inferensi model Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2, re-ranker LazarusNLP/all-indobert-base-v4, kalkulasi stilometri Goh & Barabasi Burstiness, integrasi Dual-Engine LLM Gateway Google Gemini 2.5 Flash & DeepSeek v4.1 Flash via 9Router, pengindeksan vektor HNSW di PostgreSQL pgvector, serta antrean tugas asinkron Celery Redis).
+2. Pengembang Frontend: Sebagai spesifikasi implementasi antarmuka pengguna berbasis Vue 3.5 (Composition API), Vite 6, TypeScript 5.7, Pinia 2.3, Tailwind CSS 3.4, visualisasi Split-Screen Studio Workspace, Interactive Heatmap multi-tier tiga warna, modul AI Chatbot kontekstual dengan Guardrail Akademik, serta integrasi modal pembayaran Midtrans Snap.
+3. Analis Sistem & Desainer UI/UX: Sebagai acuan validasi kesesuaian alur kerja dokumen, interaksi antarmuka tiga peran pengguna (Free User, Premium User, Admin Read-Only), serta pemenuhan prinsip kegunaan Nielsen Norman Group tanpa menggunakan elemen dekoratif non-akademik (Zero-Emoji Policy).
+4. Penguji Sistem (QA Engineer): Sebagai acuan utama dalam merancang skenario pengujian unit (unit testing), pengujian integrasi (integration testing), pengujian End-to-End (E2E), serta pengujian akurasi deteksi (Precision, Recall, F1-Score).
+5. Dosen Penilai dan Akademisi: Sebagai instrumen evaluasi akademik terhadap kepatuhan proses rekayasa perangkat lunak berstandar IEEE Std 830-1998 dan ISO/IEC 25010.
 
-metodologi perancangan terstruktur, dan pemenuhan standar dokumentasi IEEE Std
-830-1998.
 1.3 Batasan Produk
-Produk perangkat lunak StockVault memiliki batasan-batasan sebagai berikut pada tahap
-awal pengembangan (initial release):
-1. Platform Akses: Sistem hanya dapat diakses melalui aplikasi web berbasis peramban
-(browser) modern. Belum tersedia aplikasi mobile native pada rilis pertama, namun
-antarmuka web dirancang responsif agar dapat diakses melalui perangkat tablet atau
-smartphone.
-2. Konektivitas: Koneksi internet yang stabil sangat diperlukan untuk mengakses
-seluruh fitur. Sistem tidak mendukung mode offline.
-3. Cakupan Manajemen: Pada tahap awal, sistem dikonfigurasi untuk mengelola 1
-(satu) gudang fisik. Dukungan untuk multi-gudang akan dipertimbangkan pada
-pengembangan tahap berikutnya.
-4. Integrasi Eksternal: Pada rilis awal, sistem tidak terintegrasi secara langsung dengan
-sistem e-commerce, marketplace, atau sistem akuntansi (ERP) eksternal. Seluruh
-data master (barang, supplier, customer) dimasukkan dan dikelola secara mandiri di
-dalam sistem StockVault.
-5. Otomatisasi: Proses verifikasi fisik barang dan pemilihan lokasi bin (pada proses
-putaway) masih memerlukan intervensi manual dari karyawan dan tidak sepenuhnya
-otomatis berbasis Artificial Intelligence (AI) pada tahap ini, meskipun terdapat fitur
-rekomendasi lokasi sederhana.
+Sistem perangkat lunak VeriText AI memiliki batasan-batasan operasional dan teknis formal sebagai berikut:
+1. Platform Akses: Sistem beroperasi penuh sebagai aplikasi web berbasis peramban (Single Page Application - SPA) yang responsif dan diakses melalui browser modern (Google Chrome, Mozilla Firefox, Apple Safari, Microsoft Edge). Sistem tidak memerlukan instalasi aplikasi native pada perangkat klien.
+2. Model Operasional Mandiri (Self-Service SaaS): Sistem tidak bergantung pada intervensi manual dosen atau operator manusia untuk proses pendaftaran, aktivasi akun, verifikasi dokumen, pemotongan kuota, maupun penagihan pembayaran. Seluruh siklus layanan dioperasikan secara terotomatisasi oleh sistem.
+3. Batasan Kuota dan Panjang Naskah Pengguna Gratis (Free User): Pengguna berstatus Free User dibatasi melakukan pemindaian naskah maksimal 2.500 kata per pemeriksaan (setara 1 Token / 1 artikel jurnal), dengan kuota awal 5 Token gratis dan 3 kali uji coba (Trial) fitur AI Chatbot dan Parafrase Instan.
+4. Dukungan Naskah Panjang untuk Pengguna Pro (Premium User): Pengguna berstatus Premium User dapat memindai dokumen berskala panjang (proposal, skripsi, tesis, disertasi hingga puluhan ribu kata, dengan batas ukuran berkas 15 MB) yang dikenakan tarif berbasis formula proporsional dengan Batas Maksimum (Token Cap) sebesar 5 Token per dokumen.
+5. Jaminan Privasi Data Naskah Pengguna (Zero Auto-Ingestion to Public Corpus): Sesuai kepatuhan Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27 Tahun 2022), naskah yang diunggah oleh pengguna tidak pernah dijadikan korpus publik tanpa izin eksplisit, dan pengguna memiliki hak penuh untuk melakukan penghapusan naskah secara permanen (hard-delete cascade) dari sistem.
+6. Ketergantungan Infrastruktur Eksternal: Fungsionalitas pembayaran bergantung pada keandalan Midtrans Payment Gateway, pemindaian web publik bergantung pada Google Search Grounding, dan akuisisi korpus otomatis bergantung pada ketersediaan API OpenAlex, DOAJ, Semantic Scholar, serta Crossref.
+
 1.4 Definisi dan Istilah
-Berikut adalah definisi istilah-istilah teknis dan bisnis yang digunakan secara konsisten
-dalam dokumen ini:
-Tabel 1 Definisi dan Istilah
-Istilah / Singkatan Definisi Formal
-SRS Software Requirements Specification;
-dokumen formal spesifikasi kebutuhan
-perangkat lunak standar IEEE 830.
+Berikut adalah definisi istilah teknis dan terminologi domain yang digunakan secara konsisten dalam dokumen ini:
 
-Istilah / Singkatan Definisi Formal
-VeriText AI Nama resmi produk perangkat lunak sistem
-deteksi plagiarisme cerdas arsitektur hybrid
-yang dikembangkan.
-Winnowing Algoritma fingerprinting berbasis hashing
-dokumen menggunakan k-gram dan sliding
-window untuk mendeteksi pencocokan leksikal
-kata per kata (exact verbatim match).
-K-Gram Potongan substring berurutan sepanjang $k$
-karakter atau $k$ kata yang diambil dari
-sebuah teks masukan.
-Rolling Hash Fungsi hash polinomial (misal: Rabin-Karp)
-yang menghitung nilai hash jendela teks baru
-secara efisien dari nilai hash jendela
-sebelumnya.
-Sentence Transformers Model deep learning turunan BERT yang
-dimodifikasi menggunakan struktur
-siamese/triplet network untuk menghasilkan
-dense vector embeddings berkualitas tinggi
-pada tingkat kalimat.
-Cosine Similarity Pengukuran derajat kemiripan arah antara dua
-vektor dalam ruang multidimensi, dihitung
-melalui hasil kali titik (dot product)
-dinormalisasi dengan perkalian magnitudo
-kedua vektor.
-pgvector Ekstensi sumber terbuka untuk PostgreSQL
-yang memungkinkan penyimpanan dan
-pengindeksan vektor berdimensi tinggi serta
-pencarian Approximate Nearest Neighbor
-(ANN).
-HNSW Hierarchical Navigable Small World; struktur
-graf berlapis untuk pencarian tetangga terdekat
-secara cepat dan efisien pada indeks vektor.
-Stylometry Cabang linguistik komputasional yang
-menganalisis gaya penulisan unik seseorang
-atau mesin melalui metrik distribusi statistik
-kata dan kalimat.
-Burstiness Variasi statistik dari panjang kalimat dan
-struktur frasa dalam suatu dokumen. Tulisan
-manusia memiliki burstiness tinggi, sedangkan
-teks sintetis AI cenderung homogen.
+Tabel 1: Definisi dan Istilah Teknis
+| Istilah / Singkatan | Definisi Formal |
+| :--- | :--- |
+| SRS | Software Requirements Specification; dokumen formal spesifikasi kebutuhan perangkat lunak standar IEEE Std 830-1998. |
+| VeriText AI | Nama resmi produk perangkat lunak sistem deteksi plagiarisme cerdas berbasis arsitektur hybrid multi-tier. |
+| Winnowing | Algoritma reduksi sidik jari dokumen (fingerprinting) berbasis k-gram dan sliding window yang efisien dalam mendeteksi pencocokan leksikal kata demi kata secara eksak. |
+| K-Gram | Potongan substring teks berurutan sepanjang k karakter atau k kata yang diekstraksi dari naskah masukan. |
+| Rabin-Karp Rolling Hash | Algoritma hashing polinomial yang menghitung nilai hash jendela teks geser secara inkremental dalam waktu konstan O(1) per langkah. |
+| Jaccard Containment | Rasio interseksi himpunan sidik jari teks uji terhadap himpunan sidik jari dokumen pembanding untuk mengukur derajat penjiplakan leksikal verbatim. |
+| Sentence Transformers | Model deep learning berbasis arsitektur Siamese BERT untuk memetakan kalimat ke dalam ruang vektor padat (dense vector embeddings). |
+| paraphrase-multilingual-MiniLM-L12-v2 | Model transformer multilingual yang menghasilkan vektor 384 dimensi, mendukung lebih dari 50 bahasa, dan dioptimalkan untuk pencarian kemiripan semantik dan parafrase lintas bahasa. |
+| LazarusNLP/all-indobert-base-v4 | Model representasi bahasa Indonesia mutakhir berdimensi 768 yang digunakan sebagai re-ranker spesialis dan pemetaan konsep sinonim morfologis Indonesia. |
+| pgvector | Ekstensi PostgreSQL untuk menyimpan dan mengindeks vektor multidimensi menggunakan struktur graf Hierarchical Navigable Small World (HNSW). |
+| Cosine Distance (<=>) | Metrik jarak angular antara dua vektor dalam ruang multidimensi; jarak mendekati 0 mengindikasikan kemiripan semantik yang sangat tinggi. |
+| Burstiness (B) | Metrik stilometri Goh & Barabasi B = (sigma_L - mu_L) / (sigma_L + mu_L) yang mengukur koefisien keanekaragaman panjang kalimat untuk mengidentifikasi teks yang dihasilkan oleh model bahasa AI (LLM). |
+| Type-Token Ratio (TTR) | Rasio jumlah kosakata unik (types) terhadap total kemunculan kata (tokens) untuk mengukur keragaman leksikal suatu dokumen ilmiah. |
+| Gemini 2.5 Flash | Model kecerdasan buatan tingkat lanjut dari Google DeepMind yang diintegrasikan untuk analisis konteks, penyaringan sitasi, dan mesin parafrase ilmiah. |
+| Token | Satuan kredit komputasi internal VeriText AI yang tersimpan di TokenWallet untuk mengakses layanan deteksi naskah dan fitur AI. |
+| Split-Screen Studio Workspace | Tata letak antarmuka dua kolom seimbang (Interactive Heatmap di sebelah kiri dan Panel Tabular Sumber/AI Chatbot di sebelah kanan). |
+| Academic Guardrail | Sistem filter dan validasi prompt pada modul chatbot yang secara ketat membatasi interaksi hanya pada lingkup evaluasi naskah, parafrase ilmiah, tata bahasa, dan sitasi akademik. |
+| UU PDP | Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi. |
 
-Istilah / Singkatan Definisi Formal
-Perplexity Metrik statistik yang mengukur tingkat
-ketidakpastian atau kebingungan model bahasa
-dalam memprediksi urutan kata berikutnya
-dalam sebuah teks masukan.
-Celery Sistem antrean tugas terdistribusi (distributed
-task queue) berbasis Python yang berfokus
-pada operasi asinkron secara real-time.
-Redis In-memory data structure store berkecepatan
-tinggi yang digunakan sebagai message broker
-antrean Celery dan media penyimpanan cache.
-Heatmap Annotation Representasi visual dokumen masukan di mana
-segmen-segmen teks diwarnai secara interaktif
-sesuai dengan tier indikasi plagiarisme (Merah,
-Oranye, Kuning).
-Snap Token Token sesi transaksi pembayaran terenkripsi
-yang diterbitkan oleh Midtrans API untuk
-menampilkan antarmuka pembayaran pop-up
-(Snap Modal).
-Webhook Metode komunikasi HTTP POST balik dari
-server gateway pembayaran pihak ketiga ke
-server VeriText AI untuk mengabarkan
-perubahan status transaksi secara instan.
-RBAC Role-Based Access Control; metode
-pembatasan otorisasi sistem berdasarkan peran
-pengguna yang telah ditentukan.
-UU PDP Undang-Undang Perlindungan Data Pribadi
-No. 27 Tahun 2022 Republik Indonesia.
 1.5 Referensi
-Dokumen dan referensi yang menjadi acuan dalam penyusunan SRS ini adalah:
-IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements
-Specifications, IEEE Computer Society, 1998.
-ISO/IEC/IEEE 29148:2018, Systems and software engineering — Life cycle processes —
-Requirements engineering, ISO/IEC/IEEE, 2018.
+Penyusunan dokumen ini mengacu pada standar, jurnal ilmiah, dan dokumentasi teknis berikut:
+1. IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications.
+2. ISO/IEC 25010:2011: Systems and software engineering -- Systems and software Quality Requirements and Evaluation (SQuaRE) -- System and software quality models.
+3. Schleimer, S., Wilkerson, D. S., & Aiken, A. (2003). Winnowing: Local algorithms for document fingerprinting. In Proceedings of the 2003 ACM SIGMOD International Conference on Management of Data (pp. 76-85).
+4. Reimers, N., & Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP).
+5. Goh, K. I., & Barabasi, A. L. (2008). Burstiness and memory in complex systems. EPL (Europhysics Letters), 81(4), 48002.
+6. Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP).
+7. Dokumentasi Resmi Vue 3.5, Vite 6, Pinia 2.3, Tailwind CSS 3.4 (https://vuejs.org/).
+8. Dokumentasi Resmi FastAPI 0.115 dan Pydantic v2 (https://fastapi.tiangolo.com/).
+9. Dokumentasi Ekstensi PostgreSQL pgvector 0.7+ (https://github.com/pgvector/pgvector).
+10. Dokumentasi Integrasi Midtrans Core & Snap API v2 (https://docs.midtrans.com/).
+11. Dokumentasi OpenAlex Academic Graph API (https://docs.openalex.org/).
 
-S. Schleimer, D. S. Wilkerson, and A. Aiken, "Winnowing: local algorithms for document
-fingerprinting," in Proceedings of the 2003 ACM SIGMOD International Conference on
-Management of Data (SIGMOD '03), San Diego, CA, USA, 2003, pp. 76–85.
-N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese
-BERT-Networks," in Proceedings of the 2019 Conference on Empirical Methods in Natural
-Language Processing (EMNLP-IJCNLP), Hong Kong, 2019, pp. 3982–3992.
-P. Henderson et al., "pgvector: Open-source vector similarity search for Postgres," GitHub
-repository, 2024. [Online]. Tersedia: https://github.com/pgvector/pgvector.
-FastAPI Documentation, "FastAPI Framework, High Performance, Easy to Learn, Fast to
-Code, Ready for Production," [Online]. Tersedia: https://fastapi.tiangolo.com/.
-VUE.js Documentation, "VUE.js 14 App Router Documentation," Vercel, [Online].
-Tersedia: https://VUEjs.org/docs.
-Celery Project, "Celery: Distributed Task Queue," [Online]. Tersedia:
-https://docs.celeryq.dev/.
-Midtrans API Documentation, "Core API & Snap Payment Gateway Integration Guide,"
-[Online]. Tersedia: https://docs.midtrans.com/.
-OWASP Foundation, "OWASP Top Ten Web Application Security Risks," 2021. [Online].
-Tersedia: https://owasp.org/Top10/.
-Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data
-Pribadi (UU PDP).
+---
 
 2. Deskripsi Keseluruhan
+
 2.1 Deskripsi Produk
-VeriText AI adalah platform perangkat lunak inspeksi integritas akademik berbasis web
-yang dirancang untuk mendeteksi plagiarisme secara komprehensif melalui pendekatan
-arsitektur hybrid multi-tier:
-1. Tier 1 (Lexical Match Engine): Menggunakan algoritma Winnowing dan Rabin-Karp
-Rolling Hash untuk mencocokkan kemiripan string kata per kata (verbatim
-copy-paste) secara deterministik dengan efisiensi komputasi 𝑂(𝑁).
-2. Tier 2 (Semantic AI Cross-Check Engine): Menggunakan model representasi vektor
-(Sentence Transformers / IndoBERT) untuk memetakan makna semantik kalimat ke
-ruang vektor 384-dimensi, kemudian menghitung Cosine Similarity terhadap basis
-data vektor guna mengungkap parafrasa kalimat, penataan ulang sintaksis, dan
-substitusi sinonim yang lolos dari Tier 1.
-3. Tier 3 (Stylometric & AI-Generated Pattern Analyzer): Mengevaluasi metrik statistik
-gaya bahasa (Burstiness Score varians panjang kalimat dan Type-Token Ratio) untuk
-mengidentifikasi indikasi teks sintetis yang dihasilkan oleh Generative AI / Large
-Language Models (seperti ChatGPT).
-4. Tier 4 (Scoring Aggregator & Visualization): Menggabungkan skor terbobot dari
-ketiga tier menjadi Composite Similarity Index, menghasilkan laporan Interactive
-Heatmap dengan kode warna visual, serta menerbitkan berkas sertifikat audit digital
-berformat PDF yang dilengkapi tanda tangan kriptografis dan stempel verifikasi.
-Sistem juga mengimplementasikan model bisnis Freemium berbasis token kuota dan
-integrasi Payment Gateway Sandbox (Midtrans) untuk memfasilitasi transaksi langganan
-mandiri bagi mahasiswa dan peneliti independen.
+VeriText AI adalah platform perangkat lunak berbasis Software-as-a-Service (SaaS) cerdas yang dirancang untuk mengatasi kelemahan mendasar perangkat deteksi plagiarisme konvensional. Sistem konvensional umumnya hanya mampu mendeteksi penjiplakan salin-tempel langsung (exact copy-paste) dan gagal mengenali parafrase tingkat lanjut, penerjemahan lintas bahasa, serta manipulasi susunan kalimat.
+
+VeriText AI mengimplementasikan pipa deteksi cerdas 3-Step Hybrid AI Detection Engine:
+1. Step 1 (Deteksi Leksikal Ekstrem): Menerapkan algoritma Winnowing berbasis Rabin-Karp Rolling Hash untuk mendeteksi penjiplakan kata per kata (verbatim match) secara presisi dengan kecepatan O(N).
+2. Step 2 (Deteksi Semantik & Parafrase): Menerapkan model transformer paraphrase-multilingual-MiniLM-L12-v2 berdimensi 384 dipadukan dengan indeks graf HNSW pada PostgreSQL pgvector, serta model spesialis LazarusNLP/all-indobert-base-v4 untuk mendeteksi parafrase tingkat tinggi dan penjiplakan ide lintas bahasa.
+3. Step 3 (Evaluasi Stilometri & Contextual AI Judge): Menerapkan analisis variasi ritme penulisan (Burstiness B) dan keragaman leksikal (TTR) yang dikombinasikan dengan inferensi Google Gemini 2.5 Flash untuk membedakan kutipan berizin resmi dari penjiplakan terselubung.
+
+Sistem dilengkapi dengan Split-Screen Studio Workspace dan modul AI Chatbot Asisten Naskah yang memungkinkan pengguna mengidentifikasi kalimat bermasalah, berkonsultasi mengenai perbaikan tata bahasa ilmiah, dan mengeksekusi Parafrase Instan dalam 3 Mode Granularitas (Per Kalimat, Per Paragraf, atau Seluruh Halaman) dengan pembaruan teks secara langsung (in-place replacement) dan kalkulasi ulang skor kemiripan secara real-time.
+
 2.2 Fungsi Produk
-Sistem VeriText AI menyediakan 7 modul fungsi utama:
-1. Manajemen Akun & Autentikasi (Auth & RBAC): Registrasi mandiri, alokasi kuota
-token trial awal, otentikasi JWT, rotasi refresh token, pengaturan profil, dan
-pembatasan hak akses berbasis peran (Tamu, Pengguna Trial, Pengguna Premium,
-Dosen/Reviewer, Administrator).
+Fungsi-fungsi utama VeriText AI dipetakan ke dalam kelompok fitur berikut:
+1. Autentikasi dan Manajemen Sesi Terdesentralisasi: Pendaftaran mandiri via email dan Google OAuth 2.0, manajemen token JWT (Access Token 15 menit dan HttpOnly Refresh Token), alokasi otomatis 5 Token gratis dan 3x Trial AI Chatbot/Parafrase untuk pengguna baru.
+2. Unggah dan Pra-pemrosesan Multi-Format: Input naskah melalui penempelan teks langsung atau unggah berkas .pdf, .docx, .txt (maksimal 15 MB), ekstraksi teks bersih, pembersihan karakter non-ASCII, serta penghitungan kata dan estimasi biaya token secara transparan.
+3. Pipa Deteksi Hybrid 3-Tahap Asinkron: Orkestrasi pemindaian dokumen melalui antrean Celery Redis, penarikan korpus pembanding otomatis dari OpenAlex, DOAJ, Semantic Scholar, Crossref, HuggingFace Indonesian STS, dan Google Search Grounding, serta kalkulasi skor komposit berbobot (0.50 Leksikal + 0.35 Semantik + 0.15 Stilometri).
+4. Studio Heatmap & Komparasi Berdampingan: Tampilan naskah interaktif dengan penyorotan warna semantik (Merah untuk leksikal, Oranye untuk semantik, Kuning untuk anomali gaya), kartu sumber kecocokan lengkap dengan tautan DOI resmi, dan perbandingan teks berdampingan (side-by-side diff).
+5. AI Chatbot Asisten Naskah & Parafrase Instan: Panel konsultasi naskah yang dilindungi Guardrail Asisten Akademik, generator 3 variasi parafrase ilmiah per segmen, dan mekanisme penggantian kalimat in-place dengan re-skor instan.
+6. Pelaporan Resmi dan Verifikasi Sertifikat Publik: Pembuatan laporan audit berformat PDF berkualitas tinggi yang dilengkapi segel digital dan kode QR dinamis, serta portal validasi keaslian laporan publik (/verify/{certificate_uuid}).
+7. Manajemen Riwayat & Kepatuhan Privasi UU PDP: Hak penghapusan berkas naskah beserta seluruh data audit dan riwayat chat secara permanen (hard-delete cascading).
+8. Monetisasi dan Top-Up Token Midtrans Snap: Pembelian token satuan (By Token) atau paket bundling diskon (By Paket Token) dengan aktivasi instan dan kenaikan status akun otomatis menjadi Premium User saat webhook settlement terverifikasi.
+9. Dasbor Pemantauan Layanan Admin (100% Read-Only): Pemantauan agregat statistik pemindaian, grafik tren skor kemiripan, log transaksi keuangan Midtrans, telemetri beban antrean worker Celery, dan log audit keamanan sistem tanpa kemampuan memutasi data pengguna.
 
-2. Manajemen Dokumen & Pra-pemrosesan Teks: Pengunggahan berkas (PDF, DOCX,
-TXT), ekstraksi teks fisik non-markup, pembersihan noise karakter (regex
-sanitation), segmentasi kalimat (sentence boundary disambiguation), dan ekstraksi
-metadata berkas.
-3. Mesin Audit Deteksi Plagiarisme Hybrid: Orkestrasi pipa deteksi 4-tier secara
-asinkron melalui worker Celery yang terhubung ke broker Redis dan PostgreSQL
-dengan ekstensi pgvector.
-4. Dasbor Hasil Audit & Interactive Heatmap: Antarmuka peninjauan hasil audit
-berbasis visualisasi anotasi warna (Merah untuk leksikal, Oranye untuk parafrasa
-semantik, Kuning untuk anomali gaya mesin AI), daftar sumber pembanding terduga,
-dan persentase kesamaan per segmen.
-5. Penerbitan & Ekspor Laporan Resmi (Certified PDF Export): Pembuatan dokumen
-laporan PDF resmi beresolusi cetak yang mencantumkan ringkasan persentase
-plagiarisme, kutipan teks berdampingan (side-by-side comparison), serta tautan kode
-QR verifikasi integritas laporan.
-6. Manajemen Kuota, Transaksi, & Billing (Payment Gateway): Pemantauan sisa saldo
-kuota audit, integrasi antarmuka pembayaran Midtrans Snap, penanganan webhook
-verifikasi transaksi otomatis, dan pencatatan riwayat invoice.
-7. Pengelolaan Bank Korpus & Administrasi Sistem: Modul bagi Dosen dan
-Administrator untuk menginjeksi kumpulan berkas tugas ke dalam korpus
-pembanding internal (bulk ingestion), mengelola status pengguna, memantau utilisasi
-antrean worker, serta meninjau log aktivitas sistem.
-2.3 Penggolongan Karakterik Pengguna
-Sistem VeriText memiliki tiga aktor utama yang memiliki karakteristik dan hak akses
-berbeda sesuai dengan perannya masing-masing.
+
+2.3 Penggolongan Karakteristik Pengguna
+Sistem VeriText AI memiliki tiga aktor utama yang memiliki karakteristik, wewenang, dan hak akses berbeda sesuai dengan perannya masing-masing dalam model layanan mandiri (Self-Service SaaS):
+
 Tabel 2 Karakteristik Pengguna
-Kategori
-Pengguna
-Deskripsi Tugas
-Utama
-Hak Akses dalam
-Sistem
-Tingkat Kemampuan
-yang Dibutuhkan
-Pengunjung
-(Guest)
-Menjelajahi informasi
-publik, landing page,
-simulasi demo ringkas
-(maks 100 kata), dan
-halaman
-Hanya akses baca
-pada modul publik;
-tidak memiliki hak
-akses audit dokumen
-penuh.
-Keterampilan dasar
-menggunakan
-peramban web
-modern.
-
-Kategori
-Pengguna
-Deskripsi Tugas
-Utama
-Hak Akses dalam
-Sistem
-Tingkat Kemampuan
-yang Dibutuhkan
-perbandingan harga
-langganan.
-Pengguna
-Terdaftar (Trial /
-Free User)
-Mengunggah
-dokumen tugas
-pribadi, memeriksa
-plagiarisme tingkat
-Tier 1 (Leksikal),
-melihat ringkasan
-skor di layar, dan
-membeli kuota token.
-Akses audit terbatas
-(maks 1.000
-kata/dokumen, kuota
-3 token awal, Tier 2 &
-ekspor PDF terkunci).
-Mahasiswa/penulis
-umum yang familiar
-dengan format
-dokumen
-PDF/DOCX.
-Pengguna
-Premium
-(Subscribed User)
-Memeriksa naskah
-ilmiah/skripsi
-berskala besar,
-mengakses analisis
-multi-tier lengkap
-(Leksikal, Semantik
-AI, Stilometri), dan
-mengunduh sertifikat
-PDF.
-Akses penuh seluruh
-tier deteksi dokumen
-hingga 25.000 kata,
-prioritas antrean
-worker tinggi, ekspor
-PDF bebas kuota
-aktif.
-Mahasiswa tingkat
-akhir, dosen, peneliti
-mandiri, atau staf
-editorial jurnal.
-Dosen / Asisten
-Lab (Reviewer)
-Membuat ruang
-kelas/folder mata
-kuliah, mengunggah
-naskah tugas
-mahasiswa secara
-massal ke dalam
-korpus internal, dan
-memeriksa kesamaan
-lintas mahasiswa.
-Akses pengunggahan
-korpus (bulk ingest),
-audit silang antar
-berkas mahasiswa,
-analisis analitik
-kesamaan kelas.
-Tenaga
-pengajar/asisten
-laboratorium yang
-mengelola tugas
-akademik berkas
-jamak.
-Administrator
-Sistem
-Memelihara
-kestabilan sistem,
-mengelola basis data
-pengguna, memantau
-metrik performa
-antrean Celery,
-mengatur tarif kuota,
-dan memeriksa audit
-log.
-Full Access (CRUD)
-terhadap seluruh tabel
-data master,
-konfigurasi API key,
-manajemen korpus,
-dan log audit
-keamanan.
-Profesional TI dengan
-pemahaman basis data
-relasional/vektor dan
-arsitektur server.
+| Kategori Pengguna | Deskripsi Tugas Utama | Hak Akses dalam Sistem | Tingkat Kemampuan yang Dibutuhkan |
+| :--- | :--- | :--- | :--- |
+| Free User (Pengguna Gratis) | Mengunggah dan memeriksa keaslian naskah mandiri hingga batas 2.500 kata per pemeriksaan (setara 1 Token / 1 makalah), meninjau laporan hasil pemindaian melalui Interactive Heatmap di peramban web, berkonsultasi perbaikan kalimat via AI Chatbot (kuota trial maksimal 3 kali respon), serta melakukan top-up kuota token untuk meningkatkan status akun. | Akses fitur dasar (UC-01 Masuk/Daftar, UC-02 Profil, UC-03 Unggah Naskah batas 2.500 kata, UC-04 Eksekusi Deteksi, UC-05 Tinjau Heatmap Web View, UC-06 AI Chatbot Trial 3x, UC-07 Parafrase Instan Trial 3x, UC-08 Verifikasi QR Publik, UC-09 Hapus Riwayat Naskah Mandiri sesuai UU PDP, UC-10 Pembelian Token & Upgrade Premium). Terkunci dari pengunduhan berkas Laporan PDF Resmi dan dibatasi pada pemindaian naskah pendek. | Pengguna awam/pemula dengan kemampuan dasar operasional peramban web (browser), formulir digital, serta navigasi teks naskah akademik standar. |
+| Premium User (Pengguna Pro / Berbayar) | Memindai naskah akademik berskala panjang (proposal, skripsi, tesis, disertasi hingga puluhan ribu kata, batas berkas 15 MB), memanfaatkan fitur AI Chatbot dan Parafrase Instan 3-Mode (Per Kalimat, Per Paragraf, Seluruh Halaman) secara bebas selama saldo token mencukupi, mengunduh Laporan Audit Resmi berformat PDF beresolusi tinggi lengkap dengan segel digital dan Dynamic QR Code, serta mengelola pembelian token dan unduhan invoice resmi. | Akses penuh fitur pengguna (seluruh hak Free User ditambah pemrosesan naskah panjang tanpa batas kata dengan formula token cap maksimal 5 token pada UC-03 & UC-04, akses AI Chatbot & Parafrase tanpa batas trial pada UC-06 & UC-07 berbasis pemotongan saldo token komputasi, unduh dokumen PDF resmi ber-QR pada UC-08, serta top-up token dan unduh invoice pada UC-10). | Mahasiswa tingkat akhir, dosen, peneliti, atau akademisi profesional dengan kemampuan interpretasi skor kemiripan multi-tier (leksikal, semantik, stilometri) dan penyuntingan naskah ilmiah. |
+| Admin (Pengelola Layanan Read-Only) | Memantau stabilitas operasional layanan secara pasif, mengamati analitik global (agregat total naskah diperiksa, rata-rata skor plagiarisme, total omzet transaksi keuangan Midtrans, jumlah pengguna aktif), mengawasi telemetri kesehatan antrean tugas worker Celery dan utilisasi memori Redis/pgvector, serta meninjau log audit keamanan sistem (Security Audit Logs) tanpa intervensi data privat pengguna. | Akses khusus 100% Read-Only ke Dasbor Pemantauan Layanan (/admin pada UC-11) dan autentikasi login (UC-01). Dilarang keras memutasi saldo token, memodifikasi identitas pengguna, mengubah status peran secara manual, atau melihat dan mengunduh berkas naskah privat milik pengguna demi mematuhi UU PDP No. 27/2022. | Administrator sistem atau personel teknis IT dengan kemampuan pemahaman telemetri server, pembacaan log transaksi keuangan, serta analisis kesehatan infrastruktur aplikasi web. |
 
 2.4 Lingkungan Operasi
-1. Peramban Klien (Client Browser): Google Chrome 115+, Mozilla Firefox 115+,
-Apple Safari 16+, Microsoft Edge 115+. Resolusi minimal: 1280x720 piksel.
-2. Lingkungan Server Web & Backend: Linux (Ubuntu 22.04 LTS), Python 3.11+,
-Uvicorn/Gunicorn ASGI Server, Nginx Reverse Proxy.
-3. Lingkungan Antrean & Komputasi Latar Belakang: Redis 7.0+, Celery Worker 5.4+.
-4. Lingkungan Basis Data: PostgreSQL 16 dengan ekstensi pgvector v0.7.0+.
-5. Jaringan: Koneksi internet minimal 2 Mbps dengan protokol wajib HTTPS/TLS 1.3.
+Sistem VeriText AI dirancang untuk beroperasi pada lingkungan infrastruktur dan perangkat lunak berikut:
+1. Lingkungan Klien (Client Environment):
+   - Peramban Web: Google Chrome (versi >= 110), Mozilla Firefox (versi >= 110), Apple Safari (versi >= 16), Microsoft Edge (versi >= 110).
+   - Resolusi Layar: Minimum 1280 x 720 piksel (disarankan 1920 x 1080 piksel untuk pengalaman optimal Split-Screen Studio Workspace); tampilan adaptif untuk tablet 768 piksel.
+   - Konektivitas Jaringan: Akses internet stabil dengan kecepatan unduh/unggah minimal 1 Mbps.
+2. Lingkungan Server (Server & Cloud Infrastructure):
+   - Sistem Operasi Server: Ubuntu Server 22.04 LTS / macOS Server / Debian 12 (x86_64 / ARM64).
+   - Containerization: Docker Engine 24.0+ dan Docker Compose v2.
+   - Database Server: PostgreSQL 16 dengan ekstensi pgvector versi >= 0.7.0.
+   - Message Broker & Cache: Redis Server versi 7.2+.
+   - Runtime Backend: Python 3.11+ (FastAPI 0.115, SQLAlchemy 2.0 async, Celery 5.4).
+   - Runtime Frontend: Node.js 20+ LTS / Vite 6 / Vue 3.5.
+
 2.5 Batasan Desain dan Implementasi
-Pengembangan VeriText mengikuti batasan-batasan teknis dan arsitektur yang telah
-ditetapkan untuk memastikan kualitas, keamanan, dan kemudahan pemeliharaan.
-1. Tech Stack Utama: VUE.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui,
-TanStack Query v5, FastAPI, Pydantic v2, SQLAlchemy 2.0 async, PyTorch,
-Hugging Face sentence-transformers, Celery, Redis, Midtrans Snap.
-2. Arsitektur Kode: Menerapkan Clean Architecture (Controller-Service-Repository).
-Lapisan AI terpisah di dalam worker independen.
-3. Kualitas & Pengujian: Pengujian unit dan integrasi dengan pytest di backend dan Jest
-di frontend.
-4. Keamanan: Hashing password bcrypt, autentikasi JWT via HttpOnly Cookies,
-mitigasi STRIDE, dan kepatuhan UU PDP No. 27/2022.
+Batasan-batasan teknis yang mengikat arsitektur perangkat lunak meliputi:
+1. Standar Stack Frontend: Wajib menggunakan Vue 3.5 (Composition API) berbasis script setup, Vite 6, TypeScript 5.7, Pinia 2.3 untuk manajemen state terpusat, Vue Router 4.5, Axios 1.7 untuk komunikasi REST API, dan Tailwind CSS 3.4. Dilarang keras menggunakan pustaka atau framework di luar stack resmi yang telah disepakati.
+2. Kebijakan Visual Tanpa Emoji (Zero-Emoji Policy): Seluruh antarmuka web, pesan notifikasi, badge status, tabel, dan dokumen pelaporan akademik dilarang menggunakan emoji visual satupun. Indikator visual wajib memanfaatkan tipografi yang tegas, palet warna semantik bergradasi bersih, dan ikon SVG monokrom.
+3. Skema Vektor Tetap 384 Dimensi: Indeks basis data vektor di PostgreSQL pgvector dikunci pada format vector(384) untuk menjamin kompatibilitas langsung dengan model SBERT paraphrase-multilingual-MiniLM-L12-v2 dan kecepatan pencarian HNSW Cosine (<=>) di bawah 100 milidetik.
+4. Kepatuhan Transaksi Atomik: Seluruh pemotongan saldo token, pencatatan transaksi kredit/debit, dan pembaruan invoice wajib dieksekusi di dalam blok transaksi basis data terisolasi menggunakan row-level locking (SELECT ... FOR UPDATE).
+5. Kepatuhan Standar Dokumen Akademik: Dokumen SRS dan SDD disusun secara murni tanpa menggunakan sintaks blok penanda GitHub Callout agar ketika disalin ke Microsoft Word atau Google Docs tidak memunculkan teks mentah yang mengganggu format penulisan akademik resmi.
+
 2.6 Dokumentasi Pengguna
-Sistem menyediakan User Guide Interaktif (In-App Walkthrough), dokumentasi API
-otomatis OpenAPI 3.1 (Swagger), serta Manual Operasional Administrasi untuk Dosen dan
-Admin.
+Sistem menyediakan dokumentasi operasional terintegrasi:
+1. Panduan Interaktif Daring (Onboarding Tour): Panduan langkah demi langkah saat pengguna pertama kali memasuki Split-Screen Studio Workspace.
+2. Panduan Interpretasi Skor Plagiarisme: Penjelasan akademik mengenai arti persentase skor komposit, perbedaan penjiplakan leksikal (Merah), parafrase semantik (Oranye), dan anomali stilometri (Kuning).
+3. Pusat Bantuan & FAQ Pembayaran Token: Petunjuk tata cara pembelian kuota token via Midtrans Snap (QRIS, GoPay, ShopeePay, Virtual Account Bank Mandiri/BCA/BNI/BRI, dan Kartu Kredit).
+
+---
 
 3. Kebutuhan Antarmuka Eksternal
+
 3.1 User Interfaces
-Antarmuka pengguna VeriText AI dirancang dengan prinsip intuitif, responsif, dan kaya
-visualisasi data:
-1. Workspace Unggah Dokumen: Dropzone drag-and-drop berkas, indikator ukuran dan
-tipe berkas, pemilih kedalaman audit, dan ringkasan sisa saldo kuota.
-2. Indikator Progres Real-Time: Progress bar interaktif yang menunjukkan tahapan
-analisis secara bertingkat dengan estimasi waktu selesai.
-3. Interactive Heatmap Dasbor:
-a. Panel Kiri: Naskah teks lengkap yang disorot dengan warna Merah
-(Leksikal), Oranye (Semantik), dan Kuning (AI Pattern).
-b. Panel Kanan: Kartu skor komposit, rincian per tier, dan daftar sumber
-pembanding terduga yang dapat diklik untuk membuka modal side-by-side
-comparison.
-4. Modal Pembayaran (Snap Paywall): Popup pemilihan paket kuota token dan render
-iframe Midtrans Snap.
+Antarmuka pengguna VeriText AI dirancang dengan tata letak profesional, data-density tinggi, dan tipografi akademik bersih:
+1. Halaman Masuk dan Registrasi (Auth Views): Formulir masuk/daftar minimalis dengan validasi input instan, indikator kekuatan kata sandi, opsi masuk cepat Google OAuth 2.0, serta tautan lupa kata sandi.
+2. Halaman Dasbor Workspace (Upload & Status): Menampilkan kartu saldo token, riwayat naskah terkini, dan Dropzone unggah berkas yang responsif mendukung seret-dan-lepas (.pdf, .docx, .txt) serta input teks langsung.
+3. Halaman Split-Screen Studio Workspace (Layar Analisis & AI Chatbot):
+   - Top Summary Bar (Tinggi 64px): Menampilkan judul dokumen, jumlah kata, skor kemiripan komposit total dalam badge tegas, rincian persentase 3-tier, sisa saldo token pengguna, serta tombol aksi cepat (Unduh PDF Resmi, Parafrase Semua Kalimat Terindikasi).
+   - Kolom Kiri (Lebar 60%): Interactive Heatmap Document Viewer yang menampilkan naskah asli dengan sorotan warna semantik multi-tier (Merah untuk leksikal >= 80%, Oranye untuk semantik >= 75%, Kuning untuk anomali stilometri), tombol filter sorotan warna ([Semua], [Merah], [Oranye], [Kuning]), serta popover interaktif saat kalimat disorot diklik ([Parafrase Kalimat Ini], [Parafrase Paragraf], [Lihat Sumber]).
+   - Kolom Kanan (Lebar 40%): Panel Tabular 2-in-1 dengan tab switcher:
+     * Tab 1 (Daftar Sumber Kecocokan): Daftar kartu sumber publikasi ilmiah (OpenAlex, DOAJ, repositori kampus) dilengkapi persentase kontribusi, nama jurnal, tautan DOI resmi, dan jendela komparasi berdampingan (Side-by-Side Diff) antara teks naskah dan teks sumber asli.
+     * Tab 2 (AI Chatbot Asisten Naskah & Parafrase): Area percakapan interaktif ber-Guardrail Akademik, badge kuota trial/token di bagian header, kartu 3 opsi variasi parafrase ilmiah lengkap dengan prediksi penurunan persentase kemiripan, tombol aksi [Terapkan ke Naskah & Cek Ulang In-Place], serta tombol saran cepat ([Ubah ke Kalimat Pasif], [Perhalus Kosakata Akademik], [Jelaskan Alasan Plagiat]).
+4. Halaman Riwayat & Kepatuhan Privasi (History View): Tabel daftar seluruh riwayat pemeriksaan naskah dengan fitur pencarian, filter tanggal, dan tombol Hapus Permanen (UU PDP) yang memicu modal konfirmasi penghapusan hard-delete.
+5. Halaman Top-Up Kuota & Pembayaran (Billing View): Kartu saldo token saat ini, pemilih skema pembelian (By Token custom Rp 2.000/token minimal 5 token, atau By Paket Token bundling hemat: Starter 15 token Rp 25.000, Skripsi Pro 50 token Rp 65.000, Riset Intensif 150 token Rp 150.000), modal sematan Midtrans Snap, serta tabel riwayat transaksi dan tombol unduh invoice PDF.
+6. Halaman Verifikasi Sertifikat Publik (/verify/{certificate_uuid}): Halaman publik ringan tanpa kewajiban login untuk memvalidasi keaslian laporan audit, menampilkan stempel digital hijau, nama naskah, waktu audit, dan skor resmi.
+7. Halaman Dasbor Pemantauan Admin (/admin - 100% Read-Only): Dasbor analitik metrik global (total naskah dipindai, rata-rata skor plagiarisme, total pendapatan sistem, grafik tren bulanan), tabel riwayat transaksi Midtrans real-time, telemetri kesehatan antrean worker Celery dan Redis, serta tabel log audit keamanan sistem tanpa tombol aksi manipulasi data pengguna.
+
 3.2 Hardware Interface
-1. Server Compute: Minimal 4 vCPU untuk pemrosesan teks dan inferensi embedding.
-Mendukung opsional akselerasi GPU NVIDIA (CUDA).
-2. Storage: Penyimpanan persisten lokal / S3-compatible storage untuk menyimpan
-berkas masukan dan arsip PDF laporan audit.
+Sistem tidak berinteraksi langsung dengan perangkat keras fisik khusus selain server komputasi standar:
+1. Server Basis Data & Komputasi AI: Minimum 4 vCPU (disarankan 8 vCPU), 8 GB RAM (disarankan 16 GB RAM untuk efisiensi indeks HNSW pgvector dan inferensi Sentence Transformers), serta penyimpanan Solid State Drive (SSD) NVMe minimal 50 GB.
+2. Perangkat Klien: Komputer pribadi, laptop, atau tablet dengan prosesor dual-core, RAM minimal 4 GB, dan layar beresolusi minimal 1280 x 720 piksel.
+
 3.3 Software Interface
-1. PostgreSQL 16 + pgvector: Kueri relasional dan kueri vektor jarak kosinus (<=>).
-2. Redis 7 & Celery 5.4: Antrean tugas asinkron dan broker status pekerjaan.
-3. Midtrans Core / Snap API: Pemrosesan pembayaran sandbox dan penerimaan
-notifikasi webhook.
-4. Hugging Face Transformers: Model multilingual MiniLM-L12-v2 untuk
-pembentukan dense embedding 384-dimensi.
-5. WeasyPrint / ReportLab: Mesin rendering berkas sertifikat audit PDF resmi.
+Sistem berinteraksi dengan antarmuka perangkat lunak eksternal berikut:
+1. PostgreSQL 16 dengan pgvector: Antarmuka basis data relasional dan vektor melalui koneksi pool asyncpg dan SQLAlchemy 2.0 pada port 5432.
+2. Redis 7.2: Broker pesan dan penyimpanan hasil tugas Celery pada port 6379.
+3. Midtrans Snap & Notification Webhook API: Antarmuka gerbang pembayaran untuk inisiasi transaksi Snap token dan penerimaan webhook notifikasi status pembayaran berbasis verifikasi SHA-512.
+4. OpenAlex Academic Graph API: Antarmuka REST API publik (https://api.openalex.org/) untuk penarikan metadata dan abstrak karya ilmiah Indonesia dan internasional.
+5. Directory of Open Access Journals (DOAJ) API: Antarmuka penelusuran artikel jurnal akses terbuka resmi (https://doaj.org/api/v2/).
+6. Semantic Scholar Academic Graph API: Antarmuka penelusuran publikasi ilmiah global (https://api.semanticscholar.org/graph/v1/).
+7. Crossref REST API: Antarmuka verifikasi nomor Digital Object Identifier (DOI) resmi (https://api.crossref.org/).
+8. Google Generative AI (Gemini 2.5 Flash API): Antarmuka model kecerdasan buatan untuk evaluasi sitasi konteks, penyaringan anomali stilometri, dan mesin parafrase ilmiah.
+9. Google OAuth 2.0 API: Antarmuka autentikasi pihak ketiga untuk registrasi dan login cepat berbasis OpenID Connect.
 
 3.4 Communication Interface
-1. Klien-Server: Protokol HTTPS/TLS 1.3, pertukaran payload JSON.
-2. Smart Polling: Polling berkala adaptif GET /api/v1/audits/{task_id}/status oleh
-TanStack Query.
-3. Webhook Security: Validasi signature SHA-512 dari Midtrans.
+Standar komunikasi perangkat lunak meliputi:
+1. Protokol Komunikasi Klien-Server: Seluruh komunikasi antara peramban web dan gateway API wajib menggunakan protokol HTTPS terenkripsi TLS versi 1.3 melalui port 443.
+2. Format Pertukaran Data: Menggunakan JavaScript Object Notation (JSON) terstruktur mengacu pada spesifikasi OpenAPI versi 3.1.
+3. Autentikasi Permintaan API: Permintaan terautentikasi wajib menyertakan header Authorization: Bearer <JWT_ACCESS_TOKEN> dengan masa berlaku 15 menit.
+4. Smart Polling Asinkron: Pengembang frontend Vue 3.5 mengimplementasikan mekanisme smart polling menggunakan Axios dengan interval adaptif (3 detik saat QUEUED, 1,5 detik saat PROCESSING, dan 5 detik saat terjadi kendala jaringan) untuk memantau status penyelesaian audit naskah asinkron pada endpoint GET /api/v1/audits/{task_id}/status.
+5. Webhook Security Interface: Endpoint penerimaan webhook pembayaran (POST /api/v1/billing/webhook) memvalidasi keaslian notifikasi menggunakan algoritma SHA-512 dengan rumus:
+   SHA512(order_id + status_code + gross_amount + ServerKey).
+
+---
+
+
+---
 
 4. Functional Requirement
-Kode Deskripsi Kebutuhan Fungsional
-Autentikasi, Akun & Keamanan
-FR-AUTH-01 Sistem harus menyediakan fitur registrasi akun mandiri dengan atribut:
-Nama Lengkap, Email Unik, Institusi, dan Kata Sandi.
-FR-AUTH-02 Sistem harus memvalidasi format email dan memastikan kekuatan kata sandi
-minimal 8 karakter kombinasi huruf besar, kecil, angka, dan simbol.
-FR-AUTH-03 Sistem harus mengalokasikan 3 saldo token audit gratis secara otomatis ke
-akun pengguna yang baru terdaftar.
-FR-AUTH-04 Sistem harus memverifikasi login dan menerbitkan Access Token JWT (15
-menit) dan Refresh Token (7 hari).
-FR-AUTH-05 Sistem harus menyimpan Refresh Token dalam HttpOnly, Secure,
-SameSite=Strict Cookie.
-FR-AUTH-06 Sistem harus mengakhiri sesi pengguna secara aman saat pengguna memilih
-aksi logout.
-FR-AUTH-07 Sistem harus memungkinkan pengguna mengganti kata sandi dengan
-memvalidasi kata sandi lama terlebih dahulu.
-FR-AUTH-08 Sistem harus menyediakan alur reset kata sandi melalui tautan token berbatas
-waktu yang dikirimkan ke email terdaftar.
-FR-AUTH-09 Sistem harus memungkinkan pengguna memperbarui informasi profil akun
-(Nama Lengkap dan Institusi).
+Sistem VeriText AI mendefinisikan serangkaian kebutuhan fungsional komprehensif yang memfasilitasi seluruh siklus operasional deteksi plagiarisme cerdas, bimbingan parafrase interaktif, pelaporan tersertifikasi, dan tata kelola akun mandiri. Kebutuhan fungsional dipetakan secara terstruktur ke dalam 7 klaster arsitektural utama pada tabel berikut:
 
-FR-AUTH-10 Sistem harus mengunci akun sementara selama 15 menit jika terjadi 5 kali
-kegagalan login berturut-turut.
-FR-AUTH-11 Sistem harus menegakkan pembatasan hak akses berbasis peran (RBAC)
-pada setiap endpoint API.
-Unggah, Validasi & Ekstraksi
-FR-DOC-01 Sistem harus menyediakan formulir pengunggahan naskah masukan
-berformat .pdf, .docx, dan .txt maksimal 15 MB.
-FR-DOC-02 Sistem harus memvalidasi integritas biner dan memeriksa magic-byte berkas
-untuk mencegah executable upload.
-FR-DOC-03 Sistem harus mengekstrak teks fisik dari PDF (pdfplumber) dan DOCX
-(python-docx).
-FR-DOC-04 Sistem harus membersihkan karakter noise, spasi berlebih, dan format
-header/footer naskah yang berulang.
-FR-DOC-05 Sistem harus memecah teks bersih menjadi larik chunk kalimat dengan
-mencatat indeks posisi karakter awal dan akhir (offsets).
-FR-DOC-06 Sistem harus menolak pemrosesan naskah dengan jumlah kata kurang dari 50
-kata atau PDF tanpa lapisan teks (scanned PDF).
-FR-DOC-07 Sistem harus memungkinkan pengguna menghapus naskah dokumen beserta
-seluruh representasi vektornya dari repositori sistem (kepatuhan UU PDP).
-Deteksi Plagiarisme Hybrid
-FR-DET-01 Sistem harus mendelegasikan pemrosesan audit dokumen ke worker Celery
-secara asinkron setelah dikonfirmasi pengguna.
-
-FR-DET-02 Sistem harus mengimplementasikan algoritma Winnowing berbasis k-gram
-hash (𝑘 = 5, 𝑤 = 4) untuk mengekstrak sidik jari digital naskah.
-FR-DET-03 Sistem harus mencocokkan sidik jari naskah terhadap indeks sidik jari
-korpus internal secara instan.
-FR-DET-04 Sistem harus menghasilkan representasi vektor dense 384-dimensi untuk
-setiap kalimat menggunakan model Sentence Transformers.
-FR-DET-05 Sistem harus menjalankan kueri ANN jarak kosinus <=> pada PostgreSQL
-pgvector berindeks HNSW dengan ambang batas kemiripan ≥ 0. 85.
-FR-DET-06 Sistem harus menghitung metrik Burstiness (varians panjang kalimat) dan
-Type-Token Ratio untuk mendeteksi anomali gaya mesin AI.
-FR-DET-07 Sistem harus mengagregasi skor terbobot ketiga tier menjadi skor kesamaan
-komposit (Overall Similarity Index).
-FR-DET-08 Sistem harus mengecualikan kalimat kutipan resmi yang diapit tanda petik
-ganda dan disertai rujukan sitasi standar.
-FR-DET-09 Sistem harus menyediakan endpoint pemantauan status proses audit asinkron
-secara real-time.
-FR-DET-10 Sistem harus memungkinkan pengguna membatalkan proses audit yang
-sedang mengantre di worker.
-Visualisasi & Laporan Audit
-FR-REP-01 Sistem harus menyajikan antarmuka Interactive Heatmap dengan anotasi
-warna: Merah (Leksikal), Oranye (Semantik), Kuning (AI Pattern).
-FR-REP-02 Sistem harus menampilkan daftar dokumen pembanding yang cocok di panel
-kanan beserta persentase kontribusi kesamaannya.
-
-FR-REP-03 Sistem harus menyediakan jendela perbandingan berdampingan
-(side-by-side) saat pengguna mengklik kalimat berwarna di naskah.
-FR-REP-04 Sistem harus membatasi tampilan akun Trial hanya pada sorotan Tier 1, dan
-memburamkan rincian Tier 2 & Tier 3.
-FR-REP-05 Sistem harus memungkinkan pengguna memfilter tampilan anotasi
-berdasarkan tier pelanggaran tertentu.
-FR-REP-06 Sistem harus memungkinkan Pengguna Premium mengunduh Laporan Audit
-Resmi berformat PDF beresolusi tinggi.
-FR-REP-07 Berkas PDF laporan resmi harus menyertakan identitas pengunggah, rincian
-skor, sebaran per halaman, daftar rujukan, dan kode QR verifikasi.
-FR-REP-08 Sistem harus menyediakan halaman publik untuk memverifikasi keaslian
-laporan audit saat kode QR dipindai.
-FR-REP-09 Sistem harus menampilkan daftar riwayat audit sebelumnya yang dapat
-dicari, difilter, dan diurutkan.
-FR-REP-10 Sistem harus memungkinkan pengguna mengekspor ringkasan riwayat audit
-ke format CSV atau Excel.
-Bank Korpus Pembanding
-FR-CORP-01 Sistem harus menyediakan fitur bagi Dosen/Admin untuk mengunggah
-kumpulan dokumen pembanding secara massal (bulk ingest).
-FR-CORP-02 Sistem harus memproses dan mengindeks vektor kalimat dokumen korpus ke
-dalam tabel document_chunks di pgvector.
-FR-CORP-03 Sistem harus menampilkan daftar seluruh dokumen korpus yang terdaftar
-beserta jumlah kalimat dan tanggal ingest.
-
-FR-CORP-04 Sistem harus memungkinkan pengelompokan korpus berdasarkan
-Kategori/Mata Kuliah dan Tahun Akademik.
-FR-CORP-05 Sistem harus memungkinkan Dosen mengubah metadata korpus atau
-menghapus dokumen tertentu dari bank korpus.
-Monetisasi & Billing
-FR-PAY-01 Sistem harus mengurangi 1 saldo token kuota dari akun pengguna setiap kali
-proses audit dokumen dimulai.
-FR-PAY-02 Sistem harus mengembalikan saldo token kuota secara otomatis jika proses
-worker mengalami kegagalan fatal.
-FR-PAY-03 Sistem harus menampilkan informasi sisa saldo token dan riwayat mutasi
-debit/kredit kuota.
-FR-PAY-04 Sistem harus menyediakan antarmuka pembelian paket token kuota dan
-langganan akun premium.
-FR-PAY-05 Sistem harus melakukan permintaan pembuatan transaksi ke Midtrans Snap
-API dan menerima Snap Token.
-FR-PAY-06 Sistem harus menyediakan endpoint webhook publik
-/api/v1/payments/webhook untuk menerima notifikasi pembayaran.
-FR-PAY-07 Sistem harus memvalidasi signature SHA-512 dari payload webhook
-Midtrans sebelum memperbarui status invoice.
-FR-PAY-08 Sistem harus menambahkan saldo token kuota atau memperbarui status akun
-ke Premium secara instan setelah status settlement.
-FR-PAY-09 Sistem harus menerbitkan bukti pembayaran digital (Invoice PDF) yang
-dapat diunduh oleh pengguna.
-
-Pemantauan & Administrasi
-FR-ADM-01 Sistem harus menampilkan dasbor analitik bagi Admin: total dokumen,
-pengguna aktif, utilisasi kuota, dan total omzet transaksi.
-FR-ADM-02 Sistem harus menampilkan daftar seluruh pengguna dengan fitur pencarian,
-filter status peran, dan aksi ubah status.
-FR-ADM-03 Sistem harus memungkinkan Administrator menonaktifkan (suspend) akun
-pengguna yang melanggar ketentuan.
-FR-ADM-04 Sistem harus memungkinkan Administrator melakukan penyesuaian saldo
-token kuota pengguna secara manual untuk koreksi data.
-FR-ADM-05 Sistem harus menampilkan status operasional antrean Celery worker, beban
-CPU, dan latensi kueri pgvector.
-FR-ADM-06 Sistem harus menyediakan fungsi bagi Administrator untuk menjalankan
-reindex tabel vektor HNSW pgvector.
-FR-ADM-07 Sistem harus mencatat seluruh aktivitas kritis ke dalam tabel audit_logs yang
-tidak dapat diubah (immutable).
+Tabel 3: Spesifikasi Kebutuhan Fungsional (Functional Requirements)
+| Kode | Deskripsi Kebutuhan Fungsional |
+| :--- | :--- |
+| **Autentikasi, Akun & Keamanan** | |
+| FR-AUTH-01 | Sistem wajib menyediakan formulir pendaftaran akun mandiri menggunakan alamat email unik, nama lengkap, dan kata sandi minimal 8 karakter. |
+| FR-AUTH-02 | Sistem wajib memvalidasi kredensial pengguna menggunakan verifikasi hash kata sandi berbasis algoritma Bcrypt (work factor 12). |
+| FR-AUTH-03 | Sistem wajib secara otomatis mengalokasikan saldo awal 5 Token Gratis dan 3 kali Kuota Trial AI Chatbot/Parafrase pada TokenWallet saat akun FREE pertama kali terdaftar. |
+| FR-AUTH-04 | Sistem wajib mendukung autentikasi Single Sign-On (SSO) menggunakan Google OAuth 2.0 dengan verifikasi integritas Google ID Token di sisi backend server. |
+| FR-AUTH-05 | Sistem wajib menerbitkan Access Token JWT berbatas waktu 15 menit dan Refresh Token acak tersimpan pada HttpOnly Secure Cookie dengan masa berlaku 7 hari. |
+| FR-AUTH-06 | Sistem wajib menerapkan mekanisme Refresh Token Rotation; setiap penggunaan token pembaruan wajib menerbitkan token baru dan menganulir token sebelumnya. |
+| FR-AUTH-07 | Sistem wajib menyediakan fitur Logout yang menghapus cookie sesi di peramban dan membatalkan hash refresh token pada tabel sessions di basis data. |
+| FR-AUTH-08 | Sistem wajib mengizinkan pengguna memperbarui informasi nama lengkap profil dengan validasi sanitasi teks anti-XSS. |
+| FR-AUTH-09 | Sistem wajib memvalidasi kecocokan kata sandi lama sebelum mengizinkan pembaruan hash kata sandi baru dan mencabut seluruh sesi aktif lain demi keamanan akun. |
+| FR-AUTH-10 | Sistem wajib menyediakan alur pemulihan kata sandi melalui pengiriman token pemulihan acak berbatas waktu 60 menit ke email pengguna terdaftar. |
+| FR-AUTH-11 | Sistem wajib menegakkan pembatasan hak akses berbasis 3 peran (Role-Based Access Control: FREE, PREMIUM, ADMIN Read-Only) secara ketat pada setiap rute antarmuka dan endpoint API. |
+| **Unggah, Validasi & Ekstraksi Naskah** | |
+| FR-DOC-01 | Sistem wajib mendukung pengunggahan berkas digital dengan ekstensi .pdf, .docx, .txt, serta input penempelan teks langsung pada area kerja editor. |
+| FR-DOC-02 | Sistem wajib membatasi ukuran fisik berkas yang diunggah maksimal 15 Megabytes (MB) dan menolak berkas yang melebihi batas tersebut. |
+| FR-DOC-03 | Sistem wajib memvalidasi berkas berdasarkan magic bytes MIME-type untuk mencegah manipulasi ekstensi palsu atau serangan berkas berbahaya (executable upload). |
+| FR-DOC-04 | Sistem wajib mengekstrak teks bersih dari PDF (pdfplumber) dan DOCX (python-docx), menghapus tag biner, dan menormalisasi whitespace tanpa merusak struktur paragraf asli. |
+| FR-DOC-05 | Sistem wajib memecah teks dokumen menjadi array kalimat diskret dengan mencatat offset posisi karakter awal dan akhir serta menolak pemrosesan naskah dengan jumlah kata kurang dari 50 kata. |
+| FR-DOC-06 | Sistem wajib membatasi panjang naskah per pemeriksaan untuk Free User maksimal 2.500 kata (setara 1 Token) dan menampilkan modal peningkatan akun jika melampaui batas. |
+| FR-DOC-07 | Sistem wajib mendukung pemrosesan naskah panjang (skripsi, tesis, disertasi puluhan ribu kata) untuk akun Premium User dengan batas berkas 15 MB. |
+| FR-DOC-08 | Sistem wajib menghitung jumlah kata secara real-time sebelum pemindaian dan menampilkan biaya token berdasarkan formula: min(5, ceil(kata / 2500)) Token dengan Batas Maksimum (Token Cap) 5 Token. |
+| **Akuisisi Korpus Otomatis & Deteksi Plagiarisme Hybrid 3-Tahap** | |
+| FR-CORP-01 | Sistem wajib memiliki layanan AutomatedCorpusHarvester yang menarik metadata, DOI, dan abstrak karya ilmiah Indonesia & global dari OpenAlex Graph API secara berkala. |
+| FR-CORP-02 | Sistem wajib mengintegrasikan penarikan artikel akses terbuka dari DOAJ REST API, Semantic Scholar Academic Graph, dan Crossref API untuk memperkaya perbendaharaan korpus ilmiah. |
+| FR-CORP-03 | Sistem wajib memecah dokumen korpus menjadi potongan teks (chunks) 300 kata, menghasilkan dense embeddings 384-d, dan menyimpannya di indeks graf HNSW PostgreSQL pgvector. |
+| FR-CORP-04 | Sistem wajib mendukung modul WebScanner yang memanfaatkan Google Search Grounding untuk menelusuri artikel web publik dan repositori kampus (e-Prints). |
+| FR-DET-01 | Sistem wajib mendelegasikan pemrosesan audit dokumen ke antrean worker Celery Redis secara asinkron setelah saldo token dipotong secara atomik. |
+| FR-DET-02 | Sistem wajib mengimplementasikan Step 1 (Deteksi Leksikal Winnowing) dengan Rabin-Karp rolling hash (basis b=257, modulus prima M=1.000.000.007, k-gram=5, sliding window w=4) untuk mengekstrak sidik jari digital naskah dan mencocokkannya ke indeks korpus internal. |
+| FR-DET-03 | Sistem wajib menandai kalimat dengan nilai koefisien Jaccard Containment >= 80% sebagai pelanggaran leksikal berindikator MERAH (Tier 1). |
+| FR-DET-04 | Sistem wajib mengimplementasikan Step 2 (Deteksi Semantik SBERT) menghasilkan dense embedding 384 dimensi pada tiap kalimat menggunakan paraphrase-multilingual-MiniLM-L12-v2 dan menjalankan kueri KNN jarak Cosine (<=>) pada pgvector berindeks HNSW. |
+| FR-DET-05 | Sistem wajib menyaring pasangan kalimat kandidat berbahasa Indonesia menggunakan re-ranker spesialis model LazarusNLP/all-indobert-base-v4 untuk mengevaluasi sinonim morfologis ilmiah. |
+| FR-DET-06 | Sistem wajib menandai kalimat dengan nilai Cosine Similarity >= 75% (jarak <= 0.25) yang tidak terdeteksi pada Step 1 sebagai parafrase semantik berindikator ORANYE (Tier 2). |
+| FR-DET-07 | Sistem wajib mengimplementasikan Step 3 (Evaluasi Stilometri) menghitung ritme variasi penulisan menggunakan rumus Goh & Barabasi Burstiness B dan Type-Token Ratio (TTR) untuk mendeteksi anomali sintesis model bahasa AI (LLM). |
+| FR-DET-08 | Sistem wajib mengintegrasikan Contextual AI Judge (Dual-Engine LLM Gateway: Google Gemini 2.5 Flash dengan failover otomatis ke DeepSeek v4.1 Flash via 9Router) untuk menyaring false positive (kutipan resmi berizin) dan menandai kalimat anomali gaya berindikator KUNING (Tier 3). |
+| FR-DET-09 | Sistem wajib menghitung skor kemiripan akhir dokumen (Overall Similarity Index) berdasarkan formula agregasi berbobot: Skor_Komposit = (0.50 * Skor_Leksikal) + (0.35 * Skor_Semantik) + (0.15 * Skor_Stilometri). |
+| FR-DET-10 | Sistem wajib menyediakan endpoint pemantauan status proses audit asinkron secara real-time via mekanisme smart polling. |
+| **AI Chatbot Asisten Naskah & Parafrase Instan** | |
+| FR-CHAT-01 | Sistem wajib menyediakan panel AI Chatbot interaktif yang disematkan berdampingan dengan lembar Interactive Heatmap pada Split-Screen Studio Workspace. |
+| FR-CHAT-02 | Sistem wajib menerapkan modul AcademicGuardrail yang secara ketat membatasi interaksi percakapan hanya pada lingkup evaluasi naskah ilmiah, perbaikan tata bahasa, parafrase akademik, dan sitasi. |
+| FR-CHAT-03 | Sistem wajib menyediakan fitur parafrase cerdas dalam 3 mode pilihan: Mode Per Kalimat (Single Sentence), Mode Per Paragraf (Paragraph Block), dan Mode Seluruh Halaman (Full Page Batch). |
+| FR-CHAT-04 | Sistem wajib menghasilkan 3 pilihan variasi kalimat/paragraf dengan kosakata akademik terstandar lengkap dengan estimasi prediksi penurunan persentase kemiripan. |
+| FR-CHAT-05 | Sistem wajib menyediakan tombol 'Terapkan ke Naskah & Cek Ulang' yang mengganti teks kalimat di naskah secara in-place, menghitung ulang skor secara real-time, dan mengubah warna sorotan menjadi HIJAU (Telah Diperbaiki). |
+| FR-CHAT-06 | Sistem wajib membatasi penggunaan AI Chatbot dan Parafrase Instan pada akun FREE maksimal 3 kali respon uji coba sebelum menampilkan modal paywall peningkatan akun. |
+| FR-CHAT-07 | Sistem wajib memotong kuota akun PREMIUM dengan tarif transparan: 1 Token untuk 10 kali respon chat/parafrase per kalimat, atau 1 Token per 2 halaman penuh untuk batch paraphrase. |
+| **Visualisasi, Sertifikasi PDF & Riwayat (UU PDP)** | |
+| FR-REP-01 | Sistem wajib menyajikan hasil audit dalam format Interactive Heatmap pada antarmuka web yang dapat ditinjau oleh seluruh pengguna (Free maupun Premium). |
+| FR-REP-02 | Sistem wajib menyajikan tampilan pembanding berdampingan (Side-by-Side Diff) antara kalimat naskah pengguna dengan teks sumber asli pembanding. |
+| FR-REP-03 | Sistem wajib menyediakan tombol filter tampilan sorotan heatmap ([Semua], [Merah - Leksikal], [Oranye - Semantik], [Kuning - Gaya]) untuk mempermudah navigasi peninjauan. |
+| FR-REP-04 | Sistem wajib menyediakan fitur generate dokumen Laporan Audit Resmi berformat PDF berkualitas cetak yang dilengkapi diagram skor, daftar sumber, dan stempel digital bagi Premium User. |
+| FR-REP-05 | Sistem wajib menyematkan kode QR dinamis pada setiap berkas laporan PDF resmi yang mengarah ke tautan permanen verifikasi publik (/verify/{certificate_uuid}). |
+| FR-REP-06 | Sistem wajib menyediakan halaman validasi publik tanpa kewajiban login untuk memverifikasi keaslian sertifikat dan menampilkan stempel digital hijau keabsahan naskah. |
+| FR-REP-07 | Sistem wajib menyimpan riwayat seluruh naskah yang pernah dipindai oleh pengguna pada tabel documents dan audit_tasks dengan fitur pencarian dan filter tanggal. |
+| FR-REP-08 | Sistem wajib menyediakan fitur penghapusan naskah secara permanen (hard-delete cascading) yang menghapus berkas fisik, rekaman audit, dan riwayat chat dari sistem sesuai UU PDP. |
+| **Monetisasi, Token & Billing Midtrans** | |
+| FR-PAY-01 | Sistem wajib mencatat saldo token komputasi pengguna pada tabel token_wallets dan mendukung pencatatan riwayat transaksi kredit/debit secara atomik. |
+| FR-PAY-02 | Sistem wajib memotong saldo token saat pemeriksaan naskah berdasarkan formula: min(5, ceil(kata / 2500)) Token dengan Batas Maksimum (Token Cap) 5 Token. |
+| FR-PAY-03 | Sistem wajib mendukung pembelian token satuan kustom (By Token) dengan harga dasar Rp 2.000 per token (minimal pembelian 5 Token = Rp 10.000). |
+| FR-PAY-04 | Sistem wajib menyediakan 3 pilihan paket bundling diskon (By Paket Token): Paket Starter (15 Token = Rp 25.000), Paket Skripsi Pro (50 Token = Rp 65.000), dan Paket Riset Intensif (150 Token = Rp 150.000). |
+| FR-PAY-05 | Sistem wajib mengintegrasikan antarmuka gerbang pembayaran Midtrans Snap API untuk memproses berbagai saluran bayar (QRIS, GoPay, ShopeePay, VA Bank Mandiri/BCA/BNI/BRI, Kartu Kredit). |
+| FR-PAY-06 | Sistem wajib menerima HTTP POST notifikasi webhook Midtrans dan memvalidasi keaslian signature_key berbasis algoritma SHA-512. |
+| FR-PAY-07 | Sistem wajib secara otomatis mengubah status peran pengguna dari FREE menjadi PREMIUM seketika saat notifikasi pelunasan (settlement/capture) terverifikasi. |
+| FR-PAY-08 | Seluruh mutasi saldo dan pembaruan invoice wajib menggunakan transaksi terisolasi dengan penguncian baris (row-level locking SELECT ... FOR UPDATE) untuk mencegah race condition. |
+| FR-PAY-09 | Sistem wajib menyediakan dokumen tanda terima pembayaran digital (invoice PDF) resmi yang dapat diunduh pengguna dari halaman penagihan. |
+| **Pemantauan Layanan Admin (100% Read-Only)** | |
+| FR-ADM-01 | Sistem wajib menyediakan tampilan dasbor analitik bagi Admin untuk memantau agregat total naskah diperiksa, rata-rata skor kemiripan, total revenue, dan jumlah pengguna aktif secara read-only. |
+| FR-ADM-02 | Sistem wajib menyajikan tabel riwayat transaksi pembayaran Midtrans secara real-time yang mencakup order_id, metode bayar, nominal bruto, dan status transaksi secara read-only. |
+| FR-ADM-03 | Sistem wajib menampilkan status kesehatan antrean tugas Celery, jumlah worker aktif, pemakaian memori Redis, dan latensi kueri pgvector secara pasif. |
+| FR-ADM-04 | Sistem wajib mencatat dan menyajikan rekaman log aktivitas keamanan penting (percobaan login gagal, insiden brute-force, dan penghapusan naskah) pada tabel audit_logs.
 
 4.1 Use Case Diagram
+Arsitektur fungsional VeriText AI mencakup 3 Aktor (Free User, Premium User, Admin Read-Only) dan 11 Use Case Inti (UC-01 s/d UC-11).
+
+![Use Case Diagram](diagrams/exported/Use%20Case%20Diagram.png)
+
+Deskripsi relasi aktor dan use case pada diagram:
+1. Free User: Berinteraksi dengan UC-01 (Masuk & Registrasi), UC-02 (Kelola Profil), UC-03 (Unggah Naskah batas 2.500 kata), UC-04 (Eksekusi Deteksi 3-Tahap), UC-05 (Tinjau Heatmap Web View), UC-06 (AI Chatbot Trial maks 3x), UC-07 (Parafrase Instan Trial maks 3x), UC-08 (Verifikasi QR Publik), UC-09 (Hapus Riwayat Naskah PDP), dan UC-10 (Beli Token & Upgrade Premium).
+2. Premium User: Memiliki seluruh hak akses Free User, ditambah keleluasaan memindai naskah panjang tanpa batas kata (Token Cap 5 Token) pada UC-03 & UC-04, akses penuh tanpa batas trial pada AI Chatbot (UC-06) dan Parafrase Instan 3-Mode (UC-07) berbasis saldo token, hak mengunduh Laporan PDF Resmi ber-QR Code pada UC-08, serta top-up token dan unduh invoice pada UC-10.
+3. Admin (100% Read-Only): Berinteraksi dengan UC-01 untuk login ke sistem, dan UC-11 untuk memantau dasbor analitik, log transaksi keuangan, serta telemetri server secara pasif tanpa melakukan mutasi data pengguna.
+4. Relasi <<includes>>: UC-03 secara otomatis menyertakan (includes) eksekusi pipa deteksi UC-04. UC-10 menyertakan verifikasi webhook notifikasi Midtrans.
+5. Relasi <<extend>>: Fitur AI Chatbot (UC-06) dan Parafrase Instan (UC-07) merupakan perluasan opsional (extend) yang dapat dipicu langsung dari peninjauan Heatmap naskah (UC-05).
 
 4.2 Use Case Description
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-01: Registrasi Akun Mandiri
-Process Owner Modul Keamanan & Manajemen Akun
-Date Created 24 Juni 2026
-Purpose Mendaftarkan pengguna baru ke dalam sistem dan
-memberikan kuota token sambutan awal.
-Overview Pengguna mengisi form pendaftaran. Sistem
-memvalidasi data, melakukan hashing kata sandi
-dengan bcrypt, membuat akun baru, dan
-mengalokasikan 3 saldo token gratis.
-Cross Requirement FR-AUTH-01, FR-AUTH-02, FR-AUTH-03
-Actor Pengunjung (Guest)
-Preconditions Pengunjung berada di halaman registrasi dan belum
-memiliki akun dengan email yang sama.
-Postconditions Akun pengguna baru berstatus aktif tersimpan di tabel
-users; saldo 3 token tercatat di tabel token_wallets.
-Typical Course of Events 1. Pengguna membuka form registrasi.2. Pengguna
-mengisi Nama, Email, Institusi, dan Kata Sandi.3.
-Pengguna menekan tombol "Daftar".4. Sistem
-memvalidasi format email dan kompleksitas kata
-sandi.5. Sistem memeriksa keunikan email di basis
-data.6. Sistem melakukan hash kata sandi dengan
-bcrypt (work factor 12).7. Sistem menyimpan data
-pengguna baru.8. Sistem mengalokasikan 3 token
-kuota gratis.9. Sistem menampilkan pesan sukses dan
-mengarahkan ke halaman login.
-Alternative Workflow A1: Registrasi OAuth Google: Pengguna memilih
-"Masuk dengan Google". Sistem mengotentikasi akun
-via Google OAuth dan membuat akun otomatis.
-Exceptional Workflow E1: Email Sudah Terdaftar: Sistem menampilkan
-pesan galat: "Email sudah terdaftar. Silakan login atau
-gunakan reset kata sandi."E2: Kata Sandi Lemah:
-Sistem menampilkan peringatan: "Kata sandi minimal
-8 karakter dengan kombinasi huruf besar, kecil, angka,
-dan simbol."
+Berikut adalah 11 tabel spesifikasi Use Case terperinci yang mencakup seluruh alur kerja operasional platform VeriText AI:
 
-UC-AUTH-02 – Login Pengguna & Penerbitan JWT
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-02: Login Pengguna & Penerbitan
-JWT
-Process Owner Modul Keamanan & Sesi
-Date Created 24 Juni 2026
-Purpose Memverifikasi kredensial pengguna dan
-menerbitkan pasangan token otentikasi JWT.
-Overview Pengguna memasukkan email dan kata sandi.
-Sistem memvalidasi kredensial, mereset
-counter gagal login, dan menerbitkan Access
-Token serta Refresh Token di HttpOnly cookie.
-Cross Requirement FR-AUTH-04, FR-AUTH-05, FR-AUTH-10
-Actor Pengguna Terdaftar, Dosen, Admin
-Preconditions Pengguna telah memiliki akun terdaftar dan
-berstatus aktif (tidak di-suspend).
-Postconditions Sesi pengguna aktif; Access Token JWT
-dikirim ke klien; Refresh Token tersimpan di
-secure cookie.
-Typical Course of Events 1. Pengguna membuka halaman login.2.
-Pengguna memasukkan email dan kata sandi.3.
-Pengguna menekan tombol "Masuk".4. Sistem
-memeriksa apakah akun sedang dalam status
-terkunci sementara.5. Sistem memverifikasi
-hash kata sandi.6. Sistem mereset hitungan
-kegagalan login akun.7. Sistem
-membangkitkan Access Token JWT (15 menit)
-dan Refresh Token (7 hari).8. Sistem
-menyematkan Refresh Token ke HttpOnly
-Cookie.9. Sistem mengembalikan Access
-Token dan data peran pengguna ke klien.10.
-Klien mengarahkan pengguna ke halaman
-Dasbor Workspace.
-Alternative Workflow -
-Exceptional Workflow E1: Kredensial Salah: Sistem mencatat
-kegagalan, menambah counter gagal login, dan
-menampilkan pesan: "Email atau kata sandi
-tidak valid."E2: Akun Terkunci Sementara:
-Jika gagal login mencapai 5 kali berturut-turut,
+Tabel 4: UC-01 Masuk dan Registrasi Akun
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-01: Masuk dan Registrasi Akun |
+| **Process Owner** | Modul Keamanan, Autentikasi & Sesi Pengguna (AuthService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Memfasilitasi pendaftaran akun baru secara mandiri, autentikasi masuk pengguna via email/kata sandi atau Google OAuth 2.0, alokasi kuota awal token dan trial, serta pengakhiran sesi (logout) secara aman. |
+| **Overview** | Pengguna mendaftar akun baru atau masuk ke sistem menggunakan kredensial email/kata sandi maupun akun Google. Sistem menerbitkan pasangan token otentikasi JWT (Access Token 15 menit dan Refresh Token HttpOnly 7 hari), mengalokasikan otomatis 5 Token gratis dan 3x Kuota Trial AI Chatbot/Parafrase bagi akun FREE baru, serta mengamankan pengakhiran sesi saat logout. |
+| **Cross Requirement** | FR-AUTH-01, FR-AUTH-02, FR-AUTH-03, FR-AUTH-04, FR-AUTH-05, FR-AUTH-06, FR-AUTH-07, FR-AUTH-11 |
+| **Actor** | Free User, Premium User, Admin |
+| **Preconditions** | Pengguna memiliki peramban web yang terhubung ke jaringan internet dan mengakses halaman autentikasi VeriText AI (/login atau /register); belum memiliki sesi aktif. |
+| **Postconditions** | Pengguna terdaftar di tabel users (role='FREE' untuk pendaftaran baru), sesi JWT aktif diterbitkan, dompet token (token_wallets) teralokasi, atau cookie sesi dicabut saat pengguna keluar. |
+| **Typical Course of Events** | 1. Pengguna membuka halaman /login atau /register.<br>2. Pengguna memilih metode autentikasi (Email & Kata Sandi atau Google OAuth 2.0).<br>3. Pengguna memasukkan nama lengkap, alamat email, dan kata sandi minimal 8 karakter.<br>4. Pengguna menekan tombol "Daftar" atau "Masuk".<br>5. Sistem memvalidasi kelayakan format input dan memeriksa status percobaan login (lockout check).<br>6. Jika registrasi baru: Sistem membuat record pengguna di tabel users dengan peran role='FREE' dan mengalokasikan saldo 5 Token gratis serta 3x Kuota Trial AI pada tabel token_wallets.<br>7. Jika login: Sistem memverifikasi hash kata sandi menggunakan algoritma Bcrypt (work factor 12).<br>8. Sistem menerbitkan Access Token JWT (masa aktif 15 menit) dan Refresh Token acak tersimpan pada HttpOnly Secure Cookie (masa aktif 7 hari).<br>9. Sistem mencatat log aktivitas pada tabel audit_logs dan mengarahkan pengguna ke Dasbor Workspace. |
+| **Alternative Workflow** | A1: Masuk Cepat dengan Google OAuth 2.0:<br>1. Pengguna memilih tombol "Masuk dengan Google".<br>2. Sistem mengalihkan peramban ke Google Consent Screen.<br>3. Pengguna memilih dan menyetujui akun Google.<br>4. Google mengembalikan authorization code ke backend callback (/api/v1/auth/google).<br>5. Sistem menukar kode dengan Google ID Token, memvalidasi profil, dan melakukan upsert akun (role='FREE' jika pengguna baru).<br>6. Sistem menerbitkan sesi JWT ganda dan mengarahkan pengguna ke Dasbor Workspace. |
+| **Exceptional Workflow** | E1: Kredensial Salah: Sistem mencatat percobaan gagal, mengembalikan kode HTTP 401 Unauthorized, dan menampilkan pesan: "Email atau kata sandi tidak valid."<br>E2: Akun Terkunci Sementara (Brute-Force): Jika terjadi kegagalan login 5 kali berturut-turut, sistem mengunci akun selama 15 menit dan menampilkan pesan: "Akun terkunci sementara karena 5 kali percobaan gagal berturut-turut."<br>E3: Email Sudah Digunakan: Pada alur registrasi, jika email duplikat, sistem menampilkan pesan galat: "Alamat email sudah terdaftar. Silakan login atau gunakan menu pemulihan kata sandi." |
 
-Field Nilai / Penjelasan
-sistem mengunci akun selama 15 menit dan
-menampilkan peringatan: "Akun terkunci
-sementara karena 5 kali percobaan gagal."
-UC-AUTH-03 – Logout Sesi Pengguna
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-03: Logout Sesi Pengguna
-Process Owner Modul Keamanan & Sesi
-Date Created 24 Juni 2026
-Purpose Mengakhiri sesi pengguna secara aman dan
-menghapus kredensial token dari peramban.
-Overview Pengguna memilih opsi keluar. Sistem
-mencabut Refresh Token dari basis data sesi,
-membersihkan cookie, dan mengarahkan
-kembali ke halaman login.
-Cross Requirement FR-AUTH-06
-Actor Semua Aktor Terotentikasi
-Preconditions Pengguna sedang berada dalam sesi login aktif.
-Postconditions Token otentikasi di-blacklist / dicabut; cookie
-Refresh Token dihapus; sesi berakhir.
-Typical Course of Events 1. Pengguna mengklik tombol "Keluar /
-Logout" pada menu profil.2. Sistem
-memvalidasi token sesi yang aktif.3. Sistem
-mencabut (revoke) status token dari basis data
-sesi.4. Sistem mengirimkan header instruksi
-penghapusan cookie ke peramban.5. Sistem
-mencatat log audit aktivitas logout.6. Klien
-menghapus token memori lokal dan
-mengarahkan pengguna ke halaman awal.
-Alternative Workflow -
-Exceptional Workflow -
+Tabel 5: UC-02 Kelola Profil dan Kata Sandi
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-02: Kelola Profil dan Kata Sandi |
+| **Process Owner** | Modul Manajemen Pengguna & Keamanan Kredensial (AuthService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Mengizinkan pengguna memperbarui biodata profil akun (nama lengkap) serta mengubah kata sandi keamanan akun. |
+| **Overview** | Pengguna yang telah terautentikasi dapat memperbarui data identitas profil atau memperbarui kata sandi akun melalui validasi kata sandi lama dan penerapan enkripsi hash Bcrypt baru. |
+| **Cross Requirement** | FR-AUTH-08, FR-AUTH-09, FR-AUTH-10, NFR-SEC-02 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Pengguna berada dalam sesi login aktif dengan Access Token JWT yang valid. |
+| **Postconditions** | Informasi biodata profil pada tabel users diperbarui, atau hash kata sandi baru diperbarui dan seluruh sesi aktif lainnya dicabut. |
+| **Typical Course of Events** | 1. Pengguna membuka halaman Pengaturan Akun (/settings).<br>2. Pengguna menyunting informasi nama lengkap profil.<br>3. Pengguna menekan tombol "Simpan Perubahan Profil".<br>4. Sistem melakukan validasi sanitasi teks (anti-XSS) dan memperbarui record di basis data.<br>5. Sistem menampilkan notifikasi sukses "Profil berhasil diperbarui". |
+| **Alternative Workflow** | A1: Penggantian Kata Sandi Akun:<br>1. Pengguna membuka tab "Keamanan", memasukkan kata sandi lama, kata sandi baru (minimal 8 karakter), dan konfirmasi kata sandi baru.<br>2. Pengguna menekan tombol "Perbarui Kata Sandi".<br>3. Sistem memverifikasi kecocokan hash kata sandi lama dengan Bcrypt.<br>4. Sistem melakukan hashing Bcrypt pada kata sandi baru dan menyimpan pembaruan ke tabel users.<br>5. Sistem mencabut seluruh refresh token aktif lainnya di tabel sessions demi keamanan.<br>6. Sistem menampilkan notifikasi sukses "Kata sandi berhasil diperbarui".<br>A2: Alur Pemulihan Lupa Kata Sandi:<br>1. Pengguna membuka menu "Lupa Kata Sandi", memasukkan email terdaftar, dan menekan "Kirim Tautan Reset".<br>2. Sistem membangkitkan token pemulihan acak berbatas waktu 60 menit dan mengirimkan tautan reset ke email pengguna.<br>3. Pengguna membuka tautan email, memasukkan kata sandi baru, dan sistem memperbarui kredensial akun. |
+| **Exceptional Workflow** | E1: Kata Sandi Lama Salah: Sistem menolak pembaruan kata sandi dan menampilkan pesan galat: "Kata sandi lama tidak cocok."<br>E2: Kata Sandi Baru Lemah: Jika kata sandi baru kurang dari 8 karakter, sistem menampilkan: "Kata sandi minimal 8 karakter dengan kombinasi huruf dan angka." |
 
-UC-AUTH-04 – Mengubah Kata Sandi Akun
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-04: Mengubah Kata Sandi Akun
-Process Owner Modul Keamanan Akun
-Date Created 24 Juni 2026
-Purpose Memfasilitasi pengguna untuk memperbarui
-kata sandi secara berkala demi menjaga
-keamanan akun.
-Overview Pengguna menginputkan kata sandi lama dan
-kata sandi baru. Sistem memvalidasi kebenaran
-kata sandi lama, mengecek kekuatan kata sandi
-baru, dan menyimpan hash barunya.
-Cross Requirement FR-AUTH-02, FR-AUTH-07
-Actor Semua Aktor Terotentikasi
-Preconditions Pengguna telah login ke dalam sistem.
-Postconditions Kata sandi pengguna diperbarui di basis data;
-seluruh sesi aktif di perangkat lain dicabut
-demi keamanan.
-Typical Course of Events 1. Pengguna membuka menu "Pengaturan
-Akun" $\rightarrow$ "Keamanan".2. Pengguna
-memasukkan Kata Sandi Lama, Kata Sandi
-Baru, dan Konfirmasi Kata Sandi Baru.3.
-Pengguna menekan tombol "Simpan Kata
-Sandi".4. Sistem memverifikasi kebenaran kata
-sandi lama.5. Sistem memvalidasi kekuatan
-kata sandi baru dan kesesuaian konfirmasi.6.
-Sistem melakukan hash kata sandi baru
-menggunakan bcrypt.7. Sistem memperbarui
-hash di tabel users.8. Sistem mencabut token
-sesi lama di perangkat lain.9. Sistem
-menampilkan notifikasi sukses pembaruan kata
-sandi.
-Alternative Workflow -
-Exceptional Workflow E1: Kata Sandi Lama Salah: Sistem
-menampilkan pesan galat: "Kata sandi lama
-yang Anda masukkan tidak sesuai."E2:
-Konfirmasi Tidak Cocok: Sistem menampilkan
-pesan: "Konfirmasi kata sandi baru tidak
-cocok."
+Tabel 6: UC-03 Unggah dan Validasi Naskah
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-03: Unggah dan Validasi Naskah |
+| **Process Owner** | Modul Unggah Dokumen & Mesin Pra-pemrosesan Teks (PreprocessorEngine) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Menerima berkas naskah (.pdf, .docx, .txt) atau input teks langsung, memvalidasi integritas berkas, mengekstrak teks bersih, menghitung jumlah kata, dan menampilkan kalkulator biaya token. |
+| **Overview** | Pengguna mengunggah naskah melalui dropzone atau menempelkan teks. Sistem memeriksa format biner (magic bytes), batasan ukuran (maksimal 15 MB), batasan kata akun Free (maksimal 2.500 kata), serta menghitung estimasi biaya token berdasarkan formula proporsional dengan batasan maksimum (Token Cap) 5 Token. |
+| **Cross Requirement** | FR-DOC-01, FR-DOC-02, FR-DOC-03, FR-DOC-04, FR-DOC-05, FR-DOC-06, FR-DOC-07, FR-DOC-08, FR-PAY-02 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Pengguna telah masuk ke sistem dan berada di Dasbor Workspace (/workspace). |
+| **Postconditions** | Berkas tersimpan di storage terisolasi dengan nama acak UUIDv4, record metadata dokumen tersimpan di tabel documents, dan rincian estimasi biaya token ditampilkan. |
+| **Typical Course of Events** | 1. Pengguna membuka halaman Dasbor Workspace.<br>2. Pengguna memilih metode input naskah (unggah berkas atau penempelan teks langsung).<br>3. Pengguna menyeret/memilih berkas (.pdf, .docx, .txt) maksimal 15 MB atau menempelkan teks.<br>4. Sistem memeriksa magic bytes MIME type untuk mencegah pengunggahan skrip berbahaya.<br>5. Sistem mengekstrak teks murni menggunakan pdfplumber atau python-docx dan membersihkan noise karakter.<br>6. Sistem memecah teks menjadi array kalimat diskret dengan mencatat offset posisi karakter awal dan akhir.<br>7. Sistem menghitung total kata naskah (word_count).<br>8. Sistem mengevaluasi batasan akun: Jika pengguna berstatus Free User, total kata diverifikasi <= 2.500 kata.<br>9. Sistem menghitung estimasi biaya token menggunakan formula: Biaya = min(5, ceil(kata / 2500)) Token.<br>10. Sistem menampilkan ringkasan naskah, jumlah kata, dan konfirmasi biaya token pada antarmuka sebelum pemindaian dimulai. |
+| **Alternative Workflow** | A1: Penempelan Teks Langsung (Direct Paste): Pengguna menempelkan teks langsung ke area editor teks. Sistem langsung mengeksekusi penghitungan kata real-time dan kalkulasi biaya token tanpa ekstraksi biner. |
+| **Exceptional Workflow** | E1: Ukuran Berkas Melebihi Batas: Jika berkas > 15 MB, sistem menolak berkas dengan pesan: "Ukuran berkas melebihi batas maksimum 15 MB."<br>E2: Ekstensi Tidak Didukung / Magic Byte Rusak: Sistem menampilkan galat: "Format berkas tidak didukung atau berkas rusak. Hanya menerima berkas .pdf, .docx, dan .txt."<br>E3: Jumlah Kata Kurang dari 50 Kata: Sistem menolak pemrosesan naskah dengan pesan: "Naskah terlalu pendek (minimal 50 kata untuk analisis ilmiah)."<br>E4: Pelanggaran Batas Kata Free User (> 2.500 Kata): Sistem menampilkan modal paywall: "Naskah Anda terdiri dari X kata. Batas akun Free User adalah 2.500 kata per dokumen. Silakan upgrade ke Premium User untuk memindai naskah panjang (skripsi/tesis)." |
 
-UC-AUTH-05 – Permintaan Reset Kata Sandi (Lupa Password)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-05: Permintaan Reset Kata Sandi
-(Lupa Password)
-Process Owner Modul Keamanan & Notifikasi Email
-Date Created 24 Juni 2026
-Purpose Membantu pengguna memulihkan akses ke
-akun yang terlupa kata sandinya secara aman.
-Overview Pengguna memasukkan alamat email terdaftar.
-Sistem membangkitkan token reset kriptografi
-berbatas waktu (1 jam) dan mengirimkan
-tautan pemulihan ke email pengguna.
-Cross Requirement FR-AUTH-08
-Actor Pengunjung (Guest), Pengguna Terdaftar
-Preconditions Pengguna tidak dapat masuk ke sistem karena
-lupa kata sandi.
-Postconditions Token reset terenkripsi tersimpan sementara di
-basis data; email berisi tautan reset dikirimkan
-ke pengguna.
-Typical Course of Events 1. Pengguna mengklik "Lupa Kata Sandi?" di
-halaman login.2. Pengguna menginputkan
-alamat email terdaftar.3. Pengguna menekan
-tombol "Kirim Tautan Pemulihan".4. Sistem
-memeriksa keberadaan email di basis data.5.
-Sistem membangkitkan token acak kriptografis
-(secure random token) dengan masa
-kedaluwarsa 60 menit.6. Sistem menyimpan
-hash token pemulihan di tabel
-password_resets.7. Sistem mengirimkan pesan
-email berisi tautan unik
-/reset-password?token=....8. Sistem
-menampilkan pesan konfirmasi pengiriman
-email ke pengguna.
-Alternative Workflow -
+Tabel 7: UC-04 Deteksi Plagiarisme Hybrid 3-Tahap
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-04: Deteksi Plagiarisme Hybrid 3-Tahap |
+| **Process Owner** | Mesin Audit Deteksi Plagiarisme Hybrid (HybridAuditOrchestrator) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Mengeksekusi pipa deteksi plagiarisme 3-tahap (Leksikal Winnowing, Semantik SBERT & IndoBERT, Stilometri & AI Judge) secara asinkron melalui antrean Celery Redis setelah saldo token dipotong secara atomik. |
+| **Overview** | Pengguna mengonfirmasi pemeriksaan naskah. Sistem memotong saldo token pengguna secara atomik di dalam transaksi basis data, lalu mendaftarkan tugas ke antrean Celery Redis. Tiga tahap audit dijalankan secara bertingkat untuk mendeteksi penjiplakan leksikal, semantik/parafrase, dan anomali gaya tulisan AI, hingga skor komposit akhir terhitung. |
+| **Cross Requirement** | FR-CORP-01, FR-CORP-02, FR-CORP-03, FR-CORP-04, FR-DET-01, FR-DET-02, FR-DET-03, FR-DET-04, FR-DET-05, FR-DET-06, FR-DET-07, FR-DET-08, FR-DET-09, FR-DET-10, FR-PAY-01, FR-PAY-02 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Naskah telah divalidasi (UC-03) dan saldo token pengguna di tabel token_wallets mencukupi estimasi biaya pemeriksaan. |
+| **Postconditions** | Status audit COMPLETED di tabel audit_tasks, seluruh kalimat naskah tersimpan dengan label indikator warna pada tabel audit_sentences, dan skor komposit tersimpan di tabel audit_reports. |
+| **Typical Course of Events** | 1. Pengguna menekan tombol "Mulai Periksa Naskah".<br>2. Sistem membuka transaksi atomik dengan row-level lock (SELECT ... FOR UPDATE) pada tabel token_wallets untuk memotong saldo token sesuai biaya audit.<br>3. Sistem mendaftarkan tugas audit ke antrean Celery Redis dengan status QUEUED.<br>4. Worker Celery mengambil tugas dan mengubah status menjadi PROCESSING.<br>5. Worker mengeksekusi Step 1 (Deteksi Leksikal Winnowing): Menghitung Rabin-Karp rolling hash (k-gram=5, window=4), mencocokkan sidik jari terhadap indeks korpus, dan menandai kalimat dengan Jaccard Containment >= 80% sebagai pelanggaran leksikal (MERAH).<br>6. Worker mengeksekusi Step 2 (Deteksi Semantik SBERT & IndoBERT): Meng-generate dense embeddings 384-d menggunakan paraphrase-multilingual-MiniLM-L12-v2, menjalankan kueri KNN jarak Cosine (<=>) pada pgvector berindeks HNSW, menyaring kandidat Indonesia dengan LazarusNLP/all-indobert-base-v4, dan menandai kalimat dengan Cosine Similarity >= 75% sebagai parafrase (ORANYE).<br>7. Worker mengeksekusi Step 3 (Stilometri & Contextual AI Judge): Menghitung Goh & Barabasi Burstiness B dan TTR, mengevaluasi kutipan resmi berizin melalui Google Gemini 2.5 Flash, dan menandai anomali gaya tulisan buatan AI (KUNING).<br>8. Worker mengagregasi skor komposit berbobot: Skor_Komposit = 0.50 Leksikal + 0.35 Semantik + 0.15 Stilometri.<br>9. Worker memperbarui status audit menjadi COMPLETED pada tabel audit_tasks dan audit_reports.<br>10. Frontend Vue 3 mendeteksi status COMPLETED melalui mekanisme smart polling dan otomatis memuat hasil analisis ke Split-Screen Studio Workspace. |
+| **Alternative Workflow** | A1: Penghentian Dini pada Pelanggaran Berat: Jika hasil pemindaian Step 1 menemukan kemiripan leksikal verbatim > 95% pada seluruh dokumen, sistem menandai dokumen sebagai copy-paste masif dan mempercepat komputasi tahap berikutnya. |
+| **Exceptional Workflow** | E1: Saldo Token Tidak Mencukupi: Sistem membatalkan inisiasi audit, mengembalikan kode HTTP 402 Payment Required, dan menampilkan modal penawaran top-up token.<br>E2: Kegagalan Worker Komputasi (Task Failure): Celery mencoba ulang tugas hingga 3 kali; jika tetap gagal total, sistem membatalkan tugas, mencatat log galat, dan mengeksekusi refund saldo token secara atomik ke akun pengguna. |
 
-Field Nilai / Penjelasan
-Exceptional Workflow E1: Email Tidak Ditemukan: Demi mencegah
-user enumeration attack, sistem tetap
-menampilkan pesan netral: "Jika email
-terdaftar di sistem, tautan pemulihan telah
-dikirimkan."
-1. UC-AUTH-06 – Mengubah Data Profil Pengguna
-Field Nilai / Penjelasan
-Use Case ID & Name UC-AUTH-06: Mengubah Data Profil
-Pengguna
-Process Owner Modul Manajemen Profil
-Date Created 24 Juni 2026
-Purpose Mengizinkan pengguna memperbarui
-informasi biodata profil seperti nama lengkap
-dan asal institusi.
-Overview Pengguna mengubah data profil pada formulir
-pengaturan. Sistem memvalidasi kelengkapan
-teks dan memperbarui catatan basis data
-pengguna.
-Cross Requirement FR-AUTH-09
-Actor Semua Aktor Terotentikasi
-Preconditions Pengguna telah login ke dalam sistem.
-Postconditions Informasi profil pengguna diperbarui di tabel
-users.
-Typical Course of Events 1. Pengguna membuka halaman "Profil
-Saya".2. Pengguna menyunting field Nama
-Lengkap dan Asal Institusi (kolom email
-terkunci).3. Pengguna menekan tombol
-"Simpan Profil".4. Sistem memvalidasi input
-teks bebas dari skrip jahat (sanitasi XSS).5.
-Sistem memperbarui data profil di basis data.6.
-Sistem menampilkan notifikasi sukses
-pembaruan profil.
-Alternative Workflow -
+Tabel 8: UC-05 Tinjau Laporan dan Heatmap Kemiripan
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-05: Tinjau Laporan dan Heatmap Kemiripan |
+| **Process Owner** | Modul Visualisasi Laporan & Heatmap Viewer (ReportGeneratorService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Menyajikan naskah interaktif ber-Interactive Heatmap pada Split-Screen Studio Workspace, menampilkan kartu rincian sumber kecocokan, dan perbandingan teks berdampingan (side-by-side diff). |
+| **Overview** | Pengguna menelaah hasil pemeriksaan naskah pada tata letak Split-Screen Studio Workspace. Kolom kiri menyajikan lembar naskah dengan penyorotan warna semantik 3-tier, sedangkan kolom kanan menyajikan panel daftar sumber kecocokan beranotasi DOI ilmiah dan komparasi berdampingan. |
+| **Cross Requirement** | FR-REP-01, FR-REP-02, FR-REP-03 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Pemeriksaan naskah telah selesai berstatus COMPLETED (UC-04). |
+| **Postconditions** | Pengguna memperoleh wawasan visual terperinci mengenai sebaran plagiarisme, tingkat keparahan indikasi, dan rujukan dokumen sumber asli. |
+| **Typical Course of Events** | 1. Pengguna membuka tampilan hasil analisis naskah (/workspace/report/{id}).<br>2. Sistem menyajikan antarmuka Split-Screen Studio Workspace:<br>   - Top Summary Bar: Judul dokumen, jumlah kata, skor komposit total dalam badge tegas, dan persentase rincian 3-tier.<br>   - Kolom Kiri (60%): Interactive Heatmap Viewer menampilkan naskah dengan sorotan warna semantik (Merah = Leksikal >= 80%, Oranye = Semantik >= 75%, Kuning = Stilometri/AI).<br>   - Kolom Kanan (40%): Panel Tab 1 "Sumber Kecocokan" menampilkan kartu sumber terurut berdasarkan persentase kontribusi kemiripan lengkap dengan tautan DOI resmi.<br>3. Pengguna dapat mengklik tombol filter sorotan ([Semua], [Merah], [Oranye], [Kuning]).<br>4. Pengguna mengklik salah satu kalimat bermasalah pada lembar naskah.<br>5. Sistem menampilkan popover aksi cepat dan menampilkan jendela perbandingan teks berdampingan (Side-by-Side Diff) antara teks naskah dan teks dokumen sumber asli. |
+| **Alternative Workflow** | A1: Pengguna Mengklik Opsi Parafrase dari Popover: Pengguna memilih tombol [Parafrase Kalimat Ini] pada popover; sistem otomatis mengalihkan fokus ke Tab 2 (AI Chatbot & Parafrase) dengan konteks kalimat terpilih (UC-07). |
+| **Exceptional Workflow** | E1: Laporan Tidak Ditemukan: Jika ID laporan tidak valid atau naskah telah dihapus, sistem mengembalikan kode HTTP 404 Not Found dan menampilkan pesan: "Laporan pemeriksaan tidak ditemukan atau telah dihapus." |
 
-Field Nilai / Penjelasan
-Exceptional Workflow E1: Nama Lengkap Kosong: Sistem
-menampilkan peringatan: "Nama lengkap
-wajib diisi."
-UC-DOC-01 – Mengunggah Dokumen Naskah Masukan
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DOC-01: Mengunggah Dokumen Naskah
-Masukan
-Process Owner Modul Unggah Dokumen
-Date Created 24 Juni 2026
-Purpose Menerima berkas naskah yang akan dianalisis,
-memeriksa saldo kuota, dan menyimpan berkas
-fisik ke media penyimpanan server.
-Overview Pengguna menyeret berkas ke dropzone.
-Sistem memeriksa ukuran berkas, ketersediaan
-saldo token, memotong 1 kuota token, dan
-menyimpan berkas dengan nama unik UUID.
-Cross Requirement FR-DOC-01, FR-DOC-02, FR-PAY-01
-Actor Pengguna Terdaftar (Trial / Premium), Dosen
-Preconditions Pengguna telah login dan memiliki sisa saldo
-minimal 1 token kuota.
-Postconditions Berkas naskah fisik tersimpan aman di disk;
-entitas dokumen berstatus UPLOADED
-tercatat di basis data; kuota token terpotong 1
-unit.
-Typical Course of Events 1. Pengguna membuka halaman Workspace
-Audit.2. Pengguna mengunggah berkas naskah
-(.pdf / .docx / .txt).3. Sistem memverifikasi
-ukuran berkas tidak melebihi 15 MB.4. Sistem
-memeriksa ketersediaan saldo token kuota
-pengguna.5. Pengguna menekan tombol
-"Konfirmasi Pemeriksaan".6. Sistem
-memotong 1 saldo token dari akun pengguna.7.
-Sistem menghasilkan nama berkas aman
-berbasis UUIDv4.8. Sistem menyimpan berkas
+Tabel 9: UC-06 Konsultasi Naskah via AI Chatbot
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-06: Konsultasi Naskah via AI Chatbot |
+| **Process Owner** | Modul AI Chatbot Asisten Naskah (AcademicAssistantService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Memfasilitasi diskusi interaktif antara pengguna dan AI Asisten Akademik di panel Split-Screen Studio Workspace mengenai evaluasi naskah, kaidah penulisan ilmiah, perbaikan tata bahasa, dan sitasi. |
+| **Overview** | Pengguna berkonsultasi mengenai kalimat bermasalah dengan AI Asisten. Sistem menerapkan Academic Guardrail secara ketat untuk membatasi ruang lingkup tanya-jawab hanya pada ranah akademik, memotong kuota trial (Free User) atau sub-kredit token (Premium User), dan menyajikan respons bimbingan terstruktur. |
+| **Cross Requirement** | FR-CHAT-01, FR-CHAT-02, FR-CHAT-06, FR-CHAT-07, NFR-SEC-12 |
+| **Actor** | Free User (Trial 3x), Premium User (Token) |
+| **Preconditions** | Pengguna berada di Split-Screen Studio Workspace dan memiliki kuota chat aktif (ai_trial_remaining > 0 untuk Free User, atau saldo token mencukupi untuk Premium User). |
+| **Postconditions** | Pertanyaan dan respon AI tersimpan di tabel chat_messages, serta kuota trial atau sub-kredit token terpotong secara transparan. |
+| **Typical Course of Events** | 1. Pengguna membuka Tab 2 "AI Asisten" pada panel kanan Split-Screen Studio Workspace.<br>2. Pengguna mengetikkan pertanyaan konsultasi atau memilih tombol prompt cepat ([Perhalus Paragraf], [Ubah ke Kalimat Pasif], [Jelaskan Alasan Plagiat]).<br>3. Sistem memeriksa hak akses kuota: Free User diverifikasi ai_trial_remaining > 0; Premium User diverifikasi memiliki saldo token.<br>4. Modul AcademicGuardrail menganalisis teks prompt masukan untuk mendeteksi upaya manipulasi (jailbreak/prompt injection) dan memastikan pertanyaan relevan dengan etika ilmiah.<br>5. Sistem menyusun konteks naskah beserta riwayat obrolan dan mengirimkan payload ke Google Gemini 2.5 Flash API.<br>6. Gemini API mengembalikan jawaban bimbingan penulisan ilmiah terstruktur.<br>7. Sistem memotong 1 kuota trial (Free User) atau sub-kredit token (Premium User: 1 Token / 10 respons).<br>8. Sistem menyajikan respons di gelembung obrolan dan menyimpan rekaman ke tabel chat_messages. |
+| **Alternative Workflow** | A1: Pengalihan ke Penyedia Fallback: Jika API Gemini mengalami gangguan sementara atau batas laju (HTTP 429), Dual-Engine LLM Gateway secara otomatis beralih ke DeepSeek v4.1 Flash (via 9Router) untuk menyajikan respon tanpa interupsi bagi pengguna. |
+| **Exceptional Workflow** | E1: Kuota Trial Free User Telah Habis: Jika sisa kuota trial = 0, sistem mengunci area input obrolan dan menampilkan modal paywall: "Batas 3 kali uji coba AI Asisten telah habis. Silakan beli paket token untuk menikmati akses tanpa batas sebagai Premium User."<br>E2: Pelanggaran Academic Guardrail: Jika pengguna mengajukan pertanyaan non-akademik (misal: meminta lelucon, skrip kode jahat, atau topik di luar naskah), sistem menolak permintaan dan mengembalikan respon: "AI Asisten VeriText hanya melayani konsultasi naskah ilmiah, tata bahasa, dan perbaikan sitasi akademik." |
 
-Field Nilai / Penjelasan
-ke direktori penyimpanan terisolasi.9. Sistem
-memicu alur validasi dan ekstraksi berkas
-(UC-DOC-02).
-Alternative Workflow -
-Exceptional Workflow E1: Kuota Token Habis: Sistem menolak
-proses unggah dan memunculkan modal
-paywall pembelian paket token.E2: Ukuran
-Berkas > 15 MB: Sistem menampilkan pesan
-galat: "Ukuran berkas melebihi batas maksimal
-15 MB."
-UC-DOC-02 – Validasi Berkas & Ekstraksi Teks (PDF/DOCX/TXT)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DOC-02: Validasi Berkas & Ekstraksi
-Teks (PDF/DOCX/TXT)
-Process Owner Mesin Pra-pemrosesan Teks
-Date Created 24 Juni 2026
-Purpose Memverifikasi tipe biner berkas dan
-mengekstrak seluruh teks murni non-markup
-dari berkas dokumen.
-Overview Sistem memeriksa magic bytes berkas. Jika
-valid, sistem memanggil parser PDF
-(pdfplumber) atau DOCX (python-docx),
-mengekstrak string teks, dan menghitung total
-jumlah kata.
-Cross Requirement FR-DOC-02, FR-DOC-03, FR-DOC-06
-Actor Sistem Internal (Backend Service)
-Preconditions Berkas dokumen telah diunggah (UC-DOC-01)
-dan berada di disk server.
-Postconditions Teks dokumen mentah berhasil diekstraksi dan
-disimpan di tabel sementara
-extracted_documents.
-Typical Course of Events 1. Sistem membaca header byte biner berkas
-untuk memvalidasi MIME-type riil.2. Sistem
+Tabel 10: UC-07 Parafrase Instan dan Cek Ulang Kalimat
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-07: Parafrase Instan dan Cek Ulang Kalimat |
+| **Process Owner** | Modul Parafrase Instan & Re-Scoring Engine (AcademicAssistantService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Menghasilkan 3 opsi variasi parafrase ilmiah berstandar akademik dalam 3 mode pilihan (Per Kalimat, Per Paragraf, Seluruh Halaman) dan menerapkan variasi terpilih langsung ke naskah dengan penghitungan ulang skor secara real-time. |
+| **Overview** | Pengguna memilih segmen teks naskah yang berindikasi plagiat pada heatmap. Sistem mengaktifkan AI Paraphrase Engine untuk menghasilkan 3 opsi kalimat akademik alternatif lengkap dengan prediksi penurunan skor kemiripan. Pengguna memilih opsi terbaik dan menerapkannya ke naskah (in-place replacement), memicu kalkulasi ulang skor secara instan dan memperbarui warna sorotan menjadi Hijau (Telah Diperbaiki). |
+| **Cross Requirement** | FR-CHAT-03, FR-CHAT-04, FR-CHAT-05, FR-CHAT-06, FR-CHAT-07 |
+| **Actor** | Free User (Trial 3x), Premium User (Token) |
+| **Preconditions** | Kalimat/segmen bermasalah dipilih pada heatmap naskah dan kuota parafrase mencukupi. |
+| **Postconditions** | Teks kalimat pada tabel audit_sentences diperbarui secara in-place, skor kemiripan segmen dan komposit naskah turun, dan warna sorotan kalimat pada heatmap berubah menjadi Hijau. |
+| **Typical Course of Events** | 1. Pengguna memilih segmen teks pada Interactive Heatmap dan memilih mode parafrase (Mode Per Kalimat, Per Paragraf, atau Seluruh Halaman Sekaligus).<br>2. Pengguna mengklik tombol "Parafrase Sekarang".<br>3. Sistem memeriksa ketersediaan kuota (Trial untuk Free User, Saldo Token untuk Premium User).<br>4. Sistem mengirimkan teks ke mesin parafrase Gemini 2.5 Flash dengan instruksi restrukturisasi kalimat pasif-aktif dan substitusi sinonim ilmiah.<br>5. Sistem menyajikan 3 kartu opsi variasi parafrase lengkap dengan perkiraan penurunan skor (misal: "Turun dari 88% menjadi 12%").<br>6. Pengguna memilih salah satu variasi terbaik dan mengklik tombol "Terapkan ke Naskah & Cek Ulang In-Place".<br>7. Sistem mengganti teks kalimat di naskah secara in-place pada tabel audit_sentences.<br>8. Sistem mengeksekusi penghitungan ulang skor kemiripan segmen dan memperbarui skor komposit total naskah secara real-time.<br>9. Antarmuka heatmap pada layar peramban langsung diperbarui: warna sorotan kalimat berubah menjadi HIJAU (Telah Diperbaiki) dan badge skor total di Top Summary Bar berkurang seketika. |
+| **Alternative Workflow** | A1: Pengguna Menyalin Variasi ke Clipboard: Pengguna memilih tombol "Salin Teks" pada salah satu opsi variasi untuk menyalin kalimat ke clipboard tanpa langsung mengubah teks di naskah. |
+| **Exceptional Workflow** | E1: Kuota Habis: Sistem mengunci tombol parafrase dan memunculkan modal penawaran paket token Midtrans.<br>E2: Segmen Teks Kosong: Jika pengguna memicu aksi tanpa memilih teks valid, sistem menampilkan peringatan: "Silakan pilih kalimat atau paragraf yang hendak diparafrase." |
 
-Field Nilai / Penjelasan
-memanggil modul ekstraktor sesuai ekstensi
-berkas.3. Ekstraktor membaca halaman demi
-halaman dan mengekstrak konten teks murni.4.
-Sistem menghitung total kata dalam naskah.5.
-Sistem memverifikasi jumlah kata memenuhi
-syarat minimal ($\ge 50$ kata).6. Sistem
-meneruskan teks hasil ekstraksi ke modul
-segmentasi kalimat (UC-DOC-03).
-Alternative Workflow -
-Exceptional Workflow E1: Berkas Korup / Ekstensi Palsu (MIME
-Mismatch): Sistem membatalkan tugas,
-menghapus berkas, mengembalikan token
-pengguna, dan mencatat galat: "Berkas tidak
-valid atau mengalami kerusakan biner."E2:
-PDF Pindai Gambar Tanpa Lapisan Teks:
-Sistem mendeteksi jumlah kata $< 50$,
-mengembalikan token kuota, dan mengirim
-notifikasi: "Dokumen tidak memiliki lapisan
-teks yang dapat dibaca."
-UC-DOC-03 – Segmentasi Kalimat & Perekaman Character Offset
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DOC-03: Segmentasi Kalimat &
-Perekaman Character Offset
-Process Owner Mesin Pra-pemrosesan Teks
-Date Created 24 Juni 2026
-Purpose Memecah teks naskah menjadi kumpulan
-kalimat terstruktur serta merekam posisi indeks
-karakter untuk visualisasi heatmap.
-Overview Sistem membersihkan noise teks,
-menggunakan modul pemecah batas kalimat
-(sentence boundary disambiguator), dan
-mencatat nomor urut, teks kalimat, serta
-koordinat karakter awal dan akhir.
-Cross Requirement FR-DOC-04, FR-DOC-05
-Actor Sistem Internal (Backend Service)
+Tabel 11: UC-08 Unduh Laporan PDF dan Verifikasi QR
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-08: Unduh Laporan PDF dan Verifikasi QR |
+| **Process Owner** | Modul Pelaporan, Sertifikasi & Verifikasi Integritas Publik (ReportGeneratorService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Menerbitkan dan mengunduh berkas Laporan Audit Resmi berformat PDF beresolusi tinggi lengkap dengan segel digital dan kode QR dinamis bagi Premium User, serta memfasilitasi verifikasi keaslian laporan secara publik tanpa kewajiban login. |
+| **Overview** | Pengguna Premium dapat mengunduh dokumen PDF laporan resmi yang mencakup ringkasan eksekutif, grafik skor komposit 3-tier, daftar sumber referensi dengan DOI, dan stempel digital ber-QR Code. Pihak ketiga (dosen, penguji, mitra) dapat memindai QR Code untuk memvalidasi keaslian dokumen secara instan di portal verifikasi publik. |
+| **Cross Requirement** | FR-REP-04, FR-REP-05, FR-REP-06 |
+| **Actor** | Premium User (Unduh PDF), Free User / Publik (Verifikasi QR) |
+| **Preconditions** | Pemeriksaan naskah telah selesai berstatus COMPLETED (UC-04). |
+| **Postconditions** | Berkas PDF resmi terunduh ke perangkat lokal, atau status keabsahan sertifikat disajikan pada halaman verifikasi publik. |
+| **Typical Course of Events** | Skenario Unduh Laporan PDF Resmi (Premium User):<br>1. Pengguna Premium menekan tombol "Unduh Laporan PDF Resmi" pada Top Summary Bar.<br>2. Sistem memverifikasi peran pengguna (role == 'PREMIUM').<br>3. Sistem mengompilasi metadata dokumen, skor komposit, rincian per tier, daftar sumber, dan visualisasi anotasi naskah.<br>4. Sistem membangkitkan Dynamic QR Code yang mengarah ke URL publik permanen: https://veritext.ai/verify/{certificate_uuid}.<br>5. Engine WeasyPrint merender HTML/CSS akademik menjadi berkas PDF berkualitas cetak dengan stempel digital resmi.<br>6. Sistem menyajikan berkas PDF ke peramban pengguna untuk diunduh.<br><br>Skenario Verifikasi Integritas Publik (Dosen / Penguji / Pihak Ketiga):<br>1. Pihak ketiga memindai kode QR dari berkas cetak atau membuka tautan https://veritext.ai/verify/{certificate_uuid}.<br>2. Sistem memvalidasi UUID sertifikat pada basis data tabel audit_reports tanpa kewajiban autentikasi login.<br>3. Sistem menyajikan halaman validasi resmi dengan stempel hijau keabsahan naskah, nama dokumen, tanggal audit, dan persentase skor resmi. |
+| **Alternative Workflow** | A1: Pengunduhan Ulang Riwayat: Pengguna Premium dapat mengunduh kembali berkas PDF laporan kapan saja dari halaman Riwayat Dokumen (/history). |
+| **Exceptional Workflow** | E1: Free User Mencoba Mengunduh PDF: Jika akun Free User menekan tombol unduh PDF, sistem mengembalikan kode HTTP 403 Forbidden dan memunculkan modal paywall: "Pengunduhan Laporan PDF Resmi berstempel digital dan sertifikat QR merupakan fitur eksklusif Premium User. Silakan beli paket token untuk upgrade akun Anda."<br>E2: QR Code Palsu / Sertifikat Telah Dihapus: Jika certificate_uuid tidak ditemukan di database, portal menampilkan stempel merah: "Sertifikat Tidak Ditemukan atau Naskah Telah Dihapus Permanen oleh Pemilik Data (Kepatuhan UU PDP)." |
 
-Field Nilai / Penjelasan
-Preconditions Teks naskah mentah telah berhasil diekstraksi
-dari berkas (UC-DOC-02).
-Postconditions Daftar record kalimat terstruktur tersimpan di
-basis data dengan indeks start_offset dan
-end_offset yang presisi.
-Typical Course of Events 1. Sistem menjalankan pembersihan karakter
-non-ASCII dan normalisasi spasi ganda.2.
-Sistem mendeteksi pemisah batas kalimat
-(titik, tanda seru, tanda tanya yang bukan
-singkatan gelar).3. Sistem membentuk larik
-objek kalimat.4. Untuk setiap kalimat, sistem
-merekam indeks start_char dan end_char relatif
-terhadap teks lengkap.5. Sistem menyimpan
-larik kalimat ke tabel audit_sentences.6. Sistem
-memicu pendelegasian tugas audit ke Celery
-worker (UC-DET-01).
-Alternative Workflow -
-Exceptional Workflow -
-UC-DOC-04 – Menghapus Dokumen Naskah Pengguna (Hak UU PDP)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DOC-04: Menghapus Dokumen Naskah
-Pengguna (Hak UU PDP)
-Process Owner Modul Manajemen Dokumen & Kepatuhan
-Privasi
-Date Created 24 Juni 2026
-Purpose Memenuhi hak pengguna atas penghapusan
-data pribadi naskah karya tulis (Right to
-Erasure) sesuai UU PDP No. 27/2022.
-Overview Pengguna memilih dokumen dari riwayat dan
-menekan tombol hapus permanen. Sistem
-menghapus berkas fisik di disk, catatan
-kalimat, vektor embedding di basis data, dan
-laporan audit terkait.
-Cross Requirement FR-DOC-07, NFR-COMP-02
+Tabel 12: UC-09 Kelola dan Hapus Riwayat Naskah (UU PDP)
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-09: Kelola dan Hapus Riwayat Naskah (Kepatuhan UU PDP) |
+| **Process Owner** | Modul Manajemen Riwayat Dokumen & Kepatuhan Privasi (ReportGeneratorService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Memfasilitasi peninjauan riwayat seluruh naskah yang pernah diperiksa dan memberikan hak penghapusan naskah secara permanen (hard-delete cascading) bagi pengguna sesuai amanat UU Perlindungan Data Pribadi. |
+| **Overview** | Pengguna dapat melihat daftar seluruh pemeriksaan naskah terdahulu, mencari berdasarkan judul, dan memfilter berdasarkan tanggal. Pengguna memiliki kendali mutlak untuk menghapus naskah secara permanen dari server; sistem mengeksekusi penghapusan berantai (cascade) atas berkas fisik, rekaman naskah, larik kalimat, laporan audit, dan riwayat chat. |
+| **Cross Requirement** | FR-REP-07, FR-REP-08, NFR-COMP-01, NFR-COMP-02, NFR-COMP-03 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Pengguna telah masuk ke sistem dan memiliki riwayat pemeriksaan naskah. |
+| **Postconditions** | Berkas fisik naskah, rekaman tabel documents, audit_tasks, audit_sentences, audit_reports, chat_sessions, dan chat_messages terhapus permanen dari sistem. |
+| **Typical Course of Events** | 1. Pengguna membuka halaman "Riwayat Naskah" (/history).<br>2. Sistem menyajikan tabel riwayat pemeriksaan (judul naskah, waktu audit, persentase skor kemiripan, jumlah kata, status).<br>3. Pengguna memilih salah satu dokumen dan menekan tombol "Hapus Permanen".<br>4. Sistem menampilkan dialog modal konfirmasi bahaya penghapusan data permanen sesuai UU PDP No. 27/2022.<br>5. Pengguna mengetikkan konfirmasi persetujuan penghapusan.<br>6. Sistem memverifikasi bahwa user_id pemohon cocok dengan pemilik sah dokumen.<br>7. Sistem mengeksekusi hard-delete cascade di dalam transaksi basis data: menghapus berkas naskah dari storage fisik, menghapus record dari tabel documents, audit_tasks, audit_sentences, audit_reports, chat_sessions, dan chat_messages.<br>8. Sistem mencatat log insiden penghapusan pada tabel audit_logs untuk kebutuhan kepatuhan hukum.<br>9. Sistem memperbarui tabel riwayat di layar pengguna dan menampilkan notifikasi sukses: "Dokumen dan seluruh data terkait telah dihapus permanen dari sistem." |
+| **Alternative Workflow** | A1: Pembatalan Penghapusan: Pengguna menekan tombol "Batal" pada dialog modal; sistem menutup dialog tanpa memutasi data apapun. |
+| **Exceptional Workflow** | E1: Percobaan Akses Tidak Sah: Jika pemohon bukan pemilik sah dokumen, sistem menolak eksekusi dengan kode HTTP 403 Forbidden dan mencatat peringatan keamanan pada audit_logs. |
 
-Field Nilai / Penjelasan
-Actor Pengguna Pemilik Dokumen, Administrator
-Preconditions Pengguna telah login dan dokumen yang dituju
-merupakan milik akun pengguna yang
-bersangkutan.
-Postconditions Seluruh data terkait dokumen terhapus
-permanen dari basis data dan penyimpanan
-fisik (hard delete); log penghapusan dicatat.
-Typical Course of Events 1. Pengguna membuka menu "Riwayat Audit
-Dokumen".2. Pengguna mencari dokumen
-yang ingin dihapus.3. Pengguna menekan ikon
-"Hapus Dokumen".4. Sistem menampilkan
-dialog konfirmasi penghapusan permanen.5.
-Pengguna mengonfirmasi persetujuan
-penghapusan.6. Sistem membuka transaksi
-basis data dan menghapus record di
-audit_reports, audit_sentences, dan entitas
-dokumen.7. Sistem menghapus berkas fisik
-PDF/Word dari disk server.8. Sistem mencatat
-log kepatuhan privasi di audit_logs.9. Sistem
-menampilkan notifikasi: "Dokumen dan
-seluruh data vektor terkait telah dihapus
-permanen."
-Alternative Workflow -
-Exceptional Workflow E1: Pengguna Mencoba Menghapus Dokumen
-Milik Pengguna Lain: Sistem menolak
-permintaan dengan kode HTTP 403 Forbidden
-dan mencatat insiden keamanan.
-UC-DET-01 – Menjalankan Pemeriksaan Deteksi Plagiarisme Hybrid
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-01: Menjalankan Pemeriksaan
-Deteksi Plagiarisme Hybrid
-Process Owner Mesin Orkestrasi Deteksi & Task Dispatcher
-Date Created 24 Juni 2026
+Tabel 13: UC-10 Beli Kuota Token dan Upgrade Premium
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-10: Beli Kuota Token dan Upgrade Premium |
+| **Process Owner** | Modul Billing, Dompet Kuota & Integrasi Midtrans (BillingService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Memfasilitasi pembelian saldo token komputasi melalui Midtrans Snap API (skema By Token satuan atau By Paket Token diskon) dengan verifikasi notifikasi webhook SHA-512 yang secara instan menambah saldo dompet dan menaikkan status peran akun menjadi Premium User. |
+| **Overview** | Pengguna memilih jumlah token custom atau paket bundling diskon pada halaman billing. Backend membuat transaksi ke Midtrans Snap API dan menyajikan modal pembayaran (QRIS, GoPay, ShopeePay, VA Bank, Kartu Kredit). Saat pembayaran lunas, webhook Midtrans mengirimkan notifikasi settlement; sistem memverifikasi signature SHA-512, menambah saldo token di dalam transaksi atomik, mengubah peran akun menjadi PREMIUM, dan menerbitkan invoice resmi. |
+| **Cross Requirement** | FR-PAY-01, FR-PAY-03, FR-PAY-04, FR-PAY-05, FR-PAY-06, FR-PAY-07, FR-PAY-08, FR-PAY-09, NFR-SEC-03 |
+| **Actor** | Free User, Premium User |
+| **Preconditions** | Pengguna telah masuk ke sistem dan berada di halaman Pembelian Kuota (/billing). |
+| **Postconditions** | Saldo tabel token_wallets bertambah, peran pengguna pada tabel users berubah menjadi 'PREMIUM', status invoice menjadi 'SETTLEMENT', dan dokumen invoice PDF tersedia. |
+| **Typical Course of Events** | 1. Pengguna membuka halaman Pembelian Kuota (/billing).<br>2. Pengguna memilih salah satu dari 2 skema pembelian:<br>   - Skema A (By Token): Memasukkan jumlah token custom (harga dasar Rp 2.000/token, minimal 5 token = Rp 10.000).<br>   - Skema B (By Paket Token): Memilih paket bundling hemat: Starter (15 Token = Rp 25.000), Skripsi Pro (50 Token = Rp 65.000), atau Riset Intensif (150 Token = Rp 150.000).<br>3. Pengguna menekan tombol "Beli Sekarang".<br>4. Backend memvalidasi parameter masukan, membuat record invoice berstatus PENDING di tabel invoices, dan meminta Snap Token ke Midtrans API.<br>5. Sistem menyajikan modal sematan Midtrans Snap di layar peramban pengguna.<br>6. Pengguna memilih metode pembayaran (QRIS, e-Wallet GoPay/ShopeePay, Virtual Account Bank Mandiri/BCA/BNI/BRI, atau Kartu Kredit) dan menyelesaikan pelunasan.<br>7. Server Midtrans mengirimkan HTTP POST notifikasi webhook ke endpoint /api/v1/billing/webhook.<br>8. Backend mengekstrak order_id, status_code, gross_amount, dan signature_key, lalu memvalidasi signature menggunakan formula SHA-512.<br>9. Di dalam transaksi basis data atomik dengan row-level lock (SELECT ... FOR UPDATE): sistem memastikan status invoice belum SETTLEMENT, memperbarui status menjadi SETTLEMENT, menambah saldo token di tabel token_wallets, dan mengubah status peran pengguna menjadi 'PREMIUM' (user.role = 'PREMIUM').<br>10. Frontend mendeteksi status sukses via smart polling / pop-up callback, menampilkan badge status "PREMIUM USER", memperbarui widget saldo token, dan menyajikan tautan unduh Invoice PDF. |
+| **Alternative Workflow** | A1: Pengunduhan Tanda Terima (Invoice PDF): Pengguna menekan tombol "Unduh Invoice" pada riwayat transaksi; sistem menerbitkan berkas PDF bukti pembayaran resmi. |
+| **Exceptional Workflow** | E1: Signature Webhook Tidak Cocok (Untrusted Payload): Sistem menolak notifikasi dengan kode HTTP 403 Forbidden, membatalkan mutasi saldo, dan mencatat peringatan keamanan pada audit_logs.<br>E2: Pembayaran Kedaluwarsa / Dibatalkan: Jika pengguna membatalkan transaksi atau batas waktu bayar habis, status invoice diperbarui menjadi EXPIRE / CANCEL tanpa perubahan saldo. |
 
-Field Nilai / Penjelasan
-Purpose Mengorkestrasikan keseluruhan tahapan
-analisis multi-tier secara otomatis melalui
-antrean asinkron Celery.
-Overview Sistem membentuk ID tugas (Task UUID),
-mengirim pesan tugas ke broker Redis, dan
-memicu worker Celery untuk mengeksekusi
-Tier 1 s/d Tier 4 secara sekuensial.
-Cross Requirement FR-DET-01, FR-DET-09
-Actor Sistem Internal (FastAPI Task Dispatcher &
-Celery Worker)
-Preconditions Dokumen telah berhasil melalui
-pra-pemrosesan kalimat (UC-DOC-03).
-Postconditions Tugas audit dialokasikan ke worker; status
-pekerjaan berubah menjadi QUEUED lalu
-PROCESSING.
-Typical Course of Events 1. API Gateway menerima permintaan inisiasi
-audit dari modul pra-pemrosesan.2. API
-Gateway membangkitkan Task UUID unik.3.
-API Gateway mendaftarkan status awal tugas
-di Redis dengan status QUEUED.4. Celery
-worker yang tersedia mengambil pekerjaan
-dari antrean Redis.5. Worker memperbarui
-status pekerjaan menjadi PROCESSING.6.
-Worker mengeksekusi komputasi Tier 1 -
-Leksikal (UC-DET-02).7. Worker
-mengeksekusi komputasi Tier 2 - Semantik
-Vektor (UC-DET-03).8. Worker mengeksekusi
-komputasi Tier 3 - Stilometri (UC-DET-04).9.
-Worker mengeksekusi komputasi Tier 4 -
-Agregasi Skor (UC-DET-05).10. Worker
-memperbarui status akhir menjadi SUCCESS.
-Alternative Workflow A1: Akun Pengguna Trial: Worker hanya
-mengeksekusi Tier 1 (Leksikal) dan melewati
-Tier 2 & Tier 3 guna menghemat utilisasi
-sumber daya komputasi server.
-Exceptional Workflow E1: Kegagalan Fatal Worker: Jika worker
-mengalami exception tak terduga, sistem
-mengubah status tugas menjadi FAILED,
-mengembalikan token kuota pengguna, dan
-mencatat stack trace ke log error.
+Tabel 14: UC-11 Pantau Dasbor Analitik dan Log Transaksi (Admin 100% Read-Only)
+| Field | Nilai / Penjelasan |
+| :--- | :--- |
+| **Use Case ID & Name** | UC-11: Pantau Dasbor Analitik dan Log Transaksi (Admin 100% Read-Only) |
+| **Process Owner** | Modul Monitoring Layanan & Audit Keamanan (AdminMonitoringService) |
+| **Date Created** | 24 Juni 2026 |
+| **Purpose** | Menyajikan dasbor analitik metrik global, grafik tren skor plagiarisme, log transaksi keuangan Midtrans, telemetri beban infrastruktur antrean Celery worker, dan log audit keamanan bagi Administrator secara 100% Read-Only tanpa intervensi data pengguna. |
+| **Overview** | Administrator yang memiliki hak akses role == 'ADMIN' memantau indikator kesehatan dan pertumbuhan operasional platform secara terpusat. Seluruh antarmuka admin bersifat pasif (murni GET / pembacaan data agregat) tanpa tombol atau fungsi untuk mengubah data pengguna, memutasi saldo, atau mengintip berkas naskah privat demi menjaga kepatuhan privasi UU PDP. |
+| **Cross Requirement** | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-04, NFR-COMP-03 |
+| **Actor** | Admin (Read-Only) |
+| **Preconditions** | Administrator telah masuk ke sistem menggunakan akun berstatus peran role == 'ADMIN'. |
+| **Postconditions** | Administrator memperoleh wawasan komprehensif mengenai stabilitas operasional, utilisasi komputasi, dan kesehatan finansial sistem secara real-time. |
+| **Typical Course of Events** | 1. Administrator membuka halaman Dasbor Admin (/admin).<br>2. Sistem memvalidasi token JWT dan memastikan peran pengguna adalah role == 'ADMIN'.<br>3. Sistem mengeksekusi kueri agregasi pembacaan (SELECT) pada basis data:<br>   - Menghitung total naskah yang dipindai, rata-rata skor kemiripan komposit, total pendapatan sistem (revenue), dan jumlah pengguna aktif.<br>   - Menghasilkan data grafik tren pemindaian dokumen harian dan sebaran distribusi skor kemiripan multi-tier.<br>4. Administrator membuka tab "Transaksi Keuangan" untuk memantau daftar 50 transaksi pembayaran Midtrans terakhir beserta nomor order, nominal, dan status settlement secara read-only.<br>5. Administrator membuka tab "Telemetri Server" untuk mengamati status kesehatan antrean worker Celery, pemakaian memori Redis, dan latensi kueri pgvector.<br>6. Administrator membuka tab "Audit Log Keamanan" untuk meninjau rekaman aktivitas login gagal, percobaan brute-force, dan peristiwa penghapusan naskah.<br>7. Seluruh interaksi berlangsung 100% Read-Only tanpa adanya formulir atau tombol mutasi data pengguna. |
+| **Alternative Workflow** | A1: Ekspor Ringkasan Metrik Agregat: Administrator dapat mengunduh laporan ringkasan analitik statistik sistem bulanan dalam format CSV/PDF agregat tanpa data pribadi pengguna. |
+| **Exceptional Workflow** | E1: Percobaan Akses oleh Non-Admin (Free / Premium): Jika pengguna berstatus role != 'ADMIN' mencoba mengakses rute /admin atau endpoint /api/v1/admin/*, sistem menolak permintaan dengan kode HTTP 403 Forbidden dan mencatat insiden keamanan pada audit_logs. |
 
-UC-DET-02 – Pemrosesan Tier 1 - Lexical Match Engine (Winnowing Hash)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-02: Pemrosesan Tier 1 - Lexical
-Match Engine (Winnowing Hash)
-Process Owner Mesin Deteksi Tier 1
-Date Created 24 Juni 2026
-Purpose Mendeteksi penjiplakan kata per kata persis
-(verbatim copy-paste) menggunakan algoritma
-fingerprinting Winnowing k-gram.
-Overview Worker memproses teks dokumen menjadi
-k-gram (k=5), menghitung rolling hash
-Rabin-Karp, memilih hash minimum pada
-sliding window (w=4), dan mencocokkannya
-ke indeks sidik jari korpus.
-Cross Requirement FR-DET-02, FR-DET-03
-Actor Sistem Internal (Celery Worker)
-Preconditions Naskah teks telah terurai menjadi larik kata
-bersih.
-Postconditions Seluruh segmen teks yang cocok secara
-leksikal ditandai dengan label TIER1_MATCH
-dan ditautkan ke ID dokumen sumber
-pembanding.
-Typical Course of Events 1. Worker mengambil teks naskah masukan.2.
-Worker membentuk token $k$-gram kata
-dengan ukuran $k=5$.3. Worker menghitung
-nilai hash untuk setiap $k$-gram menggunakan
-formula Rabin-Karp Rolling Hash.4. Worker
-menerapkan algoritma sliding window dengan
-ukuran jendela $w=4$ untuk menyeleksi sidik
-jari dokumen (fingerprints).5. Worker
-membandingkan himpunan hash naskah
-terhadap tabel indeks lexical_fingerprints di
-basis data.6. Untuk setiap hash yang cocok,
-worker mencatat rentang karakter teks
-masukan dan ID dokumen rujukan.7. Worker
-menghitung persentase kemiripan leksikal
-naskah ($S_{\text{Lexical}}$).
-Alternative Workflow -
+---
 
-Field Nilai / Penjelasan
-Exceptional Workflow -
-UC-DET-03 – Pemrosesan Tier 2 - Semantic AI Engine (Sentence Transformers & pgvector)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-03: Pemrosesan Tier 2 - Semantic AI
-Engine (Sentence Transformers & pgvector)
-Process Owner Mesin Deteksi Tier 2 & Vector Database
-Date Created 24 Juni 2026
-Purpose Mengungkap parafrasa cerdas dan substitusi
-sinonim dengan membandingkan kedekatan
-makna vektor kalimat ke basis data pgvector.
-Overview Worker memproses kalimat naskah secara
-batch ke model Sentence Transformers
-multilingual, menghasilkan vektor
-384-dimensi, dan mengeksekusi kueri jarak
-kosinus ANN di basis data korpus.
-Cross Requirement FR-DET-04, FR-DET-05
-Actor Sistem Internal (Celery Worker & PostgreSQL
-pgvector)
-Preconditions Pipa Tier 1 telah selesai dan akun pengguna
-memiliki hak akses analisis semantik
-(Premium / Dosen).
-Postconditions Pasangan kalimat dengan Cosine Similarity
-$\ge 0.85$ ditandai dengan label
-TIER2_MATCH beserta skor kemiripan dan
-naskah sumber pembanding.
-Typical Course of Events 1. Worker mengambil larik kalimat naskah
-masukan dari basis data.2. Worker
-mengecualikan kalimat yang sudah terdeteksi
-100% pada Tier 1 untuk mengoptimasi
-komputasi.3. Worker membagi kalimat
-menjadi beberapa batch (misal: 32 kalimat per
-batch).4. Model
-paraphrase-multilingual-MiniLM-L12-v2
-melakukan inferensi dan menghasilkan vektor
-
-Field Nilai / Penjelasan
-embedding 384D untuk tiap kalimat.5. Untuk
-setiap vektor kalimat, worker mengeksekusi
-kueri SQL jarak kosinus <=> pada tabel
-document_chunks berindeks HNSW.6. Sistem
-mengambil record korpus dengan jarak kosinus
-$\le 0.15$ (setara Cosine Similarity $\ge
-0.85$).7. Worker mencatat kecocokan
-semantik, skor kemiripan, nomor kalimat, dan
-ID rujukan korpus.8. Worker menghitung
-persentase kemiripan semantik naskah
-($S_{\text{Semantic}}$).
-Alternative Workflow -
-Exceptional Workflow -
-UC-DET-04 – Pemrosesan Tier 3 - Stylometric & Burstiness Score
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-04: Pemrosesan Tier 3 - Stylometric
-& Burstiness Score
-Process Owner Mesin Analisis Stilometri
-Date Created 24 Juni 2026
-Purpose Mengevaluasi gaya bahasa statistik untuk
-mengidentifikasi teks yang terindikasi hasil
-generasi model AI (AI-generated text).
-Overview Worker menghitung distribusi panjang kalimat
-dan keragaman kosa kata. Kalimat atau
-paragraf dengan struktur yang sangat monoton
-dan homogen ditandai sebagai anomali gaya
-mesin.
-Cross Requirement FR-DET-06
-Actor Sistem Internal (Celery Worker)
-Preconditions Seluruh kalimat naskah masukan telah terdaftar
-dengan informasi panjang karakter dan jumlah
-kata.
-
-Field Nilai / Penjelasan
-Postconditions Nilai metrik Burstiness dan Type-Token Ratio
-tersimpan; blok teks yang terindikasi AI
-ditandai dengan label TIER3_MATCH.
-Typical Course of Events 1. Worker menghitung panjang kata untuk
-setiap kalimat dalam naskah.2. Worker
-menghitung nilai rata-rata ($\mu$) dan varians
-standar deviasi ($\sigma^2$) panjang kalimat
-untuk menentukan skor Burstiness.3. Worker
-menghitung rasio Type-Token Ratio (TTR)
-untuk mengukur kelimpahan kosakata unik.4.
-Jika blok teks memiliki varians panjang
-kalimat yang mendekati nol disertai
-prediktabilitas struktur tinggi, sistem
-menandainya sebagai indikasi teks sintesis
-bot/AI.5. Worker mencatat rentang karakter
-yang terindikasi dan menghasilkan skor
-stilometri ($S_{\text{Stylometric}}$).
-Alternative Workflow -
-Exceptional Workflow -
-UC-DET-05 – Pemrosesan Tier 4 - Scoring Aggregator & Heatmap Mapping
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-05: Pemrosesan Tier 4 - Scoring
-Aggregator & Heatmap Mapping
-Process Owner Mesin Agregasi Skor & Kompilasi Laporan
-Date Created 24 Juni 2026
-Purpose Menggabungkan seluruh temuan dari ketiga
-tier, menghitung persentase kemiripan total,
-dan memetakan koordinat warna anotasi
-heatmap.
-Overview Worker mengumpulkan hasil deteksi Tier 1, 2,
-dan 3, mengecualikan sitasi kutipan resmi,
-menghitung rumus skor komposit terbobot, dan
-menyusun payload laporan siap saji.
-Cross Requirement FR-DET-07, FR-DET-08, FR-REP-01
-
-Field Nilai / Penjelasan
-Actor Sistem Internal (Celery Worker)
-Preconditions Pemrosesan Tier 1, Tier 2, dan Tier 3 telah
-selesai dieksekusi.
-Postconditions Laporan audit lengkap tersimpan di tabel
-audit_reports; payload anotasi JSON tersimpan
-untuk konsumsi frontend; status tugas menjadi
-SUCCESS.
-Typical Course of Events 1. Worker mengumpulkan seluruh koordinat
-kecocokan dari Tier 1, Tier 2, dan Tier 3.2.
-Worker memeriksa apakah segmen yang cocok
-berada di dalam blok tanda kutip sitasi resmi;
-jika ya, segmen tersebut dikecualikan dari
-pelanggaran.3. Worker menghitung persentase
-kemiripan komposit total menggunakan
-formula pembobotan: 
-$\text{Score}{\text{Total}} = 0.50 \cdot
-S{\text{Lexical}} + 0.35 \cdot
-S_{\text{Semantic}} + 0.15 \cdot
-S_{\text{Stylometric}}$.4. Worker menyusun
-daftar koordinat karakter (character spans)
-beserta warna anotasi: Merah (Leksikal),
-Oranye (Semantik), Kuning (AI).5. Worker
-menyusun ringkasan kontribusi masing-masing
-dokumen sumber pembanding.6. Worker
-menyimpan entitas laporan akhir ke tabel
-audit_reports.7. Worker memperbarui status
-pekerjaan di Redis menjadi SUCCESS.
-Alternative Workflow -
-Exceptional Workflow -
-UC-DET-06 – Memantau Progres Pengerjaan Audit (Smart Polling)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-06: Memantau Progres Pengerjaan
-Audit (Smart Polling)
-Process Owner Antarmuka Klien & API Gateway
-Date Created 24 Juni 2026
-
-Field Nilai / Penjelasan
-Purpose Menyediakan pembaruan visual progres
-pengerjaan audit dokumen kepada pengguna
-secara berkala dan real-time.
-Overview Frontend mengirimkan permintaan GET
-polling setiap 2 detik ke backend. Sistem
-mengembalikan status tahapan aktif dan
-persentase estimasi hingga pekerjaan berstatus
-SUCCESS.
-Cross Requirement FR-DET-09, FR-REP-01
-Actor Pengguna (Trial / Premium), Dosen
-Preconditions Pengguna telah memulai proses audit dan
-memegang Task UUID aktif.
-Postconditions Pengguna melihat pergerakan bilah kemajuan
-(progress bar) dan otomatis dialihkan ke
-halaman Heatmap setelah selesai.
-Typical Course of Events 1. Klien web menampilkan antarmuka bilah
-kemajuan dengan status QUEUED.2. Kueri
-TanStack Query melakukan polling berkala ke
-endpoint /api/v1/audits/{task_id}/status.3.
-Server membaca status job dari cache Redis
-dan mengembalikan respons status (misal:
-PROCESSING_TIER2, kemajuan: 65%).4.
-Klien memperbarui antarmuka pengguna
-sesuai data respons.5. Ketika server
-mengembalikan status SUCCESS, klien
-menghentikan polling.6. Klien secara otomatis
-memuat dan merender halaman Dasbor
-Interactive Heatmap.
-Alternative Workflow -
-Exceptional Workflow E1: Status Berubah Menjadi FAILED: Klien
-menghentikan polling dan menampilkan pesan
-galat: "Pemeriksaan gagal diproses. Saldo
-token Anda telah dikembalikan otomatis."
-2. UC-DET-07 – Membatalkan Proses Audit yang Sedang
-Berjalan
-
-Field Nilai / Penjelasan
-Use Case ID & Name UC-DET-07: Membatalkan Proses Audit yang
-Sedang Berjalan
-Process Owner Modul Task Dispatcher & Antrean Celery
-Date Created 24 Juni 2026
-Purpose Mengizinkan pengguna membatalkan tugas
-audit yang masih mengantre sebelum
-dieksekusi oleh worker.
-Overview Pengguna menekan tombol batalkan pada
-halaman tunggu. Sistem memeriksa status
-tugas di Redis. Jika belum dieksekusi, tugas
-dicabut dari antrean dan token kuota
-dikembalikan ke akun pengguna.
-Cross Requirement FR-DET-10, FR-PAY-02
-Actor Pengguna (Trial / Premium)
-Preconditions Tugas audit masih berada dalam status
-QUEUED di antrean broker Redis.
-Postconditions Tugas audit dibatalkan; status menjadi
-REVOKED; 1 saldo token kuota dikreditkan
-kembali ke akun pengguna.
-Typical Course of Events 1. Pengguna menekan tombol "Batalkan
-Analisis" pada bilah antrean.2. Klien
-mengirimkan permintaan POST
-/api/v1/audits/{task_id}/cancel.3. Backend
-memeriksa status tugas saat ini di Redis.4. Jika
-tugas masih berstatus QUEUED, backend
-mengirimkan instruksi revoke ke Celery.5.
-Backend memperbarui status tugas menjadi
-CANCELLED.6. Backend mengembalikan 1
-saldo token kuota ke dompet pengguna.7.
-Backend mencatat log pembatalan tugas.8.
-Klien menampilkan notifikasi: "Pemeriksaan
-berhasil dibatalkan. Kuota token Anda telah
-dikembalikan."
-Alternative Workflow -
-Exceptional Workflow E1: Tugas Sudah Terlanjur Masuk Tahap
-Eksekusi (PROCESSING): Sistem menolak
-pembatalan dan menampilkan peringatan:
-"Dokumen sedang dalam tahap analisis
-komputasi dan tidak dapat dibatalkan."
-
-UC-REP-01 – Menampilkan Dasbor Interactive Heatmap
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-01: Menampilkan Dasbor Interactive
-Heatmap
-Process Owner Modul Visualisasi Laporan & Heatmap Viewer
-Date Created 24 Juni 2026
-Purpose Menyajikan hasil penelaahan plagiarisme
-secara visual dengan teks beranotasi tiga warna
-dan ringkasan metrik.
-Overview Pengguna membuka hasil audit. Sistem
-merender teks naskah dengan latar warna
-Merah (Leksikal), Oranye (Semantik), dan
-Kuning (AI) serta menampilkan kartu skor di
-sisi kanan.
-Cross Requirement FR-REP-01, FR-REP-02, FR-REP-04
-Actor Pengguna (Trial / Premium), Dosen
-Preconditions Laporan audit telah berstatus SUCCESS di
-basis data.
-Postconditions Pengguna dapat membaca seluruh visualisasi
-teks beranotasi dan meninjau ringkasan sumber
-rujukan yang cocok.
-Typical Course of Events 1. Pengguna membuka tautan hasil audit dari
-dasbor riwayat.2. Klien meminta data laporan
-dari endpoint /api/v1/reports/{report_id}.3.
-Server mengembalikan naskah teks, daftar
-koordinat anotasi warna, dan metadata
-sumber.4. Frontend merender teks naskah pada
-panel kiri dengan blok warna yang
-bersesuaian.5. Frontend merender kartu skor
-kesamaan komposit dan daftar sumber
-pembanding di panel kanan.6. Pengguna dapat
-membaca dan menelusuri seluruh dokumen
-yang diperiksa.
-Alternative Workflow A1: Akun Pengguna Trial: Sistem merender
-teks leksikal (Merah), namun memberikan efek
-
-Field Nilai / Penjelasan
-buram (blur) pada kalimat Tier 2 (Oranye) dan
-menyematkan ajakan upgrade ke Premium.
-Exceptional Workflow -
-UC-REP-02 – Meninjau Perbandingan Teks Berdampingan (Side-by-Side Comparison)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-02: Meninjau Perbandingan Teks
-Berdampingan (Side-by-Side Comparison)
-Process Owner Modul Visualisasi Laporan
-Date Created 24 Juni 2026
-Purpose Memungkinkan pengguna membandingkan
-kalimat masukan dengan kalimat dokumen
-sumber secara langsung dalam tampilan
-berdampingan.
-Overview Pengguna mengklik segmen teks berwarna
-pada heatmap. Sistem membuka jendela dialog
-perbandingan yang menampilkan teks naskah
-pengguna di sebelah kiri dan teks dokumen
-sumber asli di sebelah kanan.
-Cross Requirement FR-REP-03
-Actor Pengguna (Trial / Premium), Dosen
-Preconditions Pengguna sedang membuka dasbor Interactive
-Heatmap (UC-REP-01).
-Postconditions Jendela perbandingan berdampingan tampil di
-layar dengan teks yang bersesuaian ditandai
-jelas.
-Typical Course of Events 1. Pengguna mengklik salah satu kalimat yang
-disorot warna di naskah.2. Sistem menangkap
-event klik dan membaca ID rujukan dokumen
-sumber.3. Sistem menampilkan jendela modal
-Side-by-Side Comparison.4. Panel kiri modal
-menampilkan kalimat naskah masukan beserta
-tier pelanggarannya.5. Panel kanan modal
-menampilkan kalimat padanan dari dokumen
-korpus rujukan beserta judul naskah dan
-
-Field Nilai / Penjelasan
-penulis.6. Pengguna meninjau kemiripan
-makna atau susunan kata.7. Pengguna menutup
-jendela dialog setelah selesai meninjau.
-Alternative Workflow -
-Exceptional Workflow -
-UC-REP-03 – Memfilter Tampilan Heatmap Berdasarkan Tier Plagiarisme
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-03: Memfilter Tampilan Heatmap
-Berdasarkan Tier Plagiarisme
-Process Owner Modul Visualisasi Laporan
-Date Created 24 Juni 2026
-Purpose Memfasilitasi pengguna untuk menyaring dan
-mengisolasi visualisasi jenis plagiarisme
-tertentu pada naskah.
-Overview Pengguna mencentang atau menghilangkan
-centang filter pada kontrol toolbar (misal:
-hanya ingin melihat indikasi Leksikal Merah,
-atau hanya Semantik Oranye). Sistem
-memperbarui highlight tampilan teks secara
-dinamis.
-Cross Requirement FR-REP-05
-Actor Pengguna Premium, Dosen
-Preconditions Pengguna sedang berada di dasbor Interactive
-Heatmap laporan lengkap.
-Postconditions Sorotan warna pada naskah diperbarui secara
-instan sesuai opsi filter yang aktif.
-Typical Course of Events 1. Pengguna melihat bilah toolbar filter di atas
-naskah heatmap.2. Pengguna menghilangkan
-centang pada filter "Tier 3: AI-Generated
-(Kuning)".3. Antarmuka secara reaktif
-menghapus latar belakang warna kuning pada
-teks naskah.4. Pengguna mencentang kembali
-opsi filter.5. Antarmuka kembali menampilkan
-
-Field Nilai / Penjelasan
-sorotan warna kuning pada koordinat yang
-tepat.
-Alternative Workflow -
-Exceptional Workflow -
-UC-REP-04 – Mengunduh Laporan Audit Resmi Format PDF
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-04: Mengunduh Laporan Audit
-Resmi Format PDF
-Process Owner Modul Pelaporan & PDF Generation Engine
-Date Created 24 Juni 2026
-Purpose Menerbitkan dan mengunduh berkas laporan
-hasil audit resmi berformat PDF beresolusi
-tinggi dengan stempel digital.
-Overview Pengguna Premium menekan tombol unduh
-PDF. Backend merender dokumen PDF yang
-memuat ringkasan skor komposit, rincian per
-tier, sebaran halaman, daftar sitasi, dan kode
-QR verifikasi.
-Cross Requirement FR-REP-06, FR-REP-07
-Actor Pengguna Premium, Dosen
-Preconditions Pengguna memiliki akun dengan hak akses
-Premium aktif dan laporan audit berstatus
-SUCCESS.
-Postconditions Berkas PDF resmi terunduh ke peramban
-pengguna; catatan riwayat ekspor terekam di
-log audit.
-Typical Course of Events 1. Pengguna menekan tombol "Unduh Laporan
-PDF Resmi" di dasbor laporan.2. Frontend
-mengirimkan permintaan GET
-/api/v1/reports/{report_id}/export-pdf.3.
-Backend memverifikasi hak akses peran
-Premium pengguna.4. Backend
-membangkitkan kode QR unik yang mengarah
-
-Field Nilai / Penjelasan
-ke endpoint verifikasi publik.5. Mesin
-rendering PDF menyusun dokumen PDF
-berstandar cetak formal.6. Server mengirimkan
-aliran data berkas PDF sebagai respons
-unduhan (attachment).7. Peramban pengguna
-menerima dan mengunduh berkas PDF ke
-perangkat lokal.
-Alternative Workflow -
-Exceptional Workflow E1: Pengguna Akun Trial Mencoba
-Mengunduh: Sistem menahan permintaan dan
-menampilkan modal penawaran upgrade akun
-Premium: "Fitur ekspor sertifikat PDF resmi
-hanya dapat diakses oleh akun Premium."
-UC-REP-05 – Memverifikasi Keaslian Laporan via Kode QR
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-05: Memverifikasi Keaslian Laporan
-via Kode QR
-Process Owner Modul Verifikasi Publik
-Date Created 24 Juni 2026
-Purpose Memungkinkan pihak ketiga (dosen, penguji,
-instansi luar) memvalidasi keaslian dokumen
-sertifikat PDF hasil audit sistem.
-Overview Penilai memindai kode QR pada lembar PDF
-fisik/digital. Peramban membuka halaman
-verifikasi publik resmi VeriText AI yang
-menampilkan ringkasan data asli hasil audit di
-database.
-Cross Requirement FR-REP-08
-Actor Pengunjung Umum (Guest / Reviewer)
-Preconditions Kode QR pada dokumen PDF resmi dipindai
-menggunakan kamera perangkat smartphone
-atau pemindai QR.
-Postconditions Halaman publik menampilkan status validitas
-sertifikat audit dan ringkasan skor asli.
-
-Field Nilai / Penjelasan
-Typical Course of Events 1. Pengguna memindai kode QR pada berkas
-PDF laporan.2. Peramban membuka tautan
-verifikasi publik:
-https://veritext.ai/verify/{verification_uuid}.3.
-Sistem mencari catatan keaslian laporan di
-basis data menggunakan UUID tersebut.4.
-Sistem menampilkan halaman verifikasi
-berstempel hijau: "Laporan Terverifikasi Asli",
-memuat Judul Naskah, Nama Pemilik, Tanggal
-Pemeriksaan, dan Skor Kesamaan Komposit
-resmi.
-Alternative Workflow -
-Exceptional Workflow E1: Laporan Palsu / UUID Tidak Ditemukan:
-Sistem menampilkan halaman peringatan
-merah: "Sertifikat Tidak Valid atau Telah
-Dihapus dari Sistem."
-UC-REP-06 – Melihat Riwayat Hasil Audit Sebelumnya
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-06: Melihat Riwayat Hasil Audit
-Sebelumnya
-Process Owner Modul Manajemen Riwayat Pemeriksaan
-Date Created 24 Juni 2026
-Purpose Menampilkan daftar seluruh dokumen yang
-pernah diperiksa oleh pengguna beserta skor
-ringkas dan statusnya.
-Overview Pengguna membuka menu Riwayat. Sistem
-menyajikan tabel daftar dokumen dengan
-kolom: Tanggal Audit, Nama Berkas, Jumlah
-Kata, Persentase Kesamaan, Status, dan tombol
-aksi lihat laporan.
-Cross Requirement FR-REP-09
-Actor Pengguna Terdaftar (Trial / Premium), Dosen
-Preconditions Pengguna telah login ke dalam sistem.
-
-Field Nilai / Penjelasan
-Postconditions Tabel riwayat audit ditampilkan sesuai filter
-tanggal dan pencarian.
-Typical Course of Events 1. Pengguna membuka menu "Riwayat Audit"
-pada navigasi utama.2. Klien meminta daftar
-riwayat dari endpoint /api/v1/audits/history.3.
-Server mengembalikan daftar riwayat dokumen
-milik pengguna yang bersangkutan.4.
-Antarmuka merender tabel riwayat dilengkapi
-indikator warna badge skor kesamaan.5.
-Pengguna dapat menggunakan kotak pencarian
-untuk mencari dokumen berdasarkan nama
-berkas.6. Pengguna dapat mengklik tombol
-"Buka Laporan" pada baris dokumen yang
-diinginkan.
-Alternative Workflow -
-Exceptional Workflow E1: Belum Ada Riwayat Pemeriksaan: Sistem
-menampilkan antarmuka kosong (empty state)
-dengan ilustrasi dan tombol aksi: "Belum ada
-riwayat. Mulai periksa dokumen pertama
-Anda!"
-UC-REP-07 – Mengunduh Rekapitulasi Riwayat Audit (Format CSV/Excel)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-REP-07: Mengunduh Rekapitulasi
-Riwayat Audit (Format CSV/Excel)
-Process Owner Modul Pelaporan & Ekspor Data
-Date Created 24 Juni 2026
-Purpose Memungkinkan pengguna mengekspor daftar
-riwayat seluruh audit dokumen ke berkas
-spreadsheet untuk keperluan arsip data pribadi.
-Overview Pengguna menekan tombol ekspor di halaman
-riwayat. Sistem menghasilkan berkas CSV
-yang merangkum tanggal, nama berkas, skor
-leksikal, skor semantik, skor total, dan status
-audit.
-Cross Requirement FR-REP-10
-
-Field Nilai / Penjelasan
-Actor Pengguna Premium, Dosen, Administrator
-Preconditions Pengguna telah login dan memiliki setidaknya
-satu catatan riwayat audit.
-Postconditions Berkas spreadsheet CSV terunduh ke
-perangkat pengguna.
-Typical Course of Events 1. Pengguna berada di halaman "Riwayat
-Audit".2. Pengguna memilih rentang tanggal
-pemeriksaan (opsional).3. Pengguna menekan
-tombol "Ekspor ke CSV".4. Backend
-memformat data catatan riwayat menjadi
-struktur baris dan kolom CSV.5. Peramban
-menerima aliran data dan mengunduh berkas
-dengan nama Rekapitulasi_Audit_VeriText.csv.
-Alternative Workflow -
-Exceptional Workflow -
-UC-CORP-01 – Mengunggah Berkas Korpus Pembanding Secara Massal (Bulk Ingestion)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-CORP-01: Mengunggah Berkas Korpus
-Pembanding Secara Massal (Bulk Ingestion)
-Process Owner Modul Manajemen Bank Korpus
-Date Created 24 Juni 2026
-Purpose Mengunggah sekumpulan berkas naskah
-akademik (ZIP atau multi-file PDF) untuk
-dijadikan basis data dokumen pembanding
-internal.
-Overview Dosen atau Admin mengunggah kumpulan
-tugas. Sistem mengekstrak berkas,
-memvalidasi integritas teks, dan
-mendelegasikan proses vektorisasi massal ke
-Celery worker.
-Cross Requirement FR-CORP-01, FR-CORP-02
-Actor Dosen / Asisten Lab (Reviewer), Administrator
-
-Field Nilai / Penjelasan
-Preconditions Pengguna telah login dengan kredensial peran
-Dosen atau Administrator.
-Postconditions Dokumen korpus terdaftar di sistem; tugas
-ekstraksi dan vektorisasi massal dikirim ke
-antrean Celery.
-Typical Course of Events 1. Dosen membuka menu "Bank Korpus
-Dokumen".2. Dosen memilih kategori/mata
-kuliah (misal: "Proyek IPPL 2026").3. Dosen
-mengunggah berkas arsip .zip berisikan naskah
-tugas mahasiswa.4. Sistem mengekstrak arsip
-zip dan memvalidasi berkas-berkas di
-dalamnya.5. Sistem mendaftarkan
-dokumen-dokumen korpus ke tabel
-corpus_documents.6. Sistem mengirimkan
-tugas vektorisasi korpus ke antrean worker
-(UC-CORP-02).7. Sistem menampilkan
-ringkasan jumlah dokumen yang berhasil
-diantrekan untuk pengindeksan.
-Alternative Workflow -
-Exceptional Workflow E1: Arsip Mengandung Berkas Bukan
-Dokumen: Sistem secara otomatis
-mengabaikan berkas non-teks (.exe, .jpg) dan
-hanya memproses berkas .pdf, .docx, dan .txt.
-UC-CORP-02 – Mengindeks Vektor Kalimat Korpus ke PostgreSQL pgvector
-Field Nilai / Penjelasan
-Use Case ID & Name UC-CORP-02: Mengindeks Vektor Kalimat
-Korpus ke PostgreSQL pgvector
-Process Owner Worker Pengindeksan Vektor
-Date Created 24 Juni 2026
-Purpose Mengonversi seluruh kalimat dalam korpus
-pembanding menjadi representasi dense vector
-dan menyimpannya ke tabel document_chunks.
-Overview Worker Celery mengekstrak teks tiap dokumen
-korpus, memotong kalimat, menghitung
-embedding dengan Sentence Transformers, dan
-
-Field Nilai / Penjelasan
-menyimpan vektor ke kolom vector(384)
-dengan indeks HNSW.
-Cross Requirement FR-CORP-02, FR-CORP-03
-Actor Sistem Internal (Celery Worker & PostgreSQL
-pgvector)
-Preconditions Dokumen korpus baru berstatus
-PENDING_INDEX tersedia di basis data.
-Postconditions Ribuan vektor kalimat tersimpan di tabel
-document_chunks dan siap ditelusuri melalui
-kueri jarak kosinus.
-Typical Course of Events 1. Worker mengambil berkas korpus dari
-antrean penyimpanan.2. Worker mengekstrak
-teks naskah dan memotongnya menjadi larik
-kalimat.3. Worker menghitung hash
-Winnowing dan menyimpannya di tabel
-lexical_fingerprints.4. Worker memproses
-kalimat ke model Sentence Transformers untuk
-menghasilkan vektor embedding 384D.5.
-Worker menyisipkan vektor kalimat ke tabel
-document_chunks pada PostgreSQL.6. Indeks
-graf HNSW secara inkremental memperbarui
-struktur pencarian tetangga terdekat.7. Worker
-memperbarui status dokumen korpus menjadi
-INDEXED.
-Alternative Workflow -
-Exceptional Workflow E1: Dokumen Terduplikasi Persis: Sistem
-mengenali hash SHA-256 dokumen yang
-identik dan melewati proses pengindeksan
-ulang guna mencegah duplikasi vektor.
-UC-CORP-03 – Melihat Daftar Dokumen Bank Korpus
-Field Nilai / Penjelasan
-Use Case ID & Name UC-CORP-03: Melihat Daftar Dokumen Bank
-Korpus
-
-Field Nilai / Penjelasan
-Process Owner Modul Manajemen Bank Korpus
-Date Created 24 Juni 2026
-Purpose Menampilkan daftar seluruh dokumen yang
-aktif dijadikan sebagai bahan rujukan
-pembanding internal di sistem.
-Overview Dosen atau Admin mengakses halaman bank
-korpus untuk meninjau judul dokumen,
-kategori mata kuliah, tahun, total kalimat
-terindeks, dan status ketersediaan.
-Cross Requirement FR-CORP-04
-Actor Dosen / Asisten Lab, Administrator
-Preconditions Pengguna telah login dengan akun Dosen atau
-Administrator.
-Postconditions Daftar dokumen korpus ditampilkan dalam
-bentuk tabel interaktif.
-Typical Course of Events 1. Dosen membuka modul "Bank Korpus".2.
-Sistem menampilkan tabel daftar naskah
-korpus pembanding.3. Dosen dapat menyaring
-daftar berdasarkan Kategori Mata Kuliah atau
-Tahun Akademik.4. Dosen dapat melihat
-statistik total dokumen dan total vektor kalimat
-yang terdaftar dalam korpus.
-Alternative Workflow -
-Exceptional Workflow -
-UC-CORP-04 – Mengubah Kategori & Metadata Korpus
-Field Nilai / Penjelasan
-Use Case ID & Name UC-CORP-04: Mengubah Kategori &
-Metadata Korpus
-Process Owner Modul Manajemen Bank Korpus
-Date Created 24 Juni 2026
-
-Field Nilai / Penjelasan
-Purpose Memperbarui label kategori, mata kuliah, atau
-tahun akademik pada dokumen korpus
-pembanding.
-Overview Dosen memilih dokumen korpus dan
-memperbarui metadata klasifikasinya agar
-pengelompokan naskah tugas tetap rapi dan
-terorganisir.
-Cross Requirement FR-CORP-04, FR-CORP-05
-Actor Dosen / Asisten Lab, Administrator
-Preconditions Dokumen korpus yang dituju terdaftar aktif di
-sistem.
-Postconditions Metadata dokumen korpus diperbarui di tabel
-corpus_documents.
-Typical Course of Events 1. Dosen mencari dokumen korpus pada tabel
-daftar korpus.2. Dosen mengklik tombol "Edit
-Metadata".3. Dosen mengubah Nama Label,
-Kategori Mata Kuliah, atau Tahun
-Akademik.4. Dosen menekan tombol "Simpan
-Perubahan".5. Sistem memvalidasi dan
-memperbarui data di tabel basis data.6. Sistem
-menampilkan notifikasi sukses pembaruan
-metadata.
-Alternative Workflow -
-Exceptional Workflow -
-UC-CORP-05 – Menghapus Dokumen dari Bank Korpus
-Field Nilai / Penjelasan
-Use Case ID & Name UC-CORP-05: Menghapus Dokumen dari
-Bank Korpus
-Process Owner Modul Manajemen Bank Korpus
-Date Created 24 Juni 2026
-Purpose Menghapus naskah tertentu dari basis data
-pembanding internal jika dokumen tersebut
-ditarik atau tidak relevan lagi.
-
-Field Nilai / Penjelasan
-Overview Dosen atau Admin memilih dokumen korpus
-dan menekan hapus. Sistem menghapus entitas
-dokumen beserta seluruh catatan vektor
-kalimatnya dari tabel document_chunks.
-Cross Requirement FR-CORP-05
-Actor Dosen / Asisten Lab, Administrator
-Preconditions Pengguna memiliki wewenang untuk
-mengelola bank korpus.
-Postconditions Dokumen dan seluruh vektor kalimat terkait
-dihapus dari indeks pgvector; kapasitas
-penyimpanan diperbarui.
-Typical Course of Events 1. Pengguna membuka daftar bank korpus.2.
-Pengguna mengklik tombol "Hapus" pada baris
-dokumen korpus yang dituju.3. Sistem
-memunculkan kotak dialog konfirmasi
-penghapusan naskah pembanding.4. Pengguna
-menyetujui penghapusan.5. Sistem menghapus
-seluruh record vektor pada tabel
-document_chunks yang berelasi dengan ID
-dokumen tersebut.6. Sistem menghapus sidik
-jari leksikal dan entitas dokumen korpus.7.
-Sistem menampilkan notifikasi: "Dokumen
-berhasil dikeluarkan dari bank korpus."
-Alternative Workflow -
-Exceptional Workflow -
-UC-PAY-01 – Melihat Informasi Saldo Kuota Token & Riwayat Pemakaian
-Field Nilai / Penjelasan
-Use Case ID & Name UC-PAY-01: Melihat Informasi Saldo Kuota
-Token & Riwayat Pemakaian
-Process Owner Modul Billing & Dompet Pengguna
-Date Created 24 Juni 2026
-Purpose Memberikan transparansi kepada pengguna
-mengenai jumlah sisa kuota audit dan riwayat
-pemakaian token.
-
-Field Nilai / Penjelasan
-Overview Pengguna membuka menu kuota/billing.
-Sistem menampilkan badge sisa token dan
-tabel mutasi (tanggal, aksi: debit audit/kredit
-top-up, jumlah token, dan sisa saldo).
-Cross Requirement FR-PAY-03
-Actor Pengguna Terdaftar (Trial / Premium)
-Preconditions Pengguna telah login ke dalam sistem.
-Postconditions Informasi saldo kuota token dan riwayat mutasi
-ditampilkan di layar.
-Typical Course of Events 1. Pengguna mengklik widget saldo token pada
-navigasi atas atau menu "Dompet Kuota".2.
-Klien meminta data saldo dari endpoint
-/api/v1/billing/wallet.3. Server mengembalikan
-jumlah sisa token aktif dan riwayat mutasi.4.
-Antarmuka menampilkan kartu saldo besar dan
-tabel riwayat pemotongan/penambahan
-token.5. Pengguna dapat meninjau histori
-pemakaian token secara rinci.
-Alternative Workflow -
-Exceptional Workflow -
-UC-PAY-02 – Melakukan Pemesanan Paket Token Kuota (Midtrans Snap)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-PAY-02: Melakukan Pemesanan Paket
-Token Kuota (Midtrans Snap)
-Process Owner Modul Billing & Gateway Transaksi
-Date Created 24 Juni 2026
-Purpose Memfasilitasi pembelian paket isi ulang token
-kuota atau langganan premium melalui
-antarmuka pembayaran Midtrans.
-Overview Pengguna memilih paket token pada modal
-paywall. Backend meminta Snap Token ke API
-Midtrans Sandbox, lalu frontend membuka
-
-Field Nilai / Penjelasan
-popup pembayaran Snap untuk transaksi QRIS
-/ Virtual Account.
-Cross Requirement FR-PAY-04, FR-PAY-05
-Actor Pengguna Terdaftar (Trial / Free User)
-Preconditions Pengguna telah login ke dalam sistem.
-Postconditions Catatan invoice berstatus PENDING tercatat di
-basis data; popup pembayaran Midtrans Snap
-terbuka di layar pengguna.
-Typical Course of Events 1. Pengguna membuka modal "Beli Kuota
-Pemeriksaan".2. Pengguna memilih paket
-(misal: "Paket Mahasiswa: 10 Token - Rp
-25.000").3. Pengguna menekan tombol
-"Lanjutkan ke Pembayaran".4. Backend sistem
-menerbitkan nomor unik order_id dan
-memanggil API Midtrans Snap.5. Midtrans
-mengembalikan parameter string snap_token.6.
-Frontend memanggil pustaka klien Midtrans
-window.snap.pay(snap_token).7. Antarmuka
-popup Midtrans Snap tampil di layar pengguna
-menyajikan opsi QRIS, GoPay, dan Transfer
-Bank.8. Pengguna melakukan simulasi
-pembayaran melalui simulator Midtrans.
-Alternative Workflow -
-Exceptional Workflow E1: Pengguna Menutup Pop-up Pembayaran:
-Sistem menangani event onClose, membiarkan
-status invoice tetap PENDING selama masa
-tenggang 24 jam, dan menampilkan opsi coba
-bayar kembali.
-UC-PAY-03 – Memproses Webhook Transaksi Pembayaran dari Midtrans
-Field Nilai / Penjelasan
-Use Case ID & Name UC-PAY-03: Memproses Webhook Transaksi
-Pembayaran dari Midtrans
-Process Owner Modul Billing & Keamanan Transaksi
-Date Created 24 Juni 2026
-
-Field Nilai / Penjelasan
-Purpose Menangkap notifikasi status pembayaran resmi
-dari server Midtrans, memvalidasi integritas
-data, dan memperbarui saldo kuota pengguna
-secara instan.
-Overview Server Midtrans mengirimkan HTTP POST
-webhook. Backend memvalidasi signature
-SHA-512. Jika status adalah settlement, status
-invoice diubah menjadi PAID dan saldo token
-pengguna langsung ditambahkan.
-Cross Requirement FR-PAY-06, FR-PAY-07, FR-PAY-08
-Actor Server Gateway Pembayaran (Midtrans Server)
-Preconditions Pengguna telah menyelesaikan pembayaran di
-simulator Midtrans.
-Postconditions Invoice berstatus PAID; saldo token bertambah
-di tabel token_wallets; respons HTTP 200 OK
-dikirim ke Midtrans.
-Typical Course of Events 1. Server Midtrans mengirim HTTP POST
-payload ke endpoint
-/api/v1/payments/webhook.2. Backend
-mengekstrak parameter order_id, status_code,
-gross_amount, dan signature_key.3. Backend
-menghitung signature mandiri menggunakan
-rumus hash SHA-512 dengan Server Key
-rahasia.4. Backend memastikan signature
-mandiri cocok persis dengan signature_key
-dari Midtrans.5. Backend memeriksa nilai
-parameter transaction_status (bernilai
-settlement atau capture).6. Backend membuka
-blok transaksi atomik basis data.7. Backend
-memperbarui status invoice menjadi PAID dan
-mencatat stempel waktu penyelesaian.8.
-Backend mengkreditkan jumlah token kuota
-yang dibeli ke dompet pengguna.9. Backend
-mencatat log transaksi di audit_logs.10.
-Backend mengembalikan status HTTP 200 OK
-ke server Midtrans.
-Alternative Workflow A1: Pembayaran Kedaluwarsa (Expired): Jika
-status bernilai expire, backend mengubah
-status invoice menjadi EXPIRED tanpa
-penambahan token.
-
-Field Nilai / Penjelasan
-Exceptional Workflow E1: Signature Tidak Cocok (Tampering
-Attack): Backend mendeteksi ketidakcocokan
-hash, membatalkan proses, mencatat insiden
-keamanan, dan mengembalikan HTTP 403
-Forbidden.
-UC-PAY-04 – Mengunduh Bukti Pembayaran Digital (Invoice PDF)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-PAY-04: Mengunduh Bukti Pembayaran
-Digital (Invoice PDF)
-Process Owner Modul Billing & Dokumentasi Keuangan
-Date Created 24 Juni 2026
-Purpose Memberikan kuitansi atau faktur pembayaran
-resmi berformat PDF bagi pengguna untuk
-keperluan klaim atau dokumentasi keuangan.
-Overview Pengguna memilih transaksi yang sudah
-berhasil (PAID) pada tabel riwayat pembayaran
-dan mengunduh berkas tanda terima digital
-resmi.
-Cross Requirement FR-PAY-09
-Actor Pengguna Terdaftar, Pengguna Premium
-Preconditions Transaksi pembayaran telah berstatus PAID.
-Postconditions Berkas kuitansi invoice PDF terunduh ke
-peramban pengguna.
-Typical Course of Events 1. Pengguna membuka tab "Riwayat Transaksi
-& Invoice".2. Pengguna mencari transaksi
-pembayaran yang telah berhasil.3. Pengguna
-menekan tombol "Unduh Invoice".4. Backend
-menyusun kuitansi invoice berformat PDF
-yang mencantumkan Nomor Transaksi,
-Tanggal, Item Paket, Metode Pembayaran, dan
-Status Lunas.5. Peramban pengguna menerima
-aliran data berkas dan menyimpannya secara
-lokal.
-Alternative Workflow -
-
-Field Nilai / Penjelasan
-Exceptional Workflow -
-UC-ADM-01 – Melihat Daftar Pengguna Sistem
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-01: Melihat Daftar Pengguna Sistem
-Process Owner Modul Administrasi Pengguna
-Date Created 24 Juni 2026
-Purpose Menyajikan daftar seluruh akun pengguna
-yang terdaftar di dalam sistem untuk keperluan
-manajemen dan audit administratif.
-Overview Administrator mengakses menu manajemen
-pengguna. Sistem menampilkan tabel akun
-lengkap dengan informasi nama, email,
-institusi, peran (Role), saldo token, status aktif,
-dan tanggal daftar.
-Cross Requirement FR-ADM-02
-Actor Administrator Sistem
-Preconditions Administrator telah login dengan hak akses
-superuser.
-Postconditions Seluruh data akun pengguna ditampilkan pada
-tabel admin interaktif.
-Typical Course of Events 1. Admin membuka menu "Manajemen
-Pengguna".2. Sistem mengambil data seluruh
-pengguna dari tabel users.3. Sistem
-menampilkan tabel pengguna dilengkapi fitur
-filter berdasarkan peran (Trial, Premium,
-Dosen, Admin) dan kotak pencarian.4. Admin
-dapat mengklik salah satu baris pengguna
-untuk melihat rincian aktivitas akun.
-Alternative Workflow -
-Exceptional Workflow -
-
-UC-ADM-02 – Mengubah Status Pengguna (Suspensi Akun / Aktivasi)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-02: Mengubah Status Pengguna
-(Suspensi Akun / Aktivasi)
-Process Owner Modul Administrasi Pengguna
-Date Created 24 Juni 2026
-Purpose Menonaktifkan akun pengguna yang
-terindikasi melakukan penyalahgunaan sistem
-atau mengaktifkan kembali akun yang
-dibekukan.
-Overview Admin memilih pengguna target dan
-mengubah status akun menjadi SUSPENDED
-atau ACTIVE. Pengguna berstatus suspend
-tidak dapat login atau mengeksekusi audit.
-Cross Requirement FR-ADM-03
-Actor Administrator Sistem
-Preconditions Akun pengguna target terdaftar di sistem dan
-bukan merupakan akun diri Admin sendiri.
-Postconditions Status pengguna diperbarui di tabel users;
-seluruh sesi login aktif milik pengguna target
-langsung dicabut.
-Typical Course of Events 1. Admin membuka halaman detail pengguna
-target.2. Admin mengklik tombol "Bekukan
-Akun (Suspend)".3. Admin mengisi alasan
-penonaktifan pada formulir modal
-konfirmasi.4. Admin menekan tombol
-"Konfirmasi Suspensi".5. Sistem memperbarui
-atribut is_active menjadi false di basis data.6.
-Sistem mencabut seluruh sesi token JWT aktif
-milik pengguna tersebut.7. Sistem mencatat log
-audit administratif.8. Sistem menampilkan
-pesan sukses pembaruan status akun.
-Alternative Workflow A1: Mengaktifkan Kembali Akun: Admin
-memilih tombol "Aktifkan Akun" pada
-pengguna berstatus suspend untuk memulihkan
-hak akses pengguna.
-Exceptional Workflow E1: Admin Mencoba Menonaktifkan Akun
-Sendiri: Sistem memblokir aksi dan
-menampilkan peringatan: "Anda tidak dapat
-
-Field Nilai / Penjelasan
-menonaktifkan akun Administrator Anda
-sendiri."
-UC-ADM-03 – Menyesuaikan Saldo Token Pengguna Secara Manual (Koreksi Admin)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-03: Menyesuaikan Saldo Token
-Pengguna Secara Manual (Koreksi Admin)
-Process Owner Modul Administrasi Billing & Kuota
-Date Created 24 Juni 2026
-Purpose Mengizinkan Administrator menambahkan
-atau mengurangi saldo token kuota pengguna
-secara manual untuk kompensasi kendala
-sistem.
-Overview Admin membuka profil pengguna,
-memasukkan jumlah nominal perubahan saldo
-token (kredit/debit) beserta keterangan alasan,
-dan sistem memperbarui saldo di tabel dompet
-token.
-Cross Requirement FR-ADM-04
-Actor Administrator Sistem
-Preconditions Administrator telah login dan akun pengguna
-target berstatus aktif.
-Postconditions Saldo kuota token pengguna diperbarui;
-transaksi manual terekam di buku besar mutasi
-dompet token.
-Typical Course of Events 1. Admin membuka menu profil pengguna
-pada panel manajemen pengguna.2. Admin
-mengklik tombol "Koreksi Saldo Token".3.
-Admin memasukkan jumlah token (misal: +5
-untuk kompensasi) dan mengisi catatan
-keterangan.4. Admin menekan tombol
-"Simpan Koreksi".5. Sistem membuka
-transaksi atomik, menambah saldo di tabel
-token_wallets, dan mencatat riwayat
-penyesuaian manual.6. Sistem menampilkan
-
-Field Nilai / Penjelasan
-notifikasi: "Saldo kuota token berhasil
-diperbarui."
-Alternative Workflow -
-Exceptional Workflow -
-UC-ADM-04 – Memantau Status Antrean Celery Worker & Latensi Sistem
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-04: Memantau Status Antrean
-Celery Worker & Latensi Sistem
-Process Owner Modul Monitoring Infrastruktur
-Date Created 24 Juni 2026
-Purpose Menyajikan metrik kesehatan sistem dan
-pemantauan beban pemrosesan antrean worker
-secara langsung (real-time).
-Overview Admin membuka dasbor pemantauan sistem.
-Sistem menampilkan jumlah tugas aktif di
-Celery, kapasitas memori Redis, waktu respons
-rata-rata API, dan beban CPU server.
-Cross Requirement FR-ADM-05
-Actor Administrator Sistem
-Preconditions Administrator telah login ke dasbor sistem.
-Postconditions Metrik operasional infrastruktur dan status
-antrean worker ditampilkan secara visual.
-Typical Course of Events 1. Admin membuka menu "Monitoring
-Infrastruktur".2. Klien meminta data telemetri
-dari endpoint /api/v1/admin/health-metrics.3.
-Server memeriksa koneksi PostgreSQL, Redis
-ping, dan status worker Celery aktif.4.
-Antarmuka menampilkan grafik penggunaan
-CPU, utilisasi memori, serta tabel daftar
-pekerjaan yang sedang diproses oleh worker.5.
-Admin dapat mengidentifikasi jika terjadi
-penumpukan antrean audit.
-Alternative Workflow -
-
-Field Nilai / Penjelasan
-Exceptional Workflow -
-UC-ADM-05 – Menjalankan Reindex Tabel Vektor HNSW Manual
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-05: Menjalankan Reindex Tabel
-Vektor HNSW Manual
-Process Owner Modul Pemeliharaan Basis Data Vektor
-Date Created 24 Juni 2026
-Purpose Memperbaiki dan mereorganisasi struktur graf
-indeks HNSW pada kolom vektor PostgreSQL
-untuk mengembalikan efisiensi pencarian kueri
-ANN.
-Overview Admin menekan tombol reindex pada panel
-pemeliharaan basis data. Sistem menjalankan
-perintah SQL REINDEX INDEX secara
-terkontrol di latar belakang untuk menata ulang
-graf HNSW.
-Cross Requirement FR-ADM-06
-Actor Administrator Sistem
-Preconditions Administrator telah login dan beban
-pemrosesan antrean audit sedang dalam status
-rendah.
-Postconditions Indeks HNSW pada tabel document_chunks
-tertata ulang secara optimal; performa kueri
-jarak kosinus kembali ke latensi minimal.
-Typical Course of Events 1. Admin membuka menu "Pemeliharaan Basis
-Data".2. Admin meninjau statistik jumlah
-record vektor dan fragmentasi indeks.3. Admin
-menekan tombol "Jalankan Reindex Vektor
-(HNSW)".4. Sistem menampilkan dialog
-konfirmasi peringatan beban komputasi.5.
-Admin menyetujui eksekusi reindex.6.
-Backend menjalankan perintah pemeliharaan
-REINDEX INDEX CONCURRENTLY
-idx_document_chunks_vector.7. Setelah
-
-Field Nilai / Penjelasan
-selesai, sistem mencatat log pemeliharaan dan
-memperbarui stempel waktu reindex terakhir.8.
-Sistem menampilkan notifikasi: "Indeks graf
-HNSW berhasil diperbarui secara optimal."
-Alternative Workflow -
-Exceptional Workflow -
-UC-ADM-06 – Melihat Log Aktivitas Sistem (Security Audit Trail)
-Field Nilai / Penjelasan
-Use Case ID & Name UC-ADM-06: Melihat Log Aktivitas Sistem
-(Security Audit Trail)
-Process Owner Modul Audit Keamanan & Kepatuhan
-Date Created 24 Juni 2026
-Purpose Memfasilitasi Administrator untuk meninjau
-rekaman jejak audit seluruh aktivitas penting di
-dalam sistem demi keperluan investigasi
-keamanan.
-Overview Admin membuka menu log audit. Sistem
-menyajikan tabel kronologis yang memuat
-stempel waktu (UTC), alamat IP, identitas
-pengguna, tipe aksi, dan deskripsi kejadian.
-Cross Requirement FR-ADM-07, NFR-SEC-05
-Actor Administrator Sistem
-Preconditions Administrator telah login ke sistem.
-Postconditions Rekaman log audit sistem ditampilkan dengan
-fitur pencarian dan filter rentang waktu.
-Typical Course of Events 1. Admin membuka menu "Log Aktivitas
-Sistem".2. Sistem menampilkan tabel catatan
-audit dari tabel audit_logs.3. Admin dapat
-memfilter log berdasarkan kategori aksi
-(Login, Pembayaran, Hapus Dokumen,
-Suspensi Akun).4. Admin dapat melakukan
-pencarian log berdasarkan alamat IP atau nama
-
-Field Nilai / Penjelasan
-pengguna tertentu.5. Admin dapat mengekspor
-catatan log ke berkas teks terarsip.
-Alternative Workflow -
-Exceptional Workflow -
 5. Kebutuhan Non-Fungsional (Non-Functional Requirements)
-Kode Deskripsi Kebutuhan Non-Fungsional
-Kebutuhan Performa (Performance)
-NFR-PERF-01 Sebanyak 95% dari seluruh permintaan endpoint RESTful API
-standar (autentikasi, manajemen profil, riwayat audit, modul
-billing) harus mengembalikan respons dengan latensi kurang dari
-500 milidetik pada beban operasi normal.
-NFR-PERF-02 Halaman antarmuka pengguna web (termasuk Dasbor Workspace
-dan Riwayat) harus menyelesaikan proses rendering awal (First
-Contentful Paint - FCP) dalam waktu kurang dari 1.8 detik pada
-koneksi internet dengan kecepatan unduh minimal 5 Mbps.
-NFR-PERF-03 Proses ekstraksi k-gram dan komputasi Winnowing Rolling Hash
-untuk dokumen dengan volume 3.000 kata tidak boleh melebihi
-durasi 300 milidetik.
-NFR-PERF-04 Komputasi inferensi vektor kalimat menggunakan model
-Sentence Transformers harus mampu memproses minimal 50
-kalimat per detik pada konfigurasi standar server CPU
-multi-core.
-NFR-PERF-05 Kueri penelusuran tetangga terdekat (Approximate Nearest
-Neighbor) pada tabel PostgreSQL document_chunks berindeks
-HNSW dengan operator jarak kosinus (<=>) harus menghasilkan
-luaran dalam waktu kurang dari 150 milidetik untuk basis data
-dengan kapasitas hingga 200.000 vektor kalimat.
+Kebutuhan non-fungsional mendefinisikan batasan kualitas, kriteria performa teknis, standar keamanan tingkat tinggi, serta kepatuhan hukum privasi yang wajib dipenuhi oleh sistem VeriText AI. Kebutuhan ini dirinci ke dalam format 2 kolom terstruktur berdasarkan 6 dimensi kualitas ISO/IEC 25010 pada tabel berikut:
 
-NFR-PERF-06 Arsitektur antrean tugas terdistribusi Celery harus mampu
-mengorkestrasikan minimal 10 tugas audit dokumen secara
-simultan (concurrent tasks) tanpa menyebabkan degradasi
-memori server (Memory Leak / Out of Memory).
-Kebutuhan Keamanan (Security & STRIDE Threat Model)
-NFR-SEC-01 Autentikasi sistem wajib menerapkan skema JSON Web Token
-(JWT) dengan algoritma HMAC-SHA256 bertanda tangan
-kriptografis kuat.
-NFR-SEC-02 Endpoint webhook pembayaran wajib memvalidasi tanda tangan
-kriptografi SHA-512 dari Midtrans sebelum memproses
-transaksi.
-NFR-SEC-03 Seluruh mutasi kuota token wajib dikelola eksklusif melalui
-transaksi atomik basis data (ACID Transaction Block) di sisi
-backend; klien tidak memiliki wewenang memanipulasi nilai
-token secara langsung.
-NFR-SEC-04 Setiap naskah yang diunggah wajib dihitung hash SHA-256
-untuk memverifikasi integritas fisik berkas.
-NFR-SEC-05 Sistem wajib mencatat setiap aktivitas kritis (login, unggah
-dokumen, debit token, perubahan hak akses, webhook payment)
-ke dalam tabel audit_logs append-only yang memuat stempel
-waktu presisi (UTC), alamat IP, User-Agent, dan identitas aktor.
-NFR-SEC-06 Kata sandi akun wajib disimpan dalam bentuk hash searah
-menggunakan algoritma bcrypt dengan salt unik per record
-pengguna.
-NFR-SEC-07 Seluruh transmisi data antara klien, server API, Redis broker, dan
-PostgreSQL wajib diamankan dengan protokol enkripsi TLS 1.3.
-NFR-SEC-08 Berkas naskah yang tersimpan di disk server harus diatur dengan
-hak akses direktori terbatas (restricted POSIX file permission
-chmod 600).
-NFR-SEC-09 Sistem wajib membatasi ukuran berkas maksimal 15 MB dan
-memvalidasi real MIME-type berkas melalui inspeksi byte biner.
+Tabel 15: Spesifikasi Kebutuhan Non-Fungsional (Non-Functional Requirements)
+| Kode | Deskripsi Kebutuhan Non-Fungsional |
+| :--- | :--- |
+| **Kebutuhan Performa & Latensi (Performance)** | |
+| NFR-PERF-01 | Sebanyak 95% dari seluruh permintaan endpoint RESTful API standar (autentikasi, manajemen profil, riwayat naskah, dan transaksi billing) wajib mengembalikan respons dengan latensi kurang dari 200 milidetik pada beban operasi normal. |
+| NFR-PERF-02 | Tahap 1 deteksi leksikal berbasis algoritma Winnowing dan Rabin-Karp rolling hash wajib menyelesaikan pemindaian naskah 2.500 kata dalam waktu kurang dari atau sama dengan 1,5 detik. |
+| NFR-PERF-03 | Kueri penelusuran tetangga terdekat (Approximate Nearest Neighbor) pada indeks graf HNSW PostgreSQL pgvector dengan operator jarak kosinus (<=>) wajib menghasilkan luaran dalam waktu kurang dari 100 milidetik per batch kalimat. |
+| NFR-PERF-04 | Respon konsultasi AI Chatbot Asisten Naskah dan pembuatan 3 variasi parafrase instan via Google Gemini 2.5 Flash API wajib disajikan dalam waktu kurang dari atau sama dengan 5,0 detik. |
+| NFR-PERF-05 | Arsitektur antrean tugas terdistribusi Celery pada infrastruktur server minimum wajib mampu mengorkestrasikan minimal 10 tugas audit dokumen secara simultan (concurrent tasks) tanpa degradasi antrean atau kebocoran memori (Memory Leak). |
+| **Kebutuhan Keamanan & Integritas (Security)** | |
+| NFR-SEC-01 | Seluruh komunikasi transmisi data klien-server wajib menggunakan protokol enkripsi TLS 1.3 dengan cipher suite modern dan konfigurasi HSTS (HTTP Strict Transport Security). |
+| NFR-SEC-02 | Kata sandi akun pengguna wajib disimpan dalam bentuk hash searah menggunakan algoritma Bcrypt dengan cost factor minimal 12 dan salt unik per record. |
+| NFR-SEC-03 | Endpoint webhook pembayaran Midtrans wajib memvalidasi kecocokan tanda tangan kriptografi SHA-512 (signature_key) sebelum mengeksekusi penambahan saldo token atau kenaikan peran akun. |
+| NFR-SEC-04 | Refresh token wajib dikirimkan dalam cookie dengan atribut HttpOnly, Secure, dan SameSite=Lax untuk mencegah serangan pencurian sesi melalui Cross-Site Scripting (XSS). |
+| NFR-SEC-05 | Access Token JWT wajib dikonfigurasi dengan masa kedaluwarsa maksimal 15 menit untuk meminimalisasi risiko penyalahgunaan kredensial sesi yang terkompromi. |
+| NFR-SEC-06 | Seluruh interaksi basis data wajib menggunakan Object-Relational Mapping (ORM) SQLAlchemy 2.0 dengan kueri terparameterisasi penuh (parameterized queries) guna mencegah kerentanan SQL Injection. |
+| NFR-SEC-07 | Seluruh masukan teks dari formulir pengguna dan berkas naskah wajib melalui proses sanitasi karakter berbahaya sebelum disimpan ke basis data atau dirender ke DOM. |
+| NFR-SEC-08 | API Gateway wajib menerapkan pembatasan laju permintaan (Rate Limiting) maksimal 60 request per menit per alamat IP menggunakan mekanisme sliding window rate limiter. |
+| NFR-SEC-09 | Seluruh mutasi kuota token dan perubahan status invoice wajib menggunakan transaksi atomik basis data dengan penguncian baris eksplisit (SELECT ... FOR UPDATE) untuk mencegah kondisi perlombaan (race condition). |
+| NFR-SEC-10 | Berkas naskah yang diunggah wajib diubah namanya menjadi acak UUIDv4 dan divalidasi berdasarkan magic bytes MIME-type untuk mencegah eksekusi skrip berkas berbahaya. |
+| NFR-SEC-11 | Sistem wajib mencatat setiap aktivitas keamanan penting (percobaan login gagal, insiden brute-force, transaksi moneter, dan penghapusan naskah) ke dalam tabel audit_logs append-only secara persisten. |
+| NFR-SEC-12 | Modul AI Chatbot wajib dilengkapi Academic Guardrail untuk mendeteksi upaya manipulasi prompt (jailbreak/prompt injection) dan secara tegas menolak instruksi di luar koridor akademik. |
+| **Kebutuhan Ketersediaan & Keandalan (Availability & Reliability)** | |
+| NFR-AVAIL-01 | Sistem web VeriText AI wajib memiliki tingkat ketersediaan (availability uptime) minimal 99,5% dalam periode evaluasi bulanan, di luar jadwal pemeliharaan terencana. |
+| NFR-AVAIL-02 | Worker Celery wajib memiliki kebijakan otomatis mencoba ulang tugas (retry policy) hingga 3 kali dengan penundaan eksponensial (exponential backoff) jika terjadi kegagalan jaringan API eksternal. |
+| NFR-AVAIL-03 | Jika tugas pemindaian naskah mengalami kegagalan fatal setelah 3 kali percobaan, sistem wajib mengembalikan saldo token kuota yang sempat dipotong secara otomatis ke akun pengguna (token refund). |
+| NFR-AVAIL-04 | Jika API Google Gemini mengalami gangguan sementara atau batas laju kuota, modul AI Judge wajib melakukan penurunan layanan anggun (graceful degradation) dengan beralih ke mesin cadangan DeepSeek v4.1 Flash (via 9Router) secara transparan tanpa menghentikan proses audit. |
+| NFR-AVAIL-05 | Target waktu pemulihan sistem (Recovery Time Objective - RTO) dari insiden kegagalan perangkat lunak atau server crash maksimal adalah 2 jam, dan batas toleransi kehilangan data transaksional (Recovery Point Objective - RPO) maksimal 1 jam dengan pencatatan Write-Ahead Logging (WAL) PostgreSQL. |
+| **Kebutuhan Kepatuhan & Privasi Data (Compliance - UU PDP / GDPR)** | |
+| NFR-COMP-01 | Sistem wajib mematuhi seluruh ketentuan Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP) dalam hal persetujuan eksplisit, pengumpulan, dan pemrosesan data pengguna. |
+| NFR-COMP-02 | Sistem wajib menyediakan hak penghapusan data secara tuntas (Right to Erasure / Hard-Delete Cascading) yang menghapus berkas fisik, rekaman naskah, larik kalimat, laporan audit, dan riwayat chat atas permintaan pemilik sah dokumen. |
+| NFR-COMP-03 | Naskah dokumen yang diunggah oleh pengguna tidak pernah dijadikan korpus publik tanpa izin eksplisit; naskah pengguna tetap menjadi hak milik intelektual pengguna seutuhnya (Zero Auto-Ingestion to Public Corpus). |
+| NFR-COMP-04 | Rekaman log transaksi pembayaran, mutasi saldo token, dan notifikasi webhook wajib disimpan dengan integritas data tinggi (immutable ledger) selama minimal 3 tahun untuk keperluan rekonsiliasi keuangan dan audit akuntansi. |
+| **Kebutuhan Kegunaan (Usability)** | |
+| NFR-USAB-01 | Seluruh komponen antarmuka web, teks, notifikasi, dan diagram sistem dilarang menggunakan emoji visual apapun; antarmuka wajib bergaya akademik utilitarian yang bersih dan profesional (Zero-Emoji Policy). |
+| NFR-USAB-02 | Desain antarmuka wajib memenuhi rasio kontras teks minimal 4,5:1 terhadap latar belakang sesuai pedoman Web Content Accessibility Guidelines (WCAG 2.1 Level AA). |
+| NFR-USAB-03 | Pengguna baru dengan kemampuan operasional komputer standar wajib mampu memahami alur unggah dan peninjauan heatmap dalam waktu kurang dari atau sama dengan 10 menit tanpa pelatihan formal. |
+| NFR-USAB-04 | Antarmuka Split-Screen Studio Workspace wajib menyesuaikan tata letak secara responsif pada resolusi layar 1280 piksel ke atas dan bertransformasi menjadi susunan bertumpuk pada layar tablet 768 piksel. |
+| **Kebutuhan Pemeliharaan & Skalabilitas (Maintainability & Scalability)** | |
+| NFR-SCALE-01 | Seluruh kode sumber backend wajib mengadopsi prinsip Clean Architecture modular (terbagi tegas atas layer routers/controllers, services, repositories, schemas, dan Celery workers) sehingga pemeliharaan komponen dapat dilakukan secara independen. |
+| NFR-SCALE-02 | Basis kode backend wajib memiliki cakupan pengujian unit dan integrasi otomatis (pytest) minimal 80% pada modul logika bisnis utama. |
+| NFR-SCALE-03 | Seluruh endpoint REST API wajib terdokumentasi secara otomatis menggunakan spesifikasi OpenAPI 3.1 dan dapat diakses melalui antarmuka Swagger UI interaktif (/docs). |
+| NFR-SCALE-04 | Seluruh kredensial rahasia, URL koneksi basis data, dan API key wajib dikelola melalui variabel lingkungan terpusat (.env) menggunakan validasi pustaka pydantic-settings. |
+| NFR-SCALE-05 | Arsitektur pemrosesan worker Celery dirancang stateless sehingga kapasitas pemindaian dokumen dapat ditingkatkan secara horizontal (horizontal scaling) dengan menambah instans worker baru yang terkoneksi ke Redis broker yang sama. |
 
-NFR-SEC-10 API Gateway wajib menerapkan pembatasan laju permintaan
-(Rate Limiting) maksimal 60 request per menit per alamat IP
-untuk endpoint publik.
-NFR-SEC-11 Sistem wajib mengevaluasi klaim peran (role claim) pada lapisan
-middleware otorisasi backend sebelum kueri bisnis dieksekusi
-(Role-Based Access Control).
-Kebutuhan Ketersediaan & Keandalan (Availability & Reliability)
-NFR-AVAIL-01 Sistem web VeriText AI harus memiliki tingkat ketersediaan
-(availability uptime) minimal 99.5% setiap bulan, di luar jadwal
-pemeliharaan terencana (scheduled maintenance window).
-NFR-AVAIL-02 Target waktu pemulihan sistem dari insiden kegagalan perangkat
-lunak atau server crash maksimal adalah 2 jam hingga sistem
-kembali melayani permintaan pengguna.
-NFR-AVAIL-03 Batas toleransi kehilangan data transaksional maksimal adalah 1
-jam. Sistem basis data relasional PostgreSQL wajib dikonfigurasi
-dengan pencatatan Write-Ahead Logging (WAL).
-NFR-AVAIL-04 Basis data relasional dan tabel indeks vektor harus dibackup
-secara otomatis setiap 24 jam sekali pada jam beban terendah
-(pukul 02:00 UTC) dan disimpan pada repositori penyimpanan
-terisolasi yang terenkripsi.
-NFR-AVAIL-05 Apabila worker inferensi Tier 2 mengalami kelebihan beban
-sementara, sistem harus tetap mampu menyelesaikan
-pemeriksaan Tier 1 (Leksikal) dan memberikan notifikasi
-penundaan kepada pengguna tanpa merusak alur sistem (fail-safe
-operation).
-Kebutuhan Kepatuhan & Privasi Data (Compliance - UU PDP / GDPR)
-NFR-COMP-01 Sistem harus meminta persetujuan eksplisit (explicit consent)
-dari pengguna pada formulir pendaftaran mengenai pemrosesan
-data profil dan penyimpanan naskah dokumen untuk keperluan
-komparasi akademik.
-NFR-COMP-02 Sistem harus menyediakan mekanisme bagi pengguna untuk
-menghapus dokumen naskah yang pernah diunggah beserta
-seluruh representasi vektor turunannya dari repositori sistem atas
-permintaan pemilik sah dokumen.
+---
 
-NFR-COMP-03 Naskah dokumen yang ditandai oleh Dosen/Institusi sebagai
-"Dokumen Rahasia / Hak Cipta Tertutup" tidak boleh dijadikan
-bagian dari bank korpus publik yang dapat diakses oleh institusi
-luar.
-NFR-COMP-04 Data log riwayat pembayaran, transaksi token, dan notifikasi
-webhook wajib disimpan dengan integritas data tinggi
-(immutable ledger) selama minimal 3 tahun untuk keperluan
-rekonsiliasi keuangan dan audit akuntansi.
-Kebutuhan Pemeliharaan & Skalabilitas (Maintainability & Scalability)
-NFR-SCALE-01 Seluruh kode sumber backend wajib mengadopsi prinsip Clean
-Architecture modular (terbagi tegas atas layer routers, services,
-repositories, schemas, dan workers) sehingga penambahan modul
-algoritma deteksi baru dapat dilakukan tanpa mengubah logika
-modul lainnya.
-NFR-SCALE-02 Seluruh perubahan skema basis data PostgreSQL (termasuk
-penambahan ekstensi tipe vektor atau indeks HNSW baru) wajib
-dikelola melalui skrip migrasi terversi menggunakan pustaka
-Alembic.
-NFR-SCALE-03 Arsitektur pemrosesan Celery harus dirancang stateless sehingga
-kapasitas daya tampung inferensi AI dapat ditingkatkan secara
-elastis (horizontal scaling) hanya dengan menambah instans
-worker baru yang terkoneksi ke Redis broker yang sama.
-NFR-SCALE-04 Seluruh berkas modul logika bisnis esensial (terutama algoritma
-rolling hash Winnowing, formula Cosine Similarity, dan
-kalkulasi varians Burstiness) wajib memuat dokumentasi
-komentar docstring standar Sphinx/PEP 257 yang menjelaskan
-parameter masukan, tipe data, nilai kembalian, dan kompleksitas
-asimtotik waktu/ruang.
 Daftar Pustaka
-[1] IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements
-Specifications.
- New York, NY: IEEE Computer Society, 1998.
-[2] ISO/IEC/IEEE 29148:2018, Systems and software engineering — Life cycle processes —
- Requirements engineering. Geneva, Switzerland: ISO/IEC/IEEE, 2018.
-[3] S. Schleimer, D. S. Wilkerson, and A. Aiken, "Winnowing: local algorithms for document
-
- fingerprinting," in Proceedings of the 2003 ACM SIGMOD International Conference on
- Management of Data (SIGMOD '03), San Diego, CA, USA, 2003, pp. 76–85.
-[4] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese
-BERT-Networks,"
- in Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing
- (EMNLP-IJCNLP), Hong Kong, 2019, pp. 3982–3992.
-[5] P. Henderson et al., "pgvector: Open-source vector similarity search for Postgres,"
- GitHub repository, 2024. [Online]. Tersedia: https://github.com/pgvector/pgvector.
-[6] FastAPI Documentation, "FastAPI Framework, High Performance, Easy to Learn, Fast to
-Code,"
- [Online]. Tersedia: https://fastapi.tiangolo.com/.
-[7] VUE.js Documentation, "VUE.js 14 App Router Documentation," Vercel, [Online].
- Tersedia: https://VUEjs.org/docs.
-[8] Celery Project, "Celery: Distributed Task Queue," [Online]. Tersedia: https://docs.celeryq.dev/.
-[9] Midtrans API Documentation, "Core API & Snap Payment Gateway Integration Guide,"
-[Online].
- Tersedia: https://docs.midtrans.com/.
-[10] OWASP Foundation, "OWASP Top Ten Web Application Security Risks," 2021. [Online].
- Tersedia: https://owasp.org/Top10/.
-[11] Pemerintah Republik Indonesia, Undang-Undang Republik Indonesia Nomor 27 Tahun 2022
- tentang Perlindungan Data Pribadi (UU PDP). Lembaran Negara RI Tahun 2022 Nomor 196.
-[12] G. Booch, J. Rumbaugh, and I. Jacobson, The Unified Modeling Language User Guide, 2nd
-ed.
- Boston, MA: Addison-Wesley, 2005.
+[1] IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements Specifications. New York, NY: IEEE Computer Society, 1998.
+[2] ISO/IEC/IEEE 29148:2018, Systems and software engineering — Life cycle processes — Requirements engineering. Geneva, Switzerland: ISO/IEC/IEEE, 2018.
+[3] ISO/IEC 25010:2011, Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models. Geneva, Switzerland: ISO/IEC, 2011.
+[4] S. Schleimer, D. S. Wilkerson, and A. Aiken, "Winnowing: local algorithms for document fingerprinting," in Proceedings of the 2003 ACM SIGMOD International Conference on Management of Data (SIGMOD '03), San Diego, CA, USA, 2003, pp. 76–85.
+[5] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks," in Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP-IJCNLP), Hong Kong, 2019, pp. 3982–3992.
+[6] Y. A. Malkov and D. A. Yashunin, "Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 42, no. 4, pp. 824–836, Apr. 2020.
+[7] K.-I. Goh and A.-L. Barabasi, "Burstiness and memory in complex systems," Europhysics Letters (EPL), vol. 81, no. 4, p. 48002, 2008.
+[8] P. Henderson et al., "pgvector: Open-source vector similarity search for Postgres," GitHub repository, 2024. [Online]. Tersedia: https://github.com/pgvector/pgvector.
+[9] FastAPI Documentation, "FastAPI Framework, High Performance, Easy to Learn, Fast to Code, Ready for Production," [Online]. Tersedia: https://fastapi.tiangolo.com/.
+[10] Vue.js Core Team, "Vue.js 3.5 Documentation: The Progressive JavaScript Framework," [Online]. Tersedia: https://vuejs.org/guide/introduction.html.
+[11] Celery Project, "Celery: Distributed Task Queue," [Online]. Tersedia: https://docs.celeryq.dev/.
+[12] Midtrans API Documentation, "Core API & Snap Payment Gateway Integration Guide," [Online]. Tersedia: https://docs.midtrans.com/.
+[13] OWASP Foundation, "OWASP Top Ten Web Application Security Risks," 2021. [Online]. Tersedia: https://owasp.org/Top10/.
+[14] Pemerintah Republik Indonesia, Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP). Lembaran Negara RI Tahun 2022 Nomor 196.
+[15] G. Booch, J. Rumbaugh, and I. Jacobson, The Unified Modeling Language User Guide, 2nd ed. Boston, MA: Addison-Wesley, 2005.

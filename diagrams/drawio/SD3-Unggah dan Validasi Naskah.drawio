@@ -1,0 +1,154 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="sd_sd3" name="Sequence Diagram: Unggah dan Validasi Naskah">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1320" pageHeight="850" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="part_user" value="User:Pengguna" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="30.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_view" value=":WorkspaceView&#xa;(Split-Screen)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="254.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_api" value=":DocumentAPI&#xa;(FastAPI)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="478.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_prep" value=":PreprocessorEngine" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="702.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_wallet" value=":TokenWalletService" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="926.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_db" value=":PostgreSQL&#xa;(documents)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="line_user" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100.0" y="86" as="sourcePoint" />
+            <mxPoint x="100.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_view" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="86" as="sourcePoint" />
+            <mxPoint x="324.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_api" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="86" as="sourcePoint" />
+            <mxPoint x="548.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_prep" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="86" as="sourcePoint" />
+            <mxPoint x="772.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_wallet" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="996.0" y="86" as="sourcePoint" />
+            <mxPoint x="996.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_db" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1220.0" y="86" as="sourcePoint" />
+            <mxPoint x="1220.0" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_0" value="1. Unggah berkas / tempel teks" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100.0" y="110" as="sourcePoint" />
+            <mxPoint x="324.0" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_1" value="2. POST /api/v1/documents/upload" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="160" as="sourcePoint" />
+            <mxPoint x="548.0" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_2" value="3. validate_and_extract_text(file)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="210" as="sourcePoint" />
+            <mxPoint x="772.0" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_3" value="4. Cek MIME magic, limit &lt;=15MB, ekstrak teks" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="252" as="sourcePoint" />
+            <mxPoint x="772.0" y="272" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="807.0" y="252" />
+              <mxPoint x="807.0" y="272" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_4" value="5. Hitung kata naskah: word_count" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="302" as="sourcePoint" />
+            <mxPoint x="772.0" y="322" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="807.0" y="302" />
+              <mxPoint x="807.0" y="322" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_5" value="6. TextPayload (clean_text, word_count)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="360" as="sourcePoint" />
+            <mxPoint x="548.0" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_6" value="7. calculate_token_cost(role, word_count)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="410" as="sourcePoint" />
+            <mxPoint x="996.0" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_7" value="8. Formula: min(5, ceil(kata / 2500))" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="996.0" y="452" as="sourcePoint" />
+            <mxPoint x="996.0" y="472" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1031.0" y="452" />
+              <mxPoint x="1031.0" y="472" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_8" value="9. Estimasi biaya token" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="996.0" y="510" as="sourcePoint" />
+            <mxPoint x="548.0" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_9" value="10. INSERT INTO documents (title, path, words)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="560" as="sourcePoint" />
+            <mxPoint x="1220.0" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_10" value="11. Document created (uuid)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1220.0" y="610" as="sourcePoint" />
+            <mxPoint x="548.0" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_11" value="12. 201 Created (doc_id, words, token_cost)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="660" as="sourcePoint" />
+            <mxPoint x="324.0" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_12" value="13. Tampilkan pratinjau &amp; konfirmasi biaya" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="710" as="sourcePoint" />
+            <mxPoint x="100.0" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

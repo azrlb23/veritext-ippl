@@ -32,9 +32,6 @@ from app.models.audit import AuditTask, AuditReport, AuditSentence
 from app.schemas.audit import AuditReportResponse
 from app.engine.tier4_aggregator import HybridAggregator
 from app.engine.tier2_semantic import SemanticEngine
-from app.services.corpus_service import CorpusService
-
-
 class MockQueryResult:
     def __init__(self, items=None, scalar_val=None):
         self._items = items if items is not None else []
@@ -94,7 +91,7 @@ class TestRemediationPhase5(unittest.IsolatedAsyncioTestCase):
             id=user_id,
             full_name="Mahasiswa Skripsi",
             email="mahasiswa@kampus.ac.id",
-            role="TRIAL",
+            role="FREE",
             is_active=True,
         )
 
@@ -242,96 +239,6 @@ class TestRemediationPhase5(unittest.IsolatedAsyncioTestCase):
                 mock_context_manager.__enter__.assert_called_once()
                 mock_context_manager.__exit__.assert_called_once()
 
-    def test_tc_sec_33_safe_zip_decompression_anti_bomb_slip(self):
-        """
-        [SECURITY] Safe ZIP Decompression Anti Zip-Slip & Anti Zip-Bomb.
-        - Memvalidasi os.path.abspath terhadap direktori tujuan ekstraksi (mencegah directory traversal / zip slip).
-        - Memvalidasi total uncompressed bytes (maksimum ambang batas 200MB, mencegah zip bomb DoS).
-        - Ekstraksi arsip ZIP valid berhasil tanpa error.
-        """
-        with tempfile.TemporaryDirectory() as extract_dir:
-            # 1. Kasus A: Serangan Zip-Slip (File traversal "../../malicious.txt")
-            zip_buffer_slip = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer_slip, "w") as zf:
-                zf.writestr("../../slip_attack.txt", "isi berbahaya di luar direktori")
-            zip_buffer_slip.seek(0)
-
-            with self.assertRaises(HTTPException) as ctx_slip:
-                CorpusService.extract_zip_safely(
-                    zip_file=zip_buffer_slip,
-                    target_dir=extract_dir,
-                    max_uncompressed_bytes=200 * 1024 * 1024,
-                )
-            self.assertEqual(ctx_slip.exception.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertTrue(
-                "slip" in ctx_slip.exception.detail.lower()
-                or "traversal" in ctx_slip.exception.detail.lower()
-                or "invalid path" in ctx_slip.exception.detail.lower(),
-                f"Detail must indicate path traversal: {ctx_slip.exception.detail}",
-            )
-
-            # 2. Kasus B: Serangan Zip-Bomb (Ukuran dekompresi melebihi ambang batas)
-            zip_buffer_bomb = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer_bomb, "w") as zf:
-                zf.writestr("large_payload.txt", b"x" * 2048)
-            zip_buffer_bomb.seek(0)
-
-            with self.assertRaises(HTTPException) as ctx_bomb:
-                CorpusService.extract_zip_safely(
-                    zip_file=zip_buffer_bomb,
-                    target_dir=extract_dir,
-                    max_uncompressed_bytes=1024,  # Threshold 1024 < 2048 bytes
-                )
-            self.assertEqual(ctx_bomb.exception.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertTrue(
-                "bomb" in ctx_bomb.exception.detail.lower()
-                or "size" in ctx_bomb.exception.detail.lower()
-                or "threshold" in ctx_bomb.exception.detail.lower(),
-                f"Detail must indicate zip bomb size error: {ctx_bomb.exception.detail}",
-            )
-
-            # 3. Kasus C: Arsip ZIP Valid dan Aman
-            zip_buffer_safe = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer_safe, "w") as zf:
-                zf.writestr("corpus_doc1.txt", "Konten naskah skripsi pembanding satu.")
-                zf.writestr("subfolder/corpus_doc2.txt", "Konten naskah skripsi pembanding dua.")
-            zip_buffer_safe.seek(0)
-
-            extracted_files = CorpusService.extract_zip_safely(
-                zip_file=zip_buffer_safe,
-                target_dir=extract_dir,
-                max_uncompressed_bytes=200 * 1024 * 1024,
-            )
-            self.assertEqual(len(extracted_files), 2)
-            for fpath in extracted_files:
-                self.assertTrue(os.path.exists(fpath))
-                self.assertTrue(os.path.abspath(fpath).startswith(os.path.abspath(extract_dir)))
-
-            # 4. Kasus D: Serangan Symlink (Archive member with symlink header)
-            zip_buffer_symlink = io.BytesIO()
-            with zipfile.ZipFile(zip_buffer_symlink, "w") as zf:
-                zinfo = zipfile.ZipInfo("symlink_target")
-                zinfo.create_system = 3  # Unix
-                zinfo.external_attr = 0o120777 << 16  # S_IFLNK
-                zf.writestr(zinfo, "/etc/passwd")
-            zip_buffer_symlink.seek(0)
-
-            with self.assertRaises(HTTPException) as ctx_symlink:
-                CorpusService.extract_zip_safely(
-                    zip_file=zip_buffer_symlink,
-                    target_dir=extract_dir,
-                )
-            self.assertEqual(ctx_symlink.exception.status_code, status.HTTP_400_BAD_REQUEST)
-            self.assertIn("symbolic link", ctx_symlink.exception.detail.lower())
-
-            # 5. Kasus E: Berkas korup bukan format ZIP valid
-            corrupt_buffer = io.BytesIO(b"bukan_format_zip_valid_binary_random_garbage")
-            with self.assertRaises(HTTPException) as ctx_corrupt:
-                CorpusService.extract_zip_safely(
-                    zip_file=corrupt_buffer,
-                    target_dir=extract_dir,
-                )
-            self.assertEqual(ctx_corrupt.exception.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 if __name__ == "__main__":

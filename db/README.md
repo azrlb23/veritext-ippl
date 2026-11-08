@@ -44,8 +44,8 @@ Saat kontainer PostgreSQL dijalankan untuk pertama kali (`docker compose up -d`)
 | Peran | Nama Lengkap | Email | Kata Sandi Default | Saldo Token |
 | :--- | :--- | :--- | :--- | :--- |
 | **ADMIN** | Super Administrator VeriText | `admin@veritext.ai` | `VeriText#2026` | 9.999 Token |
-| **REVIEWER** | Dr. Hendra Gunawan, M.Kom. | `dosen@kampus.ac.id` | `VeriText#2026` | 100 Token |
-| **TRIAL** | Mochammad Azriel Albian Putra | `azriel@kampus.ac.id` | `VeriText#2026` | 3 Token |
+| **PREMIUM** | Dr. Hendra Gunawan, M.Kom. | `dosen@kampus.ac.id` | `VeriText#2026` | 100 Token |
+| **FREE** | Mochammad Azriel Albian Putra | `azriel@kampus.ac.id` | `VeriText#2026` | 3 Token |
 | **PREMIUM** | Siti Rahmawati | `siti@kampus.ac.id` | `VeriText#2026` | 25 Token |
 
 ---

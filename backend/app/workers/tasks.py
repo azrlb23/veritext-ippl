@@ -1,444 +1,133 @@
-from datetime import datetime, timedelta, timezone
+from __future__ import annotations
+
+import logging
 import os
 import uuid
-from typing import Any, Dict, List, Optional
-try:
-    from celery.utils.log import get_task_logger
-except ImportError:
-    import logging
-    def get_task_logger(name):
-        return logging.getLogger(name)
+from datetime import datetime
+from typing import Any
 
-from app.workers.celery_app import celery_app
+try:
+    from datetime import UTC
+except ImportError:
+    from datetime import timezone
+
+    UTC = timezone.utc  # noqa: UP017
+
 from app.core.config import settings
 from app.core.database import SyncSessionLocal
-from app.models.audit import AuditTask, AuditReport, AuditSentence
-from app.models.document import Document
-from app.models.corpus import CorpusDocument, DocumentChunk, LexicalFingerprint
 from app.engine.preprocessor import TextPreprocessor
-from app.engine.tier1_lexical import WinnowingLexicalEngine
-from app.engine.tier2_semantic import SemanticEngine
-from app.engine.tier4_aggregator import HybridAggregator
 from app.engine.reference_corpus import ReferenceCorpusBank
+from app.engine.tier4_aggregator import HybridAggregator
+from app.models.audit import AuditReport, AuditSentence, AuditTask
+from app.models.document import Document
+from app.workers.celery_app import celery_app
+from app.workers.task_helpers import (
+    clean_zombie_tasks,
+    handle_audit_failure,
+    handle_web_scan_refund,
+    load_corpus_indexes,
+)
 
-logger = get_task_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def execute_audit_pipeline(db, audit_task_id: str, document_id: str) -> Dict[str, Any]:
-    """Core synchronous logic to execute the 4-tier hybrid audit pipeline."""
-    # Synchronize dynamic hyperparameters from system_config table into worker settings runtime
-    try:
-        from app.models.system_config import SystemConfig
-        config = db.query(SystemConfig).order_by(SystemConfig.created_at.desc()).first()
-        if config:
-            if config.lexical_weight is not None:
-                settings.SIMILARITY_LEXICAL_WEIGHT = config.lexical_weight
-            if config.semantic_weight is not None:
-                settings.SIMILARITY_SEMANTIC_WEIGHT = config.semantic_weight
-            if config.stylometric_weight is not None:
-                settings.SIMILARITY_STYLO_WEIGHT = config.stylometric_weight
-            if config.winnowing_kgram is not None:
-                settings.WINNOWING_K_GRAM = config.winnowing_kgram
-            if config.winnowing_window is not None:
-                settings.WINNOWING_WINDOW_SIZE = config.winnowing_window
-            if getattr(config, "similarity_threshold", None) is not None:
-                settings.SIMILARITY_THRESHOLD = config.similarity_threshold
-            if getattr(config, "stylometric_burstiness_threshold", None) is not None:
-                settings.STYLO_BURSTINESS_THRESHOLD = config.stylometric_burstiness_threshold
-            logger.info(
-                f"Worker settings synced from SystemConfig: "
-                f"T1={settings.SIMILARITY_LEXICAL_WEIGHT}, T2={settings.SIMILARITY_SEMANTIC_WEIGHT}, "
-                f"T3={settings.SIMILARITY_STYLO_WEIGHT}, kgram={settings.WINNOWING_K_GRAM}"
-            )
-    except Exception as sync_err:
-        logger.warning(f"Note: Could not sync system_config into worker settings: {sync_err}")
-
+def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dict[str, Any]:
     task = db.query(AuditTask).filter(AuditTask.id == uuid.UUID(audit_task_id)).first()
     if not task:
-        logger.error(f"Audit task {audit_task_id} not found")
+        logger.error("Audit task %s not found", audit_task_id)
         return {"status": "FAILED", "error": "Task not found"}
 
     doc = db.query(Document).filter(Document.id == uuid.UUID(document_id)).first()
     if not doc:
-        logger.error(f"Document {document_id} not found")
-        task.status = "FAILED"
-        task.error_message = f"Document {document_id} not found"
-        task.completed_at = datetime.now(timezone.utc)
+        logger.error("Document %s not found", document_id)
+        task.status, task.error_message, task.completed_at = "FAILED", f"Document {document_id} not found", datetime.now(UTC)
         db.commit()
         return {"status": "FAILED", "error": "Document not found"}
 
     try:
-        # Step 1: Update task status to PROCESSING
-        task.status = "PROCESSING"
-        task.started_at = datetime.now(timezone.utc)
-        task.progress_pct = 10
-        task.current_stage = "TEXT_EXTRACTION"
+        task.status, task.started_at, task.progress_pct = "PROCESSING", datetime.now(UTC), 15
+        task.current_stage = "Tahap 1 · Ekstraksi struktur teks & segmentasi kalimat"
         db.commit()
 
-        # Step 2: Extract text from uploaded document file
         file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
-        doc_text = ""
-        if os.path.exists(file_path):
-            doc_text = TextPreprocessor.extract_text_from_file(file_path, doc.mime_type)
-        else:
-            # Fallback if file was not stored on disk (e.g. test environment or mocked upload)
-            doc_text = f"Dokumen uji {doc.original_filename}. Sistem deteksi plagiarisme cerdas berbasis arsitektur hybrid leksikal dan semantik."
+        doc_text = TextPreprocessor.extract_text_from_file(file_path, doc.mime_type) if os.path.exists(file_path) else (
+            f"Dokumen uji {doc.original_filename}. Sistem deteksi plagiarisme cerdas berbasis arsitektur hybrid leksikal dan semantik."
+        )
+        doc_text = doc_text.strip() or "Naskah dokumen tanpa konten teks yang dapat diekstraksi."
 
-        if not doc_text.strip():
-            doc_text = "Naskah dokumen tanpa konten teks yang dapat diekstraksi."
-
-        # Step 3: Sentence segmentation and DB sentence persistence
         sentences = TextPreprocessor.segment_sentences(doc_text)
-        
-        # Clean up any existing sentence spans for this audit task
         db.query(AuditSentence).filter(AuditSentence.audit_task_id == task.id).delete()
-
         for s in sentences:
-            sentence_rec = AuditSentence(
-                audit_task_id=task.id,
-                sentence_index=s.index,
-                sentence_text=s.text,
-                start_char=s.start_char,
-                end_char=s.end_char,
-                word_count=s.word_count,
-                is_citation=s.is_citation,
-            )
-            db.add(sentence_rec)
-
-        # Update document word count
-        total_word_count = sum(s.word_count for s in sentences)
-        doc.word_count = total_word_count
+            db.add(AuditSentence(
+                audit_task_id=task.id, sentence_index=s.index, sentence_text=s.text,
+                start_char=s.start_char, end_char=s.end_char, word_count=s.word_count, is_citation=s.is_citation,
+            ))
+        doc.word_count = sum(s.word_count for s in sentences)
+        task.progress_pct, task.current_stage = 25, "LOADING_CORPUS_INDEX"
         db.commit()
 
-        task.progress_pct = 25
-        task.current_stage = "LOADING_CORPUS_INDEX"
-        db.commit()
-
-        # Step 4: Build / load corpus indexes (combine DB indexed corpus with ReferenceCorpusBank)
         corpus_bank = ReferenceCorpusBank.get_instance()
-        corpus_index: Dict[int, List[Dict[str, Any]]] = dict(corpus_bank.get_fingerprint_index())
-        corpus_chunks: List[Dict[str, Any]] = list(corpus_bank.get_corpus_chunks())
-
-        # Load any additional database corpus fingerprints
-        try:
-            db_fps = (
-                db.query(LexicalFingerprint, CorpusDocument.title, CorpusDocument.category)
-                .join(CorpusDocument, LexicalFingerprint.corpus_doc_id == CorpusDocument.id)
-                .filter(CorpusDocument.status == "INDEXED")
-                .all()
-            )
-            for fp, title, cat in db_fps:
-                h = fp.fingerprint_hash
-                if h not in corpus_index:
-                    corpus_index[h] = []
-                corpus_index[h].append({
-                    "doc_id": str(fp.corpus_doc_id),
-                    "title": title,
-                    "category": cat or "General",
-                    "position": fp.position_start,
-                })
-
-            db_chunks = (
-                db.query(DocumentChunk, CorpusDocument.title, CorpusDocument.category)
-                .join(CorpusDocument, DocumentChunk.corpus_doc_id == CorpusDocument.id)
-                .filter(CorpusDocument.status == "INDEXED")
-                .all()
-            )
-            for chunk, title, cat in db_chunks:
-                corpus_chunks.append({
-                    "chunk_id": str(chunk.id),
-                    "corpus_doc_id": str(chunk.corpus_doc_id),
-                    "title": title,
-                    "category": cat or "General",
-                    "chunk_text": chunk.chunk_text,
-                    "embedding": chunk.embedding,
-                    "start_char": chunk.start_char,
-                    "end_char": chunk.end_char,
-                })
-        except Exception as e:
-            logger.warning(f"Note: Could not query database corpus records ({e}), falling back cleanly to built-in ReferenceCorpusBank.")
-
-        # Step 5: Execute 4-Tier Pipeline via HybridAggregator
-        task.progress_pct = 40
-        task.current_stage = "PROCESSING_TIER1_LEXICAL"
+        corpus_index, corpus_chunks = load_corpus_indexes(db, corpus_bank, logger)
+        task.progress_pct, task.current_stage = 40, "Tahap 2 · Penelusuran internet & korpus"
         db.commit()
+
+        def update_progress(pct: int, stage_text: str):
+            try:
+                task.progress_pct, task.current_stage = pct, stage_text
+                db.commit()
+            except Exception as err:  # noqa: BLE001
+                logger.debug("Progress update skipped: %s", err)
 
         aggregator = HybridAggregator(corpus_bank=corpus_bank)
         result = aggregator.run_pipeline(
-            original_text=doc_text,
-            audit_depth=task.audit_depth,
-            custom_corpus_index=corpus_index,
-            custom_corpus_chunks=corpus_chunks,
+            original_text=doc_text, audit_depth=task.audit_depth,
+            custom_corpus_index=corpus_index, custom_corpus_chunks=corpus_chunks,
+            on_progress=update_progress,
         )
 
-        task.progress_pct = 65
-        task.current_stage = "PROCESSING_TIER2_SEMANTIC"
+        handle_web_scan_refund(db, task, result, logger)
+        task.progress_pct, task.current_stage = 95, "SAVING_AUDIT_REPORT"
         db.commit()
 
-        task.progress_pct = 85
-        task.current_stage = "PROCESSING_TIER3_STYLOMETRIC"
-        db.commit()
-
-        task.progress_pct = 95
-        task.current_stage = "SAVING_AUDIT_REPORT"
-        db.commit()
-
-        # Step 6: Save AuditReport to Database
-        # Remove any existing report for this task
         db.query(AuditReport).filter(AuditReport.audit_task_id == task.id).delete()
+        db.add(AuditReport(
+            audit_task_id=task.id, verification_uuid=uuid.uuid4(),
+            score_lexical=result.score_lexical, score_semantic=result.score_semantic,
+            score_stylometric=result.score_stylometric, score_composite=result.score_composite,
+            heatmap_annotations=result.heatmap_annotations, matched_sources=result.matched_sources,
+        ))
 
-        report = AuditReport(
-            audit_task_id=task.id,
-            verification_uuid=uuid.uuid4(),
-            score_lexical=result.score_lexical,
-            score_semantic=result.score_semantic,
-            score_stylometric=result.score_stylometric,
-            score_composite=result.score_composite,
-            heatmap_annotations=result.heatmap_annotations,
-            matched_sources=result.matched_sources,
-            pdf_path=None,
-        )
-        db.add(report)
-
-        # Step 7: Mark Task Complete
-        task.status = "SUCCESS"
-        task.progress_pct = 100
-        task.current_stage = "COMPLETED"
-        task.completed_at = datetime.now(timezone.utc)
+        task.status, task.progress_pct, task.current_stage, task.completed_at = "SUCCESS", 100, "COMPLETED", datetime.now(UTC)
         db.commit()
 
-        logger.info(
-            f"Audit task {audit_task_id} completed successfully: "
-            f"T1={result.score_lexical}%, T2={result.score_semantic}%, "
-            f"T3={result.score_stylometric}%, Composite={result.score_composite}%"
-        )
+        logger.info("Audit task %s completed: Composite=%s%%", audit_task_id, result.score_composite)
         return {
-            "status": "SUCCESS",
-            "audit_task_id": audit_task_id,
-            "composite_score": result.score_composite,
-            "score_lexical": result.score_lexical,
-            "score_semantic": result.score_semantic,
+            "status": "SUCCESS", "audit_task_id": audit_task_id, "composite_score": result.score_composite,
+            "score_lexical": result.score_lexical, "score_semantic": result.score_semantic,
             "score_stylometric": result.score_stylometric,
             "heatmap_annotations_count": len(result.heatmap_annotations),
             "matched_sources_count": len(result.matched_sources),
         }
     except Exception as exc:
         db.rollback()
-        logger.exception(f"Error processing audit task {audit_task_id}: {exc}")
-        task = db.query(AuditTask).filter(AuditTask.id == uuid.UUID(audit_task_id)).first()
-        if task:
-            task.status = "FAILED"
-            task.error_message = str(exc)
-            task.completed_at = datetime.now(timezone.utc)
-
-            # Auto-refund tokens on fatal execution failure if not already refunded
-            try:
-                from app.models.wallet import TokenWallet, TokenTransaction
-                debit_tx = (
-                    db.query(TokenTransaction)
-                    .filter(
-                        TokenTransaction.reference_id == task.id,
-                        TokenTransaction.transaction_type == "DEBIT_AUDIT",
-                    )
-                    .first()
-                )
-                already_refunded = (
-                    db.query(TokenTransaction)
-                    .filter(
-                        TokenTransaction.reference_id == task.id,
-                        TokenTransaction.transaction_type.in_(["CREDIT_REFUND", "REFUND"]),
-                    )
-                    .first()
-                )
-                if debit_tx and not already_refunded and task.user_id:
-                    wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()
-                    if wallet:
-                        refund_amount = abs(debit_tx.amount)
-                        wallet.balance += refund_amount
-                        refund_tx = TokenTransaction(
-                            wallet_id=wallet.id,
-                            transaction_type="CREDIT_REFUND",
-                            amount=refund_amount,
-                            balance_after=wallet.balance,
-                            reference_id=task.id,
-                            note=f"Automatic refund for failed audit task {task.id}",
-                        )
-                        db.add(refund_tx)
-            except Exception as refund_err:
-                logger.error(f"Failed to process auto-refund on task error: {refund_err}")
-
-            db.commit()
-        raise exc
+        logger.exception("Error processing audit task %s", audit_task_id)
+        handle_audit_failure(db, audit_task_id, exc, logger)
+        raise
 
 
 @celery_app.task(bind=True, name="app.workers.tasks.preprocess_and_audit")
-def preprocess_and_audit(self, audit_task_id: str, document_id: str) -> Dict[str, Any]:
-    """Orchestrates the 4-Tier Hybrid Plagiarism Detection Pipeline asynchronously via Celery."""
-    logger.info(f"Starting Celery audit task {audit_task_id} for document {document_id}")
-    db = SyncSessionLocal()
-    try:
+def preprocess_and_audit(self, audit_task_id: str, document_id: str) -> dict[str, Any]:
+    logger.info("Starting Celery audit task %s for doc %s", audit_task_id, document_id)
+    with SyncSessionLocal() as db:
         return execute_audit_pipeline(db, audit_task_id, document_id)
-    finally:
-        db.close()
 
 
-@celery_app.task(name="app.workers.tasks.index_corpus_document")
-def index_corpus_document(corpus_doc_id: str) -> Dict[str, Any]:
-    """Indexes corpus document into pgvector embeddings and lexical fingerprints."""
-    logger.info(f"Indexing corpus document {corpus_doc_id}")
-    db = SyncSessionLocal()
-    try:
-        doc = db.query(CorpusDocument).filter(CorpusDocument.id == uuid.UUID(corpus_doc_id)).first()
-        if not doc:
-            return {"status": "FAILED", "error": "Not found"}
-
-        doc.status = "INDEXING"
-        db.commit()
-
-        # Read corpus file
-        file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
-        corpus_text = ""
-        if os.path.exists(file_path):
-            if doc.stored_filename and doc.stored_filename.lower().endswith(".zip"):
-                import tempfile
-                from app.services.corpus_service import CorpusService
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    extracted_files = CorpusService.extract_zip_safely(file_path, temp_dir)
-                    texts = []
-                    for f in extracted_files:
-                        t = TextPreprocessor.extract_text_from_file(f)
-                        if t and t.strip():
-                            texts.append(t.strip())
-                    corpus_text = "\n\n".join(texts)
-            else:
-                corpus_text = TextPreprocessor.extract_text_from_file(file_path)
-        else:
-            corpus_text = f"Naskah Korpus Pembanding: {doc.title}."
-
-        if not corpus_text.strip():
-            corpus_text = f"Naskah Korpus Pembanding: {doc.title}."
-
-        # 1. Segment sentences
-        sentences = TextPreprocessor.segment_sentences(corpus_text)
-
-        # 2. Extract Winnowing fingerprints
-        lex_engine = WinnowingLexicalEngine()
-        fps = lex_engine.extract_fingerprints(corpus_text)
-
-        for h_val, pos in fps:
-            fp_rec = LexicalFingerprint(
-                corpus_doc_id=doc.id,
-                fingerprint_hash=h_val,
-                position_start=pos,
-                position_end=pos + lex_engine.k,
-            )
-            db.add(fp_rec)
-
-        # 3. Extract semantic embeddings for chunks
-        sem_engine = SemanticEngine()
-        for idx, s in enumerate(sentences):
-            emb = sem_engine.embed_sentence(s.text)
-            chunk_rec = DocumentChunk(
-                corpus_doc_id=doc.id,
-                chunk_index=idx,
-                chunk_text=s.text,
-                embedding=emb,
-                start_char=s.start_char,
-                end_char=s.end_char,
-            )
-            db.add(chunk_rec)
-
-        doc.status = "INDEXED"
-        doc.total_chunks = len(sentences)
-        db.commit()
-
-        logger.info(f"Corpus document {corpus_doc_id} indexed successfully ({len(sentences)} chunks, {len(fps)} fingerprints)")
-        return {"status": "SUCCESS", "chunks_indexed": len(sentences), "fingerprints_indexed": len(fps)}
-    except Exception as e:
-        db.rollback()
-        logger.exception(f"Corpus indexing error: {e}")
-        doc = db.query(CorpusDocument).filter(CorpusDocument.id == uuid.UUID(corpus_doc_id)).first()
-        if doc:
-            doc.status = "ERROR"
-            db.commit()
-        raise e
-    finally:
-        db.close()
+run_plagiarism_audit = preprocess_and_audit
 
 
-def clean_zombie_tasks(db, threshold_minutes: int = 30) -> int:
-    """
-    Finds and cleans up zombie audit tasks stuck in PROCESSING state for more than
-    threshold_minutes. Marks them FAILED with a timeout message and refunds any deducted tokens.
-    """
-    from sqlalchemy import and_, or_
-    from app.models.wallet import TokenWallet, TokenTransaction
-    cutoff = datetime.now(timezone.utc) - timedelta(minutes=threshold_minutes)
-    zombie_tasks = (
-        db.query(AuditTask)
-        .filter(
-            AuditTask.status == "PROCESSING",
-            or_(
-                AuditTask.started_at < cutoff,
-                and_(AuditTask.started_at.is_(None), AuditTask.created_at < cutoff),
-            )
-        )
-        .all()
-    )
-    reaped = 0
-    for task in zombie_tasks:
-        task.status = "FAILED"
-        task.error_message = f"Task execution timed out after exceeding {threshold_minutes} minutes"
-        task.completed_at = datetime.now(timezone.utc)
-
-        # Look up debit transaction to refund deducted tokens
-        debit_tx = (
-            db.query(TokenTransaction)
-            .filter(
-                TokenTransaction.reference_id == task.id,
-                TokenTransaction.transaction_type == "DEBIT_AUDIT",
-            )
-            .first()
-        )
-        already_refunded = (
-            db.query(TokenTransaction)
-            .filter(
-                TokenTransaction.reference_id == task.id,
-                TokenTransaction.transaction_type == "CREDIT_REFUND",
-            )
-            .first()
-        )
-        if debit_tx and not already_refunded and task.user_id:
-            wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()
-            if wallet:
-                refund_amount = abs(debit_tx.amount)
-                wallet.balance += refund_amount
-                refund_tx = TokenTransaction(
-                    wallet_id=wallet.id,
-                    transaction_type="CREDIT_REFUND",
-                    amount=refund_amount,
-                    balance_after=wallet.balance,
-                    reference_id=task.id,
-                    note=f"Automatic refund for timed out audit task {task.id}",
-                )
-                db.add(refund_tx)
-        reaped += 1
-
-    if reaped > 0:
-        db.commit()
-
-    return reaped
 
 
 @celery_app.task(name="app.workers.tasks.reap_zombie_tasks")
-def reap_zombie_tasks() -> Dict[str, Any]:
-    """Periodic Celery Beat task to clean up zombie audit tasks."""
-    logger.info("Executing periodic zombie task cleanup reaper...")
-    db = SyncSessionLocal()
-    try:
-        count = clean_zombie_tasks(db, threshold_minutes=30)
-        logger.info(f"Zombie task cleanup reaper finished. Reaped {count} tasks.")
-        return {"status": "SUCCESS", "reaped_tasks": count}
-    finally:
-        db.close()
-
+def reap_zombie_tasks() -> dict[str, Any]:
+    with SyncSessionLocal() as db:
+        return {"status": "SUCCESS", "reaped_tasks": clean_zombie_tasks(db, threshold_minutes=30)}

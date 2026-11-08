@@ -4,7 +4,6 @@ import type { User } from "../types";
 export interface RegisterDTO {
   full_name: string;
   email: string;
-  institution?: string;
   password: string;
 }
 
@@ -16,6 +15,13 @@ export interface LoginDTO {
 export interface LoginResponse {
   access_token: string;
   user: User;
+  refresh_token?: string;
+}
+
+export interface CompleteGoogleSignupDTO {
+  ticket: string;
+  full_name: string;
+  password: string;
 }
 
 export const authService = {
@@ -39,8 +45,23 @@ export const authService = {
     return res.data.data;
   },
 
+  async forgotPassword(email: string) {
+    const res = await apiClient.post<{ message: string; data: Record<string, unknown> }>("/auth/forgot-password", { email });
+    return res.data;
+  },
+
+  async resetPassword(token: string, new_password: string) {
+    const res = await apiClient.post<{ message: string; data: Record<string, unknown> }>("/auth/reset-password", { token, new_password });
+    return res.data;
+  },
+
   async deleteAccount() {
     const res = await apiClient.delete("/auth/me");
     return res.data;
+  },
+
+  async completeGoogleSignup(data: CompleteGoogleSignupDTO) {
+    const res = await apiClient.post<{ data: LoginResponse }>("/auth/google/complete", data);
+    return res.data.data;
   },
 };

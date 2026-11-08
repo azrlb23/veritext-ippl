@@ -1,48 +1,30 @@
-from datetime import datetime, timezone
-from typing import Optional
+from __future__ import annotations
+
+import contextlib
 import uuid
+from datetime import datetime, timezone
+
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.models.audit import AuditTask, AuditReport
+from app.models.audit import AuditTask
 from app.models.document import Document
-from app.models.wallet import TokenWallet, TokenTransaction
+from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.audit import AuditStartRequest
-from app.services.pdf_certificate_service import generate_pdf_certificate, clean_pdf_filename
 
 
 class AuditService:
     @staticmethod
-    async def create_audit_task(
-        db: AsyncSession, user_id: uuid.UUID, req: AuditStartRequest
-    ) -> AuditTask:
-        # Check document ownership and readiness
-        doc_stmt = select(Document).where(Document.id == req.document_id, Document.user_id == user_id)
-        doc_res = await db.execute(doc_stmt)
-        document = doc_res.scalar_one_or_none()
+    async def create_audit_task(db: AsyncSession, user_id: uuid.UUID, req: AuditStartRequest) -> AuditTask:
+        doc = (await db.execute(select(Document).where(Document.id == req.document_id, Document.user_id == user_id))).scalar_one_or_none()
+        if not doc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found or access denied")
+        if doc.status == "DELETED" or doc.deleted_at is not None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot audit a deleted document")
 
-        if not document:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Document not found or access denied",
-            )
-
-        if document.status == "DELETED" or document.deleted_at is not None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot audit a deleted document",
-            )
-
-        # Check and debit user token wallet
-        wallet_stmt = (
-            select(TokenWallet)
-            .where(TokenWallet.user_id == user_id)
-            .with_for_update()
-        )
-        wallet_res = await db.execute(wallet_stmt)
-        wallet = wallet_res.scalar_one_or_none()
-
+        wallet = (await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update())).scalar_one_or_none()
         token_cost = 1 if req.audit_depth == "TIER1_ONLY" else 2
         if not wallet or wallet.balance < token_cost:
             raise HTTPException(
@@ -50,122 +32,73 @@ class AuditService:
                 detail=f"Insufficient token balance. This audit requires {token_cost} token(s). Current balance: {wallet.balance if wallet else 0}",
             )
 
-        # Deduct tokens
         wallet.balance -= token_cost
-
-        # Create audit task
         task = AuditTask(
-            document_id=document.id,
-            user_id=user_id,
-            audit_depth=req.audit_depth,
-            status="QUEUED",
-            progress_pct=0,
-            current_stage="INITIALIZING",
+            document_id=doc.id, user_id=user_id, audit_depth=req.audit_depth, status="QUEUED", progress_pct=0, current_stage="INITIALIZING"
         )
         db.add(task)
         await db.flush()
 
-        # Record wallet transaction
         tx = TokenTransaction(
-            wallet_id=wallet.id,
-            transaction_type="DEBIT_AUDIT",
-            amount=-token_cost,
-            balance_after=wallet.balance,
-            reference_id=task.id,
-            note=f"Audit execution for document {document.original_filename}",
+            wallet_id=wallet.id, transaction_type="DEBIT_AUDIT", amount=-token_cost,
+            balance_after=wallet.balance, reference_id=task.id, note=f"Audit execution for document {doc.original_filename}",
         )
         db.add(tx)
 
-        # Dispatch Celery worker task asynchronously without web server thread hijacking
-        try:
+        with contextlib.suppress(Exception):
             from app.workers.celery_app import celery_app
             from app.workers.tasks import preprocess_and_audit
             inspect = celery_app.control.inspect(timeout=0.3)
             active_workers = inspect.ping() if inspect else None
             if active_workers:
-                celery_res = preprocess_and_audit.delay(str(task.id), str(document.id))
+                celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
                 task.celery_task_id = celery_res.id
             else:
-                # Celery worker is offline; leave task in QUEUED status in broker queue
-                # so that when the worker starts up, it will automatically consume and process it.
-                # Do NOT spawn an in-process thread that hijacks the web server process.
-                try:
-                    celery_res = preprocess_and_audit.delay(str(task.id), str(document.id))
+                with contextlib.suppress(Exception):
+                    celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
                     task.celery_task_id = celery_res.id
-                except Exception:
-                    task.celery_task_id = None
-        except Exception:
-            task.celery_task_id = None
 
         await db.commit()
         await db.refresh(task)
         return task
 
     @staticmethod
-    async def get_task_status(
-        db: AsyncSession, task_id: uuid.UUID, user_id: uuid.UUID
-    ) -> AuditTask:
-        from sqlalchemy.orm import selectinload
+    async def get_task_status(db: AsyncSession, task_id: uuid.UUID, user_id: uuid.UUID) -> AuditTask:
         stmt = (
             select(AuditTask)
             .options(selectinload(AuditTask.document), selectinload(AuditTask.report))
             .where(AuditTask.id == task_id, AuditTask.user_id == user_id)
         )
-        result = await db.execute(stmt)
-        task = result.scalar_one_or_none()
+        task = (await db.execute(stmt)).scalar_one_or_none()
         if not task:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Audit task not found",
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit task not found")
         return task
 
     @staticmethod
-    async def cancel_task(
-        db: AsyncSession, task_id: uuid.UUID, user_id: uuid.UUID
-    ) -> bool:
+    async def cancel_task(db: AsyncSession, task_id: uuid.UUID, user_id: uuid.UUID) -> bool:
         stmt = select(AuditTask).where(AuditTask.id == task_id, AuditTask.user_id == user_id)
-        result = await db.execute(stmt)
-        task = result.scalar_one_or_none()
+        task = (await db.execute(stmt)).scalar_one_or_none()
         if not task:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit task not found")
-
         if task.status not in ("QUEUED", "PROCESSING"):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot cancel task in '{task.status}' state",
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot cancel task in '{task.status}' state")
 
         task.status = "CANCELLED"
-        task.completed_at = datetime.now(timezone.utc)
+        task.completed_at = datetime.now(timezone.utc)  # noqa: UP017
 
-        # Attempt revoke in Celery
         if task.celery_task_id:
-            try:
+            with contextlib.suppress(Exception):
                 from app.workers.celery_app import celery_app
                 celery_app.control.revoke(task.celery_task_id, terminate=True)
-            except Exception:
-                pass
 
-        # Automatic token refund: lock user wallet and credit deducted tokens
-        wallet_stmt = (
-            select(TokenWallet)
-            .where(TokenWallet.user_id == user_id)
-            .with_for_update()
-        )
-        wallet_res = await db.execute(wallet_stmt)
-        wallet = wallet_res.scalar_one_or_none()
-
+        wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update()
+        wallet = (await db.execute(wallet_stmt)).scalar_one_or_none()
         refund_amount = 1 if getattr(task, "audit_depth", "FULL") == "TIER1_ONLY" else 2
         if wallet:
             wallet.balance += refund_amount
             tx = TokenTransaction(
-                wallet_id=wallet.id,
-                transaction_type="CREDIT_REFUND",
-                amount=refund_amount,
-                balance_after=wallet.balance,
-                reference_id=task.id,
-                note=f"Automatic refund for cancelled audit task {task.id}",
+                wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=refund_amount,
+                balance_after=wallet.balance, reference_id=task.id, note=f"Automatic refund for cancelled audit task {task.id}",
             )
             db.add(tx)
 
@@ -174,11 +107,9 @@ class AuditService:
 
     @staticmethod
     def execute_audit_sync(task_id: uuid.UUID, document_id: uuid.UUID, db_session=None):
-        """Directly executes the 4-tier audit pipeline synchronously."""
-        from app.workers.tasks import execute_audit_pipeline
         from app.core.database import get_sync_db
+        from app.workers.tasks import execute_audit_pipeline
         if db_session:
             return execute_audit_pipeline(db_session, str(task_id), str(document_id))
-        else:
-            with get_sync_db() as sync_db:
-                return execute_audit_pipeline(sync_db, str(task_id), str(document_id))
+        with get_sync_db() as sync_db:
+            return execute_audit_pipeline(sync_db, str(task_id), str(document_id))

@@ -10,10 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(320) NOT NULL UNIQUE,
-    institution VARCHAR(255),
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL DEFAULT 'TRIAL'
-        CHECK (role IN ('TRIAL', 'PREMIUM', 'REVIEWER', 'ADMIN')),
+    role VARCHAR(50) NOT NULL DEFAULT 'FREE'
+        CHECK (role IN ('FREE', 'PREMIUM', 'ADMIN')),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     failed_login_count SMALLINT NOT NULL DEFAULT 0,
     lockout_until TIMESTAMPTZ,
@@ -55,6 +54,9 @@ CREATE TABLE IF NOT EXISTS token_wallets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE UNIQUE,
     balance INTEGER NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    ai_trial_remaining INTEGER NOT NULL DEFAULT 3 CHECK (ai_trial_remaining >= 0),
+    ai_chat_allowance_remaining INTEGER NOT NULL DEFAULT 0 CHECK (ai_chat_allowance_remaining >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -147,6 +149,12 @@ CREATE TABLE IF NOT EXISTS audit_sentences (
     audit_task_id UUID NOT NULL REFERENCES audit_tasks(id) ON DELETE CASCADE,
     sentence_index INTEGER NOT NULL,
     sentence_text TEXT NOT NULL,
+    current_text TEXT,
+    match_type VARCHAR(20) NOT NULL DEFAULT 'NONE'
+        CHECK (match_type IN ('NONE', 'RED', 'ORANGE', 'YELLOW', 'RESOLVED_GREEN')),
+    similarity_score NUMERIC(5, 2) NOT NULL DEFAULT 0.00,
+    matched_source_id UUID,
+    is_modified BOOLEAN NOT NULL DEFAULT FALSE,
     start_char INTEGER NOT NULL,
     end_char INTEGER NOT NULL,
     word_count SMALLINT NOT NULL,
@@ -256,21 +264,36 @@ DROP RULE IF EXISTS audit_logs_no_delete ON audit_logs;
 CREATE RULE audit_logs_no_update AS ON UPDATE TO audit_logs WHERE NEW.actor_id IS NOT NULL DO INSTEAD NOTHING;
 CREATE RULE audit_logs_no_delete AS ON DELETE TO audit_logs DO INSTEAD NOTHING;
 
--- 15. TABEL: system_configs (Konfigurasi Persisten & Hyperparameter Engine - ROUND4-05)
-CREATE TABLE IF NOT EXISTS system_configs (
+-- 15. TABEL: chat_sessions (Sesi Konsultasi & Interaksi AI Asisten Naskah)
+CREATE TABLE IF NOT EXISTS chat_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    lexical_weight FLOAT NOT NULL DEFAULT 0.50,
-    semantic_weight FLOAT NOT NULL DEFAULT 0.35,
-    stylometric_weight FLOAT NOT NULL DEFAULT 0.15,
-    similarity_threshold FLOAT NOT NULL DEFAULT 0.78,
-    stylometric_burstiness_threshold FLOAT NOT NULL DEFAULT 0.35,
-    winnowing_kgram INT NOT NULL DEFAULT 5,
-    winnowing_window INT NOT NULL DEFAULT 4,
-    hnsw_ef_search INT NOT NULL DEFAULT 64,
-    hnsw_m INT NOT NULL DEFAULT 16,
-    retention_days INT NOT NULL DEFAULT 30,
-    sandbox_mode BOOLEAN NOT NULL DEFAULT FALSE,
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL DEFAULT 'Konsultasi Naskah Ilmiah',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions (user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_document_id ON chat_sessions (document_id);
+
+-- 17. TABEL: chat_messages (Riwayat Percakapan & Rekomendasi Parafrase AI)
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    role VARCHAR(20) NOT NULL DEFAULT 'USER'
+        CHECK (role IN ('USER', 'ASSISTANT', 'SYSTEM')),
+    content TEXT NOT NULL,
+    mode VARCHAR(30) DEFAULT 'CONSULTATION'
+        CHECK (mode IS NULL OR mode IN ('CONSULTATION', 'SENTENCE', 'PARAGRAPH', 'FULL_PAGE')),
+    suggested_options JSONB,
+    applied_to_document BOOLEAN NOT NULL DEFAULT FALSE,
+    target_sentence_id UUID REFERENCES audit_sentences(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages (session_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_target_sentence_id ON chat_messages (target_sentence_id);
+
 

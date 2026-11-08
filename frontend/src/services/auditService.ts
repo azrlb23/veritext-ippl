@@ -55,7 +55,7 @@ export const auditService = {
         .trim()
         .replace(/[^a-zA-Z0-9_\-]/g, "_")
         .replace(/_+/g, "_")
-        .replace(/^_+|_+$/g, "") || "Naskah_Akademik";
+        .replace(/^_+|_+$/g, "") || "Naskah";
     const filename = `Sertifikat_VeriText_${cleanTitle}.pdf`;
 
     const blob = new Blob([res.data], { type: "application/pdf" });

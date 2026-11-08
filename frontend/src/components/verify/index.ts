@@ -1,4 +1,4 @@
-export { default as VerificationBadge } from "./VerificationBadge.vue";
 export { default as CertificateDetailsCard } from "./CertificateDetailsCard.vue";
-export { default as CertificateLookup } from "./CertificateLookup.vue";
+export { default as VerifySearchBox } from "./VerifySearchBox.vue";
+export { default as VerifyHowItWorks } from "./VerifyHowItWorks.vue";
 export type { CertificateDetails } from "./CertificateDetailsCard.vue";

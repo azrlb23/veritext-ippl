@@ -36,7 +36,7 @@ def generate_secure_token(nbytes: int = 32) -> str:
 
 def create_access_token(
     subject: Union[str, Any],
-    role: str = "TRIAL",
+    role: str = "FREE",
     expires_delta: Optional[timedelta] = None,
 ) -> str:
     """Creates a signed JWT access token."""
@@ -76,6 +76,38 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
             settings.JWT_SECRET_KEY,
             algorithms=[settings.JWT_ALGORITHM],
         )
+        return payload
+    except jwt.PyJWTError:
+        return None
+
+
+def create_signup_ticket(email: str, name: str) -> str:
+    """Creates a short-lived 10-minute JWT ticket for Google signup."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=10)
+    to_encode: Dict[str, Any] = {
+        "purpose": "google_signup",
+        "email": email.lower().strip(),
+        "name": name,
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(
+        to_encode,
+        settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+    )
+
+
+def decode_signup_ticket(ticket: str) -> Optional[Dict[str, Any]]:
+    """Decodes and validates a Google signup ticket."""
+    try:
+        payload = jwt.decode(
+            ticket,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+        )
+        if payload.get("purpose") != "google_signup":
+            return None
         return payload
     except jwt.PyJWTError:
         return None
