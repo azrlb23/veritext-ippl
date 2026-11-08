@@ -7,14 +7,21 @@ const emit = defineEmits<{ (e: "verify", uuid: string): void }>();
 const inputUuid = ref(props.initialValue);
 watch(() => props.initialValue, (val) => { inputUuid.value = val; });
 
+const sampleUuid = "8f2a91c4-b7e1-4d90-a35c-7e6189df0123";
+
 function handleVerify() {
   if (inputUuid.value.trim() && !props.loading) emit("verify", inputUuid.value.trim());
+}
+
+function fillSample() {
+  inputUuid.value = sampleUuid;
+  handleVerify();
 }
 </script>
 
 <template>
   <div class="mx-auto max-w-[760px] font-sans">
-    <div class="flex flex-col items-stretch gap-2 rounded-[32px] bg-white p-2 pl-6 shadow-float transition-shadow duration-200 focus-within:ring-4 focus-within:ring-[#8A3FE0]/15 sm:flex-row sm:items-center sm:rounded-full">
+    <div class="flex flex-col items-stretch gap-2 rounded-[32px] bg-white p-2 pl-6 shadow-float transition-all duration-300 focus-within:ring-4 focus-within:ring-[#8A3FE0]/20 focus-within:shadow-2xl sm:flex-row sm:items-center sm:rounded-full">
       <div class="flex min-w-0 flex-grow items-center">
         <svg class="mr-3 h-[18px] w-[18px] shrink-0 text-[#5E5A6B]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -42,15 +49,21 @@ function handleVerify() {
         type="button"
         :disabled="!inputUuid.trim() || loading"
         @click="handleVerify"
-        class="inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full bg-[#14111C] px-8 text-[14px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none disabled:hover:translate-y-0"
+        class="inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full bg-[#14111C] px-8 text-[14px] font-semibold text-white shadow-btn-dark transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none disabled:hover:translate-y-0"
       >
         {{ loading ? "Memvalidasi..." : "Verifikasi sertifikat" }}
       </button>
     </div>
 
-    <p class="mt-4 text-center text-[13px] leading-[1.6] text-[#5E5A6B]">
-      Kode UUID ada di bagian bawah sertifikat. Memindai QR akan membuka halaman ini dengan kode terisi.
-    </p>
-
+    <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-center text-[13px] leading-[1.6] text-[#5E5A6B]">
+      <span>Kode UUID ada di bawah sertifikat.</span>
+      <button
+        type="button"
+        @click="fillSample"
+        class="inline-flex items-center gap-1 font-medium text-[#6D28D9] hover:underline cursor-pointer transition-colors"
+      >
+        Coba contoh kode
+      </button>
+    </div>
   </div>
 </template>

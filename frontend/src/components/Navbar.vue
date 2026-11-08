@@ -64,43 +64,47 @@ onBeforeUnmount(() => {
   <header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex select-none justify-center px-3 pt-3 sm:px-5 sm:pt-4">
     <div class="pointer-events-auto relative w-full max-w-[1120px]">
       <div
-        class="flex items-center justify-between rounded-full bg-white/75 pl-5 pr-2 backdrop-blur-2xl transition-all duration-300 sm:pl-7"
-        :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[64px] shadow-lift'"
+        class="grid grid-cols-[auto_1fr] lg:grid-cols-[1fr_auto_1fr] items-center rounded-full bg-white/80 px-4 sm:px-6 backdrop-blur-2xl transition-all duration-300 border border-[#14111C]/[0.04]"
+        :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[62px] shadow-lift'"
       >
-        <router-link
-          :to="isGuest ? '/' : isAdmin ? '/admin' : '/dashboard'"
-          class="inline-flex h-11 flex-shrink-0 items-center rounded-full text-[20px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-          @click="closeMenu"
-        >
-          VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
-        </router-link>
-
-        <NavLinks class="hidden lg:flex" :links="navLinks" :is-active="isItemActive" />
-        <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" :menu-links="menuLinks" @logout="handleLogout" />
-
-        <div class="flex items-center gap-1.5 lg:hidden">
-          <span v-if="!isGuest && !isAdmin" class="inline-flex h-9 items-center rounded-full bg-[#F3EEFA] px-3.5 text-[12.5px] font-semibold tabular-nums text-[#6D28D9]">
-            {{ balance }} token
-          </span>
+        <div class="flex items-center justify-start">
           <router-link
-            v-if="isGuest"
-            to="/register"
-            class="inline-flex h-10 cursor-pointer items-center rounded-full bg-[#14111C] px-5 text-[13.5px] font-semibold text-white shadow-btn-dark"
+            :to="isGuest ? '/' : isAdmin ? '/admin' : '/dashboard'"
+            class="inline-flex h-10 flex-shrink-0 items-center rounded-full text-[19px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
             @click="closeMenu"
-          >Daftar</router-link>
-          <button
-            type="button"
-            class="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#14111C]/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-            :aria-expanded="isMenuOpen"
-            aria-controls="menu-navigasi"
-            aria-label="Buka menu navigasi"
-            @click="isMenuOpen = !isMenuOpen"
           >
-            <span class="relative block h-[14px] w-[20px]">
-              <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] rotate-45' : 'top-0'"></span>
-              <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] -rotate-45' : 'top-[12px]'"></span>
-            </span>
-          </button>
+            VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
+          </router-link>
+        </div>
+
+        <div class="hidden lg:flex items-center justify-center">
+          <NavLinks :links="navLinks" :is-active="isItemActive" />
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+          <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" :menu-links="menuLinks" @logout="handleLogout" />
+
+          <div class="flex items-center gap-2 lg:hidden">
+            <router-link
+              v-if="isGuest"
+              to="/register"
+              class="inline-flex h-9 cursor-pointer items-center rounded-full bg-[#14111C] px-4 text-[13px] font-semibold text-white shadow-btn-dark"
+              @click="closeMenu"
+            >Daftar</router-link>
+            <button
+              type="button"
+              class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#14111C]/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+              :aria-expanded="isMenuOpen"
+              aria-controls="menu-navigasi"
+              aria-label="Buka menu navigasi"
+              @click="isMenuOpen = !isMenuOpen"
+            >
+              <span class="relative block h-[14px] w-[18px]">
+                <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] rotate-45' : 'top-0'"></span>
+                <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] -rotate-45' : 'top-[12px]'"></span>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 

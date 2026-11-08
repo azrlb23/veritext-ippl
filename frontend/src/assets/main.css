@@ -36,10 +36,12 @@
     font-style: italic;
     font-weight: 500;
     padding-bottom: 0.08em;
-    background-image: linear-gradient(90deg, #7A2FD6, #B47FEA);
+    background-image: linear-gradient(90deg, #7A2FD6 0%, #B47FEA 50%, #7A2FD6 100%);
+    background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    animation: vt-shimmer 8s linear infinite;
   }
   .vt-lines {
     background: repeating-linear-gradient(90deg, transparent 0 54px, rgba(20, 17, 28, 0.045) 54px 55px);
@@ -84,4 +86,48 @@
   color: #854D0E;
   padding: 0 2px;
   border-radius: 2px;
+}
+
+/* Seamless & Tactile Micro-Animations */
+@keyframes vt-shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes vt-float-a {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes vt-float-b {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(7px); }
+}
+@keyframes vt-card-left {
+  0%, 100% { transform: perspective(1200px) rotateY(24deg) rotateZ(-5deg) translateY(0px); }
+  50% { transform: perspective(1200px) rotateY(22deg) rotateZ(-4deg) translateY(-8px); }
+}
+@keyframes vt-card-right {
+  0%, 100% { transform: perspective(1200px) rotateY(-24deg) rotateZ(5deg) translateY(0px); }
+  50% { transform: perspective(1200px) rotateY(-22deg) rotateZ(4deg) translateY(-8px); }
+}
+@keyframes vt-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float-a { animation: vt-float-a 6s ease-in-out infinite; }
+.animate-float-b { animation: vt-float-b 7s ease-in-out infinite; }
+.animate-card-left { animation: vt-card-left 7s ease-in-out infinite; }
+.animate-card-right { animation: vt-card-right 8s ease-in-out infinite 0.5s; }
+.animate-fade-up { animation: vt-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Smooth Page Route Transitions */
+.page-enter-active, .page-leave-active {
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page-enter-from { opacity: 0; transform: translateY(6px); }
+.page-leave-to { opacity: 0; transform: translateY(-6px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-a, .animate-float-b, .animate-card-left, .animate-card-right, .animate-fade-up, .vt-accent { animation: none !important; }
+  .page-enter-active, .page-leave-active { transition: none !important; }
 }

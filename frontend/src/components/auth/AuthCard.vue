@@ -18,18 +18,15 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div class="relative flex min-h-screen w-full flex-col font-sans lg:flex-row">
     <div class="relative z-10 flex min-h-screen w-full flex-col justify-between px-5 py-6 sm:px-12 lg:w-[50%] lg:px-16 lg:py-10 xl:w-[48%] xl:px-24">
-      <header class="mx-auto flex w-full max-w-[460px] items-center justify-between gap-6 lg:mx-0">
+      <header class="mx-auto flex w-full max-w-[460px] items-center justify-start gap-6 lg:mx-0">
         <router-link
           to="/"
-          class="inline-flex h-11 items-center rounded-full text-[20px] font-semibold tracking-[-0.03em] text-[#14111C] select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          class="group inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-[14px] font-medium text-[#4B4757] shadow-lift transition-all duration-200 hover:text-[#14111C] hover:shadow-float focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
         >
-          VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
-        </router-link>
-        <router-link
-          to="/verify"
-          class="inline-flex h-11 items-center rounded-full px-4 text-[14px] font-medium text-[#4B4757] transition-colors duration-200 hover:bg-[#14111C]/[0.05] hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-        >
-          Verifikasi sertifikat
+          <svg class="h-4 w-4 text-[#5E5A6B] transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:text-[#14111C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+          </svg>
+          <span>Kembali ke beranda</span>
         </router-link>
       </header>
 

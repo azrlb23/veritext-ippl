@@ -81,7 +81,7 @@ watch(() => route.params.uuid, (n) => {
 
 <template>
   <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-8 font-sans sm:px-6 sm:pt-14">
-    <div class="mx-auto mb-10 max-w-2xl text-center">
+    <div class="mx-auto mb-10 max-w-2xl text-center animate-fade-up">
       <p class="text-[14px] font-medium text-[#5E5A6B]">Verifikasi sertifikat</p>
       <h1 class="mt-3 text-[38px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[56px]">
         Pastikan sertifikat itu <span class="vt-accent">benar-benar asli.</span>
@@ -91,9 +91,11 @@ watch(() => route.params.uuid, (n) => {
       </p>
     </div>
 
-    <VerifySearchBox :initialValue="certDetails.uuid" :loading="isChecking" @verify="handleLookup" />
+    <div class="animate-fade-up [animation-delay:150ms]">
+      <VerifySearchBox :initialValue="certDetails.uuid" :loading="isChecking" @verify="handleLookup" />
+    </div>
 
-    <div class="mt-14">
+    <div class="mt-14 animate-fade-up [animation-delay:300ms]">
       <div v-if="isChecking" class="mx-auto flex max-w-[620px] items-center gap-5 rounded-[36px] bg-white p-7 shadow-float sm:p-9" role="status">
         <svg class="h-9 w-9 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
           <circle cx="18" cy="18" r="15" stroke="#EFEAF6" stroke-width="4" />

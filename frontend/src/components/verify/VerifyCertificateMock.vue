@@ -37,7 +37,7 @@ for (let y = 0; y < SIZE; y++) {
 
 <template>
   <div
-    class="w-[290px] -rotate-2 rounded-[28px] bg-white p-6 shadow-float lg:[transform:perspective(1200px)_rotateY(14deg)_rotateZ(-4deg)]"
+    class="w-[290px] -rotate-2 rounded-[28px] bg-white p-6 shadow-float lg:[transform:perspective(1200px)_rotateY(14deg)_rotateZ(-4deg)] transition-all duration-500 ease-out hover:rotate-0 hover:scale-105 hover:shadow-2xl animate-card-left cursor-pointer"
     aria-hidden="true"
   >
     <div class="text-[12px] font-medium text-[#5E5A6B]">Sertifikat hasil audit orisinalitas</div>
@@ -48,18 +48,18 @@ for (let y = 0; y < SIZE; y++) {
         <svg class="h-[104px] w-[104px]" viewBox="0 0 17 17" shape-rendering="crispEdges">
           <rect v-for="(c, i) in cells" :key="i" :x="c.x" :y="c.y" width="1" height="1" fill="#14111C" />
         </svg>
-        <span class="absolute left-0 top-0 h-5 w-5 rounded-tl-[8px] border-l-[3px] border-t-[3px] border-[#8A3FE0]"></span>
-        <span class="absolute right-0 top-0 h-5 w-5 rounded-tr-[8px] border-r-[3px] border-t-[3px] border-[#8A3FE0]"></span>
-        <span class="absolute bottom-0 left-0 h-5 w-5 rounded-bl-[8px] border-b-[3px] border-l-[3px] border-[#8A3FE0]"></span>
-        <span class="absolute bottom-0 right-0 h-5 w-5 rounded-br-[8px] border-b-[3px] border-r-[3px] border-[#8A3FE0]"></span>
+        <span class="absolute left-0 top-0 h-5 w-5 rounded-tl-[8px] border-l-[3px] border-t-[3px] border-[#8A3FE0] animate-pulse"></span>
+        <span class="absolute right-0 top-0 h-5 w-5 rounded-tr-[8px] border-r-[3px] border-t-[3px] border-[#8A3FE0] animate-pulse"></span>
+        <span class="absolute bottom-0 left-0 h-5 w-5 rounded-bl-[8px] border-b-[3px] border-l-[3px] border-[#8A3FE0] animate-pulse"></span>
+        <span class="absolute bottom-0 right-0 h-5 w-5 rounded-br-[8px] border-b-[3px] border-r-[3px] border-[#8A3FE0] animate-pulse"></span>
       </div>
       <div>
-        <div class="text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#14111C]">88%</div>
+        <div class="text-[38px] font-semibold leading-none tracking-[-0.05em] text-[#14111C] tabular-nums">88%</div>
         <div class="mt-1 text-[12px] text-[#5E5A6B]">Skor orisinalitas</div>
       </div>
     </div>
 
-    <div class="mt-5 rounded-[14px] bg-[#F3EEFA] px-3 py-2 font-mono text-[10.5px] leading-[1.5] text-[#4B4757]">
+    <div class="mt-5 rounded-[14px] bg-[#F3EEFA] px-3 py-2 font-mono text-[10.5px] leading-[1.5] text-[#4B4757] transition-colors hover:bg-[#EAE0F7]">
       8f2a91c4-b7e1-4d90-a35c-7e6189df0123
     </div>
   </div>

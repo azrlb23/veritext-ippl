@@ -84,7 +84,11 @@ onMounted(() => {
           : 'flex-grow pt-[92px] relative z-10'
       ]"
     >
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </router-view>
     </main>
     <Footer v-if="!isStandalonePage" class="relative z-10" />
     <ToastContainer />

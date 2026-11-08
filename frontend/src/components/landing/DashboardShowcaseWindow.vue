@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import ShowcaseFindings from "./ShowcaseFindings.vue";
 import ShowcaseManuscriptFragment from "./ShowcaseManuscriptFragment.vue";
 import ShowcaseMetricCards from "./ShowcaseMetricCards.vue";
 import ShowcaseScoreGauge from "./ShowcaseScoreGauge.vue";
+
+const activeFilter = ref<"all" | "lex" | "sem" | "sty">("all");
+
+function handleMetricSelect(key: string) {
+  if (activeFilter.value === key) {
+    activeFilter.value = "all";
+  } else {
+    activeFilter.value = key as any;
+  }
+}
 </script>
 
 <template>
@@ -26,7 +37,7 @@ import ShowcaseScoreGauge from "./ShowcaseScoreGauge.vue";
         <ShowcaseFindings />
         <router-link
           to="/dashboard"
-          class="mt-10 inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5"
+          class="mt-10 inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98]"
         >
           Buka workspace
         </router-link>
@@ -34,9 +45,17 @@ import ShowcaseScoreGauge from "./ShowcaseScoreGauge.vue";
 
       <div class="lg:col-span-8 lg:pb-16 lg:pt-12">
         <div class="relative">
-          <ShowcaseManuscriptFragment class="lg:mr-12 lg:-rotate-[1.2deg]" />
+          <ShowcaseManuscriptFragment
+            class="lg:mr-12 lg:-rotate-[1.2deg] transition-all duration-500 hover:rotate-0 hover:shadow-2xl"
+            :external-filter="activeFilter"
+            @update:filter="activeFilter = $event"
+          />
           <ShowcaseScoreGauge class="mt-4 lg:absolute lg:-right-4 lg:-top-12 lg:mt-0 lg:w-[270px] lg:rotate-[3deg]" />
-          <ShowcaseMetricCards class="mt-4 lg:absolute lg:-bottom-14 lg:right-2 lg:mt-0" />
+          <ShowcaseMetricCards
+            class="mt-4 lg:absolute lg:-bottom-14 lg:right-2 lg:mt-0"
+            :active-filter="activeFilter"
+            @select="handleMetricSelect"
+          />
         </div>
       </div>
     </div>

@@ -33,7 +33,7 @@ onBeforeUnmount(() => window.removeEventListener("resize", measure));
 </script>
 
 <template>
-  <nav class="relative items-center rounded-full bg-[#14111C]/[0.05] p-1" aria-label="Navigasi utama" @mouseleave="hovered = null">
+  <nav class="relative items-center rounded-full bg-[#14111C]/[0.04] p-1 border border-[#14111C]/[0.03]" aria-label="Navigasi utama" @mouseleave="hovered = null">
     <span
       class="absolute bottom-1 left-0 top-1 rounded-full bg-white shadow-lift transition-[transform,width,opacity] duration-300 ease-out motion-reduce:transition-none"
       :style="indicator"
@@ -45,7 +45,7 @@ onBeforeUnmount(() => window.removeEventListener("resize", measure));
       :ref="(el) => setItem((el as any)?.$el ?? el, i)"
       :to="item.to"
       :aria-current="isActive(item.to) ? 'page' : undefined"
-      class="relative z-10 inline-flex h-10 cursor-pointer items-center whitespace-nowrap rounded-full px-3.5 text-[13.5px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] xl:px-5 xl:text-[14.5px]"
+      class="relative z-10 inline-flex h-9 cursor-pointer items-center whitespace-nowrap rounded-full px-3.5 text-[13px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] xl:px-4 xl:text-[13.5px]"
       :class="isActive(item.to) || hovered === i ? 'text-[#14111C]' : 'text-[#5E5A6B]'"
       @mouseenter="hovered = i"
       @focus="hovered = i"

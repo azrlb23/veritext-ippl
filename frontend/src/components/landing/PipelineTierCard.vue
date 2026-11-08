@@ -21,19 +21,33 @@ const icons: Record<string, string> = {
 <template>
   <div
     @click="$emit('select')"
-    class="flex cursor-pointer flex-col justify-between rounded-[32px] p-8 transition-all duration-300 ease-out"
+    class="group flex cursor-pointer flex-col justify-between rounded-[32px] p-8 transition-all duration-500 ease-out relative overflow-hidden"
     :class="isActive
-      ? 'bg-gradient-to-br from-[#7A2FD6] to-[#9B4FE6] text-white shadow-[0_30px_60px_-20px_rgba(122,47,214,0.5)] md:-translate-y-3'
-      : 'bg-white text-[#14111C] shadow-lift hover:-translate-y-1'"
+      ? 'bg-gradient-to-br from-[#7A2FD6] to-[#9B4FE6] text-white shadow-[0_32px_64px_-16px_rgba(122,47,214,0.45)] md:-translate-y-4 scale-[1.02]'
+      : 'bg-white text-[#14111C] shadow-lift hover:-translate-y-2 hover:shadow-float hover:scale-[1.01]'"
   >
+    <div
+      v-if="isActive"
+      class="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl"
+      aria-hidden="true"
+    />
+
     <div>
-      <div
-        class="flex h-12 w-12 items-center justify-center rounded-[16px]"
-        :class="isActive ? 'bg-white/20 text-white' : 'bg-[#F3EEFA] text-[#14111C]'"
-      >
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" :d="icons[tier.icon]" />
-        </svg>
+      <div class="flex items-center justify-between">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-[16px] transition-transform duration-300 group-hover:scale-110"
+          :class="isActive ? 'bg-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.25)]' : 'bg-[#F3EEFA] text-[#14111C]'"
+        >
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" :d="icons[tier.icon]" />
+          </svg>
+        </div>
+        <span
+          v-if="isActive"
+          class="rounded-full bg-white/20 px-3 py-1 text-[11.5px] font-medium text-white backdrop-blur-sm"
+        >
+          Lapis {{ tier.id + 1 }}
+        </span>
       </div>
 
       <h3 class="mt-7 text-[26px] font-semibold leading-[1.15] tracking-[-0.03em]">{{ tier.title }}</h3>
@@ -43,7 +57,7 @@ const icons: Record<string, string> = {
     </div>
 
     <div class="mt-9 flex items-baseline gap-2">
-      <span class="text-[34px] font-semibold tracking-[-0.04em] tabular-nums">{{ tier.weight }}</span>
+      <span class="text-[34px] font-semibold tracking-[-0.04em] tabular-nums transition-transform duration-300 group-hover:scale-105 origin-left">{{ tier.weight }}</span>
       <span class="text-[13px]" :class="isActive ? 'text-white/80' : 'text-[#5E5A6B]'">dari skor akhir</span>
     </div>
   </div>

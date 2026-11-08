@@ -9,14 +9,14 @@ const bars = [
 
 <template>
   <div
-    class="w-[228px] rotate-2 rounded-[40px] bg-[#14111C] p-[7px] shadow-float lg:[transform:perspective(1200px)_rotateY(-14deg)_rotateZ(3deg)]"
+    class="w-[228px] rotate-2 rounded-[40px] bg-[#14111C] p-[7px] shadow-float lg:[transform:perspective(1200px)_rotateY(-14deg)_rotateZ(3deg)] transition-all duration-500 ease-out hover:rotate-0 hover:scale-105 hover:shadow-2xl animate-card-right cursor-pointer"
     aria-hidden="true"
   >
     <div class="rounded-[34px] bg-[#F7F4FB] px-4 pb-5 pt-3">
       <div class="mx-auto h-[5px] w-[52px] rounded-full bg-[#14111C]"></div>
 
       <div class="mt-5 flex items-center gap-1.5 text-[11.5px] font-semibold text-[#15803D]">
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6">
+        <svg class="h-4 w-4 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
         Sertifikat terverifikasi

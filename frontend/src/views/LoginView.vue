@@ -80,7 +80,7 @@ function handleOAuthGoogle() {
   <AuthCard
     eyebrow="Selamat datang kembali"
     title="Masuk ke"
-    title-accent="VeriText AI"
+    title-accent="akun Anda"
   >
     <div class="space-y-4">
       <div class="text-[15px] font-normal text-[#4B4757] -mt-2">

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import PipelineTierCard from "./PipelineTierCard.vue";
 
 const activeTier = ref<number>(1);
+const isHovered = ref(false);
+let cycleTimer: ReturnType<typeof setInterval> | null = null;
 
 const tiers = [
   {
@@ -30,10 +32,27 @@ const tiers = [
     icon: "gauge",
   },
 ];
+
+onMounted(() => {
+  cycleTimer = setInterval(() => {
+    if (!isHovered.value) {
+      activeTier.value = (activeTier.value + 1) % tiers.length;
+    }
+  }, 4500);
+});
+
+onBeforeUnmount(() => {
+  if (cycleTimer) clearInterval(cycleTimer);
+});
 </script>
 
 <template>
-  <section class="mx-auto max-w-[1180px] select-none px-4 py-16 font-sans sm:px-6 sm:py-24" aria-label="Cara kerja tiga lapis pemeriksaan">
+  <section
+    class="mx-auto max-w-[1180px] select-none px-4 py-16 font-sans sm:px-6 sm:py-24"
+    aria-label="Cara kerja tiga lapis pemeriksaan"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
+  >
     <div class="mx-auto mb-12 max-w-2xl text-center">
       <p class="text-[14px] font-medium text-[#5E5A6B]">Cara kerja</p>
       <h2 class="mt-3 text-[34px] font-semibold leading-[1.1] tracking-[-0.04em] text-[#14111C] sm:text-[52px]">
@@ -49,8 +68,8 @@ const tiers = [
           :key="t.id"
           type="button"
           @click="activeTier = t.id"
-          class="cursor-pointer rounded-full px-5 py-2 text-[13.5px] font-semibold transition-colors duration-200"
-          :class="activeTier === t.id ? 'bg-[#14111C] text-white' : 'text-[#4B4757] hover:text-[#14111C]'"
+          class="cursor-pointer rounded-full px-5 py-2 text-[13.5px] font-semibold transition-all duration-300"
+          :class="activeTier === t.id ? 'bg-[#14111C] text-white shadow-sm scale-105' : 'text-[#4B4757] hover:text-[#14111C]'"
         >
           {{ t.tabLabel }}
         </button>
