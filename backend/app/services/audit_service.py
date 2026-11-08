@@ -13,26 +13,26 @@ from app.models.audit import AuditTask
 from app.models.document import Document
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.audit import AuditStartRequest
+from app.services.token_pricing import compute_audit_cost, ensure_within_plan
+from app.services.upload_charging import debit_wallet
+from app.services.word_counter import document_word_count
 
 
 class AuditService:
     @staticmethod
-    async def create_audit_task(db: AsyncSession, user_id: uuid.UUID, req: AuditStartRequest) -> AuditTask:
+    async def create_audit_task(
+        db: AsyncSession, user_id: uuid.UUID, req: AuditStartRequest, user_role: str | None = None
+    ) -> AuditTask:
         doc = (await db.execute(select(Document).where(Document.id == req.document_id, Document.user_id == user_id))).scalar_one_or_none()
         if not doc:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found or access denied")
         if doc.status == "DELETED" or doc.deleted_at is not None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot audit a deleted document")
 
-        wallet = (await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update())).scalar_one_or_none()
-        token_cost = 1 if req.audit_depth == "TIER1_ONLY" else 2
-        if not wallet or wallet.balance < token_cost:
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=f"Insufficient token balance. This audit requires {token_cost} token(s). Current balance: {wallet.balance if wallet else 0}",
-            )
-
-        wallet.balance -= token_cost
+        words = document_word_count(doc)
+        ensure_within_plan(user_role, words)
+        token_cost = compute_audit_cost(words)
+        wallet = await debit_wallet(db, user_id, token_cost)
         task = AuditTask(
             document_id=doc.id, user_id=user_id, audit_depth=req.audit_depth, status="QUEUED", progress_pct=0, current_stage="INITIALIZING"
         )

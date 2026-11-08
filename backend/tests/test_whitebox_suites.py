@@ -941,15 +941,15 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(txs[0].amount, 10)
 
     async def test_tc_bil_004_audit_token_deduction_full_depth_happy_path(self):
-        """TC-BIL-004 [Happy Ending]: Eksekusi audit kedalaman FULL mendebit 2 token dari saldo pengguna."""
+        """TC-BIL-004 [Happy Ending]: Audit mendebit token sesuai jumlah kata: 5.100 kata = 3 token (min(5, ceil(kata/2500)))."""
         user_id = uuid.uuid4()
         doc = Document(id=uuid.uuid4(), user_id=user_id, original_filename="tesis.pdf")
         wallet = TokenWallet(user_id=user_id, balance=10)
 
         mock_file = AsyncMock()
-        mock_file.filename = "tesis.pdf"
-        mock_file.read.return_value = b"konten valid untuk audit naskah akademik"
-        mock_file.content_type = "application/pdf"
+        mock_file.filename = "tesis.txt"
+        mock_file.read.return_value = ("kata " * 5100).encode("utf-8")
+        mock_file.content_type = "text/plain"
 
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([wallet]))
         from app.workers.celery_app import celery_app
@@ -958,10 +958,11 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
                 db=mock_db, user_id=user_id, file=mock_file, audit_depth="FULL"
             )
 
-        self.assertEqual(wallet.balance, 8)  # 10 - 2
+        self.assertEqual(uploaded_doc.word_count, 5100)
+        self.assertEqual(wallet.balance, 7)  # 10 - 3
         txs = [x for x in mock_db.added if isinstance(x, TokenTransaction)]
         self.assertEqual(len(txs), 1)
-        self.assertEqual(txs[0].amount, -2)
+        self.assertEqual(txs[0].amount, -3)
         self.assertEqual(txs[0].transaction_type, "DEBIT_AUDIT")
 
         # Cleanup created upload file

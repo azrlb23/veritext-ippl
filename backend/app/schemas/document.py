@@ -24,3 +24,10 @@ class DocumentUploadResponse(BaseModel):
     celery_task_id: Optional[str] = None
     original_filename: str
     message: str
+
+
+class DocumentEstimateResponse(BaseModel):
+    word_count: int
+    token_cost: int
+    within_plan: bool
+    max_free_words: int

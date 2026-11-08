@@ -69,6 +69,7 @@ Seluruh endpoint API VeriText AI wajib mengembalikan respons dalam format pembun
 | Method | Endpoint | Auth | Request Body | Response `data` | Deskripsi |
 |---|---|---|---|---|---|
 | `POST` | `/api/v1/documents/upload` | Bearer JWT | `multipart/form-data`: `file` (.pdf/.docx/.txt <= 15 MB) atau `text: str`, `title: str` | `{"document_id": "uuid", "title": "str", "file_size_bytes": 1450200, "word_count": 2150, "token_cost": 1, "sentences_count": 84, "is_valid": true}` | Validasi magic bytes MIME, ekstraksi teks, segmentasi kalimat, cek batas 2.500 kata `FREE`, dan hitung biaya token $\min(5, \lceil \text{kata}/2500 \rceil)$. |
+| `POST` | `/api/v1/documents/estimate` | Bearer JWT | `multipart/form-data`: `file` (.pdf/.docx/.txt <= 15 MB) | `{"word_count": 5100, "token_cost": 3, "within_plan": true, "max_free_words": 2500}` | Menghitung jumlah kata dan biaya audit tanpa menyimpan berkas dan tanpa memotong saldo. Biaya = `min(5, ceil(kata / 2500))` token. `within_plan` bernilai `false` bila akun FREE melebihi 2.500 kata. |
 | `GET` | `/api/v1/documents` | Bearer JWT | Query: `page=1&limit=20` | `{"total": 12, "items": [{"id": "uuid", "title": "str", "word_count": 2150, "token_cost": 1, "created_at": "datetime"}]}` | Mengambil daftar riwayat naskah milik pengguna aktif. |
 | `GET` | `/api/v1/documents/{id}` | Bearer JWT | `None` | `{"id": "uuid", "title": "str", "original_filename": "str", "word_count": 2150, "token_cost": 1, "created_at": "datetime"}` | Mengambil detail metadata naskah spesifik milik pengguna aktif. |
 | `DELETE` | `/api/v1/documents/{id}` | Bearer JWT | `None` | `{"document_id": "uuid", "status": "PERMANENTLY_DELETED"}` | Mengeksekusi hard-delete cascading berkas fisik, rekaman `documents`, `audit_tasks`, `audit_sentences`, `audit_reports`, `chat_sessions`, dan `chat_messages` (UU PDP). |
@@ -129,6 +130,7 @@ Seluruh endpoint API VeriText AI wajib mengembalikan respons dalam format pembun
 | `DOC_002` | `422 Unprocessable Entity` | Format berkas tidak didukung (hanya menerima `.pdf`, `.docx`, `.txt`). | `POST /api/v1/documents/upload` |
 | `DOC_003` | `422 Unprocessable Entity` | Naskah memiliki kurang dari 50 kata (tidak memenuhi syarat analisis). | `POST /api/v1/documents/upload` |
 | `DOC_004` | `404 Not Found` | Dokumen yang diminta tidak ditemukan atau bukan milik pengguna aktif. | `GET/DELETE /api/v1/documents/{id}` |
+| `DOC_005` | `402 Payment Required` | Naskah akun FREE melebihi batas 2.500 kata per dokumen. Berkas tidak disimpan dan saldo tidak dipotong. | `POST /api/v1/documents/upload`, `POST /api/v1/audits/start` |
 | `AUDIT_001` | `402 Payment Required` | Saldo token tidak mencukupi untuk melakukan pemeriksaan naskah. | `POST /api/v1/audits/execute` |
 | `AUDIT_002` | `400 Bad Request` | Batas kata Free User terlampaui (maksimal 2.500 kata per dokumen). | `POST /api/v1/audits/execute` |
 | `CHAT_001` | `400 Bad Request` | Pelanggaran Guardrail: Permintaan di luar etika akademik ditolak. | `POST /api/v1/chat/message` |

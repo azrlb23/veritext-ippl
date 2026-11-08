@@ -10,8 +10,10 @@ from app.core.database import get_db
 from app.models.document import Document
 from app.models.user import User
 from app.schemas.common import APIResponse, PaginatedData
-from app.schemas.document import DocumentResponse, DocumentUploadResponse
+from app.schemas.document import DocumentEstimateResponse, DocumentResponse, DocumentUploadResponse
 from app.services.document_service import DocumentService
+from app.services.document_validator import validate_file
+from app.services.upload_charging import estimate_upload
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -29,6 +31,7 @@ async def upload_document(
         user_id=current_user.id,
         file=file,
         audit_depth=depth,
+        user_role=current_user.role,
     )
     return APIResponse(
         message="Document uploaded successfully",
@@ -40,6 +43,16 @@ async def upload_document(
             message="Naskah berhasil diunggah dan tugas audit telah diantrekan",
         ),
     )
+
+
+@router.post("/estimate", response_model=APIResponse[DocumentEstimateResponse])
+async def estimate_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    validate_file(file)
+    data = await estimate_upload(file, current_user.role)
+    return APIResponse(message="Estimasi biaya audit dihitung", data=DocumentEstimateResponse(**data))
 
 
 @router.get("", response_model=APIResponse[PaginatedData[DocumentResponse]])

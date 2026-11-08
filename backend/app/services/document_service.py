@@ -14,6 +14,7 @@ from app.models.audit import AuditTask
 from app.models.document import Document
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.services.document_validator import validate_file, write_upload_stream
+from app.services.upload_charging import debit_wallet, remove_stored_file, stage_upload
 
 
 class DocumentService:
@@ -42,27 +43,15 @@ class DocumentService:
 
     @staticmethod
     async def save_uploaded_file_and_create_task(
-        db: AsyncSession, user_id: uuid.UUID, file: UploadFile, audit_depth: str = "FULL"
+        db: AsyncSession, user_id: uuid.UUID, file: UploadFile, audit_depth: str = "FULL", user_role: str | None = None
     ) -> tuple[Document, AuditTask]:
         validate_file(file)
-        token_cost = 1 if audit_depth == "TIER1_ONLY" else 2
-        wallet = (await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update())).scalar_one_or_none()
-
-        if not wallet:
-            wallet = TokenWallet(user_id=user_id, balance=0)
-            db.add(wallet)
-            await db.flush()
-
-        if wallet.balance < token_cost:
-            raise HTTPException(
-                status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=f"Saldo token tidak mencukupi. Audit ini membutuhkan {token_cost} token. Saldo Anda: {wallet.balance}",
-            )
-        wallet.balance -= token_cost
-
-        stored_fn, file_size, sha256 = await write_upload_stream(
-            file, "Berkas naskah kosong (0 bytes). Silakan unggah dokumen yang valid."
-        )
+        stored_fn, file_size, sha256, words, token_cost = await stage_upload(file, user_role)
+        try:
+            wallet = await debit_wallet(db, user_id, token_cost)
+        except HTTPException:
+            remove_stored_file(stored_fn)
+            raise
         doc = Document(
             user_id=user_id,
             original_filename=file.filename or "document.txt",
@@ -70,6 +59,7 @@ class DocumentService:
             file_size_bytes=file_size,
             mime_type=file.content_type or "application/octet-stream",
             sha256_hash=sha256,
+            word_count=words,
             status="READY",
         )
         db.add(doc)

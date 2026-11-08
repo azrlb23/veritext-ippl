@@ -25,7 +25,7 @@ async def start_audit(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    task = await AuditService.create_audit_task(db, current_user.id, req)
+    task = await AuditService.create_audit_task(db, current_user.id, req, user_role=current_user.role)
     return APIResponse(
         message="Audit task created and queued for processing",
         data=AuditTaskStatusResponse.model_validate(task),
