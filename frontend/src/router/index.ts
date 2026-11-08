@@ -22,11 +22,12 @@ declare module "vue-router" {
     roles?: string[];
     title?: string;
     isStandalone?: boolean;
+    backdrop?: "home" | "page";
   }
 }
 
 const routes: RouteRecordRaw[] = [
-  { path: "/", name: "landing", component: LandingView, meta: { title: "VeriText AI - Sistem Deteksi Plagiarisme Hybrid" } },
+  { path: "/", name: "landing", component: LandingView, meta: { title: "VeriText AI - Sistem Deteksi Plagiarisme Hybrid", backdrop: "home" } },
   { path: "/dashboard", name: "dashboard", component: DashboardView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Dashboard Pengujian - VeriText AI" } },
   { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Detail Laporan Audit - VeriText AI" } },
   { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, title: "Masuk Akun - VeriText AI" } },
@@ -36,7 +37,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/auth/callback", name: "oauth-callback", component: OAuthCallbackView, meta: { guestOnly: true, isStandalone: true, title: "Autentikasi Akun - VeriText AI" } },
   { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, title: "Lengkapi Profil Akun - VeriText AI" } },
   { path: "/billing", name: "billing", component: BillingView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Saldo Token & Kuota - VeriText AI" } },
-  { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI" } },
+  { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI", backdrop: "page" } },
   { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], title: "Panel Administrator - VeriText AI" } },
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];

@@ -49,7 +49,7 @@ const isOn = (key?: Filter) => key !== undefined && (active.value === "all" || a
           :key="f.key"
           type="button"
           @click="active = f.key"
-          class="cursor-pointer rounded-full px-3 py-1 font-medium transition-colors duration-200"
+          class="cursor-pointer rounded-full px-3.5 py-3 font-medium transition-colors duration-200 sm:px-3 sm:py-1"
           :class="active === f.key ? 'bg-[#14111C] text-white shadow-sm' : 'text-[#4B4757] hover:text-[#14111C]'"
         >
           {{ f.label }}

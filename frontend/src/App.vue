@@ -26,7 +26,8 @@ const isStandalonePage = computed(() => {
   );
 });
 
-const isLanding = computed(() => route.path === "/");
+const backdropVariant = computed(() => route.meta.backdrop);
+const isLanding = computed(() => Boolean(backdropVariant.value));
 
 const isWelcomeOpen = computed(() => {
   return Boolean(authStore.welcomeName) && !isStandalonePage.value;
@@ -73,7 +74,7 @@ onMounted(() => {
       />
     </div>
 
-    <LandingBackdrop v-if="isLanding" />
+    <LandingBackdrop v-if="isLanding" :variant="backdropVariant" />
 
     <Navbar v-if="!isStandalonePage" />
     <main

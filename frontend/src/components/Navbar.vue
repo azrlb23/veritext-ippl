@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables/useNotification";
 import { getSegmentedNavLinks } from "../utils/navigation";
+import NavAuthActions from "./navbar/NavAuthActions.vue";
+import NavLinks from "./navbar/NavLinks.vue";
+import NavMobileMenu from "./navbar/NavMobileMenu.vue";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { showNotification } = useNotification();
-const isMobileMenuOpen = ref(false);
 
-const userDisplayName = computed(() => authStore.user?.full_name || "Pengguna");
-const userInitial = computed(() => authStore.user?.full_name?.charAt(0).toUpperCase() || "U");
+const isMenuOpen = ref(false);
+const isScrolled = ref(false);
+
 const isGuest = computed(() => !authStore.isAuthenticated);
-const isSuperAdmin = computed(() => authStore.isAuthenticated && (authStore.role === "ADMIN" || Boolean(authStore.isAdmin)));
+const isAdmin = computed(() => authStore.isAuthenticated && (authStore.role === "ADMIN" || Boolean(authStore.isAdmin)));
 const navLinks = computed(() => getSegmentedNavLinks(authStore.isAuthenticated, authStore.role));
+const displayName = computed(() => authStore.user?.full_name || "Pengguna");
+const balance = computed(() => Number(authStore.tokenBalance) || 0);
 
 function isItemActive(to: string): boolean {
   if (to.includes("#")) {
@@ -26,9 +31,9 @@ function isItemActive(to: string): boolean {
   return to === "/" ? route.path === "/" : route.path.startsWith(to);
 }
 
-const closeMenu = () => {
-  isMobileMenuOpen.value = false;
-};
+function closeMenu() {
+  isMenuOpen.value = false;
+}
 watch(() => [route.path, route.hash], closeMenu);
 
 async function handleLogout() {
@@ -37,87 +42,86 @@ async function handleLogout() {
   showNotification("Anda telah berhasil keluar dari akun.", "info", "Sesi Berakhir");
   router.push("/login");
 }
+
+const onScroll = () => { isScrolled.value = window.scrollY > 12; };
+const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") closeMenu(); };
+
+onMounted(() => {
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("keydown", onKey);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("keydown", onKey);
+});
 </script>
 
 <template>
-  <header class="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none select-none">
-    <div
-      class="pointer-events-auto w-full max-w-[1060px] bg-white/80 backdrop-blur-xl shadow-lift transition-all duration-200"
-      :class="isMobileMenuOpen ? 'rounded-[28px] px-6 py-4 flex flex-col' : 'h-[68px] rounded-[34px] px-6 md:px-9 flex items-center justify-between'"
-    >
-      <div class="flex items-center justify-between w-full" :class="{ 'h-[44px]': isMobileMenuOpen, 'h-full': !isMobileMenuOpen }">
-        <router-link :to="isSuperAdmin ? '/admin' : '/'" class="flex items-center rounded-full flex-shrink-0" @click="closeMenu">
-          <span class="text-[20px] font-semibold text-[#14111C]">VeriText <span class="text-[#8A3FE0]">AI</span></span>
+  <div v-if="isMenuOpen" class="fixed inset-0 z-40 bg-[#14111C]/10 backdrop-blur-[2px] lg:hidden" aria-hidden="true" @click="closeMenu"></div>
+
+  <header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex select-none justify-center px-3 pt-3 sm:px-5 sm:pt-4">
+    <div class="pointer-events-auto relative w-full max-w-[1120px]">
+      <div
+        class="flex items-center justify-between rounded-full bg-white/75 pl-5 pr-2 backdrop-blur-2xl transition-all duration-300 sm:pl-7"
+        :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[64px] shadow-lift'"
+      >
+        <router-link
+          :to="isAdmin ? '/admin' : '/'"
+          class="inline-flex h-11 flex-shrink-0 items-center rounded-full text-[20px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          @click="closeMenu"
+        >
+          VeriText <span class="text-[#8A3FE0]">AI</span>
         </router-link>
 
-        <nav class="hidden md:flex items-center space-x-1">
+        <NavLinks class="hidden lg:flex" :links="navLinks" :is-active="isItemActive" />
+        <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" @logout="handleLogout" />
+
+        <div class="flex items-center gap-1.5 lg:hidden">
+          <span v-if="!isGuest && !isAdmin" class="inline-flex h-9 items-center rounded-full bg-[#F3EEFA] px-3.5 text-[12.5px] font-semibold tabular-nums text-[#6D28D9]">
+            {{ balance }} token
+          </span>
           <router-link
-            v-for="item in navLinks"
-            :key="item.to"
-            :to="item.to"
-            class="whitespace-nowrap transition-colors rounded-[26px] text-[15px] font-medium inline-flex items-center justify-center"
-            :class="isItemActive(item.to) ? 'h-[52px] px-7 bg-[#F3EEFA] text-[#14111C]' : 'px-5 py-2 text-[#5E5A6B] hover:text-[#14111C]'"
-          >{{ item.name }}</router-link>
-        </nav>
-
-        <div class="flex items-center space-x-2 flex-shrink-0">
-          <template v-if="isGuest">
-            <div class="hidden md:flex items-center space-x-3">
-              <router-link to="/login" class="text-[15px] font-medium text-[#14111C] hover:text-[#8A3FE0] px-4 py-2">Masuk</router-link>
-              <router-link to="/register" class="h-[44px] px-7 rounded-[22px] bg-[#14111C] hover:bg-[#2B2438] text-white text-[14.5px] font-semibold inline-flex items-center justify-center shadow-btn-dark transition-colors">Daftar</router-link>
-            </div>
-          </template>
-          <template v-else>
-            <div class="hidden md:flex items-center">
-              <div class="h-[52px] pl-3.5 pr-5 rounded-[26px] bg-[#F3EEFA] flex items-center space-x-3">
-                <div class="w-7 h-7 rounded-full bg-white text-[#14111C] text-[13px] font-semibold flex items-center justify-center shadow-sm">{{ userInitial }}</div>
-                <span class="text-[15px] font-medium text-[#14111C] truncate max-w-[115px]">{{ userDisplayName }}</span>
-                <span v-if="!isSuperAdmin" class="text-[14px] font-semibold text-[#6D28D9] tabular-nums pl-1">{{ authStore.tokenBalance }}T</span>
-              </div>
-              <button type="button" @click="handleLogout" class="text-[15px] font-medium text-[#5E5A6B] hover:text-[#14111C] pl-3">Keluar</button>
-            </div>
-          </template>
-
+            v-if="isGuest"
+            to="/register"
+            class="inline-flex h-10 cursor-pointer items-center rounded-full bg-[#14111C] px-5 text-[13.5px] font-semibold text-white shadow-btn-dark"
+            @click="closeMenu"
+          >Daftar</router-link>
           <button
             type="button"
-            @click="isMobileMenuOpen = !isMobileMenuOpen"
-            class="md:hidden p-2 rounded-full text-[#5E5A6B] hover:text-[#14111C] hover:bg-[#F3EEFA]"
-            aria-label="Toggle menu navigasi"
+            class="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#14111C]/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            :aria-expanded="isMenuOpen"
+            aria-controls="menu-navigasi"
+            aria-label="Buka menu navigasi"
+            @click="isMenuOpen = !isMenuOpen"
           >
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="isMobileMenuOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'" />
-            </svg>
+            <span class="relative block h-[14px] w-[20px]">
+              <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] rotate-45' : 'top-0'"></span>
+              <span class="absolute left-0 h-[2px] w-full rounded-full bg-[#14111C] transition-all duration-300" :class="isMenuOpen ? 'top-[6px] -rotate-45' : 'top-[12px]'"></span>
+            </span>
           </button>
         </div>
       </div>
 
-      <!-- Mobile Dropdown Navigation Drawer -->
-      <div v-if="isMobileMenuOpen" class="md:hidden pt-4 pb-2 border-t border-[#14111C]/[0.06] mt-3 space-y-3">
-        <nav class="flex flex-col space-y-1">
-          <router-link
-            v-for="item in navLinks"
-            :key="item.to"
-            :to="item.to"
-            class="px-4 py-2.5 rounded-[16px] text-[15px] font-medium transition-colors"
-            :class="isItemActive(item.to) ? 'bg-[#F3EEFA] text-[#14111C]' : 'text-[#5E5A6B] hover:text-[#14111C] hover:bg-[#F3EEFA]/60'"
-            @click="closeMenu"
-          >{{ item.name }}</router-link>
-        </nav>
-        <div class="pt-3 border-t border-[#14111C]/[0.06] flex items-center justify-between">
-          <template v-if="isGuest">
-            <router-link to="/login" class="text-[15px] font-medium text-[#14111C] hover:text-[#8A3FE0] px-3 py-1.5" @click="closeMenu">Masuk</router-link>
-            <router-link to="/register" class="h-[40px] px-5 rounded-[20px] bg-[#14111C] hover:bg-[#2B2438] text-white text-[14px] font-semibold inline-flex items-center justify-center shadow-btn-dark transition-colors" @click="closeMenu">Daftar</router-link>
-          </template>
-          <template v-else>
-            <div class="flex items-center space-x-2.5">
-              <div class="w-7 h-7 rounded-full bg-white text-[#14111C] text-[13px] font-semibold flex items-center justify-center shadow-sm">{{ userInitial }}</div>
-              <span class="text-[14.5px] font-medium text-[#14111C] truncate max-w-[120px]">{{ userDisplayName }}</span>
-              <span v-if="!isSuperAdmin" class="text-[13.5px] font-semibold text-[#6D28D9] tabular-nums pl-1">({{ authStore.tokenBalance }}T)</span>
-            </div>
-            <button type="button" @click="handleLogout" class="text-[14.5px] font-medium text-[#5E5A6B] hover:text-[#14111C] px-2 py-1">Keluar</button>
-          </template>
-        </div>
-      </div>
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="-translate-y-2 opacity-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-to-class="-translate-y-2 opacity-0"
+      >
+        <NavMobileMenu
+          v-if="isMenuOpen"
+          class="lg:hidden"
+          :links="navLinks"
+          :is-active="isItemActive"
+          :is-guest="isGuest"
+          :is-admin="isAdmin"
+          :name="displayName"
+          :balance="balance"
+          @close="closeMenu"
+          @logout="handleLogout"
+        />
+      </Transition>
     </div>
   </header>
 </template>

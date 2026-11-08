@@ -12,6 +12,12 @@ Titik rollback sebelum gaya ini: cabang `snapshot/2026-11-08-sebelum-violet-kaca
 4. **Nol dekorasi tanpa fungsi.** Dilarang: titik-titik (dot grid, bullet, titik di wordmark), efek pulse, garis tepi berwarna pada kartu dan teks, emoji, statistik atau testimoni karangan.
 5. **Bahasa untuk pengguna awam.** Tidak ada nama algoritma, Celery/Redis, versi rilis, UU, akademik, kampus, institut.
 
+## Aturan wajib untuk setiap halaman
+
+1. **Latar:** setiap halaman memakai `components/landing/LandingBackdrop.vue` (sapuan warna ditambah `GlassTileField` yang memudar). Varian `home` untuk beranda, varian `page` untuk halaman lain. Cukup tambahkan `backdrop: "home"` atau `backdrop: "page"` pada `meta` rute di `router/index.ts`. Dilarang kembali ke aurora biru atau blur gradasi polos.
+2. **Responsif:** halaman wajib nyaman di desktop (1440), tablet (768), dan ponsel (390). Tidak boleh ada scroll horizontal. Target sentuh minimal 44 px. Ilustrasi miring 3D hanya di `lg` ke atas, medan ubin samping disembunyikan di bawah `md`, tombol aksi penuh lebar di ponsel. Cek ketiga lebar di browser sebelum dianggap selesai.
+3. **Navbar:** satu komponen untuk semua ukuran. Desktop (`lg` ke atas) memakai bilah dengan indikator geser; tablet dan ponsel memakai tombol menu dengan lembar menu.
+
 ## Aturan warna 45 / 45 / 10
 
 | Porsi | Peran | Warna |
@@ -38,8 +44,12 @@ Merah `#EF4444`, oranye `#F97316`, kuning `#EAB308` hanya penanda hasil (kata, m
 - **Judul seksi:** baris kecil abu, lalu judul besar dengan bagian akhirnya memakai `.vt-accent`.
 - **Kartu melayang:** miring dengan `perspective(1200px) rotateY(+-24deg) rotateZ(+-5deg)`, hanya di layar `lg` ke atas.
 - **Penanda hasil:** sorotan latar pada teks (bukan garis bawah), dengan nomor kecil bulat bertinta.
-- **Ubin kaca:** hanya di hero, memudar ke tepi kiri, kanan, dan bawah.
-- **Navbar:** kapsul `bg-white/80 backdrop-blur-xl shadow-lift`, tombol Daftar tinta gelap. **Footer:** tanpa garis, wordmark raksasa memudar di dasar.
+- **Ubin kaca:** bagian dari latar di seluruh halaman, bukan hanya hero. `GlassTileField.vue` membuat medan ubin yang memudar dengan mask, ditempatkan oleh `LandingBackdrop.vue` di tepi kiri, kanan, dan dasar halaman di atas sapuan warna. Varian `home` lebih rapat, varian `page` (misalnya verifikasi) lebih ringan. Medan samping disembunyikan di bawah lebar `md`.
+- **Alur bercerita:** halaman penjelasan memakai tiga ilustrasi bersambung (sertifikat, panah gradasi, ponsel). Di layar kecil alurnya turun ke bawah dengan panah vertikal.
+- **Stempel hasil:** lencana bulat berwarna penuh (`VerifySeal.vue`) menumpang di pojok kartu hasil, bukan lencana kapsul.
+- **Mobile-first untuk halaman yang dibuka dari QR:** tombol penuh lebar di ponsel, `navigator.share` bila tersedia, dan kondisi memeriksa dengan spinner.
+- **Toast:** kartu putih `shadow-float` tanpa garis tepi; warna status hanya pada ikon.
+- **Navbar:** dipecah menjadi `Navbar.vue` (cangkang, menyusut saat digulir), `navbar/NavLinks.vue` (bilah dengan indikator putih yang meluncur ke tautan aktif atau yang di-hover), `navbar/NavAuthActions.vue`, dan `navbar/NavMobileMenu.vue` (lembar menu untuk tablet dan ponsel, tutup dengan Escape atau ketuk di luar). Desktop mulai dari `lg`. Tombol Daftar tinta gelap, avatar gradasi violet untuk pengguna masuk. **Footer:** tanpa garis, wordmark raksasa memudar di dasar.
 
 ## Aksesibilitas
 
@@ -50,5 +60,5 @@ Elemen interaktif memakai `cursor-pointer` dan cincin fokus `focus-visible:ring-
 | Halaman | Status |
 |---|---|
 | Beranda, navbar, footer | selesai |
-| Verifikasi QR | lihat riwayat commit |
+| Verifikasi QR (/verify) | selesai, latar seamless dengan LandingBackdrop versi dim |
 | Dashboard, billing, admin, login, daftar, onboarding | belum (masih aurora biru lama) |

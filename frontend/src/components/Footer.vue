@@ -30,11 +30,11 @@ const links = [
 
         <nav class="md:min-w-[220px]" aria-label="Tautan singkat">
           <h5 class="text-[13px] font-medium text-[#5E5A6B]">Tautan singkat</h5>
-          <ul class="mt-4 space-y-3 text-[15px] text-[#14111C]">
+          <ul class="mt-2 text-[15px] text-[#14111C]">
             <li v-for="l in links" :key="l.to">
               <router-link
                 :to="l.to"
-                class="inline-block rounded transition-colors duration-200 hover:text-[#6D28D9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+                class="inline-flex min-h-[44px] items-center rounded transition-colors duration-200 hover:text-[#6D28D9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
               >
                 {{ l.name }}
               </router-link>
