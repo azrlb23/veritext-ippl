@@ -1,9 +1,10 @@
 <script setup lang="ts">
 // Latar satu halaman penuh: sapuan warna di bawah, ubin kaca di atasnya.
 // Semuanya memudar tanpa tepi sehingga seksi di atasnya menyatu dengan halaman.
+import { computed } from "vue";
 import GlassTileField from "./GlassTileField.vue";
 
-const props = defineProps<{ variant?: "home" | "page" }>();
+const props = defineProps<{ variant?: "home" | "page" | "auth" }>();
 
 const LEFT = "radial-gradient(ellipse 100% 60% at 0% 50%, #000 0%, #000 35%, transparent 100%)";
 const RIGHT = "radial-gradient(ellipse 100% 60% at 100% 50%, #000 0%, #000 35%, transparent 100%)";
@@ -37,23 +38,32 @@ const pageFields = [
   { pos: "right-0 top-[48%]", cols: 2, rows: 5, mask: RIGHT, seed: 12 },
 ];
 
-const isHome = () => props.variant !== "page";
+const authBlobs = [
+  "-right-24 -top-24 h-[480px] w-[560px] bg-[#8FA8F5] opacity-55",
+  "-right-40 top-[18%] h-[720px] w-[820px] bg-[#8A3FE0] opacity-55",
+  "right-[4%] -bottom-[8%] h-[460px] w-[620px] bg-[#D26BE6] opacity-40",
+  "-left-40 -bottom-[10%] h-[420px] w-[700px] bg-[#C9A0F0] opacity-35",
+];
+const authFields = [
+  { pos: "right-0 top-0", cols: 8, rows: 12, mask: "radial-gradient(ellipse 110% 100% at 100% 45%, #000 0%, #000 40%, transparent 100%)", seed: 17, show: "hidden lg:grid" },
+  { pos: "right-0 bottom-[8%]", cols: 3, rows: 4, mask: RIGHT, seed: 4, show: "grid lg:hidden" },
+];
+
+const blobs = computed(() => ({ home: homeBlobs, page: pageBlobs, auth: authBlobs })[props.variant ?? "home"]);
+const fields = computed(() => ({ home: homeFields, page: pageFields, auth: authFields })[props.variant ?? "home"]);
 </script>
 
 <template>
   <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-    <div
-      v-for="(b, i) in isHome() ? homeBlobs : pageBlobs"
-      :key="'b' + i"
-      class="absolute rounded-full blur-[140px]"
-      :class="b"
-    ></div>
+    <div :class="variant === 'auth' ? 'max-lg:opacity-50' : ''">
+      <div v-for="(b, i) in blobs" :key="'b' + i" class="absolute rounded-full blur-[140px]" :class="b"></div>
+    </div>
 
     <GlassTileField
-      v-for="(f, i) in isHome() ? homeFields : pageFields"
+      v-for="(f, i) in fields"
       :key="'f' + i"
-      class="absolute hidden md:grid"
-      :class="f.pos"
+      class="absolute"
+      :class="[f.pos, ('show' in f && f.show) || 'hidden md:grid']"
       :cols="f.cols"
       :rows="f.rows"
       :seed="f.seed"

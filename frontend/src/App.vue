@@ -50,10 +50,10 @@ onMounted(() => {
   <div
     class="flex flex-col min-h-screen text-[#0B0F19] font-sans tracking-tight relative"
     :class="[
-      isStandalonePage
-        ? 'bg-white'
-        : isLanding
-          ? 'bg-[#F2F2F4]'
+      isLanding
+        ? 'bg-[#F2F2F4]'
+        : isStandalonePage
+          ? 'bg-white'
           : 'bg-[linear-gradient(135deg,#E8F0FF_0%,#DDF4FF_55%,#EDE7FF_100%)]'
     ]"
   >
@@ -80,7 +80,7 @@ onMounted(() => {
     <main
       :class="[
         isStandalonePage
-          ? 'flex-grow min-h-screen p-0'
+          ? 'flex-grow min-h-screen p-0 relative z-10'
           : 'flex-grow pt-[92px] relative z-10'
       ]"
     >

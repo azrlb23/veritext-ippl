@@ -77,13 +77,14 @@ function handleOAuthGoogle() {
 
 <template>
   <AuthCard
-    eyebrow="SELAMAT DATANG KEMBALI"
-    title="Masuk ke VeriText AI"
+    eyebrow="Selamat datang kembali"
+    title="Masuk ke"
+    title-accent="VeriText AI"
   >
     <div class="space-y-4">
-      <div class="text-[15px] font-normal text-[#5B6475] -mt-2">
+      <div class="text-[15px] font-normal text-[#4B4757] -mt-2">
         <span>Belum punya akun? </span>
-        <router-link to="/register" class="text-[#1A73D9] font-medium hover:underline">
+        <router-link to="/register" class="inline-flex min-h-[44px] items-center font-medium text-[#6D28D9] hover:underline">
           Daftar
         </router-link>
       </div>

@@ -17,7 +17,7 @@ withDefaults(defineProps<Props>(), {
   <button
     type="submit"
     :disabled="disabled"
-    class="flex-1 sm:max-w-[170px] h-12 rounded-[24px] bg-gradient-to-br from-[#0B0F19] to-[#3A3A40] hover:opacity-95 text-white text-[15px] font-semibold flex items-center justify-center shadow-[0_8px_16px_rgba(11,15,25,0.26)] transition-all active:scale-[0.99] disabled:opacity-50"
+    class="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-1 sm:max-w-[190px]"
   >
     <span v-if="loading" class="flex items-center space-x-1.5">
       <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">

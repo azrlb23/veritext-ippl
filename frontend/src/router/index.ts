@@ -22,7 +22,7 @@ declare module "vue-router" {
     roles?: string[];
     title?: string;
     isStandalone?: boolean;
-    backdrop?: "home" | "page";
+    backdrop?: "home" | "page" | "auth";
   }
 }
 
@@ -30,12 +30,12 @@ const routes: RouteRecordRaw[] = [
   { path: "/", name: "landing", component: LandingView, meta: { title: "VeriText AI - Sistem Deteksi Plagiarisme Hybrid", backdrop: "home" } },
   { path: "/dashboard", name: "dashboard", component: DashboardView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Dashboard Pengujian - VeriText AI" } },
   { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Detail Laporan Audit - VeriText AI" } },
-  { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, title: "Masuk Akun - VeriText AI" } },
-  { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true, isStandalone: true, title: "Daftar Akun Baru - VeriText AI" } },
-  { path: "/forgot-password", name: "forgot-password", component: ForgotPasswordView, meta: { guestOnly: true, isStandalone: true, title: "Lupa Kata Sandi - VeriText AI" } },
-  { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true, isStandalone: true, title: "Setel Ulang Sandi - VeriText AI" } },
-  { path: "/auth/callback", name: "oauth-callback", component: OAuthCallbackView, meta: { guestOnly: true, isStandalone: true, title: "Autentikasi Akun - VeriText AI" } },
-  { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, title: "Lengkapi Profil Akun - VeriText AI" } },
+  { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Masuk Akun - VeriText AI" } },
+  { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Daftar Akun Baru - VeriText AI" } },
+  { path: "/forgot-password", name: "forgot-password", component: ForgotPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lupa Kata Sandi - VeriText AI" } },
+  { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Setel Ulang Sandi - VeriText AI" } },
+  { path: "/auth/callback", name: "oauth-callback", component: OAuthCallbackView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Autentikasi Akun - VeriText AI" } },
+  { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lengkapi Profil Akun - VeriText AI" } },
   { path: "/billing", name: "billing", component: BillingView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Saldo Token & Kuota - VeriText AI" } },
   { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI", backdrop: "page" } },
   { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], title: "Panel Administrator - VeriText AI" } },

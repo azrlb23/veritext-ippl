@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import type { RegisterDTO } from "../../services/authService";
 import AuthAlertBanner from "./AuthAlertBanner.vue";
+import AuthField from "./AuthField.vue";
 import GoogleAuthButton from "./GoogleAuthButton.vue";
 import AuthSubmitButton from "./AuthSubmitButton.vue";
 import RegisterPasswordFields from "./RegisterPasswordFields.vue";
@@ -23,7 +24,6 @@ const password = ref("");
 const confirmPassword = ref("");
 const agreePDP = ref(true);
 const validationError = ref("");
-const focusedField = ref<string | null>(null);
 
 function handleDismiss() {
   validationError.value = "";
@@ -62,56 +62,21 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="w-full space-y-3">
+  <div class="w-full space-y-5">
     <AuthAlertBanner :error-message="errorMessage" :validation-error="validationError" @dismiss="handleDismiss" />
 
-    <form class="space-y-2.5" @submit.prevent="handleSubmit">
-      <div class="w-full h-[52px] rounded-[14px] bg-[#F3F6FC] px-4 pt-1.5 pb-1 flex flex-col justify-between relative transition-all">
-        <label for="reg-name" class="text-[11px] font-medium select-none" :class="focusedField === 'name' ? 'text-[#1560BD]' : 'text-[#5B6475]'">
-          Nama lengkap
-        </label>
-        <input
-          id="reg-name"
-          v-model="fullName"
-          type="text"
-          required
-          placeholder="Nama lengkap resmi"
-          :disabled="loading"
-          @focus="focusedField = 'name'"
-          @blur="focusedField = null"
-          class="w-full bg-transparent text-[14px] font-medium text-[#0B0F19] placeholder:text-[#636B7A] focus:outline-none -mt-0.5"
-        />
-        <div v-if="focusedField === 'name' || fullName" class="absolute bottom-1 left-4 right-4 h-[2px] rounded-full bg-[#1A73D9]"></div>
-      </div>
-
-      <div class="w-full h-[52px] rounded-[14px] bg-[#F3F6FC] px-4 pt-1.5 pb-1 flex flex-col justify-between relative transition-all">
-        <label for="reg-email" class="text-[11px] font-medium select-none" :class="focusedField === 'email' ? 'text-[#1560BD]' : 'text-[#5B6475]'">
-          Alamat email
-        </label>
-        <input
-          id="reg-email"
-          v-model="email"
-          type="email"
-          required
-          autocomplete="email"
-          placeholder="nama@email.com"
-          :disabled="loading"
-          @focus="focusedField = 'email'"
-          @blur="focusedField = null"
-          class="w-full bg-transparent text-[14px] font-medium text-[#0B0F19] placeholder:text-[#636B7A] focus:outline-none -mt-0.5"
-        />
-        <div v-if="focusedField === 'email' || email" class="absolute bottom-1 left-4 right-4 h-[2px] rounded-full bg-[#1A73D9]"></div>
-      </div>
-
+    <form class="space-y-6" @submit.prevent="handleSubmit">
+      <AuthField id="reg-name" v-model="fullName" label="Nama lengkap" autocomplete="name" placeholder="Nama lengkap resmi" :disabled="loading" />
+      <AuthField id="reg-email" v-model="email" label="Alamat email" type="email" autocomplete="email" placeholder="nama@email.com" :disabled="loading" />
 
       <RegisterPasswordFields v-model:password="password" v-model:confirm-password="confirmPassword" :disabled="loading" />
 
-      <div class="w-full flex items-start space-x-2 pt-1 text-[12px] leading-tight text-[#5B6475]">
-        <input id="reg-pdp" v-model="agreePDP" type="checkbox" class="mt-0.5 w-4 h-4 rounded text-vt-primary border-vt-hair focus:ring-vt-primary flex-shrink-0" />
-        <label for="reg-pdp" class="cursor-pointer select-none">Saya menyetujui naskah saya diproses untuk pengujian.</label>
-      </div>
+      <label class="flex min-h-[44px] w-full cursor-pointer select-none items-center space-x-2.5 text-[13.5px] leading-tight text-[#4B4757]">
+        <input id="reg-pdp" v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#8A3FE0]" />
+        <span>Saya menyetujui naskah saya diproses untuk pengujian.</span>
+      </label>
 
-      <div class="w-full flex items-center justify-between gap-3 pt-1">
+      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center">
         <GoogleAuthButton text="Daftar dengan Google" :disabled="loading" @click="emit('oauth-google')" />
         <AuthSubmitButton :loading="loading" :disabled="loading" label="Daftar" loading-label="Daftar..." />
       </div>

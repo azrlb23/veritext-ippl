@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { AuthCard } from "../components/auth";
+import AuthField from "../components/auth/AuthField.vue";
 import { authService } from "../services/authService";
 import { useNotification } from "../composables";
 
@@ -13,8 +14,6 @@ const isCheckingToken = ref(true);
 const isTokenInvalid = ref(false);
 const newPassword = ref("");
 const confirmPassword = ref("");
-const showPassword = ref(false);
-const showConfirmPassword = ref(false);
 const isLoading = ref(false);
 const isSuccess = ref(false);
 const errorMessage = ref("");
@@ -59,60 +58,38 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AuthCard eyebrow="KATA SANDI BARU" :title="isTokenInvalid ? 'Tautan tidak berlaku' : 'Setel ulang sandi'" :subtitle="isTokenInvalid ? 'Minta tautan baru untuk melanjutkan.' : 'Minimal 8 karakter dengan angka dan simbol.'">
-    <div v-if="isCheckingToken" class="py-10 text-center space-y-2">
-      <div class="w-6 h-6 rounded-full border-2 border-blue-600 border-t-transparent animate-spin mx-auto"></div>
-      <p class="text-xs text-slate-500">Memverifikasi tautan pemulihan...</p>
+  <AuthCard eyebrow="Kata sandi baru" :title="isTokenInvalid ? 'Tautan tidak berlaku' : 'Setel ulang sandi'" :subtitle="isTokenInvalid ? 'Minta tautan baru untuk melanjutkan.' : 'Minimal 8 karakter dengan angka dan simbol.'">
+    <div v-if="isCheckingToken" class="flex items-center gap-4 py-6" role="status">
+      <svg class="h-8 w-8 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <circle cx="18" cy="18" r="15" stroke="#EFEAF6" stroke-width="4" />
+        <path d="M18 3 a15 15 0 0 1 15 15" stroke="#8A3FE0" stroke-width="4" stroke-linecap="round" />
+      </svg>
+      <p class="text-[14.5px] text-[#4B4757]">Memverifikasi tautan pemulihan...</p>
     </div>
 
-    <div v-else-if="isTokenInvalid" class="space-y-4 pt-1 font-sans">
-      <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs">
-        Tautan pemulihan tidak valid atau kedaluwarsa.
+    <div v-else-if="isTokenInvalid" class="space-y-5">
+      <p class="text-[14.5px] leading-[1.65] text-[#B91C1C]">Tautan pemulihan tidak valid atau sudah kedaluwarsa.</p>
+      <router-link to="/forgot-password" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Minta tautan baru</router-link>
+    </div>
+
+    <div v-else-if="isSuccess" class="space-y-5">
+      <div class="rounded-[22px] bg-[#F3EEFA] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
+        <div class="text-[17px] font-semibold text-[#15803D]">Kata sandi berhasil diperbarui</div>
+        <p class="mt-1.5">Silakan masuk menggunakan kata sandi baru Anda.</p>
       </div>
-      <router-link to="/forgot-password" class="w-full h-11 flex items-center justify-center rounded-full bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800">
-        Minta Tautan Baru &rarr;
-      </router-link>
+      <router-link to="/login" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Masuk sekarang</router-link>
     </div>
 
-    <div v-else-if="isSuccess" class="space-y-4 pt-1 font-sans">
-      <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs space-y-1">
-        <p class="font-bold text-sm">Kata sandi berhasil diperbarui</p>
-        <p class="text-xs text-slate-600">Silakan masuk menggunakan kata sandi baru Anda.</p>
-      </div>
-      <router-link to="/login" class="w-full h-11 flex items-center justify-center rounded-full bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800">
-        Masuk Sekarang &rarr;
-      </router-link>
-    </div>
-
-    <div v-else class="space-y-4 font-sans">
-      <div v-if="errorMessage" class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex justify-between">
+    <form v-else class="space-y-6" @submit.prevent="handleSubmit">
+      <p v-if="errorMessage" role="alert" class="flex items-start justify-between gap-2 text-[14px] leading-[1.6] text-[#B91C1C]">
         <span>{{ errorMessage }}</span>
-        <button type="button" @click="errorMessage = ''" class="text-red-500 font-bold ml-2">&times;</button>
-      </div>
+        <button type="button" class="-mr-2 -mt-1.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-[20px] leading-none transition-colors hover:bg-[#14111C]/[0.05]" aria-label="Tutup pesan" @click="errorMessage = ''">&times;</button>
+      </p>
+      <AuthField id="reset-pass" v-model="newPassword" label="Kata sandi baru" type="password" revealable autocomplete="new-password" placeholder="Minimal 8 karakter" :disabled="isLoading" />
+      <AuthField id="reset-conf" v-model="confirmPassword" label="Konfirmasi kata sandi" type="password" revealable autocomplete="new-password" placeholder="Ulangi kata sandi baru" :disabled="isLoading" :invalid="isPasswordMismatch" />
+      <p v-if="isPasswordMismatch" class="-mt-3 text-[13px] font-medium text-[#B91C1C]">Konfirmasi kata sandi tidak cocok.</p>
 
-      <form class="space-y-3.5" @submit.prevent="handleSubmit">
-        <div class="w-full h-14 rounded-xl bg-slate-100 px-4 pt-1.5 pb-1 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <label for="reset-pass" class="text-[11px] font-medium text-slate-500">Kata sandi baru</label>
-            <button type="button" @click="showPassword = !showPassword" class="text-xs text-slate-500 hover:text-slate-900">{{ showPassword ? 'Tutup' : 'Lihat' }}</button>
-          </div>
-          <input id="reset-pass" v-model="newPassword" :type="showPassword ? 'text' : 'password'" required placeholder="Minimal 8 karakter" :disabled="isLoading" class="w-full bg-transparent text-sm font-medium text-slate-900 focus:outline-none" />
-        </div>
-
-        <div class="w-full h-14 rounded-xl bg-slate-100 px-4 pt-1.5 pb-1 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <label for="reset-conf" class="text-[11px] font-medium" :class="isPasswordMismatch ? 'text-red-600' : 'text-slate-500'">Konfirmasi kata sandi</label>
-            <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="text-xs text-slate-500 hover:text-slate-900">{{ showConfirmPassword ? 'Tutup' : 'Lihat' }}</button>
-          </div>
-          <input id="reset-conf" v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" required placeholder="Ulangi kata sandi baru" :disabled="isLoading" class="w-full bg-transparent text-sm font-medium text-slate-900 focus:outline-none" />
-        </div>
-
-        <p v-if="isPasswordMismatch" class="text-[11px] text-red-600 font-medium">Konfirmasi kata sandi tidak cocok.</p>
-
-        <button type="submit" :disabled="isLoading" class="w-full h-11 rounded-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition-all disabled:opacity-50">
-          {{ isLoading ? 'Menyimpan...' : 'Simpan kata sandi baru' }}
-        </button>
-      </form>
-    </div>
+      <button type="submit" :disabled="isLoading" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">{{ isLoading ? 'Menyimpan...' : 'Simpan kata sandi baru' }}</button>
+    </form>
   </AuthCard>
 </template>

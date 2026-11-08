@@ -18,6 +18,9 @@ Titik rollback sebelum gaya ini: cabang `snapshot/2026-11-08-sebelum-violet-kaca
 2. **Responsif:** halaman wajib nyaman di desktop (1440), tablet (768), dan ponsel (390). Tidak boleh ada scroll horizontal. Target sentuh minimal 44 px. Ilustrasi miring 3D hanya di `lg` ke atas, medan ubin samping disembunyikan di bawah `md`, tombol aksi penuh lebar di ponsel. Cek ketiga lebar di browser sebelum dianggap selesai.
 3. **Navbar:** satu komponen untuk semua ukuran. Desktop (`lg` ke atas) memakai bilah dengan indikator geser; tablet dan ponsel memakai tombol menu dengan lembar menu.
 
+4. **Pemisahan dari latar:** setiap komponen harus terpisah jelas dari latar. Permukaan berdiri di atas kartu putih dengan `shadow-float` atau `shadow-lift`, bukan polos di atas latar. Elemen sekunder di dalam kartu putih (tombol Google, info) memakai tint `#F3EEFA`, bukan putih, supaya tidak menyatu.
+5. **Isian formulir:** berupa garis, bukan kotak. Komponen `components/auth/AuthField.vue`: label kecil di atas, teks 16 px, garis bawah netral 2 px, dan garis violet 3 px yang menyapu dari kiri saat fokus atau terisi (merah bila tidak valid). Isian ditaruh di dalam kartu putih.
+
 ## Aturan warna 45 / 45 / 10
 
 | Porsi | Peran | Warna |
@@ -44,7 +47,7 @@ Merah `#EF4444`, oranye `#F97316`, kuning `#EAB308` hanya penanda hasil (kata, m
 - **Judul seksi:** baris kecil abu, lalu judul besar dengan bagian akhirnya memakai `.vt-accent`.
 - **Kartu melayang:** miring dengan `perspective(1200px) rotateY(+-24deg) rotateZ(+-5deg)`, hanya di layar `lg` ke atas.
 - **Penanda hasil:** sorotan latar pada teks (bukan garis bawah), dengan nomor kecil bulat bertinta.
-- **Ubin kaca:** bagian dari latar di seluruh halaman, bukan hanya hero. `GlassTileField.vue` membuat medan ubin yang memudar dengan mask, ditempatkan oleh `LandingBackdrop.vue` di tepi kiri, kanan, dan dasar halaman di atas sapuan warna. Varian `home` lebih rapat, varian `page` (misalnya verifikasi) lebih ringan. Medan samping disembunyikan di bawah lebar `md`.
+- **Ubin kaca:** bagian dari latar di seluruh halaman, bukan hanya hero. `GlassTileField.vue` membuat medan ubin yang memudar dengan mask, ditempatkan oleh `LandingBackdrop.vue` di tepi kiri, kanan, dan dasar halaman di atas sapuan warna. Varian `home` lebih rapat, varian `page` (misalnya verifikasi) lebih ringan, varian `auth` memenuhi sisi kanan halaman masuk dan daftar. Medan samping disembunyikan di bawah lebar `md`.
 - **Alur bercerita:** halaman penjelasan memakai tiga ilustrasi bersambung (sertifikat, panah gradasi, ponsel). Di layar kecil alurnya turun ke bawah dengan panah vertikal.
 - **Stempel hasil:** lencana bulat berwarna penuh (`VerifySeal.vue`) menumpang di pojok kartu hasil, bukan lencana kapsul.
 - **Mobile-first untuk halaman yang dibuka dari QR:** tombol penuh lebar di ponsel, `navigator.share` bila tersedia, dan kondisi memeriksa dengan spinner.
@@ -61,4 +64,5 @@ Elemen interaktif memakai `cursor-pointer` dan cincin fokus `focus-visible:ring-
 |---|---|
 | Beranda, navbar, footer | selesai |
 | Verifikasi QR (/verify) | selesai, latar seamless dengan LandingBackdrop versi dim |
-| Dashboard, billing, admin, login, daftar, onboarding | belum (masih aurora biru lama) |
+| Login, daftar, lupa dan reset sandi, onboarding | selesai: layout form kiri dan panel kanan dipertahankan, latar `backdrop: "auth"` (ubin memenuhi sisi kanan dan memudar ke kiri); inner form Lupa/Reset/Onboarding baru dirapikan warnanya |
+| Dashboard, billing, admin | belum (masih aurora biru lama) |

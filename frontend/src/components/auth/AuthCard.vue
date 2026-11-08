@@ -4,85 +4,62 @@ import AuthIllustration from "./AuthIllustration.vue";
 interface Props {
   eyebrow?: string;
   title: string;
+  titleAccent?: string;
   subtitle?: string | string[];
 }
 
 withDefaults(defineProps<Props>(), {
   eyebrow: "",
+  titleAccent: "",
   subtitle: "",
 });
 </script>
 
 <template>
-  <div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#FAFBFF] relative overflow-x-hidden font-sans">
-    
-    <!-- Left Column: Full-Height Form Area (Isolated Layer) -->
-    <div class="w-full lg:w-[50%] xl:w-[48%] min-h-screen flex flex-col justify-between px-6 sm:px-12 lg:px-16 xl:px-24 py-8 lg:py-10 bg-white relative z-10 border-r border-[#E8ECF3] shadow-[4px_0_24px_rgba(11,15,25,0.02)]">
-      
-      <!-- Top Header / Brand -->
-      <header class="flex items-center space-x-10 w-full max-w-[420px] mx-auto lg:mx-0">
-        <router-link to="/" class="text-[17px] font-bold text-[#0B0F19] tracking-tight font-sans select-none flex items-center">
-          VeriText AI
+  <div class="relative flex min-h-screen w-full flex-col font-sans lg:flex-row">
+    <div class="relative z-10 flex min-h-screen w-full flex-col justify-between px-5 py-6 sm:px-12 lg:w-[50%] lg:px-16 lg:py-10 xl:w-[48%] xl:px-24">
+      <header class="mx-auto flex w-full max-w-[460px] items-center justify-between gap-6 lg:mx-0">
+        <router-link
+          to="/"
+          class="inline-flex h-11 items-center rounded-full text-[20px] font-semibold tracking-[-0.03em] text-[#14111C] select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        >
+          VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
         </router-link>
-        <div class="flex items-center space-x-7 text-[14px] font-semibold text-[#5B6475]">
-          <router-link to="/verify" class="hover:text-[#0B0F19] transition-colors">
-            Verifikasi
-          </router-link>
-          <a href="#bantuan" class="hover:text-[#0B0F19] transition-colors">
-            Bantuan
-          </a>
-        </div>
+        <router-link
+          to="/verify"
+          class="inline-flex h-11 items-center rounded-full px-4 text-[14px] font-medium text-[#4B4757] transition-colors duration-200 hover:bg-[#14111C]/[0.05] hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        >
+          Verifikasi sertifikat
+        </router-link>
       </header>
 
-      <!-- Center Form Container -->
-      <div class="w-full max-w-[400px] mx-auto my-auto py-8">
-        <!-- Eyebrow & Title -->
-        <div class="space-y-1.5 mb-2">
-          <p v-if="eyebrow" class="text-[13px] font-bold tracking-[0.5px] text-[#5B6475] uppercase">
-            {{ eyebrow }}
-          </p>
-          <h1 class="text-[34px] sm:text-[40px] font-semibold tracking-[-0.8px] text-[#0B0F19] leading-[1.12] font-sans">
-            {{ title }}
-          </h1>
-        </div>
+      <div class="mx-auto my-6 w-full max-w-[460px] rounded-[36px] bg-white p-6 shadow-float sm:p-10 lg:mx-0">
+        <p v-if="eyebrow" class="mb-3 text-[14px] font-medium text-[#5E5A6B]">{{ eyebrow }}</p>
+        <h1 class="text-[36px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[44px]">
+          {{ title }}
+          <span v-if="titleAccent" class="vt-accent block pb-1">{{ titleAccent }}</span>
+        </h1>
 
-        <!-- Subtitle -->
-        <div v-if="subtitle" class="text-[14.5px] font-normal leading-[22px] text-[#5B6475] mb-5">
+        <div v-if="subtitle" class="mt-4 text-[15px] leading-[1.65] text-[#4B4757]">
           <template v-if="Array.isArray(subtitle)">
             <p v-for="(line, idx) in subtitle" :key="idx">{{ line }}</p>
           </template>
-          <template v-else>
-            <p>{{ subtitle }}</p>
-          </template>
+          <p v-else>{{ subtitle }}</p>
         </div>
 
-        <!-- Slot Form Content -->
-        <div class="w-full">
+        <div class="mt-7 w-full">
           <slot />
         </div>
       </div>
 
-      <!-- Bottom Micro-footer -->
-      <footer class="w-full max-w-[420px] mx-auto lg:mx-0 pt-4 text-[12px] text-[#8E98AB] flex items-center justify-between">
+      <footer class="mx-auto flex w-full max-w-[460px] items-center justify-between pt-4 text-[12.5px] text-[#5E5A6B] lg:mx-0">
         <span>&copy; {{ new Date().getFullYear() }} VeriText AI</span>
         <span>Audit orisinalitas naskah</span>
       </footer>
-
     </div>
 
-    <!-- Right Column: Full-Height Aurora Glass Artwork (GPU Accelerated & Isolated) -->
-    <div
-      class="hidden lg:flex lg:w-[50%] xl:w-[52%] min-h-screen relative overflow-hidden bg-gradient-to-br from-[#E8F0FF] via-[#DDF4FF] to-[#EDE7FF] items-center justify-center select-none transform-gpu will-change-transform"
-      style="content-visibility: auto; contain: strict;"
-    >
-      <!-- Hardware-accelerated CSS Aurora Mesh (Zero CPU Blur Overhead) -->
-      <div
-        class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_75%_55%_at_85%_15%,rgba(59,130,246,0.32),transparent_70%),radial-gradient(ellipse_75%_55%_at_15%_85%,rgba(34,211,238,0.28),transparent_70%),radial-gradient(circle_at_50%_50%,rgba(167,139,250,0.25),transparent_65%)]"
-      ></div>
-
-      <!-- Vector Glass Refraction Illustration -->
+    <div class="relative hidden select-none lg:flex lg:w-[50%] xl:w-[52%]">
       <AuthIllustration />
     </div>
-
   </div>
 </template>

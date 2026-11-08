@@ -48,13 +48,14 @@ function handleOAuthGoogle() {
 
 <template>
   <AuthCard
-    eyebrow="MULAI GRATIS"
-    title="Buat akun baru"
+    eyebrow="Mulai gratis"
+    title="Buat akun"
+    title-accent="baru"
   >
     <div class="space-y-3">
-      <div class="text-[15px] font-normal text-[#5B6475] -mt-2">
+      <div class="text-[15px] font-normal text-[#4B4757] -mt-2">
         <span>Sudah punya akun? </span>
-        <router-link to="/login" class="text-[#1A73D9] font-medium hover:underline">
+        <router-link to="/login" class="inline-flex min-h-[44px] items-center font-medium text-[#6D28D9] hover:underline">
           Masuk
         </router-link>
       </div>

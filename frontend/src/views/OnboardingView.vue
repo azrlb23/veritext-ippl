@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AuthCard } from "../components/auth";
+import AuthField from "../components/auth/AuthField.vue";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables";
 import { getHomeRouteForRole } from "../utils/navigation";
@@ -16,7 +17,6 @@ const email = ref("");
 const fullName = ref("");
 const password = ref("");
 const confirmPassword = ref("");
-const showPassword = ref(false);
 const agreePDP = ref(true);
 const isLoading = ref(false);
 const errorMessage = ref("");
@@ -81,62 +81,36 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AuthCard eyebrow="ONBOARDING PENGGUNA" title="Lengkapi Akun Anda" subtitle="Verifikasi identitas resmi Anda dan amankan akun dengan kata sandi pribadi.">
-    <div class="space-y-4 font-sans text-xs">
-      <div v-if="isTicketInvalid" class="space-y-4 py-2">
-        <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 space-y-1">
-          <p class="font-semibold">Tiket Tidak Valid</p>
-          <p class="text-[11px]">{{ ticketErrorMessage }}</p>
-        </div>
-        <router-link to="/register" class="block w-full py-2.5 text-center rounded-full text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all">
-          Kembali ke Pendaftaran
-        </router-link>
+  <AuthCard eyebrow="Lengkapi akun" title="Lengkapi akun Anda" subtitle="Verifikasi identitas Anda dan amankan akun dengan kata sandi pribadi.">
+    <div v-if="isTicketInvalid" class="space-y-5">
+      <div class="space-y-1 text-[14.5px] leading-[1.65]">
+        <p class="font-semibold text-[#B91C1C]">Tiket tidak valid</p>
+        <p class="text-[#4B4757]">{{ ticketErrorMessage }}</p>
       </div>
-
-      <div v-else>
-        <div v-if="errorMessage" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 flex justify-between">
-          <span>{{ errorMessage }}</span>
-          <button type="button" @click="errorMessage = ''" class="font-bold">&times;</button>
-        </div>
-
-        <div class="mb-3 p-3 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-between">
-          <div>
-            <p class="text-[10px] font-semibold text-slate-500 uppercase">Terhubung via Google</p>
-            <p class="text-xs font-semibold text-slate-900 truncate max-w-[200px]">{{ email || "Akun Google" }}</p>
-          </div>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">Terverifikasi</span>
-        </div>
-
-        <form @submit.prevent="handleSubmit" class="space-y-3">
-          <div class="space-y-1">
-            <label class="block font-semibold text-slate-900">Nama Lengkap Resmi <span class="text-red-500">*</span></label>
-            <input v-model="fullName" type="text" required placeholder="Nama Lengkap Resmi" class="w-full text-xs font-medium text-slate-900 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-blue-600 focus:bg-white" />
-          </div>
-
-          <div class="space-y-1">
-            <div class="flex justify-between items-center">
-              <label class="block font-semibold text-slate-900">Kata Sandi Baru <span class="text-red-500">*</span></label>
-              <button type="button" @click="showPassword = !showPassword" class="text-[11px] text-slate-500 hover:text-slate-900">{{ showPassword ? "Tutup" : "Lihat" }}</button>
-            </div>
-            <input v-model="password" :type="showPassword ? 'text' : 'password'" required placeholder="Minimal 8 karakter (huruf besar & angka)" class="w-full text-xs font-medium text-slate-900 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-blue-600 focus:bg-white" />
-          </div>
-
-          <div class="space-y-1">
-            <label class="block font-semibold text-slate-900">Konfirmasi Kata Sandi <span class="text-red-500">*</span></label>
-            <input v-model="confirmPassword" :type="showPassword ? 'text' : 'password'" required placeholder="Ulangi kata sandi" class="w-full text-xs font-medium text-slate-900 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-blue-600 focus:bg-white" />
-            <p v-if="confirmPassword && password !== confirmPassword" class="text-[10px] text-red-600">Kata sandi belum cocok.</p>
-          </div>
-
-          <label class="flex items-start gap-2 pt-1 cursor-pointer">
-            <input type="checkbox" v-model="agreePDP" class="mt-0.5 rounded text-blue-600" />
-            <span class="text-[11px] text-slate-600">Setujui pemrosesan data identitas Anda untuk pembuatan akun.</span>
-          </label>
-
-          <button type="submit" :disabled="!isFormValid" class="w-full py-2.5 rounded-full text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-all cursor-pointer shadow-sm">
-            {{ isLoading ? "Menyimpan..." : "Simpan & Masuk ke Beranda" }}
-          </button>
-        </form>
-      </div>
+      <router-link to="/register" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Kembali ke pendaftaran</router-link>
     </div>
+
+    <form v-else class="space-y-6" @submit.prevent="handleSubmit">
+      <p v-if="errorMessage" role="alert" class="flex items-start justify-between gap-2 text-[14px] leading-[1.6] text-[#B91C1C]">
+        <span>{{ errorMessage }}</span>
+        <button type="button" class="-mr-2 -mt-1.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-[20px] leading-none transition-colors hover:bg-[#14111C]/[0.05]" aria-label="Tutup pesan" @click="errorMessage = ''">&times;</button>
+      </p>
+      <div class="rounded-[20px] bg-[#F3EEFA] px-5 py-4">
+        <p class="text-[12.5px] font-medium text-[#5E5A6B]">Terhubung lewat Google</p>
+        <p class="mt-0.5 truncate text-[15px] font-semibold text-[#14111C]">{{ email || "Akun Google" }}</p>
+      </div>
+
+      <AuthField id="onb-name" v-model="fullName" label="Nama lengkap" autocomplete="name" placeholder="Nama lengkap resmi" />
+      <AuthField id="onb-pass" v-model="password" label="Kata sandi baru" type="password" revealable autocomplete="new-password" placeholder="Minimal 8 karakter, huruf besar dan angka" />
+      <AuthField id="onb-conf" v-model="confirmPassword" label="Konfirmasi kata sandi" type="password" revealable autocomplete="new-password" placeholder="Ulangi kata sandi" :invalid="confirmPassword.length > 0 && password !== confirmPassword" />
+      <p v-if="confirmPassword && password !== confirmPassword" class="-mt-3 text-[13px] font-medium text-[#B91C1C]">Kata sandi belum cocok.</p>
+
+      <label class="flex min-h-[44px] cursor-pointer select-none items-center space-x-2.5 text-[13.5px] leading-tight text-[#4B4757]">
+        <input v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#8A3FE0]" />
+        <span>Setujui pemrosesan data identitas Anda untuk pembuatan akun.</span>
+      </label>
+
+      <button type="submit" :disabled="!isFormValid" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">{{ isLoading ? "Menyimpan..." : "Simpan dan masuk" }}</button>
+    </form>
   </AuthCard>
 </template>
