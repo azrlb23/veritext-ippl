@@ -13,13 +13,7 @@ from app.core.config import settings
 from app.models.invoice import Invoice
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.billing import MidtransWebhookPayload
-
-PACKAGES = {
-    "pkg_10token": {"name": "Paket 10 Token", "tokens": 10, "price": 25000},
-    "pkg_50token": {"name": "Paket 50 Token", "tokens": 50, "price": 100000},
-    "pkg_200token": {"name": "Paket 200 Token", "tokens": 200, "price": 350000},
-}
-
+from app.services.billing_packages import PACKAGES, resolve_package  # noqa: F401
 
 class BillingService:
     @staticmethod
@@ -34,14 +28,10 @@ class BillingService:
         return wallet
 
     @staticmethod
-    async def create_topup_invoice(db: AsyncSession, user_id: uuid.UUID, package_id: str) -> Invoice:
-        if package_id not in PACKAGES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid package_id. Available: {', '.join(PACKAGES.keys())}",
-            )
-
-        pkg = PACKAGES[package_id]
+    async def create_topup_invoice(
+        db: AsyncSession, user_id: uuid.UUID, package_id: str, token_amount: int | None = None
+    ) -> Invoice:
+        pkg = resolve_package(package_id, token_amount)
         date_str = datetime.now(timezone.utc).strftime("%Y%m%d")  # noqa: UP017
         order_id = f"VT-{date_str}-{uuid.uuid4().hex[:12].upper()}"
         snap_token = f"SNAP-{uuid.uuid4().hex}"

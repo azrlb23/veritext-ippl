@@ -11,7 +11,7 @@ import ForgotPasswordView from "../views/ForgotPasswordView.vue";
 import ResetPasswordView from "../views/ResetPasswordView.vue";
 import OAuthCallbackView from "../views/OAuthCallbackView.vue";
 import OnboardingView from "../views/OnboardingView.vue";
-import BillingView from "../views/BillingView.vue";
+import TokenView from "../views/TokenView.vue";
 import PeriksaView from "../views/PeriksaView.vue";
 import RiwayatView from "../views/RiwayatView.vue";
 import AkunView from "../views/AkunView.vue";
@@ -44,7 +44,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Setel Ulang Sandi - VeriText AI" } },
   { path: "/auth/callback", name: "oauth-callback", component: OAuthCallbackView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Autentikasi Akun - VeriText AI" } },
   { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lengkapi Profil Akun - VeriText AI" } },
-  { path: "/billing", name: "billing", component: BillingView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Saldo Token & Kuota - VeriText AI" } },
+  { path: "/billing", name: "billing", component: TokenView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Token - VeriText AI" } },
   { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI", backdrop: "page" } },
   { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], title: "Panel Administrator - VeriText AI" } },
   { path: "/:pathMatch(.*)*", redirect: "/" },

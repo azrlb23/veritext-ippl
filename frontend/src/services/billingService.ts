@@ -7,9 +7,10 @@ export const billingService = {
     return res.data.data;
   },
 
-  async topup(packageId: string) {
+  async topup(packageId: string, tokenAmount?: number) {
     const res = await apiClient.post<{ data: { order_id: string; snap_token: string } }>("/billing/topup", {
       package_id: packageId,
+      token_amount: tokenAmount,
     });
     return res.data.data;
   },

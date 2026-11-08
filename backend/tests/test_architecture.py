@@ -78,7 +78,7 @@ class TestVeriTextArchitecture(unittest.TestCase):
         views_dir = os.path.join(FRONTEND_DIR, "src", "views")
         for v in [
             "LandingView.vue", "DashboardView.vue", "AuditDetailView.vue", "LoginView.vue",
-            "RegisterView.vue", "AdminView.vue", "BillingView.vue", "VerifyView.vue",
+            "RegisterView.vue", "AdminView.vue", "TokenView.vue", "VerifyView.vue", "RiwayatView.vue", "AkunView.vue", "AsistenView.vue",
         ]:
             self.assertTrue(os.path.exists(os.path.join(views_dir, v)), f"Missing view {v}")
 

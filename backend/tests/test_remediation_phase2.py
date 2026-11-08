@@ -558,7 +558,7 @@ class TestRemediationPhase2TDD(unittest.IsolatedAsyncioTestCase):
         pattern = re.compile(r"^VT-\d{8}-[A-F0-9]{12}$")
 
         for _ in range(100):
-            inv = await BillingService.create_topup_invoice(mock_db, user_id, "pkg_10token")
+            inv = await BillingService.create_topup_invoice(mock_db, user_id, "pkg_starter")
             order_id = inv.order_id
             self.assertIsNotNone(
                 pattern.match(order_id),

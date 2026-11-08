@@ -44,7 +44,7 @@ async def topup_tokens(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    inv = await BillingService.create_topup_invoice(db, current_user.id, req.package_id)
+    inv = await BillingService.create_topup_invoice(db, current_user.id, req.package_id, req.token_amount)
     return APIResponse(
         message="Topup order created. Proceed to payment gateway.",
         data=TopupResponse(

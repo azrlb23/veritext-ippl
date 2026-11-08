@@ -5,7 +5,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class TopupRequest(BaseModel):
-    package_id: str = Field(..., description="Package identifier, e.g. pkg_10token, pkg_50token")
+    package_id: str = Field(..., description="pkg_starter, pkg_skripsi_pro, pkg_riset_intensif, atau pkg_tokens (satuan)")
+    token_amount: Optional[int] = Field(None, ge=1, le=500, description="Wajib untuk pkg_tokens: jumlah token (min 5)")
 
 
 class TopupResponse(BaseModel):

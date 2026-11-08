@@ -891,10 +891,10 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
         mock_db = MockAsyncSession()
         user_id = uuid.uuid4()
 
-        invoice = await BillingService.create_topup_invoice(mock_db, user_id, "pkg_10token")
+        invoice = await BillingService.create_topup_invoice(mock_db, user_id, "pkg_starter")
         self.assertTrue(invoice.order_id.startswith("VT-"))
         self.assertTrue(invoice.snap_token.startswith("SNAP-"))
-        self.assertEqual(invoice.token_amount, 10)
+        self.assertEqual(invoice.token_amount, 15)
         self.assertEqual(invoice.gross_amount, 25000)
         self.assertEqual(invoice.status, "PENDING")
 
