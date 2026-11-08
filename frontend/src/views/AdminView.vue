@@ -73,66 +73,30 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 font-sans">
-    <!-- Header with overview anchor -->
-    <div id="overview" class="scroll-mt-28 bg-white border border-[#E4E8F0] rounded-2xl sm:rounded-3xl p-6 sm:p-7 shadow-[0_4px_20px_rgba(138,152,184,0.06)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <span class="text-[11px] font-bold text-[#1560BD] bg-[#EAF3FE] border border-[#BFDBFE] px-3 py-1 rounded-full uppercase tracking-wider">
-          Panel Pemantauan Sistem - Read-Only
-        </span>
-        <h1 class="text-2xl sm:text-3xl font-bold text-[#0B0F19] tracking-tight mt-2.5">Panel Pemantauan Sistem</h1>
-        <p class="text-xs sm:text-sm text-[#5B6475] mt-1">Observabilitas metrik global, transaksi Midtrans, dan log audit</p>
+  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-8 font-sans sm:px-6 sm:pt-12">
+    <div id="overview" class="mb-9 flex scroll-mt-28 flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <div class="max-w-2xl">
+        <p class="text-[14px] font-medium text-[#5E5A6B]">Pemantauan</p>
+        <h1 class="mt-3 text-[36px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[52px]">
+          Kondisi sistem, <span class="vt-accent">hanya dibaca.</span>
+        </h1>
       </div>
-      <button
-        type="button"
-        :disabled="isLoading"
-        @click="fetchData"
-        class="inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-[#E4E8F0] bg-white text-xs font-semibold text-[#0B0F19] hover:bg-slate-50 active:scale-[0.98] transition-colors transition-transform duration-150 shadow-xs cursor-pointer disabled:opacity-50"
-      >
-        <span v-if="isLoading">Memuat Data...</span>
-        <span v-else>Muat Ulang Data</span>
-      </button>
+      <button type="button" :disabled="isLoading" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-8 text-[15px] font-semibold text-[#14111C] shadow-lift transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:opacity-50" @click="fetchData">{{ isLoading ? "Memuat..." : "Muat ulang" }}</button>
     </div>
 
-    <!-- Error State with Retry Button -->
-    <div v-if="hasError && !isLoading" class="bg-rose-50/90 border border-rose-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-      <div>
-        <h3 class="text-xs sm:text-sm font-bold text-rose-800">Gagal Mengambil Data Pemantauan</h3>
-        <p class="text-xs text-rose-600 mt-0.5">{{ errorMessage || "Terjadi kendala jaringan saat menyinkronkan data pemantauan." }}</p>
-      </div>
-      <button
-        type="button"
-        @click="fetchData"
-        class="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-colors transition-transform duration-150 cursor-pointer self-start sm:self-auto"
-      >
-        Coba Lagi
-      </button>
+    <div v-if="hasError && !isLoading" class="mb-6 flex flex-col gap-3 rounded-[28px] bg-white p-6 shadow-float sm:flex-row sm:items-center sm:justify-between" role="alert">
+      <p class="text-[15px] font-medium text-[#B91C1C]">{{ errorMessage || "Data pemantauan belum bisa dimuat." }}</p>
+      <button type="button" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[14px] font-semibold text-white shadow-btn-dark" @click="fetchData">Coba lagi</button>
     </div>
 
-    <!-- KPI Analytics Cards -->
-    <GlobalAnalyticsCards :data="analytics" :loading="isLoading" />
-
-    <!-- Infrastructure Telemetry -->
-    <div id="health" class="scroll-mt-28">
-      <SystemHealthPanel :health="health" :loading="isLoading" />
-    </div>
-
-    <!-- Transactions and Audit Logs -->
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-      <div id="transactions" class="scroll-mt-28 h-full">
-        <TransactionLogTable :transactions="transactions" :loading="isLoading" />
-      </div>
-      <div id="logs" class="scroll-mt-28 h-full">
-        <AuditLogTable
-          :logs="auditLogs"
-          :loading="isLoading"
-          :page="logPage"
-          :pages="logPages"
-          :total="logTotal"
-          :selectedAction="selectedAction"
-          @update:selectedAction="handleActionFilter"
-          @changePage="handlePageChange"
-        />
+    <div class="space-y-6">
+      <GlobalAnalyticsCards :data="analytics" :loading="isLoading" />
+      <div id="health" class="scroll-mt-28"><SystemHealthPanel :health="health" :loading="isLoading" /></div>
+      <div class="grid items-start gap-6 xl:grid-cols-2">
+        <div id="transactions" class="h-full scroll-mt-28"><TransactionLogTable :transactions="transactions" :loading="isLoading" /></div>
+        <div id="logs" class="h-full scroll-mt-28">
+          <AuditLogTable :logs="auditLogs" :loading="isLoading" :page="logPage" :pages="logPages" :total="logTotal" :selectedAction="selectedAction" @update:selectedAction="handleActionFilter" @changePage="handlePageChange" />
+        </div>
       </div>
     </div>
   </div>

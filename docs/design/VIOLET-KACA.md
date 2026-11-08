@@ -70,4 +70,4 @@ Elemen interaktif memakai `cursor-pointer` dan cincin fokus `focus-visible:ring-
 | Token (`/billing`) | selesai: saldo besar, tiga paket, beli satuan, riwayat pembelian |
 | Ringkasan (`/dashboard`) | selesai: saldo, tiga angka, pemeriksaan berjalan, tiga hasil terakhir |
 | Ruang kerja audit (`/audits/:id`) | selesai: skor besar, naskah bersorot (latar, bukan garis bawah), panel Sumber / Tulis ulang / Tanya |
-| Admin (`/admin`) | belum |
+| Admin (`/admin`) | selesai (rekaan: angka besar, kondisi sistem, transaksi, catatan aktivitas; tetap 100% baca-saja). Dicek 1440/768/390 hanya pada keadaan memuat karena akun ADMIN tidak tersedia di sesi uji |

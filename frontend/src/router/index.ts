@@ -46,7 +46,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lengkapi Profil Akun - VeriText AI" } },
   { path: "/billing", name: "billing", component: TokenView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Token - VeriText AI" } },
   { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI", backdrop: "page" } },
-  { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], title: "Panel Administrator - VeriText AI" } },
+  { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Pemantauan - VeriText AI" } },
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 

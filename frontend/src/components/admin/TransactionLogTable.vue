@@ -8,91 +8,29 @@ interface TransactionItem {
   created_at?: string | null;
 }
 
-defineProps<{
-  transactions: TransactionItem[];
-  loading?: boolean;
-}>();
+defineProps<{ transactions: TransactionItem[]; loading?: boolean }>();
 
-function formatCurrency(val: number): string {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(val || 0);
-}
-
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return "-";
-  try {
-    return new Date(dateStr).toLocaleString("id-ID", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
-function getStatusBadgeClass(status: string): string {
-  const norm = (status || "").toLowerCase();
-  if (norm === "settlement" || norm === "capture" || norm === "paid") {
-    return "bg-emerald-50 text-emerald-700 border-emerald-200";
-  }
-  if (norm === "pending") {
-    return "bg-amber-50 text-amber-800 border-amber-200";
-  }
-  return "bg-rose-50 text-rose-700 border-rose-200";
-}
+const rupiah = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const date = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-");
+const label = (s: string) => ({ PAID: "Lunas", PENDING: "Menunggu", EXPIRED: "Kedaluwarsa", FAILED: "Gagal", CANCEL: "Dibatalkan", CHALLENGE: "Ditinjau" } as Record<string, string>)[s] || s;
+const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#6D28D9]" : "text-[#B91C1C]");
 </script>
 
 <template>
-  <div class="bg-white border border-[#E4E8F0] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_4px_20px_rgba(138,152,184,0.06)] flex flex-col h-full">
-    <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-[#E4E8F0] flex items-center justify-between">
-      <div>
-        <h3 class="text-sm sm:text-base font-bold text-[#0B0F19]">Riwayat Transaksi Midtrans</h3>
-        <p class="text-xs text-[#5B6475] mt-0.5">Catatan pesanan dan pembayaran via Snap Gateway</p>
-      </div>
-      <span class="text-xs font-semibold text-[#5B6475] tabular-nums">{{ transactions.length }} transaksi terbaru</span>
-    </div>
-
-    <div class="overflow-x-auto flex-grow">
-      <table class="w-full text-left text-xs border-collapse" aria-label="Tabel riwayat transaksi pembayaran Midtrans">
-        <caption class="sr-only">Daftar transaksi pembayaran top-up kuota audit VeriText AI via Midtrans Snap</caption>
-        <thead class="bg-slate-50/70 text-[#5B6475] border-b border-[#E4E8F0] font-semibold uppercase tracking-wider">
-          <tr>
-            <th scope="col" class="py-3 px-4 sm:px-5">Order ID</th>
-            <th scope="col" class="py-3 px-4">Nominal (IDR)</th>
-            <th scope="col" class="py-3 px-4">Status</th>
-            <th scope="col" class="py-3 px-4 sm:px-5">Waktu</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-[#E4E8F0] text-slate-700">
-          <template v-if="loading">
-            <tr v-for="i in 4" :key="`skeleton-tx-${i}`" class="animate-pulse">
-              <td class="py-3.5 px-4 sm:px-5"><div class="h-4 bg-slate-100 rounded w-24" /></td>
-              <td class="py-3.5 px-4"><div class="h-4 bg-slate-100 rounded w-20" /></td>
-              <td class="py-3.5 px-4"><div class="h-4 bg-slate-100 rounded w-16" /></td>
-              <td class="py-3.5 px-4 sm:px-5"><div class="h-4 bg-slate-100 rounded w-28" /></td>
-            </tr>
-          </template>
-          <tr v-else-if="transactions.length === 0">
-            <td colspan="4" class="py-12 text-center">
-              <p class="text-sm font-semibold text-[#0B0F19]">Tidak ada transaksi pembayaran</p>
-              <p class="text-xs text-[#5B6475] mt-1">Belum ada riwayat transaksi Midtrans yang tercatat di sistem.</p>
-            </td>
-          </tr>
-          <tr v-for="tx in transactions" :key="tx.order_id || tx.id" class="hover:bg-slate-50/80 transition-colors duration-150">
-            <td class="py-3 px-4 sm:px-5 font-mono font-medium text-[#0B0F19]">{{ tx.order_id || "-" }}</td>
-            <td class="py-3 px-4 font-semibold text-[#0B0F19] tabular-nums">{{ formatCurrency(tx.gross_amount) }}</td>
-            <td class="py-3 px-4">
-              <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-bold border uppercase tracking-wider', getStatusBadgeClass(tx.status)]">
-                {{ tx.status?.toUpperCase() || "UNKNOWN" }}
-              </span>
-            </td>
-            <td class="py-3 px-4 sm:px-5 font-mono text-[#5B6475] tabular-nums">{{ formatDate(tx.paid_at || tx.created_at) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <section class="h-full rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="trx-judul" :aria-busy="loading">
+    <h2 id="trx-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Transaksi terbaru</h2>
+    <p v-if="!loading && transactions.length === 0" class="py-12 text-center text-[15px] text-[#5E5A6B]">Belum ada transaksi.</p>
+    <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">
+      <li v-for="t in transactions" :key="t.order_id" class="flex items-center justify-between gap-4 py-4">
+        <div class="min-w-0">
+          <p class="truncate text-[15px] font-semibold text-[#14111C]">{{ t.order_id }}</p>
+          <p class="text-[13px] text-[#5E5A6B]">{{ date(t.paid_at || t.created_at) }}</p>
+        </div>
+        <div class="flex-shrink-0 text-right">
+          <p class="text-[16px] font-semibold tabular-nums text-[#14111C]">{{ rupiah(t.gross_amount) }}</p>
+          <p class="text-[13px] font-medium" :class="tone(t.status)">{{ label(t.status) }}</p>
+        </div>
+      </li>
+    </ul>
+  </section>
 </template>
