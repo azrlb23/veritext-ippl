@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const links = [
-  { name: "Dashboard Pengujian", to: "/dashboard" },
-  { name: "Paket Kuota Token", to: "/billing" },
+  { name: "Ringkasan", to: "/dashboard" },
+  { name: "Token", to: "/billing" },
   { name: "Verifikasi Sertifikat", to: "/verify" },
 ];
 </script>

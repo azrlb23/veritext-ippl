@@ -56,6 +56,8 @@ async function handleApply(text: string) {
   }
 }
 
+const chatSessionId = ref("");
+
 async function handleSend() {
   const prompt = chatInput.value.trim();
   if (!prompt || isSendingChat.value) return;
@@ -63,7 +65,12 @@ async function handleSend() {
   messages.value.push({ role: "USER", content: prompt });
   isSendingChat.value = true;
   try {
-    const res = await chatService.sendMessage(props.documentId, prompt, props.selectedSentence?.sentence_id);
+    const res = await chatService.sendMessage(prompt, {
+      documentIds: [props.documentId],
+      sessionId: chatSessionId.value || undefined,
+      sentenceId: props.selectedSentence?.sentence_id,
+    });
+    chatSessionId.value = res.session_id;
     messages.value.push({ role: "ASSISTANT", content: res.content });
   } catch (err: any) {
     const det = err?.response?.data?.detail || err?.message || "";

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 interface LinkItem { name: string; to: string }
-defineProps<{ links: LinkItem[]; isActive: (to: string) => boolean; isGuest: boolean; isAdmin: boolean; name: string; balance: number }>();
+defineProps<{ links: LinkItem[]; extraLinks?: LinkItem[]; isActive: (to: string) => boolean; isGuest: boolean; isAdmin: boolean; name: string; balance: number }>();
 defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
 </script>
 
@@ -8,7 +8,7 @@ defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
   <div id="menu-navigasi" class="absolute inset-x-0 top-full mt-2 rounded-[30px] bg-white/90 p-3 shadow-float backdrop-blur-2xl">
     <nav class="flex flex-col gap-1" aria-label="Navigasi utama">
       <router-link
-        v-for="item in links"
+        v-for="item in [...links, ...(extraLinks ?? [])]"
         :key="item.to"
         :to="item.to"
         :aria-current="isActive(item.to) ? 'page' : undefined"

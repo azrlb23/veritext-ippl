@@ -34,6 +34,22 @@ export interface ChatMessageResponseData {
   ai_chat_allowance_remaining: number;
 }
 
+export interface ChatSessionItem {
+  id: string;
+  title: string;
+  document_ids: string[];
+  last_message: string | null;
+  message_count: number;
+  updated_at: string;
+}
+
+export interface ChatHistoryItem {
+  id: string;
+  role: "USER" | "ASSISTANT";
+  content: string;
+  created_at: string;
+}
+
 export const chatService = {
   async paraphrase(sentenceId: string, mode: "SENTENCE" | "PARAGRAPH" | "FULL_PAGE" = "SENTENCE") {
     const res = await apiClient.post<{ data: ParaphraseResponseData }>("/chat/paraphrase", {
@@ -51,12 +67,27 @@ export const chatService = {
     return res.data.data;
   },
 
-  async sendMessage(documentId: string, prompt: string, sentenceId?: string) {
+  async sendMessage(prompt: string, opts: { documentIds?: string[]; sessionId?: string; sentenceId?: string } = {}) {
     const res = await apiClient.post<{ data: ChatMessageResponseData }>("/chat/message", {
-      document_id: documentId,
       prompt,
-      sentence_id: sentenceId || undefined,
+      document_ids: opts.documentIds ?? [],
+      session_id: opts.sessionId || undefined,
+      sentence_id: opts.sentenceId || undefined,
     });
     return res.data.data;
+  },
+
+  async listSessions() {
+    const res = await apiClient.get<{ data: ChatSessionItem[] }>("/chat/sessions");
+    return res.data.data;
+  },
+
+  async getMessages(sessionId: string) {
+    const res = await apiClient.get<{ data: ChatHistoryItem[] }>(`/chat/sessions/${sessionId}/messages`);
+    return res.data.data;
+  },
+
+  async deleteSession(sessionId: string) {
+    await apiClient.delete(`/chat/sessions/${sessionId}`);
   },
 };

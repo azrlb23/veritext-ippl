@@ -80,7 +80,7 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
 - [x] **T8.2**: Biaya token = `min(5, ceil(kata / 2500))` (`token_pricing.py`, `upload_charging.py`, `word_counter.py`), batas FREE 2.500 kata (402), `POST /documents/estimate`, batas berkas 15 MB, modal sambutan Violet Kaca.
   - *Verification*: `cd backend && ./venv/bin/pytest -q` (253 passed); `cd frontend && npm run build && node src/tests/navigation.test.mjs`
 - [x] **T8.3 (Opsi B, skema disetujui)**: Asisten AI dengan konteks dokumen. Migrasi Alembic: `chat_sessions.document_id` menjadi opsional dan tabel relasi `chat_session_documents`; endpoint daftar sesi, riwayat pesan, dan kirim pesan dengan `document_ids`; konteks diambil dari kalimat paling relevan (MiniLM) lalu masuk ke prompt. Perbarui `DATABASE_SCHEMA.md` dan `API_CONTRACT.md`.
-- [ ] **T8.4**: Halaman `/asisten`, `/riwayat`, `/akun` (profil, ganti kata sandi, hapus akun), perampingan `/dashboard` menjadi Ringkasan, `/billing` menjadi Token.
+- [ ] **T8.4**: Halaman `/asisten`, `/riwayat`, `/akun` selesai (2026-11-08, diverifikasi di 1440/768/390). Sisa: perampingan `/dashboard` menjadi Ringkasan, `/billing` menjadi Token.
 - [ ] **T8.5**: Rapikan `audits/:id` (ruang kerja), `/admin`, dan komponen lama yang masih bergaya aurora biru.
 - [x] **T8.6 (celah kontrak)**: `DOC_003` (naskah di bawah 50 kata ditolak, 422) tercantum di kontrak tetapi belum diimplementasikan.
 

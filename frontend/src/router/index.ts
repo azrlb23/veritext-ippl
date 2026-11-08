@@ -13,6 +13,9 @@ import OAuthCallbackView from "../views/OAuthCallbackView.vue";
 import OnboardingView from "../views/OnboardingView.vue";
 import BillingView from "../views/BillingView.vue";
 import PeriksaView from "../views/PeriksaView.vue";
+import RiwayatView from "../views/RiwayatView.vue";
+import AkunView from "../views/AkunView.vue";
+import AsistenView from "../views/AsistenView.vue";
 import VerifyView from "../views/VerifyView.vue";
 import AdminView from "../views/AdminView.vue";
 
@@ -31,6 +34,9 @@ const routes: RouteRecordRaw[] = [
   { path: "/", name: "landing", component: LandingView, meta: { title: "VeriText AI - Sistem Deteksi Plagiarisme Hybrid", backdrop: "home" } },
   { path: "/dashboard", name: "dashboard", component: DashboardView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Dashboard Pengujian - VeriText AI" } },
   { path: "/periksa", name: "periksa", component: PeriksaView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Periksa Naskah - VeriText AI" } },
+  { path: "/riwayat", name: "riwayat", component: RiwayatView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Riwayat - VeriText AI" } },
+  { path: "/akun", name: "akun", component: AkunView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Akun - VeriText AI" } },
+  { path: "/asisten", name: "asisten", component: AsistenView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Asisten AI - VeriText AI" } },
   { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Detail Laporan Audit - VeriText AI" } },
   { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Masuk Akun - VeriText AI" } },
   { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Daftar Akun Baru - VeriText AI" } },

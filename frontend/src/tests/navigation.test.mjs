@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { getSegmentedNavLinks, evaluateNavigationGuard, getHomeRouteForRole } from "../utils/navigation.ts";
+import { getSegmentedNavLinks, getAccountMenuLinks, evaluateNavigationGuard, getHomeRouteForRole } from "../utils/navigation.ts";
 
 console.log("[TEST] Verifikasi Segmentasi Hak Akses & Navigasi 3-Role SaaS Model...");
 
@@ -39,7 +39,8 @@ assert.ok(!guestLinks.some((l) => ["Ringkasan", "Dashboard", "Periksa naskah", "
 for (const role of ["FREE", "PREMIUM"]) {
   const links = getSegmentedNavLinks(true, role);
   const names = links.map((l) => l.name);
-  assert.deepEqual(names, ["Ringkasan", "Periksa naskah", "Token", "Verifikasi QR"]);
+  assert.deepEqual(names, ["Ringkasan", "Periksa naskah", "Riwayat", "Asisten AI", "Token"]);
+  assert.deepEqual(getAccountMenuLinks(role).map((l) => l.name), ["Akun", "Verifikasi QR"]);
   assert.ok(!names.includes("Bank Korpus"));
   assert.ok(!names.includes("Admin"));
 }

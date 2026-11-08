@@ -55,6 +55,16 @@ export const authService = {
     return res.data;
   },
 
+  async updateProfile(fullName: string) {
+    const res = await apiClient.patch<{ data: User }>("/auth/profile", { full_name: fullName });
+    return res.data.data;
+  },
+
+  async changePassword(oldPassword: string, newPassword: string) {
+    const res = await apiClient.post("/auth/change-password", { old_password: oldPassword, new_password: newPassword });
+    return res.data;
+  },
+
   async deleteAccount() {
     const res = await apiClient.delete("/auth/me");
     return res.data;

@@ -62,7 +62,17 @@ export function getSegmentedNavLinks(isAuthenticated: boolean, role: string): Na
   return [
     { name: "Ringkasan", to: "/dashboard" },
     { name: "Periksa naskah", to: "/periksa" },
+    { name: "Riwayat", to: "/riwayat" },
+    { name: "Asisten AI", to: "/asisten" },
     { name: "Token", to: "/billing" },
+  ];
+}
+
+/** Tautan di menu avatar pengguna masuk (bukan ADMIN). */
+export function getAccountMenuLinks(role: string): NavLinkItem[] {
+  if (String(role || "").toUpperCase() === "ADMIN") return [{ name: "Verifikasi QR", to: "/verify" }];
+  return [
+    { name: "Akun", to: "/akun" },
     { name: "Verifikasi QR", to: "/verify" },
   ];
 }

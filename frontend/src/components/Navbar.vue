@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables/useNotification";
-import { getSegmentedNavLinks } from "../utils/navigation";
+import { getAccountMenuLinks, getSegmentedNavLinks } from "../utils/navigation";
 import NavAuthActions from "./navbar/NavAuthActions.vue";
 import NavLinks from "./navbar/NavLinks.vue";
 import NavMobileMenu from "./navbar/NavMobileMenu.vue";
@@ -19,6 +19,7 @@ const isScrolled = ref(false);
 const isGuest = computed(() => !authStore.isAuthenticated);
 const isAdmin = computed(() => authStore.isAuthenticated && (authStore.role === "ADMIN" || Boolean(authStore.isAdmin)));
 const navLinks = computed(() => getSegmentedNavLinks(authStore.isAuthenticated, authStore.role));
+const menuLinks = computed(() => getAccountMenuLinks(authStore.role));
 const displayName = computed(() => authStore.user?.full_name || "Pengguna");
 const balance = computed(() => Number(authStore.tokenBalance) || 0);
 
@@ -75,7 +76,7 @@ onBeforeUnmount(() => {
         </router-link>
 
         <NavLinks class="hidden lg:flex" :links="navLinks" :is-active="isItemActive" />
-        <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" @logout="handleLogout" />
+        <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" :menu-links="menuLinks" @logout="handleLogout" />
 
         <div class="flex items-center gap-1.5 lg:hidden">
           <span v-if="!isGuest && !isAdmin" class="inline-flex h-9 items-center rounded-full bg-[#F3EEFA] px-3.5 text-[12.5px] font-semibold tabular-nums text-[#6D28D9]">
@@ -113,6 +114,7 @@ onBeforeUnmount(() => {
           v-if="isMenuOpen"
           class="lg:hidden"
           :links="navLinks"
+          :extra-links="isGuest ? [] : menuLinks"
           :is-active="isItemActive"
           :is-guest="isGuest"
           :is-admin="isAdmin"

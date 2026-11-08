@@ -23,7 +23,7 @@ async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ON
     await documentService.upload(payload.file, payload.depth);
     showNotification(`Naskah "${payload.file.name}" masuk antrean.`, "success");
     await authStore.fetchProfile();
-    router.push("/dashboard");
+    router.push("/riwayat");
   } catch (err: any) {
     showNotification(err?.response?.data?.detail || "Gagal mengunggah.", "error");
   } finally {
