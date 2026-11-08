@@ -81,7 +81,7 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
   - *Verification*: `cd backend && ./venv/bin/pytest -q` (253 passed); `cd frontend && npm run build && node src/tests/navigation.test.mjs`
 - [x] **T8.3 (Opsi B, skema disetujui)**: Asisten AI dengan konteks dokumen. Migrasi Alembic: `chat_sessions.document_id` menjadi opsional dan tabel relasi `chat_session_documents`; endpoint daftar sesi, riwayat pesan, dan kirim pesan dengan `document_ids`; konteks diambil dari kalimat paling relevan (MiniLM) lalu masuk ke prompt. Perbarui `DATABASE_SCHEMA.md` dan `API_CONTRACT.md`.
 - [x] **T8.4**: Halaman `/asisten`, `/riwayat`, `/akun` selesai (2026-11-08, diverifikasi di 1440/768/390). `/billing` menjadi Token selesai (harga mengikuti AGENTS.md, beli satuan didukung backend lewat `pkg_tokens`). `/dashboard` menjadi Ringkasan selesai (komponen dashboard lama dihapus).
-- [ ] **T8.5**: Rapikan `audits/:id` (ruang kerja), `/admin`, dan komponen lama yang masih bergaya aurora biru.
+- [ ] **T8.5**: `audits/:id` (ruang kerja) selesai; sisa `/admin` dan komponen lama bergaya aurora biru. Perbaikan: anotasi laporan kini membawa `sentence_id` (sebelumnya parafrase memakai UUID nol).
 - [x] **T8.6 (celah kontrak)**: `DOC_003` (naskah di bawah 50 kata ditolak, 422) tercantum di kontrak tetapi belum diimplementasikan.
 
 ## Phase 9: Pengamanan unggahan dan perombakan sisa halaman (diminta 2026-11-08)

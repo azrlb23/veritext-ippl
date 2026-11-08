@@ -103,6 +103,7 @@ Seluruh endpoint API VeriText AI wajib mengembalikan respons dalam format pembun
 
 | Method | Endpoint | Auth | Request Body | Response `data` | Deskripsi |
 |---|---|---|---|---|---|
+| `GET` | `/api/v1/reports/{id}` | Bearer JWT (pemilik atau `ADMIN`) | `None` | `{"id": "uuid", "audit_task_id": "uuid", "score_composite": 62.75, "heatmap_annotations": [{"start": 0, "end": 85, "color": "RED", "tier": "T1", "similarity": 0.41, "sentence_id": "uuid", "text_snippet": "str"}], "matched_sources": [...], "document_text": "str"}` | `{id}` boleh ID laporan atau ID tugas audit. Setiap anotasi menyertakan `sentence_id` (dicocokkan lewat rentang karakter) agar parafrase dapat menargetkan kalimat. |
 | `GET` | `/api/v1/reports/{id}/download` | Bearer JWT (`PREMIUM`) | `None` | Binary stream: `application/pdf` | Mengunduh Laporan Audit Resmi PDF beresolusi cetak berstempel digital dan Dynamic QR Code (`REP_001` jika diakses oleh `FREE`). |
 | `GET` | `/api/v1/reports/verify/{uuid}` | Publik | `None` | `{"valid": true, "certificate_uuid": "uuid", "document_title": "str", "author": "str", "audit_date": "datetime", "composite_score": 14.1}` | Portal validasi publik tanpa login untuk memverifikasi keaslian sertifikat via `certificate_uuid` (`REP_002` jika tidak ditemukan/dihapus). |
 

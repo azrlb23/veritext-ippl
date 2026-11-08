@@ -101,3 +101,18 @@ async def lookup_verification_data(verification_uuid: str, db) -> APIResponse[Au
             message="Sertifikat Terverifikasi Asli oleh Mesin Hybrid VeriText AI",
         ),
     )
+
+
+def attach_sentence_ids(annotations: list, sentences) -> list:
+    """Menambahkan sentence_id ke tiap anotasi berdasarkan rentang karakter agar parafrase dapat menargetkan kalimat."""
+    spans = sorted(((x.start_char, x.end_char, str(x.id)) for x in sentences), key=lambda t: t[0])
+    result = []
+    for anno in annotations:
+        item = dict(anno) if isinstance(anno, dict) else anno
+        if isinstance(item, dict) and not item.get("sentence_id"):
+            start = int(item.get("start", 0))
+            hit = next((sid for lo, hi, sid in spans if lo <= start < max(hi, lo + 1)), None)
+            if hit:
+                item["sentence_id"] = hit
+        result.append(item)
+    return result

@@ -37,7 +37,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/riwayat", name: "riwayat", component: RiwayatView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Riwayat - VeriText AI" } },
   { path: "/akun", name: "akun", component: AkunView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Akun - VeriText AI" } },
   { path: "/asisten", name: "asisten", component: AsistenView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Asisten AI - VeriText AI" } },
-  { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Detail Laporan Audit - VeriText AI" } },
+  { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Hasil Pemeriksaan - VeriText AI" } },
   { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Masuk Akun - VeriText AI" } },
   { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Daftar Akun Baru - VeriText AI" } },
   { path: "/forgot-password", name: "forgot-password", component: ForgotPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lupa Kata Sandi - VeriText AI" } },

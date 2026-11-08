@@ -78,7 +78,10 @@ const STAGE_LABELS: Record<string, string> = {
   LOADING_CORPUS_INDEX: "Membandingkan sumber",
   SAVING_AUDIT_REPORT: "Menyusun laporan",
 };
-export const stageLabel = (stage: string | null) => (stage ? STAGE_LABELS[stage] ?? "Memeriksa naskah" : "Dalam antrean");
+export const stageLabel = (stage: string | null) => {
+  if (!stage) return "Dalam antrean";
+  return STAGE_LABELS[stage] ?? (/[a-z]/.test(stage) ? stage : "Memeriksa naskah");
+};
 
 export function formatDate(iso: string): string {
   if (!iso) return "-";

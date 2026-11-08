@@ -14,6 +14,7 @@ from app.schemas.common import APIResponse
 from app.services.report_view_helper import (
     build_report_pdf_response,
     check_report_authorization,
+    attach_sentence_ids,
     lookup_verification_data,
 )
 
@@ -40,7 +41,10 @@ async def get_report(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
 
     check_report_authorization(report, current_user)
-    return APIResponse(message="Audit report retrieved", data=AuditReportResponse.model_validate(report))
+    data = AuditReportResponse.model_validate(report)
+    sentences = report.audit_task.sentences if report.audit_task else []
+    data.heatmap_annotations = attach_sentence_ids(data.heatmap_annotations, sentences)
+    return APIResponse(message="Audit report retrieved", data=data)
 
 
 @router.get("/reports/{report_id}/export-pdf")

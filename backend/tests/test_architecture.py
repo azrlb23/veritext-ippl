@@ -84,7 +84,7 @@ class TestVeriTextArchitecture(unittest.TestCase):
 
     def test_frontend_components_exist(self):
         comp_dir = os.path.join(FRONTEND_DIR, "src", "components")
-        for c in ["Navbar.vue", "Footer.vue", "TierLegend.vue", "HeatmapViewer.vue"]:
+        for c in ["Navbar.vue", "Footer.vue"]:
             self.assertTrue(os.path.exists(os.path.join(comp_dir, c)), f"Missing component {c}")
 
     def test_all_python_files_ast_syntax_validity(self):

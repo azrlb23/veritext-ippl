@@ -75,3 +75,14 @@ async def test_send_message_puts_document_context_into_llm_prompt():
     assert "KUTIPAN-RELEVAN" in sent_prompt and "Perbaiki metode saya" in sent_prompt
     assert res.data.session_id == session.id
     assert res.data.ai_trial_remaining == 2
+
+
+def test_attach_sentence_ids_matches_annotation_by_char_range():
+    from app.services.report_view_helper import attach_sentence_ids
+
+    first = SimpleNamespace(id=uuid.uuid4(), start_char=0, end_char=40)
+    second = SimpleNamespace(id=uuid.uuid4(), start_char=41, end_char=90)
+    out = attach_sentence_ids([{"start": 41, "end": 90}, {"start": 0, "end": 40}, {"start": 500, "end": 520}], [first, second])
+    assert out[0]["sentence_id"] == str(second.id)
+    assert out[1]["sentence_id"] == str(first.id)
+    assert "sentence_id" not in out[2]
