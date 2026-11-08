@@ -3,6 +3,7 @@ import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import Navbar from "./components/Navbar.vue";
 import Footer from "./components/Footer.vue";
+import LandingBackdrop from "./components/landing/LandingBackdrop.vue";
 import { ToastContainer, WelcomeModal } from "./components/common";
 import { useAuthStore } from "./stores/auth";
 
@@ -48,9 +49,11 @@ onMounted(() => {
   <div
     class="flex flex-col min-h-screen text-[#0B0F19] font-sans tracking-tight relative"
     :class="[
-      isStandalonePage || isLanding
+      isStandalonePage
         ? 'bg-white'
-        : 'bg-[linear-gradient(135deg,#E8F0FF_0%,#DDF4FF_55%,#EDE7FF_100%)]'
+        : isLanding
+          ? 'bg-[#F2F2F4]'
+          : 'bg-[linear-gradient(135deg,#E8F0FF_0%,#DDF4FF_55%,#EDE7FF_100%)]'
     ]"
   >
     <!-- Soft Ambient Aurora Radial Glows (GPU-accelerated with pointer-events-none) -->
@@ -70,6 +73,8 @@ onMounted(() => {
       />
     </div>
 
+    <LandingBackdrop v-if="isLanding" />
+
     <Navbar v-if="!isStandalonePage" />
     <main
       :class="[
@@ -80,7 +85,7 @@ onMounted(() => {
     >
       <router-view />
     </main>
-    <Footer v-if="!isStandalonePage" />
+    <Footer v-if="!isStandalonePage" class="relative z-10" />
     <ToastContainer />
     <WelcomeModal
       :is-open="isWelcomeOpen"

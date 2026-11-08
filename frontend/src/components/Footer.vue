@@ -1,73 +1,55 @@
 <script setup lang="ts">
-// Footer.vue - Sesuai spesifikasi build_landing.py:seg_footer() dan landing--default-idle.svg
+const links = [
+  { name: "Dashboard Pengujian", to: "/dashboard" },
+  { name: "Paket Kuota Token", to: "/billing" },
+  { name: "Verifikasi Sertifikat", to: "/verify" },
+];
 </script>
 
 <template>
-  <footer
-    class="w-full border-t border-[#E4E8F0] mt-16 sm:mt-24 select-none font-sans"
-    aria-label="Footer Resmi VeriText AI"
-  >
-    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-14 sm:pt-16 pb-12">
-      <!-- Grid 2 Kolom: Brand & Deskripsi (Kiri) vs Tautan Singkat (Kanan) -->
-      <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 lg:gap-16">
-        
-        <!-- Kolom Kiri: Brand dan Deskripsi Sistem (Sesuai SVG x=75.2) -->
-        <div class="max-w-2xl space-y-4">
-          <!-- Wordmark merek -->
+  <footer class="relative mt-16 w-full select-none overflow-hidden font-sans sm:mt-24" aria-label="Footer VeriText AI">
+    <div class="relative mx-auto max-w-[1240px] px-6 pt-8 sm:px-8">
+      <div class="flex flex-col gap-12 md:flex-row md:items-start md:justify-between">
+        <div class="max-w-md">
           <router-link
             to="/"
-            class="inline-block text-[22px] font-bold text-[#0B0F19] tracking-tight font-sans focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A73D9] rounded"
+            class="inline-block rounded text-[24px] font-semibold tracking-[-0.04em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
           >
-            VeriText AI
+            VeriText <span class="text-[#8A3FE0]">AI</span>
           </router-link>
-
-          <!-- Deskripsi Platform 3 Baris Sesuai Desain Resmi -->
-          <p class="text-[14.5px] text-[#5B6475] leading-relaxed font-normal font-sans">
+          <p class="mt-4 text-[15px] leading-[1.65] text-[#4B4757]">
             Platform audit orisinalitas naskah dengan pemeriksaan kata, makna, dan gaya tulisan.
           </p>
+          <router-link
+            to="/dashboard"
+            class="mt-6 inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5"
+          >
+            Mulai periksa gratis
+          </router-link>
         </div>
 
-        <!-- Kolom Kanan: Tautan Singkat (Sesuai SVG x=1075.6) -->
-        <div class="md:min-w-[200px] lg:min-w-[240px] space-y-3.5">
-          <h5 class="text-[14px] font-semibold uppercase tracking-[0.8px] text-[#0B0F19] font-sans">
-            TAUTAN SINGKAT
-          </h5>
-          <ul class="text-[15px] space-y-2.5 text-[#5B6475] font-sans">
-            <li>
+        <nav class="md:min-w-[220px]" aria-label="Tautan singkat">
+          <h5 class="text-[13px] font-medium text-[#5E5A6B]">Tautan singkat</h5>
+          <ul class="mt-4 space-y-3 text-[15px] text-[#14111C]">
+            <li v-for="l in links" :key="l.to">
               <router-link
-                to="/dashboard"
-                class="hover:text-[#1A73D9] transition-colors inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A73D9] rounded"
+                :to="l.to"
+                class="inline-block rounded transition-colors duration-200 hover:text-[#6D28D9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
               >
-                Dashboard Pengujian
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/billing"
-                class="hover:text-[#1A73D9] transition-colors inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A73D9] rounded"
-              >
-                Paket Kuota Token
-              </router-link>
-            </li>
-            <li>
-              <router-link
-                to="/verify"
-                class="hover:text-[#1A73D9] transition-colors inline-block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1A73D9] rounded"
-              >
-                Verifikasi Sertifikat
+                {{ l.name }}
               </router-link>
             </li>
           </ul>
-        </div>
-
+        </nav>
       </div>
 
-      <!-- Hairline Separator Bawah (Sesuai SVG y=4872.9) -->
-      <div class="border-t border-[#E4E8F0] mt-12 pt-6">
-        <p class="text-[13px] text-[#5B6475] font-normal font-sans">
-          &copy; 2026 Tim Pengembang VeriText AI. Seluruh hak dilindungi.
-        </p>
-      </div>
+      <p class="mt-14 text-[13px] text-[#5E5A6B]">&copy; 2026 Tim Pengembang VeriText AI. Seluruh hak dilindungi.</p>
+    </div>
+
+    <div class="pointer-events-none relative mt-6 h-[clamp(70px,13vw,190px)] overflow-hidden text-center" aria-hidden="true">
+      <span
+        class="block bg-gradient-to-b from-[#8A3FE0]/30 to-transparent bg-clip-text text-[clamp(90px,21vw,320px)] font-semibold leading-[0.9] tracking-[-0.06em] text-transparent"
+      >VeriText AI</span>
     </div>
   </footer>
 </template>

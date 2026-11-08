@@ -113,9 +113,9 @@ export default {
         "audyr-image": "12px",
       },
       boxShadow: {
-        float: "0 40px 70px -28px rgba(30,41,90,0.30), 0 16px 30px -14px rgba(30,41,90,0.16), 0 1px 3px rgba(30,41,90,0.06)",
-        lift: "0 18px 36px -14px rgba(30,41,90,0.22), 0 3px 8px rgba(30,41,90,0.06)",
-        "btn-dark": "0 16px 30px -10px rgba(11,15,25,0.50), 0 2px 5px rgba(11,15,25,0.22), inset 0 1px 0 rgba(255,255,255,0.16)",
+        float: "0 40px 70px -28px rgba(50,20,100,0.30), 0 16px 30px -14px rgba(50,20,100,0.16), 0 1px 3px rgba(50,20,100,0.06)",
+        lift: "0 18px 36px -14px rgba(50,20,100,0.22), 0 3px 8px rgba(50,20,100,0.06)",
+        "btn-dark": "0 16px 30px -10px rgba(20,17,28,0.50), 0 2px 5px rgba(20,17,28,0.22), inset 0 1px 0 rgba(255,255,255,0.16)",
         "steep-artifact": "0 0 0 1px rgba(4,23,43,0.05), 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
         "steep-subtle": "oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 4px 24px 0px",
         "audyr-subtle": "0 0 0 1px rgba(4,23,43,0.05), 0 20px 25px -5px rgba(0,0,0,0.06)",

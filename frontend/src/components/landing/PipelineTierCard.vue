@@ -23,13 +23,13 @@ const icons: Record<string, string> = {
     @click="$emit('select')"
     class="flex cursor-pointer flex-col justify-between rounded-[32px] p-8 transition-all duration-300 ease-out"
     :class="isActive
-      ? 'bg-gradient-to-br from-[#1A73D9] to-[#5B5BEA] text-white shadow-[0_30px_60px_-20px_rgba(60,70,220,0.55)] md:-translate-y-3'
-      : 'bg-white text-[#0B0F19] shadow-lift hover:-translate-y-1'"
+      ? 'bg-gradient-to-br from-[#7A2FD6] to-[#9B4FE6] text-white shadow-[0_30px_60px_-20px_rgba(122,47,214,0.5)] md:-translate-y-3'
+      : 'bg-white text-[#14111C] shadow-lift hover:-translate-y-1'"
   >
     <div>
       <div
         class="flex h-12 w-12 items-center justify-center rounded-[16px]"
-        :class="isActive ? 'bg-white/20 text-white' : 'bg-[#F1F4FB] text-[#0B0F19]'"
+        :class="isActive ? 'bg-white/20 text-white' : 'bg-[#F3EEFA] text-[#14111C]'"
       >
         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" :d="icons[tier.icon]" />
@@ -37,14 +37,14 @@ const icons: Record<string, string> = {
       </div>
 
       <h3 class="mt-7 text-[26px] font-semibold leading-[1.15] tracking-[-0.03em]">{{ tier.title }}</h3>
-      <p class="mt-3 text-[15px] leading-[1.65]" :class="isActive ? 'text-white/85' : 'text-[#4A5266]'">
+      <p class="mt-3 text-[15px] leading-[1.65]" :class="isActive ? 'text-white/85' : 'text-[#4B4757]'">
         {{ tier.description }}
       </p>
     </div>
 
     <div class="mt-9 flex items-baseline gap-2">
       <span class="text-[34px] font-semibold tracking-[-0.04em] tabular-nums">{{ tier.weight }}</span>
-      <span class="text-[13px]" :class="isActive ? 'text-white/80' : 'text-[#6B7385]'">dari skor akhir</span>
+      <span class="text-[13px]" :class="isActive ? 'text-white/80' : 'text-[#5E5A6B]'">dari skor akhir</span>
     </div>
   </div>
 </template>
