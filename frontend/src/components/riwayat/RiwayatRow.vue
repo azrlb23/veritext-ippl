@@ -44,7 +44,7 @@ const scoreTone = (s: number) => (s <= 20 ? "text-[#047857]" : s <= 40 ? "text-[
       <button
         v-else-if="task.status === 'SUCCESS'"
         type="button"
-        class="inline-flex h-11 cursor-pointer items-center rounded-full bg-white px-5 text-[14px] font-semibold text-[#14111C] shadow-lift transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        class="inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-5 text-[14px] font-semibold text-[#14111C] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
         @click="$emit('open', task.id)"
       >Buka laporan</button>
     </div>

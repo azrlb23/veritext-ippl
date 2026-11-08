@@ -77,7 +77,7 @@ class TestVeriTextArchitecture(unittest.TestCase):
     def test_frontend_views_exist(self):
         views_dir = os.path.join(FRONTEND_DIR, "src", "views")
         for v in [
-            "LandingView.vue", "DashboardView.vue", "AuditDetailView.vue", "LoginView.vue",
+            "LandingView.vue", "RingkasanView.vue", "AuditDetailView.vue", "LoginView.vue",
             "RegisterView.vue", "AdminView.vue", "TokenView.vue", "VerifyView.vue", "RiwayatView.vue", "AkunView.vue", "AsistenView.vue",
         ]:
             self.assertTrue(os.path.exists(os.path.join(views_dir, v)), f"Missing view {v}")

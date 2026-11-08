@@ -63,7 +63,7 @@ async function confirmCancel() {
         <h2 id="batal-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Batalkan pemeriksaan?</h2>
         <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Pemeriksaan dihentikan dan token Anda dikembalikan.</p>
         <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-6 text-[15px] font-semibold text-[#14111C] shadow-lift" @click="pendingCancel = null">Kembali</button>
+          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="pendingCancel = null">Kembali</button>
           <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark" @click="confirmCancel">Ya, batalkan</button>
         </div>
       </div>

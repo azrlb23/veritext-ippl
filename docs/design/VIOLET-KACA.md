@@ -68,4 +68,5 @@ Elemen interaktif memakai `cursor-pointer` dan cincin fokus `focus-visible:ring-
 | Periksa naskah (`/periksa`) | selesai (tahap 1 pemisahan dashboard) |
 | Riwayat (`/riwayat`), Akun (`/akun`), Asisten AI (`/asisten`) | selesai; navbar pengguna: Ringkasan, Periksa naskah, Riwayat, Asisten AI, Token; Akun dan Verifikasi QR ada di menu avatar |
 | Token (`/billing`) | selesai: saldo besar, tiga paket, beli satuan, riwayat pembelian |
-| Ringkasan (dashboard), ruang kerja audit, admin | belum |
+| Ringkasan (`/dashboard`) | selesai: saldo, tiga angka, pemeriksaan berjalan, tiga hasil terakhir |
+| Ruang kerja audit (`/audits/:id`), admin | belum |

@@ -16,7 +16,7 @@ defineEmits<{ (e: "close"): void; (e: "confirm"): void }>();
       </dl>
       <p class="mt-4 text-[14px] leading-relaxed text-[#5E5A6B]">Anda memilih metode bayar di langkah berikutnya. Token masuk otomatis setelah pembayaran berhasil.</p>
       <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-6 text-[15px] font-semibold text-[#14111C] shadow-lift" @click="$emit('close')">Batal</button>
+        <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="$emit('close')">Batal</button>
         <button type="button" :disabled="processing" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark disabled:opacity-40" @click="$emit('confirm')">{{ processing ? "Memproses..." : "Lanjut ke pembayaran" }}</button>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables/useNotification";
 import { evaluateNavigationGuard } from "../utils/navigation";
 import LandingView from "../views/LandingView.vue";
-import DashboardView from "../views/DashboardView.vue";
+import RingkasanView from "../views/RingkasanView.vue";
 import AuditDetailView from "../views/AuditDetailView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
@@ -32,7 +32,7 @@ declare module "vue-router" {
 
 const routes: RouteRecordRaw[] = [
   { path: "/", name: "landing", component: LandingView, meta: { title: "VeriText AI - Sistem Deteksi Plagiarisme Hybrid", backdrop: "home" } },
-  { path: "/dashboard", name: "dashboard", component: DashboardView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], title: "Dashboard Pengujian - VeriText AI" } },
+  { path: "/dashboard", name: "dashboard", component: RingkasanView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Ringkasan - VeriText AI" } },
   { path: "/periksa", name: "periksa", component: PeriksaView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Periksa Naskah - VeriText AI" } },
   { path: "/riwayat", name: "riwayat", component: RiwayatView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Riwayat - VeriText AI" } },
   { path: "/akun", name: "akun", component: AkunView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Akun - VeriText AI" } },
