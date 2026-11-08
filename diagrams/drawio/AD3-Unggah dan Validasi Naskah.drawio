@@ -1,0 +1,128 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dw_ad3" name="Aktivitas Unggah dan Validasi Naskah">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="910" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pool_AD3" value="Aktivitas Unggah dan Validasi Naskah" style="swimlane;html=1;childLayout=stackLayout;startSize=28;horizontal=0;horizontalStack=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="1080" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_0" value="Pengguna (Free / Premium)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_1" value="Sistem VeriText AI (Frontend &amp; Gateway)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="420" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_2" value="Storage &amp; Preprocessor Engine" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="780" y="30" width="360" height="850" as="geometry" />
+        </mxCell>
+        <mxCell id="n_start" value="" style="ellipse;shape=startState;fillColor=#000000;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="58" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_upload" value="Unggah Berkas (.pdf/.docx/.txt)&#xa;atau Tempel Teks di Workspace" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="115.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_val_format" value="Validasi Ekstensi, Ukuran (&lt;=15MB)&#xa;&amp; Magic MIME-Type" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="205.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_cek_format" value="Format &amp;&#xa;Ukuran Valid?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="545.0" y="294" width="110" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="n_err_format" value="Tolak &amp; Tampilkan Notifikasi:&#xa;&#x27;Format Berkas Tidak Didukung / &gt;15MB&#x27;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="385.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_format_err" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="468" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_ekstrak_teks" value="Ekstraksi Teks Bersih &amp;&#xa;Hitung Jumlah Kata (word_count)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="385.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_cek_role_cap" value="Role Free &amp;&#xa;Kata &gt; 2.500?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=9.5;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="545.0" y="484" width="110" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="n_err_free_cap" value="Tampilkan Modal Paywall:&#xa;&#x27;Free User Maksimal 2.500 Kata&#x27;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="575.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_free_cap" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="658" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_hitung_token" value="Kalkulasi Biaya Token Konsumsi:&#xa;Biaya = min(5, ceil(kata / 2.500))" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="595.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_konfirmasi" value="Tampilkan Pratinjau Naskah &amp;&#xa;Konfirmasi Pemotongan Token" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="705.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_upload" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="808" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e_0" source="n_start" target="n_upload" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_1" source="n_upload" target="n_val_format" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="185.0" />
+              <mxPoint x="600.0" y="185.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_2" source="n_val_format" target="n_cek_format" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_3" value="[Tidak Valid]" source="n_cek_format" target="n_err_format" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_4" source="n_err_format" target="n_end_format_err" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_5" value="[Valid]" source="n_cek_format" target="n_ekstrak_teks" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_6" source="n_ekstrak_teks" target="n_cek_role_cap" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_7" value="[Ya, Overlimit]" source="n_cek_role_cap" target="n_err_free_cap" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_8" source="n_err_free_cap" target="n_end_free_cap" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_9" value="[Lolos / Premium]" source="n_cek_role_cap" target="n_hitung_token" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_10" source="n_hitung_token" target="n_konfirmasi" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_11" source="n_konfirmasi" target="n_end_upload" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

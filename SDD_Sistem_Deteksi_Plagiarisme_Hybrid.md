@@ -1,1198 +1,931 @@
 Software Design Document
 for
-VeriText
-Prepared by Mochammad Azriel Albian Putra
-11241045
-Informatika
+VeriText AI
+Sistem Deteksi Plagiarisme Cerdas Berbasis Arsitektur Hybrid Lexical & Semantic AI Engine
+
+Version 1.0 approved
+Prepared by
+11241045 - Mochammad Azriel Albian Putra
+Program Studi Informatika
+Institut Teknologi Kalimantan
 Juni 2026
 
-1
+Table of Contents
 Daftar Isi
-Daftar Isi................................................................................................................................... 1
-Abstrak......................................................................................................................................3
-BAB I
-PENDAHULUAN.....................................................................................................................4
-1.1. Tujuan Software Design Document.............................................................................. 4
-1.2. Ruang Lingkup..............................................................................................................5
-1.3. Gambaran Dokumen..................................................................................................... 5
-1.4. Referensi........................................................................................................................6
-BAB II........................................................................................................................................9
-TINJAUAN SISTEM............................................................................................................... 9
-1. Deskripsi Umum.............................................................................................................. 9
-2.2 Fungsi........................................................................................................................... 10
-2.3 Konteks dan Latar Belakang........................................................................................ 11
-BAB III
-RANCANGAN LINGKUNGAN APLIKASI...................................................................... 13
-3.1 Lingkungan Perangkat Keras....................................................................................... 13
-3.2 Lingkungan Perangkat Lunak...................................................................................... 13
-3.2.1 Stack Teknologi Frontend................................................................................................ 13
-3.2.2 Stack Teknologi Backend.................................................................................................14
-3.2.3 Infrastruktur..................................................................................................................... 15
-3.3 Basis Data...................................................................................................................15
-3.4 Component Diagram.................................................................................................. 15
-3.5 Communication Interface...........................................................................................20
-3.6 Desain Antarmuka (UI/UX)........................................................................................ 20
-BAB IV
-PERANCANGAN UML........................................................................................................ 21
-4.1. Class Diagram............................................................................................................. 21
-4.1 Class Diagram.....................................................................................................................21
-4.2 Data Flow Diagram (DFD)................................................................................................. 22
-4.3 Activity Diagram (Breakdown Per Use Case).................................................................... 26
-4.4 Sequence Diagram.............................................................................................................. 65
-Daftar Pustaka..................................................................................................................................81
-Revision History..............................................................................................................................82
-
-2
 Abstrak
-Dokumen Software Design Document (SDD) ini merupakan representasi rancangan
-teknis yang komprehensif, terstruktur, dan menyeluruh dari sistem perangkat lunak
-VeriText AI — sebuah platform deteksi plagiarisme cerdas berbasis arsitektur hybrid
-multi-tier yang menggabungkan pendekatan lexical fingerprinting dengan kecerdasan
-buatan semantik. Dokumen ini ditulis sebagai tindak lanjut formal dan turunan langsung
-dari Software Requirements Specification (SRS) VeriText AI versi 1.0 yang telah
-disetujui, dengan tujuan utama mentransformasikan seluruh kebutuhan fungsional dan
-non-fungsional yang telah didefinisikan di SRS ke dalam rancangan implementasi teknis
-yang konkret, dapat dieksekusi, dan siap dijadikan acuan pengembangan oleh tim insinyur
-perangkat lunak.
-Sistem VeriText AI dirancang berdasarkan filosofi arsitektur Clean Architecture (CA)
-berlapis yang memisahkan secara tegas tanggung jawab antara lapisan presentasi (vue.js
-14), lapisan logika bisnis (FastAPI + Pydantic v2), lapisan pemrosesan asinkron (Celery
-Worker + Redis Broker), dan lapisan persistensi data (PostgreSQL 16 dengan ekstensi
-pgvector). Rancangan ini memungkinkan setiap komponen sistem untuk dikembangkan,
-diuji, dan diskalakan secara independen tanpa mengorbankan kohesi fungsional sistem
-secara keseluruhan. Pemisahan lapisan yang tegas ini merupakan implementasi nyata dari
-prinsip Separation of Concerns (SoC) dan Dependency Inversion Principle (DIP) yang
-mendukung maintainability jangka panjang sistem.
-Inti dari kemampuan deteksi VeriText AI terletak pada desain pipa pemrosesan hybrid
-empat tingkat (4-Tier Detection Pipeline) yang diorkestrasikan secara asinkron oleh
-worker Celery. Tier 1 mengimplementasikan algoritma Winnowing dengan parameter
-k-gram k=5 dan sliding window w=4 menggunakan Rabin-Karp Rolling Hash untuk
-mendeteksi penjiplakan leksikal verbatim secara deterministik dengan kompleksitas O(N).
-Tier 2 memanfaatkan model Sentence Transformers berbasis arsitektur BERT (model
-paraphrase-multilingual-MiniLM-L12-v2) untuk menghasilkan representasi vektor padat
-(dense embeddings) 384-dimensi per kalimat, kemudian mengeksekusi pencarian tetangga
-terdekat perkiraan (Approximate Nearest Neighbor - ANN) menggunakan struktur indeks
-Hierarchical Navigable Small World (HNSW) pada PostgreSQL pgvector guna
-mengungkap parafrasa cerdas yang lolos dari deteksi leksikal. Tier 3 menghitung metrik
-statistik stilometri berupa Burstiness Score (variasi panjang kalimat) dan Type-Token
-Ratio (TTR) untuk mengidentifikasi pola teks yang terindikasi dihasilkan oleh model
-bahasa besar (Large Language Model / LLM). Tier 4 mengagregasi skor terbobot dari
-ketiga tier dengan bobot 50:35:15 menjadi satu nilai Overall Composite Similarity Index
-yang dijadikan landasan anotasi visual Interactive Heatmap tiga warna.
-Dari perspektif rancangan antarmuka, SDD ini mendefinisikan sistem desain visual
-yang kohesif berbasis komponen shadcn/ui dengan skema warna semantik yang
-memvisualisasikan tier pelanggaran: merah (#EF4444) untuk temuan leksikal, oranye
-(#F97316) untuk temuan semantik, dan kuning (#EAB308) untuk anomali AI. Model
+BAB I PENDAHULUAN
+1.1. Tujuan Software Design Document
+1.2. Ruang Lingkup
+1.3. Gambaran Dokumen
+1.4. Referensi
+BAB II TINJAUAN SISTEM
+2.1. Deskripsi Umum
+2.2. Fungsi Produk
+2.3. Konteks dan Latar Belakang
+BAB III RANCANGAN LINGKUNGAN APLIKASI
+3.1. Lingkungan Perangkat Keras
+3.2. Lingkungan Perangkat Lunak
+  3.2.1. Stack Teknologi Frontend
+  3.2.2. Stack Teknologi Backend
+  3.2.3. Infrastruktur
+3.3. Basis Data
+3.4. Component Diagram
+  3.4.1. Modul Autentikasi dan Manajemen Sesi (AuthService)
+  3.4.2. Modul Pra-pemrosesan Dokumen (PreprocessorEngine)
+  3.4.3. Modul Pipeline Deteksi Tiga Tahap & Akuisisi Korpus (HybridAuditOrchestrator)
+  3.4.4. Modul Manajemen Token dan Pembayaran (BillingService)
+  3.4.5. Modul Pembuatan Laporan dan Sertifikasi (ReportGeneratorService)
+  3.4.6. Modul AI Chatbot Asisten Naskah dan Parafrase Instan (AcademicAssistantService)
+  3.4.7. Modul Monitoring Layanan Read-Only Admin (AdminMonitoringService)
+3.5. Communication Interface
+  3.5.1. Standar REST API
+  3.5.2. Katalog Endpoint API
+    3.5.2.1. Modul Autentikasi dan Profil Akun
+    3.5.2.2. Modul Dokumen dan Pra-pemrosesan
+    3.5.2.3. Modul Pipeline Audit Deteksi Plagiarisme
+    3.5.2.4. Modul AI Chatbot Asisten dan Parafrase Instan
+    3.5.2.5. Modul Pelaporan, Sertifikasi dan Verifikasi Publik
+    3.5.2.6. Modul Monetisasi Billing dan Pemantauan Admin
+  3.5.3. Protokol Keamanan Webhook Midtrans
+  3.5.4. Mekanisme Smart Polling
+  3.5.5. Katalog Kode Error Terpusat
+3.6. Desain Antarmuka (UI/UX)
+BAB IV PERANCANGAN UML
+4.1. Class Diagram
+4.2. Data Flow Diagram (DFD)
+  4.2.1. DFD Level 0 – Context Diagram
+  4.2.2. DFD Level 1 – System Overview
+  4.2.3. DFD Level 2 – Deteksi Plagiarisme Hybrid dan AI Chatbot
+4.3. Activity Diagram (Breakdown Per Use Case AD1 s/d AD11)
+4.4. Sequence Diagram (Breakdown Per Use Case SD1 s/d SD11)
+Daftar Pustaka
+Revision History
 
-3
-bisnis freemium diimplementasikan melalui integrasi pembayaran Midtrans Snap dalam
-mode sandbox, dengan mekanisme penanganan webhook berbasis validasi signature
-SHA-512 yang aman. Aspek kepatuhan terhadap Undang-Undang Perlindungan Data
-Pribadi (UU PDP) No. 27/2022 diwujudkan melalui fitur penghapusan permanen dokumen
-beserta seluruh representasi vektornya (hard delete cascade) dan pencatatan jejak audit
-(audit trail) yang append-only dan immutable.
-Dokumen ini memuat secara lengkap: desain rancangan lingkungan perangkat keras
-dan perangkat lunak; skema basis data relasional dalam format DDL SQL; strategi
-pengindeksan termasuk parameter HNSW; rancangan antarmuka pengguna untuk seluruh
-12 halaman utama; class diagram UML lengkap; Data Flow Diagram (DFD) Level 0, 1,
-dan 2; serta 42 Activity Diagram dan 18 Sequence Diagram yang masing-masing
-memodelkan setiap use case yang telah ditetapkan dalam SRS. Keseluruhan dokumen ini
-diharapkan menjadi rujukan teknis tunggal (single source of truth) yang komprehensif bagi
-seluruh pemangku kepentingan teknis yang terlibat dalam siklus pengembangan sistem
-VeriText AI.
+---
 
-4
+Abstrak
+Dokumen Software Design Document (SDD) ini merupakan representasi rancangan teknis yang komprehensif, terstruktur, dan menyeluruh dari sistem perangkat lunak VeriText AI — platform deteksi plagiarisme cerdas berbasis arsitektur hybrid multi-tier yang menggabungkan pendekatan deterministik lexical fingerprinting dengan kecerdasan buatan semantik. Dokumen ini disusun sebagai turunan langsung dari Software Requirements Specification (SRS) VeriText AI versi 1.0, dengan tujuan mentransformasikan seluruh kebutuhan fungsional dan non-fungsional ke dalam rancangan implementasi teknis konkret yang siap dieksekusi oleh tim pengembang perangkat lunak.
+
+Sistem VeriText AI dibangun di atas Clean Architecture berlapis yang memisahkan secara tegas tanggung jawab antara lapisan presentasi (Vue 3.5 Composition API + Vite 6 + TypeScript 5.7 + Pinia 2.3 + Tailwind CSS 3.4), lapisan logika bisnis dan gateway API (FastAPI 0.115 + Pydantic v2 + SQLAlchemy 2.0 Async), lapisan pemrosesan asinkron (Celery 5.4 + Redis 7.2 Broker), dan lapisan persistensi data terpadu (PostgreSQL 16 dengan ekstensi pgvector berindeks HNSW). Pemisahan lapisan ini menjamin prinsip Separation of Concerns (SoC) dan Dependency Inversion Principle (DIP).
+
+Inti komputasi VeriText AI bertumpu pada pipa pemrosesan 3-Step Hybrid AI Detection Pipeline: Step 1 Leksikal menggunakan algoritma Winnowing Rabin-Karp Rolling Hash (k-gram=5, window=4) untuk mendeteksi penjiplakan verbatim (Tag MERAH); Step 2 Semantik memanfaatkan Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2 (vektor 384-dimensi) yang diindeks dengan HNSW Cosine Distance (<=>) dipadukan dengan re-ranker spesialis bahasa Indonesia LazarusNLP/all-indobert-base-v4 untuk mendeteksi parafrase cerdas (Tag ORANYE); Step 3 Stilometri dan AI Judge menganalisis rasio Burstiness Goh & Barabasi dan Type-Token Ratio (TTR) yang disaring oleh Dual-Engine LLM Gateway (Google Gemini 2.5 Flash dengan failover otomatis ke DeepSeek v4.1 Flash via 9Router) guna mendeteksi anomali teks mesin (Tag KUNING). Agregasi skor komposit akhir dihitung dengan formula terbobot 0.50 Leksikal + 0.35 Semantik + 0.15 Stilometri.
+
+Selain mesin deteksi, sistem dilengkapi modul interaktif Split-Screen Studio Workspace yang menyatukan Interactive Heatmap di kolom kiri dengan AI Chatbot Asisten Naskah & Parafrase Instan 3-Mode (Per Kalimat, Per Paragraf, Seluruh Halaman) di panel kanan yang dikunci oleh Academic Assistant Guardrail. Model operasional bersifat Self-Service SaaS dengan 3 Peran Pengguna: Free User (kuota 5 token dan 3x trial AI), Premium User (akses naskah panjang dengan token cap 5 token per dokumen, unduh PDF resmi ber-QR Code, dan akses penuh AI), serta Admin yang 100% Read-Only (monitoring telemetri dan log transaksi tanpa mutasi data). Monetisasi token dikelola via Midtrans Snap dengan auto-upgrade instan status pengguna saat webhook settlement terverifikasi. Kepatuhan privasi UU Perlindungan Data Pribadi (UU PDP No. 27/2022) dijamin melalui mekanisme hard-delete cascade dan zero auto-ingestion ke korpus publik.
+
+Dokumen ini memuat secara lengkap: spesifikasi perangkat keras dan lunak; skema 13 tabel basis data relasional DDL SQL beserta parameter HNSW; diagram komponen dan antarmuka; spesifikasi REST API dan webhook; desain UI/UX; Class Diagram domain; Data Flow Diagram (DFD Level 0, 1, dan 2); serta 11 Activity Diagram (AD1–AD11) dan 11 Sequence Diagram (SD1–SD11) yang berkorespondensi satu-ke-satu dengan 11 Use Case pada dokumen SRS VeriText AI. Dokumen ini menjadi rujukan teknis tunggal (single source of truth) yang bebas dari elemen dekoratif non-akademik sesuai standar akademik tinggi.
+
+
 BAB I
 PENDAHULUAN
+
 1.1. Tujuan Software Design Document
-Dokumen Software Design Document (SDD) ini disusun dengan tujuan primer untuk
-mentransformasikan seluruh spesifikasi kebutuhan yang telah didefinisikan secara formal
-di dalam Software Requirements Specification (SRS) VeriText AI v1.0 ke dalam bentuk
-cetak biru teknis (technical blueprint) yang dapat langsung dijadikan acuan implementasi
-oleh tim pengembang perangkat lunak. Berbeda dengan SRS yang berkonsentrasi pada
-pertanyaan "apa yang harus dilakukan oleh sistem" (what), SDD secara eksklusif
-menjawab pertanyaan "bagaimana sistem akan diimplementasikan" (how) dengan tingkat
-kerincian yang memadai untuk memungkinkan pengembangan kode tanpa ambiguitas
-arsitekturalnya. Setiap keputusan desain yang terdokumentasikan dalam SDD ini didorong
-oleh kebutuhan fungsional dan non-fungsional yang sudah tervalidasi dalam SRS sebagai
-justifikasi teknisnya.
-Tujuan sekunder dokumen ini adalah menjadi media komunikasi teknis yang efektif
-antar seluruh peran yang terlibat dalam siklus hidup pengembangan VeriText AI. Bagi tim
-Backend Engineer dan AI Engineer, SDD menyediakan spesifikasi teknis terperinci
-mengenai desain API endpoint, logika orkestrasi Celery worker, parameter algoritma
-Winnowing, strategi pengindeksan HNSW, dan skema basis data relasional maupun
-vektor. Bagi tim Frontend Engineer, SDD mendefinisikan kontrak antarmuka (API
-interface), spesifikasi komponen visual halaman demi halaman, sistem desain warna,
-tipografi, serta panduan responsivitas dan aksesibilitas. Bagi QA Engineer, SDD
-menyediakan model alur kerja (activity diagram) dan diagram interaksi (sequence
-diagram) untuk setiap use case yang menjadi dasar penyusunan skenario pengujian yang
-komprehensif, baik pengujian unit, pengujian integrasi, maupun pengujian End-to-End
-(E2E).
-Tujuan akademis dokumen ini adalah memenuhi persyaratan penilaian mata kuliah
-Implementasi Proses Perangkat Lunak (IPPL) dengan mendemonstrasikan penerapan
-metodologi rekayasa perangkat lunak terstruktur, khususnya dalam aspek perancangan
-teknis sistem. SDD ini dirancang agar sesuai dengan standar dokumentasi desain
-perangkat lunak yang diakui secara internasional, merujuk pada panduan IEEE Std
-1016-2009 (Software Design Descriptions) serta IEEE Std 42010:2011 (Architecture
-Description). Dengan demikian, dokumen ini tidak hanya memiliki nilai praktis sebagai
-acuan implementasi, tetapi juga nilai akademis sebagai demonstrasi kompetensi
-perancangan sistem yang terstruktur dan metodologis. Seluruh diagram yang disertakan
-menggunakan notasi UML 2.5 yang dirender menggunakan sintaks Mermaid untuk
-memastikan keterbacaan dan reproduktibilitas diagram secara digital.
+Dokumen Software Design Document (SDD) ini disusun dengan tujuan primer untuk mentransformasikan seluruh spesifikasi kebutuhan perangkat lunak yang telah didefinisikan secara formal di dalam Software Requirements Specification (SRS) VeriText AI versi 1.0 ke dalam bentuk cetak biru teknis (technical blueprint) yang terperinci, terukur, dan siap diimplementasikan. Jika dokumen SRS berfokus pada apa yang harus dipenuhi oleh sistem (what), maka dokumen SDD ini secara eksklusif dan mendalam menjawab bagaimana sistem diimplementasikan (how), mencakup struktur kelas, alur data antarmuka, algoritma komputasi, skema basis data, dan protokol integrasi jaringan.
 
-5
+Tujuan sekunder dokumen ini adalah menyediakan instrumen komunikasi dan kolaborasi formal antar anggota tim rekayasa perangkat lunak:
+1. Bagi Backend Engineer & AI Engineer: Sebagai panduan pasti dalam mengimplementasikan endpoint REST API FastAPI, arsitektur task Celery, algoritma Winnowing Rabin-Karp, kueri graf HNSW pgvector, inferensi model Sentence Transformers dan IndoBERT, serta integrasi LLM Gemini 2.5 Flash.
+2. Bagi Frontend Engineer: Sebagai acuan implementasi antarmuka pengguna berbasis Vue 3.5 (Composition API), Vite 6, TypeScript 5.7, Pinia 2.3, Axios 1.7, dan Tailwind CSS 3.4 pada Split-Screen Studio Workspace dan sistem desain semantik.
+3. Bagi QA & Test Engineer: Sebagai dasar penyusunan skenario pengujian unit (unit test), pengujian integrasi (integration test), dan pengujian End-to-End (E2E) berdasarkan pemodelan alur kerja Activity Diagram dan Sequence Diagram.
+4. Bagi Tim Akademik & Dosen Penilai: Sebagai bukti pemenuhan metodologi rekayasa perangkat lunak terstruktur berstandar IEEE Std 1016-2009 (Software Design Descriptions) dan ISO/IEC/IEEE 42010:2011 (Systems and Software Engineering - Architecture Description) pada mata kuliah Implementasi Proses Perangkat Lunak (IPPL).
+
 1.2. Ruang Lingkup
-Ruang lingkup desain teknis yang dicakup oleh dokumen SDD ini sepenuhnya selaras
-dengan batasan produk yang telah ditetapkan dalam SRS VeriText AI v1.0. Sistem yang
-dirancang adalah platform aplikasi web responsif berbasis desktop-first yang dapat diakses
-melalui peramban modern tanpa memerlukan instalasi aplikasi native. Secara arsitektural,
-sistem ini terdiri atas tiga lapisan utama yang saling berkomunikasi: (1) Lapisan Presentasi
-berbasis Next.js 14 App Router yang berjalan di sisi klien dan server, (2) Lapisan API dan
-Logika Bisnis berbasis FastAPI Python yang berjalan di server, dan (3) Lapisan
-Pemrosesan Asinkron berbasis Celery worker yang terkoneksi ke Redis sebagai message
-broker dan PostgreSQL sebagai persistent store.
-Komponen-komponen sistem yang dirancang secara eksplisit dalam dokumen ini
-mencakup:
-(a) Modul Autentikasi dan Manajemen Sesi dengan implementasi JWT + Refresh Token
-berbasis HttpOnly Cookie dan mekanisme rate limiting;
-(b) Modul Manajemen Dokumen dengan pipeline validasi berkas multi-format (PDF,
-DOCX, TXT), ekstraksi teks menggunakan pdfplumber dan python-docx, pembersihan
-regex, dan segmentasi kalimat;
-(c) Mesin Deteksi Plagiarisme Hybrid 4-Tier sebagai inti sistem, mencakup algoritma
-Winnowing (Tier 1), inferensi Sentence Transformers + kueri HNSW pgvector (Tier 2),
-analisis stilometri Burstiness (Tier 3), dan agregator skor komposit (Tier 4);
-(d) Modul Visualisasi dan Pelaporan dengan Interactive Heatmap, Side-by-Side
-Comparison, generasi PDF sertifikat dengan QR code, dan halaman verifikasi publik;
-(e) Modul Bank Korpus dengan bulk ingestion ZIP dan pipeline pengindeksan vektor
-massal;
-(f) Modul Billing dan Pembayaran dengan integrasi Midtrans Snap sandbox, penanganan
-webhook SHA-512, dan manajemen dompet token; serta
-(g) Modul Administrasi Sistem dengan monitoring Celery worker, manajemen pengguna,
-dan operasi pemeliharaan HNSW reindex.
+Ruang lingkup desain teknis yang dicakup dalam SDD ini mencakup seluruh arsitektur platform VeriText AI versi 1.0 yang beroperasi sebagai aplikasi web desktop-first modern. Ruang lingkup perancangan teknis meliputi:
+1. Arsitektur 4-Lapis Bersih (Clean 4-Layer Architecture): Pemisahan terstruktur antara Lapisan Presentasi (Vue 3.5 SPA), Lapisan Logika Bisnis & Gateway API (FastAPI), Lapisan Komputasi Asinkron & AI Engine (Celery + Redis), serta Lapisan Persistensi & Layanan Eksternal (PostgreSQL 16 pgvector, Midtrans Snap, Academic Graph APIs, Gemini AI).
+2. Sistem Autentikasi Mandiri & RBAC 3-Role: Manajemen sesi stateless berbasis JWT (Access Token 15 menit) dan Refresh Token (HttpOnly Cookie 7 hari) serta Google OAuth 2.0 untuk 3 peran: Free User, Premium User, dan Admin (100% Read-Only).
+3. Modul Pemrosesan Dokumen & Kalkulasi Biaya Token: Validasi ekstensi (.pdf, .docx, .txt), pengecekan ukuran berkas (maksimal 15 MB), ekstraksi teks bersih, segmentasi kalimat berbasis regex batas kalimat, dan kalkulasi otomatis kebutuhan token: Biaya = min(5, ceil(kata / 2.500)).
+4. Pipa Deteksi 3-Tahap Hybrid: Integrasi algoritma Winnowing leksikal (k=5, w=4), pencarian semantik vektor padat 384 dimensi HNSW Cosine Distance (<=>) berpadu re-ranker IndoBERT, serta analisis stilometri Burstiness Goh & Barabasi dan TTR yang disaring oleh Gemini Contextual AI Judge.
+5. Antarmuka Split-Screen Studio Workspace: Tata letak dua kolom terintegrasi yang menyajikan Interactive Heatmap 3-tier di sebelah kiri dan Panel Tabular 2-in-1 (Matched Sources & AI Chatbot Asisten Naskah) di sebelah kanan.
+6. Fitur Parafrase Instan 3-Mode & Guardrail Akademik: Kemampuan parafrase Per Kalimat, Per Paragraf, dan Seluruh Halaman yang menghasilkan 3 opsi variasi ilmiah serta pembaruan teks naskah in-place dengan kalkulasi ulang skor seketika.
+7. Modul Billing Midtrans Snap & Dompet Token: Pembelian token satuan (By Token) dan paket bundling (By Paket Token) dengan verifikasi webhook SHA-512 yang otomatis menaikkan status pengguna Free menjadi Premium secara instan.
+8. Kepatuhan Privasi Dokumen (UU PDP No. 27/2022): Jaminan naskah pengguna tidak pernah diunggah ke korpus publik tanpa izin (Zero Auto-Ingestion) serta fitur hard-delete cascade naskah dan sesi percakapan chat.
+
 1.3. Gambaran Dokumen
-Dokumen SDD ini disusun dalam empat bab utama yang secara progresif membangun
-pemahaman dari gambaran tingkat tinggi menuju rincian implementasi yang sangat
-spesifik, mengikuti alur pikir top-down yang logis dan terstruktur.
-BAB I – Pendahuluan menetapkan konteks, tujuan, ruang lingkup, dan daftar referensi
-dari dokumen desain ini. Bab ini berfungsi sebagai orientasi awal bagi pembaca sebelum
-memasuki konten teknis yang lebih mendalam di bab-bab selanjutnya. Pemahaman atas
+Dokumen SDD ini diorganisasikan ke dalam empat bab utama yang menyajikan rancangan sistem secara top-down:
+- BAB I - Pendahuluan: Menguraikan tujuan penyusunan dokumen, ruang lingkup teknis sistem, gambaran struktur dokumen, dan tabel referensi standar formal yang diacu.
+- BAB II - Tinjauan Sistem: Menyajikan deskripsi umum arsitektur makro perangkat lunak disertai Architecture Diagram 4-Lapis, dekomposisi tujuh fungsi modul utama, serta analisis konteks dan latar belakang teknis pemilihan arsitektur hybrid.
+- BAB III - Rancangan Lingkungan Aplikasi: Mendefinisikan spesifikasi tujuh layanan modul backend, lingkungan perangkat keras dan perangkat lunak (frontend Vue 3.5, backend FastAPI, infrastruktur pendukung), skema basis data 13 tabel DDL SQL beserta indeks HNSW pgvector, diagram komponen arsitektur, spesifikasi protokol komunikasi REST API dan webhook Midtrans, serta panduan antarmuka UI/UX Split-Screen Workspace.
+- BAB IV - Perancangan UML: Memuat seluruh artefak visual pemodelan perangkat lunak mencakup Class Diagram 13 entitas, Data Flow Diagram (DFD Level 0, Level 1, Level 2), 11 Activity Diagram (AD1 s/d AD11), dan 11 Sequence Diagram (SD1 s/d SD11) yang berkorespondensi satu-ke-satu dengan 11 Use Case pada dokumen SRS VeriText AI.
 
-6
-bab ini memungkinkan pembaca untuk mengetahui apa yang akan dan tidak akan dibahas
-dalam dokumen ini.
-BAB II – Tinjauan Sistem menyajikan pandangan makro arsitektur sistem VeriText
-AI. Sub-bab 2.1 mendeskripsikan arsitektur keseluruhan sistem dari sudut pandang tingkat
-tinggi, termasuk filosofi desain Clean Architecture, pola komunikasi antar komponen, dan
-model deployment yang ditargetkan. Sub-bab 2.2 menguraikan tujuh modul fungsi utama
-sistem secara terperinci, menjelaskan bagaimana setiap modul berkontribusi terhadap
-kapabilitas sistem secara keseluruhan. Sub-bab 2.3 memberikan konteks dan latar
-belakang domain masalah yang menjadi dasar keputusan arsitektural yang diambil dalam
-perancangan sistem ini.
-BAB III – Rancangan Lingkungan Aplikasi merupakan bab teknis yang paling luas
-cakupannya, membahas semua aspek lingkungan di mana sistem akan beroperasi. Sub-bab
-3.1 menjabarkan spesifikasi perangkat keras server, perangkat klien yang didukung,
-opsionalitas GPU, dan kalkulasi kapasitas penyimpanan. Sub-bab 3.2 mendaftar seluruh
-library dan framework beserta versi spesifiknya, justifikasi pemilihan, dan dependency
-matrix. Sub-bab 3.3 menyajikan skema lengkap basis data dalam format DDL SQL,
-strategi normalisasi, strategi pengindeksan termasuk parameter HNSW, dan ERD
-Mermaid. Sub-bab 3.4 menampilkan diagram komponen arsitektural sistem. Sub-bab 3.5
-mendefinisikan spesifikasi lengkap REST API, protokol webhook, dan katalog kode error.
-Sub-bab 3.6 mendeskripsikan rancangan antarmuka pengguna untuk seluruh 12 halaman
-utama sistem, mencakup sistem warna, tipografi, dan panduan aksesibilitas.
-BAB IV – Perancangan UML merupakan jantung dari dokumen ini, memuat empat
-jenis artefak pemodelan UML yang lengkap. Sub-bab 4.1 menyajikan class diagram
-komprehensif yang memodelkan semua entitas data dan relasinya. Sub-bab 4.2
-menyajikan Data Flow Diagram dari Level 0 hingga Level 2 untuk proses-proses utama
-sistem. Sub-bab 4.3 memuat 42 Activity Diagram yang memodelkan alur kerja setiap use
-case secara detail, termasuk decision nodes, fork/join paralel, error paths, dan swimlane
-untuk membedakan aksi pengguna dan sistem. Sub-bab 4.4 memuat 18 Sequence Diagram
-yang memodelkan interaksi antar komponen sistem untuk use case-use case yang paling
-kritis, memperlihatkan urutan pesan, kondisi alternatif, dan penanganan error.
+1.4. Referensi
+Penyusunan dokumen SDD ini merujuk pada standar industri, publikasi ilmiah, dan dokumentasi resmi teknologi berikut:
 
-7
+Tabel 1.1: Daftar Referensi Standar dan Pustaka Teknis
+| No | Dokumen Acuan / Standar | Penerbit / Sumber | Deskripsi Relevansi |
+| :--- | :--- | :--- | :--- |
+| 1 | IEEE Std 1016-2009 | IEEE Computer Society | Standar internasional format dan struktur Software Design Descriptions (SDD). |
+| 2 | ISO/IEC/IEEE 42010:2011 | ISO / IEC / IEEE | Kerangka kerja konseptual deskripsi arsitektur sistem dan perangkat lunak. |
+| 3 | IEEE Std 830-1998 | IEEE Computer Society | Standar spesifikasi kebutuhan perangkat lunak (acuan dokumen SRS VeriText AI). |
+| 4 | ISO/IEC 25010:2011 | ISO / IEC | Model kualitas perangkat lunak (karakteristik fungsional, performa, dan keandalan). |
+| 5 | UU RI No. 27 Tahun 2022 | Lembaran Negara Republik Indonesia | Undang-Undang Perlindungan Data Pribadi (UU PDP) mengenai hak penghapusan data. |
+| 6 | Schleimer et al. (2003) | ACM SIGMOD Conference | Makalah Winnowing: Local Algorithms for Document Fingerprinting (Step 1 Leksikal). |
+| 7 | Reimers & Gurevych (2019) | EMNLP-IJCNLP | Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks (Step 2 Semantik). |
+| 8 | Malkov & Yashunin (2020) | IEEE TPAMI | Hierarchical Navigable Small World Graphs untuk pencarian ANN berkecepatan tinggi. |
+| 9 | Goh & Barabasi (2008) | Europhysics Letters (EPL) | Teori Burstiness and Memory in Complex Systems (analisis stilometri Step 3). |
+| 10 | Martin, Robert C. (2017) | Prentice Hall | Buku Clean Architecture: A Craftsman's Guide to Software Structure and Design. |
+| 11 | Vue.js Official Documentation | Vue.js Core Team | Panduan resmi Vue 3.5 Composition API, Reactivity Core, dan SFC. |
+| 12 | Vite Official Documentation | Vite Core Team | Panduan bundler Vite 6, Hot Module Replacement (HMR), dan konfigurasi build. |
+| 13 | Pinia Official Documentation | Eduardo San Martin Morote | Dokumentasi modular state management resmi untuk Vue 3. |
+| 14 | FastAPI Official Documentation | Tiangolo (Sebastián Ramírez) | Dokumentasi resmi framework ASGI FastAPI 0.115 dan Pydantic v2. |
+| 15 | pgvector Documentation | PostgreSQL Community | Dokumentasi ekstensi pgvector v0.7+ dan operator jarak Cosine (<=>). |
+| 16 | Celery Official Documentation | Celery Project | Panduan distributed task queue Celery 5.4 dan Redis result backend. |
+| 17 | Midtrans API Documentation | PT Midtrans Indonesia | Panduan integrasi Snap payment gateway, parameter order, dan webhook SHA-512. |
+| 18 | OpenAlex API Documentation | OurResearch | Spesifikasi API REST OpenAlex Academic Graph untuk akuisisi korpus otomatis. |
+| 19 | Google Gemini API Docs | Google DeepMind | Dokumentasi Generative Language API Gemini 2.5 Flash dan Google Search Grounding. |
+
+
 BAB II
 TINJAUAN SISTEM
-1. Deskripsi Umum
-VeriText AI adalah sistem perangkat lunak inspeksi integritas akademik berbasis web
-yang dirancang dengan filosofi arsitektur Clean Architecture berlapis dan paradigma
-separation of concerns yang ketat. Sistem ini beroperasi sebagai layanan web terpusat
-(centralized web service) yang dapat diakses melalui peramban modern dari berbagai
-perangkat, menawarkan kemampuan deteksi plagiarisme komprehensif yang
-menggabungkan pendekatan deterministik leksikal dengan kecerdasan buatan semantik
-dalam sebuah pipa pemrosesan terintegrasi yang dieksekusi secara asinkron.
-Secara arsitektural makro, sistem VeriText AI terbagi ke dalam empat lapisan utama
-yang saling berkomunikasi melalui antarmuka yang terdefinisi dengan baik. Lapisan
-Presentasi (Presentation Layer) diimplementasikan menggunakan vue.js 14 dengan App
-Router yang mendukung Server-Side Rendering (SSR) dan Client-Side Rendering (CSR)
-secara hibrida, memastikan performa halaman yang optimal sekaligus kemampuan
-interaktivitas real-time melalui nuxt components. Lapisan Aplikasi dan API (Application
-& API Layer) diimplementasikan menggunakan framework FastAPI Python yang
-menyediakan antarmuka REST API berbasis standar OpenAPI 3.1, dengan validasi data
-menggunakan Pydantic v2 dan pengelolaan sesi database menggunakan SQLAlchemy 2.0
-dalam mode asinkron (async). Lapisan Pemrosesan Asinkron (Asynchronous Processing
-Layer) menggunakan Celery Distributed Task Queue yang terhubung ke Redis sebagai
-message broker dan result backend, bertanggung jawab mengeksekusi seluruh komputasi
-intensif AI yang tidak dapat diselesaikan dalam batasan waktu sebuah HTTP request.
-Lapisan Persistensi Data (Data Persistence Layer) menggunakan PostgreSQL 16 dengan
-ekstensi pgvector yang menyimpan data relasional terstruktur sekaligus data vektor
-berdimensi tinggi dalam satu database engine terintegrasi, mengeliminasi kebutuhan akan
-database vektor terpisah.
 
-8
-Filosofi desain yang mendasari arsitektur VeriText AI adalah prinsip Hexagonal
-Architecture (Ports and Adapters) yang dipadukan dengan Clean Architecture Robert C.
-Martin. Logika bisnis inti (domain layer) dibuat bebas dari ketergantungan terhadap
-framework, database, atau infrastruktur eksternal manapun. Ketergantungan selalu
-mengalir ke dalam (dari lapisan luar menuju domain), bukan sebaliknya. Ini
-memungkinkan penggantian komponen infrastruktur (misalnya mengganti penyimpanan
-file lokal dengan S3, atau mengganti Redis dengan RabbitMQ) tanpa mengubah logika
-bisnis inti. Model deployment yang ditargetkan adalah single-server monolith dengan
-kapabilitas horizontal scaling pada lapisan Celery worker, yang cocok untuk skala
-institusional awal sambil mempertahankan opsi migrasi ke arsitektur microservices di
-masa depan.
-2.2 Fungsi
-Sistem VeriText AI menyediakan tujuh modul fungsi utama yang bekerja secara terintegrasi
-untuk memberikan layanan deteksi plagiarisme komprehensif. Masing-masing modul
-dirancang sebagai unit fungsional yang kohesif dengan tanggung jawab yang terdefinisi
-dengan jelas, mengikuti prinsip Single Responsibility Principle (SRP).
-Modul 1: Manajemen Akun & Autentikasi
-1. Pendaftaran mandiri dengan 3 token gratis untuk pengguna baru.
-2. Autentikasi aman menggunakan JWT (Access Token) dan Refresh Token dalam
-HttpOnly Cookie.
-3. Role-Based Access Control (RBAC) untuk 5 peran pengguna.
-4. Proteksi brute-force dan fitur reset kata sandi.
-Modul 2: Manajemen Dokumen & Pra-pemrosesan
+2.1. Deskripsi Umum
+VeriText AI adalah platform perangkat lunak inspeksi integritas naskah akademik cerdas berbasis web yang dirancang dengan memadukan prinsip Clean Architecture (CA) Robert C. Martin dan arsitektur Ports and Adapters (Hexagonal Architecture). Sistem ini dirancang untuk beroperasi secara mandiri (Self-Service SaaS) di mana seluruh proses pengguna—mulai dari pendaftaran akun, validasi naskah, perhitungan token, komputasi deteksi multi-tahap, konsultasi AI Chatbot, hingga pembelian token dan pembayaran—berjalan 100% otomatis tanpa memerlukan intervensi manual administrator.
 
-9
-1. Validasi berkas (maks 15 MB) dan ekstraksi teks murni dari format PDF/DOCX.
-2. Segmentasi kalimat dan perekaman posisi karakter (offsets).
-3. Penghapusan data permanen (hard delete) untuk mematuhi UU PDP.
-Modul 3: Mesin Deteksi Plagiarisme (Hybrid 4-Tier)
-1. Orkestrasi pemrosesan asinkron secara sekuensial melalui Celery worker.
-2. Pelaksanaan 4 Tier: Leksikal (Winnowing), Semantik (pgvector), Stilometri (AI
-pattern), dan Agregasi.
-3. Skalabilitas horizontal (tambah worker) dan mekanisme fail-safe (token kembali jika
-gagal).
-Modul 4: Dasbor & Interactive Heatmap
-1. Visualisasi teks beranotasi 3 warna: Merah (Leksikal), Oranye (Semantik), Kuning
-(AI).
-2. Modal perbandingan berdampingan (Side-by-Side Comparison) dengan naskah
-sumber.
-3. Gauge skor komposit dan filter tampilan per tier.
-Modul 5: Ekspor Laporan Resmi (PDF)
-1. Pembuatan laporan PDF resolusi cetak dengan rincian skor dan daftar rujukan
-menggunakan WeasyPrint.
-2. Tersemat QR Code unik untuk halaman verifikasi keaslian dokumen bagi
-publik/dosen.
-Modul 6: Transaksi & Dompet Token
-1. Model bisnis Freemium berbasis token (1 token = 1 audit).
-2. Pembayaran real-time via popup Midtrans Snap (QRIS, VA, GoPay).
-3. Pembaruan saldo otomatis dan aman lewat tangkapan webhook SHA-512 Midtrans.
-Modul 7: Bank Korpus & Admin
-1. Dosen: Unggah massal dokumen pembanding via file ZIP (di-indeks ke pgvector).
-2. Admin: Dasbor monitoring (CPU, RAM, Redis), operasi re-indeks HNSW database,
-dan peninjauan log audit (security trail).
-2.3 Konteks dan Latar Belakang
-Domain masalah yang menjadi konteks pengembangan VeriText AI adalah meluasnya
-praktik ketidakjujuran akademik di lingkungan pendidikan tinggi Indonesia, yang semakin
-diperparah oleh kemudahan akses terhadap model bahasa besar (Large Language Models /
-LLM) generatif seperti ChatGPT yang mampu menghasilkan teks berkualitas tinggi dalam
+Arsitektur makro VeriText AI dibagi menjadi empat lapisan logis yang terisolasi secara ketat:
+1. Lapisan 1 - Presentasi (Frontend Web Client): Diimplementasikan menggunakan Vue 3.5 Single Page Application (SPA) berbasis Composition API, didukung bundler Vite 6, bahasa TypeScript 5.7, pengelola state modular Pinia 2.3, perute Vue Router 4.5, klien HTTP Axios 1.7, dan kerangka utilitas Tailwind CSS 3.4. Lapisan ini bertanggung jawab merender Split-Screen Studio Workspace dan menangani interaktivitas pengguna secara reaktif.
+2. Lapisan 2 - Logika Bisnis & Gateway API (Backend Core): Diimplementasikan menggunakan framework FastAPI 0.115 (Python 3.11+). Lapisan ini mengeksekusi routing REST API v1, validasi skema request/response menggunakan Pydantic v2, pengamanan rute via JWT dan Google OAuth 2.0, kalkulasi biaya token atomik, evaluasi Academic Assistant Guardrail, dan penanganan webhook Midtrans yang aman.
+3. Lapisan 3 - Komputasi Asinkron & Pipa AI (Celery Worker & ML Engine): Menggunakan Celery 5.4 Task Queue dengan Redis 7.2 sebagai Message Broker. Lapisan ini memproses tugas komputasi berat secara non-blocking di latar belakang, menjalankan Step 1 Winnowing leksikal, Step 2 inferensi Sentence Transformers dan pencarian graf HNSW pgvector, Step 3 analisis stilometri Goh & Barabasi, serta evaluasi filter kontekstual Google Gemini 2.5 Flash.
+4. Lapisan 4 - Persistensi Data, Korpus Otomatis & Layanan Eksternal: Berpusat pada database relasional PostgreSQL 16 dengan ekstensi pgvector yang menyimpan 13 tabel data dan indeks vektor 384 dimensi HNSW. Lapisan ini juga mengintegrasikan layanan eksternal: Midtrans Snap API, OpenAlex API, DOAJ API, Semantic Scholar API, Crossref API, dan Google Generative AI API.
 
-10
-hitungan detik. Sistem deteksi plagiarisme konvensional yang hanya mengandalkan
-pencocokan string leksikal (seperti Turnitin atau iThenticate dalam mode dasar) tidak lagi
-memadai karena teks yang diparafrase menggunakan sinonim atau diubah susunan
-sintaksisnya dapat dengan mudah mengelabui sistem berbasis fingerprinting saja.
-Demikian pula, teks yang sepenuhnya dihasilkan oleh AI memiliki karakteristik statistik
-gaya bahasa yang berbeda dari tulisan manusia autentik, tetapi tidak dapat dideteksi oleh
-sistem leksikal murni.
-Solusi yang dipilih — arsitektur hybrid multi-tier — menjawab tantangan ini dengan
-mengombinasikan kekuatan komplementer dari pendekatan deterministik (Winnowing
-untuk pencocokan verbatim yang efisien dan akurat) dan pendekatan probabilistik berbasis
-AI (Sentence Transformers untuk deteksi parafrasa semantik). Pemilihan model
-paraphrase-multilingual-MiniLM-L12-v2 dari Hugging Face dilandasi oleh kebutuhan
-dukungan bahasa Indonesia (multilingual), ukuran model yang kompak (117MB) sehingga
-dapat dijalankan pada CPU server tanpa memerlukan GPU, dan kualitas representasi
-vektor yang terbukti pada benchmark STS (Semantic Textual Similarity) untuk
-bahasa-bahasa Asia Tenggara. Keputusan untuk menggunakan PostgreSQL dengan
-ekstensi pgvector alih-alih database vektor khusus (seperti Pinecone, Weaviate, atau
-Milvus) didasari oleh pertimbangan kesederhanaan operasional (satu database untuk
-semua kebutuhan), ketersediaan ACID guarantees pada operasi yang mengombinasikan
-data relasional dan vektor, dan biaya infrastruktur yang lebih rendah untuk skala
-institusional.
-Keputusan arsitektural kunci lainnya adalah pemilihan Celery sebagai message queue
-daripada arsitektur event-driven berbasis Apache Kafka atau RabbitMQ. Pilihan ini
-didasarkan pada kematangan ekosistem Celery dalam komunitas Python, kemudahan
-konfigurasi dengan Redis sebagai broker (mengeliminasi kebutuhan komponen
-infrastruktur terpisah), dukungan bawaan untuk task retry, task cancellation, dan task
-result tracking yang sangat dibutuhkan oleh skenario use case VeriText AI, serta
-kemampuan horizontal scaling yang memadai untuk skala yang ditargetkan. Secara
-keseluruhan, setiap keputusan arsitektural dalam sistem ini diorientasikan pada
-keseimbangan optimal antara kemampuan fungsional, performa yang terukur, keamanan
-yang dapat diaudit, dan biaya operasional yang berkelanjutan untuk lingkungan akademik.
+Berikut adalah representasi visual diagram arsitektur sistem VeriText AI:
 
-11
+![Architecture Diagram](diagrams/exported/Architecture%20Diagram.png)
+
+2.2. Fungsi Produk
+Sistem VeriText AI mengintegrasikan tujuh modul fungsional utama yang saling terhubung melalui antarmuka layanan:
+1. Modul Autentikasi dan Manajemen Akun (AuthService): Mengatur alur login dan registrasi akun mandiri menggunakan Email/Password dan Google OAuth 2.0. Saat akun Free baru terdaftar, modul ini secara otomatis mengalokasikan 5 Token Saldo Gratis dan 3 kali kuota Trial AI Chatbot/Parafrase.
+2. Modul Manajemen Dokumen dan Pra-pemrosesan (PreprocessorEngine): Menangani unggah berkas naskah multi-format (.pdf, .docx, .txt) dengan batas ukuran 15 MB atau penempelan teks langsung di workspace. Modul ini melakukan ekstraksi teks bersih, penghitungan kata real-time, dan kalkulasi estimasi pemotongan token sesuai rumus: Biaya = min(5, ceil(kata / 2.500)).
+3. Modul Mesin Deteksi Plagiarisme 3-Tahap (HybridAuditOrchestrator): Mengatur alur deteksi plagiarisme secara berjenjang dari Step 1 Winnowing leksikal (Tag MERAH), Step 2 Semantic SBERT + IndoBERT Re-ranker pada pgvector HNSW (Tag ORANYE), hingga Step 3 Stilometri dan Contextual AI Judge Gemini (Tag KUNING), serta menghitung nilai Overall Composite Similarity Score dengan bobot 0.50 : 0.35 : 0.15.
+4. Modul Visualisasi Laporan dan Heatmap (ReportViewerService): Menyajikan naskah beranotasi warna pada Interactive Heatmap di kolom kiri Split-Screen Workspace, visualisasi Side-by-Side Comparison dengan naskah pembanding, penyaringan sorotan per kategori plagiat, serta penyediaan tautan DOI/URL sumber asli.
+5. Modul AI Chatbot Asisten Naskah dan Parafrase Instan (AcademicAssistantService): Menyediakan asisten ilmiah interaktif di panel kanan workspace yang dikunci dengan Academic Assistant Guardrail. Modul ini mendukung parafrase instan dalam 3 mode fleksibel (Per Kalimat, Per Paragraf, Seluruh Halaman) yang menghasilkan 3 opsi kalimat akademik dan menerapkan perbaikan ke naskah secara in-place disertai perhitungan ulang skor seketika.
+6. Modul Manajemen Token dan Pembayaran Midtrans (BillingService): Mengelola dompet token komputasi (TokenWallet), pembelian token secara eceran (By Token) maupun paket diskon (By Paket Token) melalui Midtrans Snap, serta pembaruan otomatis saldo dan peningkatan status akun menjadi Premium saat webhook settlement terverifikasi.
+7. Modul Sertifikasi PDF dan Monitoring Layanan (Report & AdminMonitoringService): Menghasilkan dokumen laporan resmi berformat PDF dengan QR Code verifikasi keaslian dokumen publik (/verify/{uuid}) untuk pengguna Premium, serta menyediakan dasbor telemetri dan log transaksi bagi Admin yang bersifat 100% Read-Only (tanpa mutasi data pengguna).
+
+2.3. Konteks dan Latar Belakang
+Latar belakang teknis perancangan arsitektur hybrid pada VeriText AI berakar pada kelemahan fundamental sistem deteksi plagiarisme konvensional. Sistem generasi awal yang hanya mengandalkan pencocokan string leksikal (seperti n-gram atau Winnowing murni) sangat rentan terhadap manipulasi parafrase cerdas, penggantian sinonim kata demi kata, pengubahan struktur kalimat aktif-pasif, dan penerjemahan lintas bahasa (cross-lingual). Sebaliknya, sistem modern yang mengandalkan model bahasa AI secara penuh sering kali mengalami kendala latensi komputasi yang tinggi, biaya komputasi API yang mahal untuk dokumen berukuran puluhan ribu kata (seperti skripsi dan disertasi), serta risiko halusinasi positif palsu pada sitasi dan kutipan langsung yang sah.
+
+VeriText AI memecahkan dikotomi tersebut melalui pendekatan 3-Step Hybrid Detection Pipeline:
+- Step 1 mengeksekusi Winnowing Rabin-Karp secara deterministik dengan kompleksitas O(N) untuk menangkap penjiplakan leksikal copy-paste secara instan.
+- Step 2 mengeksekusi inferensi vektor padat 384-dimensi menggunakan Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2 dipadukan dengan indeks graf HNSW pada PostgreSQL pgvector dan re-ranker LazarusNLP/all-indobert-base-v4 untuk menangkap parafrase konsep semantik berbahasa Indonesia dan internasional.
+- Step 3 mengeksekusi analisis statistik stilometri Goh & Barabasi Burstiness dan TTR yang dikombinasikan dengan Dual-Engine LLM Gateway (Google Gemini 2.5 Flash & DeepSeek v4.1 Flash via 9Router) sebagai Contextual AI Judge untuk membedakan tulisan manusia, parafrase akademik, dan teks yang dihasilkan mesin (LLM).
+
+Dengan arsitektur ini, VeriText AI menghadirkan efisiensi komputasi yang tinggi, akurasi deteksi multi-bahasa yang tajam, dan transparansi laporan yang dapat diandalkan oleh sivitas akademika.
+
+
+
 BAB III
 RANCANGAN LINGKUNGAN APLIKASI
-3.1 Lingkungan Perangkat Keras
-1. Akses Web (Desktop/Laptop): Prosesor Dual-core, RAM Minimal 4 GB, Resolusi
-layar minimum 1366x768 piksel.
-2. Server Compute & Backend: Minimal 4 vCPU, 8GB RAM untuk inferensi
-embedding.
-3. Penyimpanan (Storage): SSD 100GB+ untuk basis data relasional pgvector dan log
-audit.
-3.2 Lingkungan Perangkat Lunak
-3.2.1 Stack Teknologi Frontend
-Library / Framework Versi Justifikasi Pemilihan
-vue.js 14.x (App Router)
-SSR hybrid untuk SEO dan performa FCP;
-App Router mendukung nuxt Server
-Components untuk rendering efisien
-nuxt 18.x Ekosistem komponen terluas; Concurrent
-Mode untuk interaktivitas mulus
-TypeScript 5.x
-Type safety mencegah bug runtime;
-IntelliSense meningkatkan produktivitas
-developer
-Tailwind CSS 3.x Utility-first CSS; eliminasi CSS unused;
-konsistensi desain visual
-shadcn/ui Latest Komponen aksesibel berbasis Radix UI;
-dapat dikustomisasi tanpa vendor lock-in
-TanStack Query v5 Smart polling dengan caching otomatis;
-invalidation granular; devtools bawaan
-nuxt Hook Form 7.x Validasi form performan; minimal re-render
-Zod 3.x Schema validation yang type-safe; integrasi
-native dengan nuxt Hook Form
-Recharts 2.x Visualisasi chart performa dan metrik admin
-qrcode.nuxt 3.x Rendering QR code untuk verifikasi laporan
-3.2.2 Stack Teknologi Backend
-Library / Framework Versi Justifikasi Pemilihan
-Python 3.11+
-Performa interpreter yang ditingkatkan; native
-async/await; ekosistem AI terlengkap
 
-12
-Library / Framework Versi Justifikasi Pemilihan
-FastAPI 0.110+
-ASGI framework tercepat; OpenAPI 3.1 otomatis;
-Pydantic v2 native; dependency injection
-Pydantic v2.x
-Validasi data 5–50x lebih cepat dari v1; model
-generation dari JSON Schema
-SQLAlchemy 2.0+
-ORM mature dengan dukungan async; Core+ORM
-unified API
-Alembic 1.13+
-Database migration versioning yang terintegrasi
-dengan SQLAlchemy
-asyncpg 0.29+
-Driver PostgreSQL async native; performa connection
-pool tertinggi
-Celery 5.4+ Mature distributed task queue; task retry, ETA, revoke;
-Redis support native
-Redis-py 5.x Client Redis async; connection pooling
-sentence-transformers 3.x
-Abstraksi tingkat tinggi untuk Hugging Face; batch
-encoding; model caching
-torch (PyTorch) 2.x Komputasi tensor; dukungan CUDA opsional
-pdfplumber 0.10+
-Ekstraksi teks PDF dengan preservasi layout; tabel
-ekstraksi
-python-docx 1.1+ Parsing DOCX native Python; akses paragraph dan run
-WeasyPrint 61+ HTML/CSS ke PDF renderer; output kualitas cetak
-python-jose 3.x JWT signing/verification dengan HMAC-SHA256
-passlib + bcrypt 1.7+ Password hashing bcrypt work factor 12
-httpx 0.27+ Async HTTP client untuk panggilan Midtrans API
-qrcode 7.4+ Generasi QR code untuk embedding di PDF
-3.2.3 Infrastruktur
-Komponen Versi Konfigurasi Kritis
-PostgreSQL 16.x
-shared_buffers=2GB, work_mem=64MB, ekstensi
-pgvector v0.7.0+
-Redis 7.x
-maxmemory=2gb,
-maxmemory-policy=allkeys-lru,
-appendonly=yes
-Nginx 1.24+
-Reverse proxy; TLS 1.3; rate limiting 60 req/min;
-client_max_body_size=15M
-Gunicorn + Uvicorn 21+ / 0.29+ 4 worker processes; keepalive 5s
-3.3 Basis Data
-3.4 Component Diagram
-3.5.1 Standar REST API
+3.1. Lingkungan Perangkat Keras
+1. Perangkat Klien (Web Browser):
+   - Prosesor: Minimum Dual-Core 1.5 GHz atau lebih tinggi.
+   - Memori RAM: Minimum 4 GB RAM.
+   - Resolusi Layar: Minimum 1280 x 720 piksel (resolusi yang direkomendasikan adalah 1920 x 1080 piksel untuk pengalaman optimal Split-Screen Studio Workspace).
+   - Koneksi Internet: Minimum 1 Mbps stabil dengan latensi wajar.
+2. Perangkat Server (Cloud Host / VPS Compute Node):
+   - Prosesor: Minimum 4 vCPU (disarankan 8 vCPU arsitektur x86_64 atau ARM64).
+   - Memori RAM: Minimum 8 GB RAM (disarankan 16 GB untuk mendukung efisiensi indeks HNSW pgvector dan inferensi Sentence Transformers).
+   - Penyimpanan: Minimum 50 GB NVMe SSD (disarankan 100 GB SSD dengan IOPS tinggi untuk efisiensi kueri vektor dan penyimpanan korpus).
 
-13
-Seluruh endpoint API VeriText AI mengikuti konvensi REST yang konsisten dengan standar
-HTTP semantik. Semua request dan response menggunakan format JSON dengan
-Content-Type application/json. URL endpoint menggunakan base path /api/v1/
-dengan segmen sumber daya dalam bentuk kata benda plural.
-Format Respons JSON Standar:
+3.2. Lingkungan Perangkat Lunak
+
+3.2.1. Stack Teknologi Frontend
+Tabel 3.1: Stack Teknologi Frontend VeriText AI
+| Library / Framework | Versi | Justifikasi Pemilihan |
+| :--- | :--- | :--- |
+| Vue 3 | 3.5.x | Framework SPA modern dengan Composition API dan Reactivity Engine yang sangat cepat, efisien memori, dan ideal untuk pembaruan in-place teks naskah. |
+| Vite | 6.x | Build tool dan development server generasi baru berbasis Rollup dan esbuild dengan Hot Module Replacement (HMR) berkecepatan sub-milidetik. |
+| TypeScript | 5.7.x | Static typing yang ketat untuk mendefinisikan antarmuka kontrak API, mencegah error runtime, dan meningkatkan keandalan kode frontend. |
+| Pinia | 2.3.x | Pengelola state global modular yang ringan, type-safe, dan terintegrasi mulus dengan Vue 3 Composition API (mengelola sesi user, saldo wallet, dan state workspace). |
+| Vue Router | 4.5.x | Routing resmi Vue 3 yang mendukung navigation guards untuk proteksi rute berbasis RBAC (hanya pengguna login yang dapat mengakses /workspace). |
+| Axios | 1.7.x | HTTP client berbasis promise yang mendukung request/response interceptors untuk otomatisasi penambahan JWT Bearer Token dan penanganan error terpusat. |
+| Tailwind CSS | 3.4.x | Utility-first CSS framework untuk membangun tata letak Split-Screen Studio Workspace yang presisi, responsif, berdensitas data tinggi, dan bebas dari CSS tidak terpakai. |
+
+3.2.2. Stack Teknologi Backend
+Tabel 3.2: Stack Teknologi Backend VeriText AI
+| Library / Framework | Versi | Justifikasi Pemilihan |
+| :--- | :--- | :--- |
+| Python | 3.11+ | Lingkungan eksekusi backend berkinerja tinggi dengan optimasi runtime CPython dan ekosistem AI terlengkap di dunia. |
+| FastAPI | 0.115.x | Framework ASGI modern berkinerja tinggi, menghasilkan dokumentasi OpenAPI 3.1 otomatis, mendukung async/await native, dan dependency injection. |
+| Pydantic | 2.x | Validasi data dan serialisasi skema request/response berbasis engine Rust (pydantic-core) yang 5-50x lebih cepat daripada Pydantic v1. |
+| SQLAlchemy | 2.0.x | ORM dan SQL Core modern dengan dukungan async penuh (AsyncSession) untuk interaksi database PostgreSQL yang aman dan terstruktur. |
+| asyncpg | 0.29.x | Driver koneksi database PostgreSQL asinkron berkecepatan tinggi berbasis protokol biner PostgreSQL. |
+| Celery | 5.4.x | Distributed task queue untuk mengeksekusi pipeline deteksi plagiarisme 3-tahap secara asinkron di latar belakang. |
+| Redis | 7.2.x | In-memory message broker dan result backend berlatensi ultra-rendah untuk antrean tugas Celery dan mekanisme rate limiting. |
+| sentence-transformers | 3.x | Framework inferensi model transformer Siamese BERT untuk enkoding vektor semantik teks multilingual (paraphrase-multilingual-MiniLM-L12-v2). |
+| PyTorch | 2.x | Pustaka komputasi tensor untuk mengeksekusi model embedding pada CPU/GPU server. |
+| pdfplumber & python-docx | 0.10+ / 1.1+ | Pustaka ekstraksi teks murni dari berkas dokumen PDF dan DOCX dengan presisi karakter dan metadata yang tinggi. |
+| WeasyPrint | 61.x | Engine render HTML/CSS ke berkas PDF beresolusi cetak untuk penerbitan laporan sertifikat resmi. |
+| passlib + bcrypt | 1.7.x | Pustaka enkripsi hashing kata sandi dengan salt dinamis standar industri (Bcrypt cost factor 12). |
+| google-genai | 0.1+ | SDK resmi Google Gemini untuk integrasi Gemini 2.5 Flash sebagai Contextual AI Judge dan Asisten Parafrase Ilmiah. |
+
+3.2.3. Infrastruktur
+Tabel 3.3: Komponen Infrastruktur dan Konfigurasi Kritis
+| Komponen | Versi | Konfigurasi Kritis |
+| :--- | :--- | :--- |
+| PostgreSQL | 16.x | shared_buffers=2GB, work_mem=64MB, maintenance_work_mem=512MB, ekstensi pgvector v0.7.0+ |
+| Redis | 7.x | maxmemory=2gb, maxmemory-policy=allkeys-lru, appendonly=yes |
+| Nginx | 1.24+ | Reverse proxy; TLS 1.3; rate limiting 60 req/min; client_max_body_size=15M |
+| Gunicorn + Uvicorn | 21+ / 0.29+ | 4 worker processes; keepalive 5s; uvicorn.workers.UvicornWorker |
+| Midtrans Payment Gateway | Core & Snap v2 | Sandbox & Production environment; verifikasi webhook signature SHA-512 |
+
+3.3. Basis Data
+Struktur basis data VeriText AI dirancang menggunakan sistem manajemen basis data relasional PostgreSQL 16 yang diperluas dengan ekstensi pgvector. Skema ini memodelkan 13 entitas domain utama (direalisasikan ke dalam 15 tabel fisik DDL SQL termasuk tabel pendukung keamanan password_resets dan audit_logs) yang dinormalisasi hingga bentuk normal ketiga (3NF) untuk menjamin integritas relasional dan konsistensi data.
+
+Berikut adalah skema Data Definition Language (DDL SQL) lengkap yang digunakan dalam sistem:
+
+```sql
+-- Inisialisasi Ekstensi Vektor
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+-- 1. Tabel users
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email VARCHAR(255) NOT NULL UNIQUE,
+    full_name VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL DEFAULT 'FREE' CHECK (role IN ('FREE', 'PREMIUM', 'ADMIN')),
+    password_hash VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_users_email ON users(email);
+
+-- 2. Tabel sessions
+CREATE TABLE sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    refresh_token_hash VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_sessions_user_id ON sessions(user_id);
+
+-- 3. Tabel password_resets
+CREATE TABLE password_resets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reset_token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    is_used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Tabel token_wallets
+CREATE TABLE token_wallets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    balance INTEGER NOT NULL DEFAULT 5 CHECK (balance >= 0),
+    ai_trial_remaining INTEGER NOT NULL DEFAULT 3 CHECK (ai_trial_remaining >= 0),
+    ai_chat_allowance_remaining INTEGER NOT NULL DEFAULT 0 CHECK (ai_chat_allowance_remaining >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_wallets_user_id ON token_wallets(user_id);
+
+-- 5. Tabel token_transactions
+CREATE TABLE token_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    wallet_id UUID NOT NULL REFERENCES token_wallets(id) ON DELETE CASCADE,
+    amount INTEGER NOT NULL,
+    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('DEBIT_AUDIT', 'DEBIT_CHAT_PARAPHRASE', 'CREDIT_TOPUP', 'CREDIT_REFUND')),
+    reference_id VARCHAR(100),
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_token_tx_wallet ON token_transactions(wallet_id);
+
+-- 6. Tabel invoices
+CREATE TABLE invoices (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    order_id VARCHAR(100) NOT NULL UNIQUE,
+    purchase_scheme VARCHAR(30) NOT NULL CHECK (purchase_scheme IN ('BY_TOKEN', 'BY_PACKAGE')),
+    package_type VARCHAR(50),
+    token_amount INTEGER NOT NULL CHECK (token_amount > 0),
+    gross_amount NUMERIC(12,2) NOT NULL CHECK (gross_amount >= 0),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'SETTLEMENT', 'EXPIRE', 'CANCEL')),
+    snap_token VARCHAR(255),
+    snap_redirect_url TEXT,
+    settled_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_invoices_order_id ON invoices(order_id);
+CREATE INDEX idx_invoices_user_id ON invoices(user_id);
+
+-- 7. Tabel documents
+CREATE TABLE documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    original_filename VARCHAR(255),
+    file_path TEXT,
+    file_size_bytes INTEGER NOT NULL DEFAULT 0,
+    word_count INTEGER NOT NULL DEFAULT 0,
+    token_cost INTEGER NOT NULL DEFAULT 1,
+    is_archived BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_documents_user_id ON documents(user_id);
+
+-- 8. Tabel audit_tasks
+CREATE TABLE audit_tasks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(30) NOT NULL DEFAULT 'QUEUED' CHECK (status IN ('QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED')),
+    lexical_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+    semantic_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+    stylometric_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+    composite_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+    execution_time_sec NUMERIC(8,3),
+    error_message TEXT,
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_audit_tasks_doc ON audit_tasks(document_id);
+CREATE INDEX idx_audit_tasks_user ON audit_tasks(user_id);
+
+-- 9. Tabel audit_sentences
+CREATE TABLE audit_sentences (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL REFERENCES audit_tasks(id) ON DELETE CASCADE,
+    sentence_order INTEGER NOT NULL,
+    original_text TEXT NOT NULL,
+    current_text TEXT NOT NULL,
+    match_type VARCHAR(20) NOT NULL DEFAULT 'NONE' CHECK (match_type IN ('NONE', 'RED', 'ORANGE', 'YELLOW', 'RESOLVED_GREEN')),
+    similarity_score NUMERIC(5,2) NOT NULL DEFAULT 0,
+    matched_source_id UUID,
+    is_modified BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_audit_sentences_task ON audit_sentences(task_id);
+
+-- 10. Tabel audit_reports
+CREATE TABLE audit_reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    task_id UUID NOT NULL UNIQUE REFERENCES audit_tasks(id) ON DELETE CASCADE,
+    certificate_uuid UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4(),
+    qr_code_url TEXT NOT NULL,
+    pdf_report_path TEXT,
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_reports_certificate ON audit_reports(certificate_uuid);
+
+-- 11. Tabel chat_sessions
+CREATE TABLE chat_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_chat_sessions_doc ON chat_sessions(document_id);
+CREATE INDEX idx_chat_sessions_user ON chat_sessions(user_id);
+
+-- 12. Tabel chat_messages
+CREATE TABLE chat_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('USER', 'ASSISTANT', 'SYSTEM')),
+    content TEXT NOT NULL,
+    mode VARCHAR(30) CHECK (mode IN ('CONSULTATION', 'SENTENCE', 'PARAGRAPH', 'FULL_PAGE')),
+    suggested_options JSONB,
+    applied_to_document BOOLEAN NOT NULL DEFAULT FALSE,
+    target_sentence_id UUID REFERENCES audit_sentences(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_chat_messages_session ON chat_messages(session_id);
+
+-- 13. Tabel corpus_documents & document_chunks (pgvector HNSW)
+CREATE TABLE corpus_documents (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    source_name VARCHAR(100) NOT NULL,
+    doi_or_url TEXT,
+    title TEXT NOT NULL,
+    author VARCHAR(255),
+    year INTEGER,
+    language VARCHAR(10) DEFAULT 'id',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE document_chunks (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    corpus_doc_id UUID NOT NULL REFERENCES corpus_documents(id) ON DELETE CASCADE,
+    chunk_order INTEGER NOT NULL,
+    chunk_text TEXT NOT NULL,
+    embedding vector(384) NOT NULL,
+    kgram_hashes BIGINT[],
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indeks Vektor HNSW Berkinerja Tinggi
+CREATE INDEX idx_chunks_embedding_hnsw 
+ON document_chunks 
+USING hnsw (embedding vector_cosine_ops) 
+WITH (m = 16, ef_construction = 64);
+
+-- Tabel Tambahan Keamanan: audit_logs
+CREATE TABLE audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    actor_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    event_type VARCHAR(100) NOT NULL,
+    ip_address VARCHAR(45),
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_audit_logs_event ON audit_logs(event_type);
+```
+
+
+3.4. Component Diagram
+Component Diagram memodelkan dekomposisi sistem ke dalam komponen-komponen arsitektural yang dapat digunakan kembali, batas-batas layanannya, antarmuka yang disediakan (Provided Interfaces), serta antarmuka yang dibutuhkan (Required Interfaces). Arsitektur VeriText AI terdiri atas 7 modul layanan inti yang bekerja secara terintegrasi:
+
+3.4.1. Modul Autentikasi dan Manajemen Sesi (AuthService)
+Layanan AuthService bertanggung jawab atas seluruh siklus hidup identitas pengguna dalam sistem VeriText AI. Layanan ini menerapkan standar autentikasi OAuth 2.0 Password Flow dengan JWT (JSON Web Tokens) dan integrasi Google OAuth 2.0.
+Spesifikasi Teknis AuthService:
+1. Token Payload: JWT Access Token ditandatangani menggunakan algoritma HMAC-SHA256 (HS256) dengan masa berlaku (TTL) 15 menit. Payload JWT memuat klaim standar: sub (UUID user_id), email, role ('FREE' | 'PREMIUM' | 'ADMIN'), iat, dan exp.
+2. Refresh Token: Refresh Token berukuran 64-byte kriptografis disimpan dalam cookie peramban dengan atribut HttpOnly, Secure, SameSite=Lax, dan TTL 7 hari. Nilai hash SHA-256 dari refresh token disimpan di tabel sessions pada database untuk memungkinkan pencabutan sesi (session revocation) secara instan.
+3. Password Hashing: Kata sandi pengguna dienkripsi menggunakan Bcrypt dengan work factor cost = 12.
+4. Auto-Provisioning Kuota Awal: Saat pengguna baru menyelesaikan registrasi (baik via email maupun Google OAuth), AuthService secara atomik memicu pembuatan record pada tabel token_wallets dengan saldo awal balance = 5 token gratis dan kuota coba asisten AI ai_trial_remaining = 3.
+
+3.4.2. Modul Pra-pemrosesan Dokumen (PreprocessorEngine)
+Layanan PreprocessorEngine bertugas mengonversi naskah mentah dari berbagai format berkas ke dalam representasi teks terstruktur yang siap diproses oleh AI pipeline.
+Spesifikasi Teknis PreprocessorEngine:
+1. Validasi Berkas: Memeriksa ukuran berkas (maksimal 15 MB) dan memverifikasi magic bytes MIME type untuk mencegah serangan file upload (hanya mengizinkan application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, dan text/plain).
+2. Ekstraksi Teks Bersih: Mengekstrak teks dari PDF menggunakan pdfplumber dan DOCX menggunakan python-docx, melakukan normalisasi Unicode (NFC), menghapus whitespace berlebih, dan mempertahankan tanda baca esensial.
+3. Penghitungan Kata dan Estimasi Biaya: Menghitung total kata naskah (word_count) dan menghitung biaya konsumsi token sesuai formula: Biaya = min(5, ceil(kata / 2.500)).
+4. Segmentasi Kalimat: Memecah teks naskah menjadi larik kalimat individual menggunakan regular expression berbasis batas kalimat ilmiah (sentence boundary markers: titik, tanda tanya, tanda seru yang diikuti spasi dan huruf kapital, dengan penanganan khusus singkatan gelar dan sitasi seperti 'dkk.', 'et al.', 'Prof.', 'Dr.'). Setiap kalimat diberi nomor urut sentence_order dan dicatat pada tabel audit_sentences.
+
+3.4.3. Modul Pipeline Deteksi Tiga Tahap & Akuisisi Korpus (HybridAuditOrchestrator & CorpusHarvesterService)
+Layanan ini merupakan inti komputasi cerdas yang mengeksekusi pipeline 3-Step Hybrid AI dan mengelola pembaruan korpus pembanding otomatis tanpa ketergantungan pada input manual institusi.
+Spesifikasi Teknis Pipeline 3-Tahap:
+1. Step 1 - Winnowing Lexical Match: Menghasilkan k-gram karakter (k=5) dan sliding window (w=4). Menggunakan Rabin-Karp Rolling Hash (basis b=257, prima M=1.000.000.007) untuk menghasilkan sidik jari leksikal (fingerprints). Fingerprints naskah dicocokkan dengan fingerprints korpus pada kolom kgram_hashes di tabel document_chunks. Kalimat dengan persentase kecocokan leksikal >= 80% ditandai sebagai match_type = 'RED'.
+2. Step 2 - Semantic AI & HNSW Search: Setiap kalimat naskah dienkode menjadi dense vector 384-dimensi menggunakan Sentence Transformers paraphrase-multilingual-MiniLM-L12-v2. Vektor kalimat dikueri ke tabel document_chunks pada PostgreSQL pgvector menggunakan operator Cosine Distance (<=>) berindeks HNSW (m=16, ef_construction=64). Kandidat kalimat yang memiliki Cosine Similarity >= 0.75 kemudian dinilai ulang oleh re-ranker spesialis Indonesia LazarusNLP/all-indobert-base-v4 dan ditandai sebagai match_type = 'ORANGE'.
+3. Step 3 - Stilometri & Contextual AI Judge: Menghitung koefisien Burstiness Goh & Barabasi B = (sigma_L - mu_L) / (sigma_L + mu_L) dan Type-Token Ratio (TTR) naskah. Kalimat anomali yang memiliki pola sintaksis buatan dievaluasi oleh Google Gemini 2.5 Flash (dengan failover otomatis ke DeepSeek v4.1 Flash via 9Router) untuk menyaring sitasi yang sah. Kalimat plagiat hasil AI ditandai sebagai match_type = 'YELLOW'.
+4. Agregator Skor Komposit: Menghitung Overall Composite Similarity Score: S_Composite = (0.50 * S_Lexical) + (0.35 * S_Semantic) + (0.15 * S_Stylometric).
+5. Akuisisi Korpus Otomatis (Dual-Scope): Modul CorpusHarvesterService secara berkala menarik karya ilmiah dari 6 sumber resmi: OpenAlex Academic Graph API, DOAJ API, Semantic Scholar Academic Graph API, Crossref REST API, HuggingFace Indonesian STS & Paraphrase Datasets, serta Google Search Grounding. Dokumen yang diakuisisi dipecah menjadi chunks, dihitung embedding vektornya, dan disimpan ke tabel corpus_documents dan document_chunks.
+
+3.4.4. Modul Manajemen Token dan Pembayaran (BillingService)
+Layanan BillingService mengelola ekonomi token komputasi dalam sistem VeriText AI dan menjamin integritas transaksi moneter.
+Spesifikasi Teknis BillingService:
+1. Model Konsumsi Token: 1 Token mencakup audit plagiarisme hingga 2.500 kata (dengan batas maksimum 5 Token per dokumen), atau 10x respon AI Chatbot / parafrase per kalimat dan paragraf, atau 2 halaman penuh untuk batch paraphrase.
+2. Skema Pembelian:
+   - By Token (Eceran): Pengguna bebas memasukkan jumlah token (minimal 5 token = Rp 10.000, dengan tarif dasar Rp 2.000 / token).
+   - By Paket Token (Bundling Diskon): Paket Starter (15 Token = Rp 25.000), Paket Skripsi Pro (50 Token = Rp 65.000), dan Paket Riset Intensif (150 Token = Rp 150.000).
+3. Integrasi Midtrans Snap: Mengirim parameter transaksi ke Midtrans Snap API dan menerima Snap Token untuk memunculkan modal pembayaran di peramban klien.
+4. Pemrosesan Webhook Atomik: Menangkap notifikasi HTTP POST dari Midtrans, memverifikasi tanda tangan kriptografis SHA-512, dan mengeksekusi transaksi database menggunakan baris terkunci (SELECT ... FOR UPDATE) untuk menambah saldo token_wallets dan otomatis menaikkan status role akun dari 'FREE' menjadi 'PREMIUM'.
+
+3.4.5. Modul Pembuatan Laporan dan Sertifikasi (ReportGeneratorService)
+Layanan ini bertanggung jawab memformat dan mengekspor hasil audit plagiarisme ke dalam dokumen resmi berstandar publikasi.
+Spesifikasi Teknis ReportGeneratorService:
+1. Generasi PDF: Mengompilasi naskah beranotasi heatmap, ringkasan skor komposit, rincian perbandingan sumber pembanding, dan metadata dokumen ke dalam dokumen PDF resolusi cetak menggunakan pustaka WeasyPrint.
+2. Sertifikasi QR Code: Menghasilkan UUID sertifikat unik yang disematkan ke dalam gambar QR Code menggunakan pustaka qrcode. QR Code mengarah ke URL publik https://veritext.ai/verify/{certificate_uuid}.
+3. Otorisasi Akses Unduh: Mengunduh berkas laporan PDF resmi merupakan hak khusus pengguna berstatus Premium User. Pengguna Free User dapat melihat laporan interaktif di web dan memverifikasi QR Code publik.
+
+3.4.6. Modul AI Chatbot Asisten Naskah dan Parafrase Instan (AcademicAssistantService)
+Layanan ini menggantikan paradigma konvensional dengan menghadirkan pendampingan revisi naskah cerdas yang terintegrasi langsung di layar workspace.
+Spesifikasi Teknis AcademicAssistantService:
+1. Academic Assistant Guardrail: Memeriksa setiap pesan pengguna menggunakan lapisan validasi sistemik. Jika permintaan terdeteksi di luar konteks perbaikan naskah akademik (misalnya permintaan pembuatan tugas dari nol, konten berbahaya, atau pertanyaan non-ilmiah), sistem menolak permintaan dengan kode error CHAT_001 (GUARDRAIL_VIOLATION).
+2. Tiga Mode Granularitas Parafrase:
+   - Mode Per Kalimat: Memparafrase satu kalimat spesifik yang diklik pengguna pada heatmap.
+   - Mode Per Paragraf: Memparafrase seluruh paragraf sekaligus dengan menjaga koherensi dan transisi antar-kalimat.
+   - Mode Seluruh Halaman: Memparafrase seluruh kalimat berstatus merah/oranye/kuning pada satu halaman secara batch.
+3. Generator 3 Opsi Variasi: Menghasilkan 3 variasi kalimat parafrase berkaidah akademik baku disertai estimasi skor kemiripan baru.
+4. Pembaruan Naskah In-Place: Saat pengguna memilih salah satu variasi dan mengklik 'Terapkan ke Naskah', teks pada dokumen diperbarui secara in-place, skor kemiripan segmen dan komposit dihitung ulang secara real-time, dan warna highlight di heatmap berubah menjadi Hijau (Telah Diperbaiki).
+
+3.4.7. Modul Monitoring Layanan Read-Only Admin (AdminMonitoringService)
+Layanan ini dirancang khusus untuk administrator sistem dengan prinsip 100% Read-Only (hanya membaca data agregat, tanpa fitur penulisan atau mutasi data pengguna).
+Spesifikasi Teknis AdminMonitoringService:
+1. Pembatasan Hak Akses Ketat: Seluruh endpoint di bawah /api/v1/admin/* hanya mengizinkan metode HTTP GET. Sistem sama sekali tidak menyediakan endpoint POST/PUT/PATCH/DELETE untuk mengubah saldo pengguna, memblokir akun secara manual, atau mengubah skor audit.
+2. Metrik Telemetri: Menyajikan statistik agregat total dokumen yang dipindai, distribusi rata-rata skor plagiarisme, status antrean Celery worker, dan penggunaan kapasitas database pgvector.
+3. Log Transaksi Moneter: Menampilkan riwayat transaksi masuk Midtrans, rincian nomor order, nominal pendapatan (revenue), dan status settlement.
+
+
+Berikut adalah representasi visual diagram komponen sistem VeriText AI:
+
+![Component Diagram](diagrams/exported/Component%20Diagram.png)
+
+Tabel 3.4: Katalog Antarmuka Komponen (Provided & Required Interfaces)
+| Komponen | Provided Interface | Required Interface | Deskripsi Peran Komponen |
+| :--- | :--- | :--- | :--- |
+| Frontend Web Client | IWebUI (HTTP/HTML5) | IAuthAPI, IBillingAPI, IReportAPI | Antarmuka pengguna interaktif Vue 3.5 yang menyajikan halaman dasbor dan Split-Screen Studio Workspace. |
+| Auth & RBAC Service | IAuthAPI | IDatabaseSession | Menangani alokasi token JWT, refresh token, otentikasi Google OAuth, dan verifikasi hak akses peran. |
+| Document Preprocessor | IDocValidation | IStorageEngine | Memvalidasi integritas berkas masukan, mengekstrak teks murni, dan melakukan segmentasi kalimat. |
+| Hybrid Audit Orchestrator | IPipelineDispatch | ISemanticSearch, IAssistantContext | Mengorkestrasikan eksekusi bertingkat Step 1 Winnowing, Step 2 SBERT/IndoBERT, dan Step 3 Stilometri/Gemini. |
+| Semantic Vector Engine | ISemanticSearch | IpgvectorSQL | Menghitung vektor dense embedding 384-d dan mengeksekusi kueri tetangga terdekat pada indeks HNSW pgvector. |
+| Academic Assistant | IAssistantContext | IGeminiAPI, IDatabaseSession | Menerapkan guardrail etika ilmiah, menghasilkan 3 opsi variasi parafrase, dan memperbarui teks in-place. |
+| Billing & Wallet Service | IBillingAPI | IMidtransSnap, ITransactionDDL | Mengelola saldo token komputasi, pembuatan invoice, dan pemrosesan webhook pembayaran Midtrans yang atomik. |
+| Report & Certificate | IReportAPI | IWeasyPrintPDF, IQRVerifier | Menghasilkan laporan resmi PDF bertanda tangan QR Code dan menyediakan portal verifikasi sertifikat publik. |
+| Admin Telemetry Service | IAdminMonitoring | IReadOnlySELECT | Menyediakan dasbor statistik layanan, telemetri antrean worker, dan log transaksi moneter (100% GET). |
+
+3.5. Communication Interface
+
+3.5.1. Standar REST API
+Seluruh antarmuka eksternal VeriText AI menggunakan protokol komunikasi REST API berbasis HTTPS dengan format pertukaran data JSON (Content-Type: application/json).
+1. Format Respons Sukses Standar:
+```json
 {
- "success": true,
- "data": {},
- "message": "Operasi berhasil dilakukan",
- "meta": {
- "timestamp": "2026-09-27T15:30:00Z",
- "version": "1.0",
- "request_id": "uuid-v4"
- }
+  "success": true,
+  "data": {},
+  "message": "Deskripsi status operasi yang berhasil",
+  "meta": {
+    "timestamp": "2026-06-24T10:00:00Z",
+    "version": "1.0",
+    "request_id": "c1f7b8a2-3e4d-4a1b-9f2c-5d8e7a6b5c4d"
+  }
 }
-Format Respons Error JSON Standar:
+```
+2. Format Respons Error Standar:
+```json
 {
- "success": false,
- "error": {
- "code": "AUTH_INVALID_CREDENTIALS",
- "message": "Email atau kata sandi tidak valid.",
- "details": null
- },
- "meta": {
- "timestamp": "2026-09-27T15:30:01Z",
- "version": "1.0",
- "request_id": "uuid-v4"
- }
+  "success": false,
+  "error": {
+    "code": "CHAT_001",
+    "message": "Permintaan ditolak: Melanggar batas etika akademik (Academic Assistant Guardrail).",
+    "details": null
+  },
+  "meta": {
+    "timestamp": "2026-06-24T10:00:01Z",
+    "version": "1.0",
+    "request_id": "c1f7b8a2-3e4d-4a1b-9f2c-5d8e7a6b5c4d"
+  }
 }
-3.5.2 Katalog Endpoint API Lengkap
-Modul Autentikasi (/api/v1/auth)
-Method Endpoint Auth Request
-Body Response Deskripsi
-POST /auth/registe
-r
-Public
-{full_name,
-email,
-institution,
-password}
-201
-{user_id,
-message}
-Registrasi
-akun baru
-POST /auth/login Public {email,
-password}
-200
-{access_tok
-en, user} +
-Set-Cookie
-Login dan
-terbitkan
-JWT
-POST /auth/logout JWT —
-200
-{message}
-Cabut
-refresh token
+```
 
-14
-Method Endpoint Auth Request
-Body Response Deskripsi
-POST /auth/refresh Cookie —
-200
-{access_tok
-en}
-Perbarui
-access token
-POST /auth/forgot￾password Public {email} 200
-{message}
-Kirim email
-reset
-POST /auth/reset-p
-assword Public
-{token,
-new_passwo
-rd}
-200
-{message}
-Eksekusi
-reset
-password
-GET /auth/me JWT — 200 {user}
-Data profil
-pengguna
-aktif
-PATCH /auth/profile JWT {full_name,
-institution} 200 {user} Perbarui
-profil
-PATCH /auth/change
--password JWT
-{old_passwo
-rd,
-new_passwo
-rd}
-200
-{message}
-Ganti
-password
-Modul Dokumen (/api/v1/documents)
-Method Endpoint Auth Request Response Deskripsi
-POST /documents/
-upload JWT+Token multipart/for
-m-data: file
-201
-{document_i
-d, task_id}
-Upload
-dokumen +
-mulai audit
-GET /documents JWT ?page=1&li
-mit=20
-200
-{items[],
-total, page}
-Daftar
-dokumen
-pengguna
-GET /documents/
-{doc_id} JWT —
-200
-{document}
-Detail
-dokumen
-DELETE /documents/
-{doc_id} JWT —
-200
-{message}
-Hapus
-dokumen
-(UU PDP)
-Modul Audit (/api/v1/audits)
-Method Endpoint Auth Request Response Deskripsi
+3.5.2. Katalog Endpoint API
+Katalog endpoint API disusun ke dalam tabel 6 kolom terperinci yang mencakup metode HTTP, jalur endpoint, kebutuhan autentikasi, representasi skema request body, skema response, dan deskripsi fungsi bisnis yang dikelompokkan per sub-modul layanan:
 
-15
-GET /audits/{task
-_id}/status JWT —
-200 {status,
-progress_pct
-, stage}
-Smart
-polling
-status
-POST /audits/{task
-_id}/cancel JWT —
-200
-{message}
-Batalkan
-audit antri
-GET /audits/histor
-y
-JWT
-?page&limit
-&search&da
-te_from&dat
-e_to
-200
-{items[],
-total}
-Riwayat
-audit
-GET /audits/histor
-y/export-csv JWT ?date_from
-&date_to
-200 CSV
-file stream
-Ekspor
-riwayat CSV
-Modul Laporan (/api/v1/reports)
-Method Endpoint Auth Request Response Deskripsi
-GET /reports/{rep
-ort_id} JWT —
-200
-{report_data
-,
-heatmap_an
-notations}
-Data laporan
-heatmap
-GET
-/reports/{rep
-ort_id}/expo
-rt-pdf
-JWT+Premi
-um —
-200 PDF
-binary
-stream
-Unduh
-sertifikat
-PDF
-GET
-/verify/{veri
-fication_uui
-d}
-Public —
-200
-{is_valid,
-report_sum
-mary}
-Verifikasi
-QR publik
-Modul Korpus (/api/v1/corpus)
-Method Endpoint Auth Request Response Deskripsi
-POST /corpus/inge
-st
-JWT+Revie
-wer
-multipart/for
-m-data:
-zip_file,
-category,
-academic_ye
-ar
-201
-{queued_co
-unt}
-Bulk ingest
-ZIP
-GET /corpus JWT+Revie
-wer
-?page&categ
-ory&year
-200
-{items[],
-total}
-Daftar
-korpus
-PATCH /corpus/{doc
-_id}
-JWT+Revie
-wer
-{title,
-category,
-academic_ye
-ar}
-200
-{corpus_doc
+3.5.2.1. Modul Autentikasi dan Profil Akun
+Tabel 3.5: Endpoint API Modul Autentikasi dan Profil Akun
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POST | /api/v1/auth/register | Publik | `{"email": "str", "password": "str", "full_name": "str"}` | `{"user_id": "uuid", "role": "FREE", "wallet": {"balance": 5, "ai_trial_remaining": 3}}` | Registrasi akun baru secara mandiri, otomatis alokasi 5 Token & 3x Kuota Trial. |
+| POST | /api/v1/auth/login | Publik | `{"email": "str", "password": "str"}` | `{"access_token": "jwt", "token_type": "bearer", "user": {...}}` | Autentikasi kredensial email & kata sandi, terbitkan Access Token JWT dan HttpOnly Refresh Cookie. |
+| POST | /api/v1/auth/google | Publik | `{"id_token": "str"}` | `{"access_token": "jwt", "user": {...}}` | Autentikasi Single Sign-On (SSO) Google OAuth 2.0 dan sinkronisasi akun. |
+| POST | /api/v1/auth/refresh | Refresh Cookie | None | `{"access_token": "jwt", "token_type": "bearer"}` | Rotasi refresh token dan penerbitan Access Token JWT baru yang valid. |
+| POST | /api/v1/auth/logout | Bearer JWT | None | `{"message": "Logout berhasil"}` | Pencabutan refresh token dari database dan pembersihan cookie sesi peramban. |
+| GET | /api/v1/users/me | Bearer JWT | None | `{"id": "uuid", "email": "str", "role": "FREE/PREMIUM", "wallet": {"balance": 15, "ai_trial_remaining": 3}}` | Mengambil profil pengguna aktif, sisa saldo token komputasi, dan kuota trial AI. |
+| PUT | /api/v1/users/profile | Bearer JWT | `{"full_name": "str"}` | `{"id": "uuid", "full_name": "str", "updated_at": "datetime"}` | Memperbarui informasi nama lengkap profil pengguna dengan sanitasi anti-XSS. |
+| POST | /api/v1/users/change-password | Bearer JWT | `{"old_password": "str", "new_password": "str"}` | `{"message": "Kata sandi berhasil diperbarui"}` | Memvalidasi kata sandi lama, menyimpan hash Bcrypt baru, dan mencabut sesi aktif lainnya. |
+
+3.5.2.2. Modul Dokumen dan Pra-pemrosesan
+Tabel 3.6: Endpoint API Modul Dokumen dan Pra-pemrosesan
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POST | /api/v1/documents/upload | Bearer JWT | Multipart/form-data: `file: UploadFile` atau `text: str` | `{"document_id": "uuid", "word_count": 2150, "token_cost": 1, "is_valid": true}` | Mengunggah berkas naskah (.pdf, .docx, .txt maks 15 MB) atau input teks, validasi MIME, ekstraksi teks, dan hitung estimasi biaya token. |
+| GET | /api/v1/documents | Bearer JWT | None (Query: `page=1&limit=20`) | `{"total": 12, "items": [{"id": "uuid", "title": "str", "word_count": 2150, "token_cost": 1}]}` | Mengambil daftar seluruh riwayat naskah yang pernah diperiksa oleh pengguna aktif. |
+| GET | /api/v1/documents/{id} | Bearer JWT | None | `{"id": "uuid", "title": "str", "word_count": 2150, "token_cost": 1, "created_at": "datetime"}` | Mengambil detail metadata naskah spesifik yang dimiliki pengguna aktif. |
+| DELETE | /api/v1/documents/{id} | Bearer JWT | None | `{"document_id": "uuid", "status": "PERMANENTLY_DELETED"}` | Mengeksekusi hard-delete cascading berkas fisik, rekaman naskah, audit, dan riwayat chat (kepatuhan UU PDP). |
+
+3.5.2.3. Modul Pipeline Audit Deteksi Plagiarisme
+Tabel 3.7: Endpoint API Modul Pipeline Audit Deteksi Plagiarisme
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POST | /api/v1/audits/execute | Bearer JWT | `{"document_id": "uuid"}` | `{"task_id": "uuid", "status": "QUEUED", "tokens_deducted": 1, "new_balance": 4}` | Memotong saldo token secara atomik dan mendaftarkan tugas pemindaian 3-tahap ke antrean Celery Redis. |
+| GET | /api/v1/audits/{task_id}/status | Bearer JWT | None | `{"task_id": "uuid", "status": "PROCESSING", "progress_pct": 65, "current_step": "Step 2: Semantic SBERT"}` | Endpoint smart polling untuk memantau status penyelesaian komputasi audit naskah secara asinkron. |
+| GET | /api/v1/audits/{id}/report | Bearer JWT | None | `{"report_id": "uuid", "composite_score": 18.5, "tiers": {"lexical": 22.0, "semantic": 15.0, "stylometric": 8.0}, "sentences": [...], "sources": [...]}` | Mengambil data lengkap laporan naskah beranotasi Interactive Heatmap 3-tier untuk Split-Screen Studio Workspace. |
+
+3.5.2.4. Modul AI Chatbot Asisten dan Parafrase Instan
+Tabel 3.8: Endpoint API Modul AI Chatbot Asisten dan Parafrase Instan
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POST | /api/v1/chat/message | Bearer JWT | `{"document_id": "uuid", "sentence_id": "uuid", "prompt": "str"}` | `{"message_id": "uuid", "session_id": "uuid", "role": "ASSISTANT", "content": "str", "ai_trial_remaining": 2, "balance": 4}` | Mengirim pertanyaan konsultasi naskah ber-Academic Guardrail ke Dual-Engine LLM Gateway. |
+| POST | /api/v1/chat/paraphrase | Bearer JWT | `{"sentence_id": "uuid", "mode": "SENTENCE/PARAGRAPH/FULL_PAGE"}` | `{"sentence_id": "uuid", "mode": "SENTENCE", "variations": [{"option_id": 1, "style": "Formal Akademik", "text": "str", "predicted_score": 8.5}, ...]}` | Menghasilkan 3 variasi parafrase ilmiah lengkap dengan prediksi penurunan persentase kemiripan. |
+| POST | /api/v1/chat/apply-paraphrase | Bearer JWT | `{"sentence_id": "uuid", "selected_text": "str"}` | `{"sentence_id": "uuid", "current_text": "str", "match_type": "RESOLVED_GREEN", "new_similarity": 6.2, "new_composite_score": 14.1, "is_modified": true}` | Mengganti kalimat di naskah secara in-place, menghitung ulang skor secara real-time, dan mengubah warna sorotan menjadi Hijau. |
+
+3.5.2.5. Modul Pelaporan, Sertifikasi dan Verifikasi Publik
+Tabel 3.9: Endpoint API Modul Pelaporan, Sertifikasi dan Verifikasi Publik
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| GET | /api/v1/reports/{id}/download | Premium User | None | Binary stream: `application/pdf` | Mengunduh Laporan Audit Resmi berformat PDF beresolusi cetak lengkap dengan stempel digital dan Dynamic QR Code. |
+| GET | /api/v1/reports/verify/{uuid} | Publik | None | `{"valid": true, "certificate_uuid": "uuid", "document_title": "str", "author": "str", "audit_date": "datetime", "composite_score": 14.1}` | Portal validasi publik tanpa login untuk memverifikasi keaslian laporan dan integritas sertifikat via URL QR. |
+
+3.5.2.6. Modul Monetisasi Billing dan Pemantauan Admin
+Tabel 3.10: Endpoint API Modul Monetisasi Billing dan Pemantauan Admin
+| Method | Endpoint | Auth | Request Body | Response | Deskripsi |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POST | /api/v1/billing/checkout | Bearer JWT | `{"purchase_scheme": "BY_TOKEN/BY_PACKAGE", "token_amount": 15, "package_type": "STARTER"}` | `{"order_id": "str", "gross_amount": 25000, "snap_token": "str", "snap_redirect_url": "str"}` | Membuat transaksi pembelian token (By Token / By Paket Token) dan meminta Snap Token ke Midtrans. |
+| POST | /api/v1/billing/webhook | Midtrans SHA-512 | `{"order_id": "str", "status_code": "200", "gross_amount": "25000.00", "signature_key": "str", "transaction_status": "settlement"}` | `{"status": "ok"}` | Menangkap webhook Midtrans, validasi signature SHA-512, tambah saldo token atomik, auto-upgrade ke PREMIUM. |
+| GET | /api/v1/billing/invoices | Bearer JWT | None | `{"items": [{"order_id": "str", "amount": 25000, "status": "SETTLEMENT", "pdf_url": "str"}]}` | Menampilkan riwayat transaksi pembayaran dan tautan unduh berkas Invoice PDF resmi. |
+| GET | /api/v1/admin/analytics | Admin Read-Only | None | `{"total_documents": 1420, "avg_similarity": 16.4, "total_revenue": 8450000, "active_users": 640}` | Dasbor statistik analitik global penggunaan sistem (murni GET / 100% read-only). |
+| GET | /api/v1/admin/transactions | Admin Read-Only | None (Query: `limit=50`) | `{"total_revenue": 8450000, "items": [{"order_id": "str", "gross_amount": 25000, "status": "SETTLEMENT"}]}` | Log riwayat transaksi pembayaran Midtrans secara real-time (murni GET / 100% read-only). |
+| GET | /api/v1/admin/system-health | Admin Read-Only | None | `{"celery_workers": 4, "queue_depth": 2, "redis_mem_mb": 145, "pgvector_latency_ms": 18}` | Telemetri kesehatan infrastruktur Celery worker, Redis, dan pgvector (murni GET / 100% read-only). |
+| GET | /api/v1/admin/audit-logs | Admin Read-Only | None (Query: `limit=100`) | `{"items": [{"timestamp": "datetime", "actor": "str", "action": "LOGIN_FAILURE", "ip": "str"}]}` | Meninjau rekaman log audit keamanan sistem untuk kepatuhan privasi (murni GET / 100% read-only). |
+
+3.5.3. Protokol Keamanan Webhook Midtrans
+Untuk menjamin keamanan pembaruan status transaksi moneter dan menghindari serangan replay attack atau pemalsuan data:
+1. Midtrans mengirimkan HTTP POST notifikasi ke /api/v1/billing/webhook saat status pembayaran berubah (settlement, capture, expire, cancel).
+2. Sistem mengekstrak parameter kritis: order_id, status_code, gross_amount, dan signature_key.
+3. Sistem menghitung ulang signature pembanding menggunakan formula SHA-512:
+   Signature = SHA512(order_id + status_code + gross_amount + MIDTRANS_SERVER_KEY)
+4. Jika signature yang dihitung tidak cocok secara eksak dengan signature_key yang dikirimkan Midtrans, sistem langsung menolak request dengan kode HTTP 403 Forbidden dan mencatat insiden keamanan pada audit_logs.
+5. Jika signature valid dan status adalah settlement atau capture:
+   - Sistem membuka transaksi database atomik dengan baris terkunci (SELECT * FROM invoices WHERE order_id = :order_id FOR UPDATE).
+   - Memastikan status invoice belum SETTLEMENT (idempotensi transaksi).
+   - Menambahkan jumlah saldo token ke tabel token_wallets.
+   - Mengubah status peran akun pengguna pada tabel users menjadi 'PREMIUM' (user.role = 'PREMIUM').
+   - Memperbarui status invoice menjadi 'SETTLEMENT'.
+   - Mengembalikan respons HTTP 200 OK ke Midtrans.
+
+3.5.4. Mekanisme Smart Polling
+Untuk memantau perkembangan status pemrosesan naskah yang dieksekusi secara asinkron oleh Celery tanpa membebani server dan jaringan, frontend Vue 3 mengimplementasikan mekanisme Smart Polling adaptif:
+```typescript
+import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
+
+export function useAuditPolling(taskId: string, onCompleted: (reportId: string) => void) {
+  const status = ref<'QUEUED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('QUEUED');
+  const progressPct = ref(0);
+  let timer: ReturnType<typeof setTimeout> | null = null;
+
+  const pollStatus = async () => {
+    try {
+      const response = await axios.get(`/api/v1/audits/${taskId}/status`);
+      const data = response.data.data;
+      status.value = data.status;
+      progressPct.value = data.progress_pct;
+
+      if (data.status === 'COMPLETED') {
+        onCompleted(data.report_id);
+        return;
+      }
+      if (data.status === 'FAILED' || data.status === 'CANCELLED') {
+        return;
+      }
+
+      // Interval adaptif: 3 detik jika QUEUED, 1.5 detik jika PROCESSING
+      const interval = data.status === 'QUEUED' ? 3000 : 1500;
+      timer = setTimeout(pollStatus, interval);
+    } catch (error) {
+      console.error('Polling error:', error);
+      timer = setTimeout(pollStatus, 5000);
+    }
+  };
+
+  onMounted(() => pollStatus());
+  onUnmounted(() => { if (timer) clearTimeout(timer); });
+
+  return { status, progressPct };
 }
-Edit
-metadata
+```
 
-16
-DELETE /corpus/{doc
-_id}
-JWT+Revie
-wer —
-200
-{message}
-Hapus dari
-korpus
-Modul Billing (/api/v1/billing)
-Method Endpoint Auth Request Response Deskripsi
-GET /billing/wall
-et JWT —
-200
-{balance,
-transactions[
-]}
-Saldo dan
-riwayat
-token
-POST /billing/topu
-p
-JWT {package_id
-}
-201
-{order_id,
-snap_token}
-Mulai
-transaksi
-Midtrans
-POST /billing/web
-hook Public+Sig Midtrans
-payload 200 OK Penerimaan
-webhook
-GET /billing/invoi
-ces
-JWT ?page&statu
-s
-200
-{invoices[]}
-Daftar
-invoice
-GET
-/billing/invoi
-ces/{inv_id}
-/pdf
-JWT —
-200 PDF
-stream
-Unduh
-invoice PDF
-Modul Admin (/api/v1/admin)
-Method Endpoint Auth Request Response Deskripsi
-GET /admin/users JWT+Admi
-n
-?page&role
-&search&is
-_active
-200
-{users[]}
-Daftar
-pengguna
-GET /admin/users
-/{user_id}
-JWT+Admi
-n —
-200 {user,
-wallet,
-recent_audit
-s}
-Detail
-pengguna
-PATCH
-/admin/users
-/{user_id}/st
-atus
-JWT+Admi
-n
-{is_active,
-reason}
-200
-{message}
-Suspensi/akt
-ivasi
-POST
-/admin/users
-/{user_id}/a
-djust-tokens
-JWT+Admi
-n
-{amount,
-note}
-200
-{new_balan
-ce}
-Koreksi
-saldo
-GET /admin/healt
-h-metrics
-JWT+Admi
-n —
-200 {cpu,
-memory,
-celery,
-db_latency}
-Metrik
-sistem
+3.5.5. Katalog Kode Error Terpusat
+Tabel 3.11: Katalog Kode Error Sistem VeriText AI
+| Kode Error | HTTP Status | Deskripsi | Endpoint Terkait |
+| :--- | :--- | :--- | :--- |
+| AUTH_001 | 401 Unauthorized | Email atau kata sandi tidak valid. | POST /api/v1/auth/login |
+| AUTH_002 | 401 Unauthorized | Access token JWT telah kedaluwarsa atau signature tidak valid. | Seluruh endpoint terproteksi |
+| AUTH_003 | 403 Forbidden | Peran pengguna tidak memiliki hak akses (RBAC violation). | /api/v1/admin/*, /reports/download |
+| DOC_001 | 413 Payload Too Large | Ukuran berkas naskah yang diunggah melebihi batas maksimum 15 MB. | POST /api/v1/documents/upload |
+| DOC_002 | 422 Unprocessable Entity | Format berkas tidak didukung (hanya menerima .pdf, .docx, .txt). | POST /api/v1/documents/upload |
+| DOC_003 | 422 Unprocessable Entity | Naskah memiliki kurang dari 50 kata (tidak memenuhi syarat analisis). | POST /api/v1/documents/upload |
+| DOC_004 | 404 Not Found | Dokumen yang diminta tidak ditemukan atau bukan milik pengguna aktif. | GET/DELETE /api/v1/documents/{id} |
+| AUDIT_001 | 402 Payment Required | Saldo token tidak mencukupi untuk melakukan pemeriksaan naskah. | POST /api/v1/audits/execute |
+| AUDIT_002 | 400 Bad Request | Batas kata Free User terlampaui (maksimal 2.500 kata per dokumen). | POST /api/v1/audits/execute |
+| CHAT_001 | 400 Bad Request | Pelanggaran Guardrail: Permintaan di luar etika akademik ditolak. | POST /api/v1/chat/message |
+| CHAT_002 | 402 Payment Required | Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis. | POST /api/v1/chat/* |
+| BILL_001 | 403 Forbidden | Verifikasi signature SHA-512 webhook Midtrans gagal (untrusted source). | POST /api/v1/billing/webhook |
+| BILL_002 | 404 Not Found | Nomor order transaksi pembayaran tidak ditemukan di basis data. | POST /api/v1/billing/webhook |
+| BILL_003 | 400 Bad Request | Transaksi pembayaran telah kedaluwarsa atau dibatalkan oleh pengguna. | POST /api/v1/billing/checkout |
+| BILL_004 | 400 Bad Request | Jumlah token yang dibeli kurang dari batas minimum pembelian (min. 5 token). | POST /api/v1/billing/checkout |
+| REP_001 | 403 Forbidden | Unduh laporan PDF resmi hanya dapat diakses oleh akun Premium User. | GET /api/v1/reports/{id}/download |
+| REP_002 | 404 Not Found | Kode QR atau sertifikat verifikasi keaslian naskah tidak valid/dihapus. | GET /api/v1/reports/verify/{uuid} |
 
-17
-POST /admin/reind
-ex-hnsw
-JWT+Admi
-n —
-202
-{message}
-Trigger
-HNSW
-reindex
-GET /admin/audit
--logs
-JWT+Admi
-n
-?page&actio
-n_type&acto
-r_id&date_fr
-om
-200 {logs[]} Log audit
-sistem
-3.5.3 Spesifikasi Webhook Midtrans
-Endpoint webhook /api/v1/billing/webhook mengimplementasikan protokol validasi
-keamanan Midtrans sebagai berikut:
-1. Terima HTTP POST dengan payload JSON dari server Midtrans.
-2. Ekstrak field kritis: order_id, status_code, gross_amount, signature_key,
-transaction_status.
-3. Hitung ulang signature menggunakan formula: SHA512(order_id + status_code +
-gross_amount + server_key).
-4. Bandingkan signature yang dihitung dengan signature_key dari payload. Jika tidak
-cocok → return HTTP 403 dan catat insiden keamanan.
-5. Periksa idempotency: Jika order_id sudah dalam status PAID, return HTTP 200
-tanpa memproses ulang (mencegah kredit ganda).
-6. Eksekusi transaksi atomik jika transaction_status adalah settlement atau capture.
-7. Return HTTP 200 OK dalam semua kondisi berhasil agar Midtrans tidak melakukan
-retry.
-3.5.4 Smart Polling Protocol
-Frontend mengimplementasikan protokol smart polling menggunakan TanStack Query
-dengan konfigurasi adaptif:
-const { data: statusData } = useQuery({
- queryKey: ['auditStatus', taskId],
- queryFn: () => fetchAuditStatus(taskId),
- enabled: !!taskId,
- refetchInterval: (data) => {
- // Adaptif: polling lebih cepat saat PROCESSING, berhenti saat terminal state
- if (!data) return 2000;
- if (['SUCCESS', 'FAILED', 'CANCELLED'].includes(data.status)) return false;
- if (data.status === 'QUEUED') return 3000;
+3.6. Desain Antarmuka (UI/UX)
+Antarmuka pengguna VeriText AI dirancang dengan filosofi Split-Screen Studio Workspace yang mengutamakan kepadatan data ilmiah, kejelasan navigasi, dan kenyamanan peninjauan dokumen dalam waktu lama tanpa distraksi visual non-akademik:
+1. Top Summary Bar (Tinggi 64px): Menampilkan judul naskah, jumlah kata, indikator persentase skor komposit total, rincian skor per tier (Leksikal, Semantik, AI), sisa saldo token pengguna, serta tombol aksi cepat (Unduh PDF Resmi, Parafrase Halaman).
+2. Kolom Kiri - Interactive Heatmap Viewer (60% Lebar Layar): Menampilkan naskah asli pengguna di atas lembar putih bersih. Teks yang terdeteksi plagiat disorot menggunakan skema warna semantik:
+   - MERAH (#DC2626 - Tier 1 Leksikal): Indikasi copy-paste verbatim tingkat tinggi.
+   - ORANYE (#EA580C - Tier 2 Semantik): Indikasi parafrase konsep kalimat.
+   - KUNING (#CA8A04 - Tier 3 Stilometri / AI): Indikasi struktur sintaksis anomali buatan AI.
+   - HIJAU (#16A34A - Resolved): Indikasi kalimat yang telah berhasil diperbaiki melalui parafrase instan.
+   Saat kalimat yang disorot diklik, muncul popover aksi kontekstual: [Parafrase Kalimat] [Parafrase Paragraf] [Bandingkan dengan Sumber Asli].
+3. Kolom Kanan - Panel Tabular 2-in-1 (40% Lebar Layar):
+   - Tab 1: Matched Sources: Menampilkan daftar karya ilmiah dan sumber web yang cocok lengkap dengan persentase kontribusi kemiripan, judul jurnal, nama penulis, tautan DOI/URL resmi, serta kartu perbandingan teks berdampingan (Side-by-Side Comparison).
+   - Tab 2: AI Asisten Naskah & Parafrase: Menampilkan panel percakapan interaktif ber-guardrail untuk konsultasi perbaikan naskah, tombol aksi cepat parafrase, serta tampilan 3 opsi variasi kalimat ilmiah dengan tombol aksi 'Terapkan ke Naskah'.
+4. Standar Tipografi: Menggunakan jenis huruf Plus Jakarta Sans untuk elemen antarmuka dan tombol, Inter untuk keterbacaan teks paragraf naskah ilmiah, serta JetBrains Mono untuk tampilan kode hash, angka token, dan formula komputasi.
 
-18
- return 2000; // PROCESSING
- },
- refetchIntervalInBackground: false, // Hemat bandwidth saat tab tidak aktif
-});
-3.5.5 Katalog Kode Error
-Kode Error HTTP Status Deskripsi
-AUTH_INVALID_CREDE
-NTIALS 401 Email atau kata sandi tidak
-valid
-AUTH_ACCOUNT_LOCK
-ED 423 Akun dikunci sementara
-karena 5 kali gagal login
-AUTH_TOKEN_EXPIRED 401 Access token JWT sudah
-kedaluwarsa
-AUTH_INSUFFICIENT_R
-OLE 403
-Peran pengguna tidak
-memiliki izin untuk operasi
-ini
-AUTH_ACCOUNT_SUSP
-ENDED 403 Akun pengguna telah
-dinonaktifkan
-DOC_FILE_TOO_LARGE 413 Ukuran berkas melebihi
-batas 15 MB
-DOC_INVALID_MIME 422 MIME type berkas tidak
-valid atau tidak didukung
-DOC_INSUFFICIENT_TE
-XT 422 Dokumen memiliki kurang
-dari 50 kata
-DOC_SCANNED_PDF 422 PDF adalah gambar tanpa
-lapisan teks
-DOC_NOT_FOUND 404 Dokumen tidak ditemukan
-atau bukan milik pengguna
-AUDIT_INSUFFICIENT_T
-OKEN 402 Saldo token kuota tidak
-mencukupi
-AUDIT_TASK_NOT_CAN
-CELLABLE 409
-Tugas sudah dalam tahap
-PROCESSING, tidak dapat
-dibatalkan
-PAY_WEBHOOK_SIGNAT
-URE_INVALID 403 Signature SHA-512
-webhook tidak valid
-PAY_ORDER_NOT_FOUN
-D
-404 Order ID tidak ditemukan di
-database
 
-19
-Kode Error HTTP Status Deskripsi
-REPORT_ACCESS_DENIE
-D
-403
-Laporan audit hanya
-tersedia untuk akun
-Premium
-CORP_DUPLICATE_DOC
-UMENT 409
-Dokumen dengan hash
-SHA-256 yang sama sudah
-ada di korpus
-ADMIN_SELF_SUSPEND 409 Administrator tidak dapat
-menonaktifkan akun sendiri
-RATE_LIMIT_EXCEEDED 429 Terlalu banyak request dari
-alamat IP ini
-INTERNAL_SERVER_ER
-ROR 500 Kesalahan server internal
-yang tidak terduga
-3.5 Communication Interface
-3.6 Desain Antarmuka (UI/UX)
-
-20
 BAB IV
 PERANCANGAN UML
+
 4.1. Class Diagram
-Class diagram berikut memodelkan seluruh entitas domain sistem VeriText AI beserta
-atribut, method, dan relasi antar kelas. Diagram ini merepresentasikan lapisan domain
-model (domain layer) yang menjadi inti dari Clean Architecture sistem, independen dari
-framework maupun database yang digunakan.
-Setiap kelas domain memiliki tanggung jawab yang jelas sesuai prinsip SRP (Single
-Responsibility Principle). Relasi antar kelas mencerminkan pemetaan langsung ke skema
-database relasional yang telah didefinisikan dalam Bab III. Method yang dicantumkan
-adalah method bisnis utama dari lapisan Service, bukan method CRUD dasar yang
-ditangani oleh Repository.
+Class Diagram VeriText AI memodelkan arsitektur lapisan domain model (domain layer) dan persistensi basis data yang terdiri atas 13 entitas inti sistem. Setiap kelas memiliki atribut data dengan tipe data yang terdefinisi ketat, relasi asosiasi dan multiplisitas yang tepat, serta method bisnis utama. Tidak terdapat method mutasi bagi peran Administrator atau Dosen karena seluruh operasi pengguna berjalan secara otomatis mandiri (Self-Service SaaS) dan peran Admin bersifat 100% Read-Only.
 
-21
-4.2 Data Flow Diagram (DFD)
-4.2.1 DFD Level 0 – Context Diagram
-DFD Level 0 (Context Diagram) menggambarkan sistem VeriText AI sebagai satu proses
-tunggal (black box) dan memperlihatkan seluruh entitas eksternal yang berinteraksi dengan
-sistem beserta aliran data masuk dan keluar. Terdapat lima entitas eksternal yang berinteraksi
-dengan sistem: Pengguna Terdaftar (mahasiswa/penulis yang menggunakan layanan),
-Pengunjung/Tamu (pengguna tidak terdaftar yang mengakses halaman publik),
-Dosen/Reviewer (pengelola bank korpus), Administrator Sistem (pengelola infrastruktur),
-dan Midtrans Payment Gateway (layanan pembayaran eksternal).
-4.2.2 DFD Level 1 – Proses Utama Sistem
-DFD Level 1 memecah sistem menjadi tujuh proses utama yang selaras dengan tujuh modul
-fungsi sistem yang didefinisikan dalam SRS. Setiap proses menampilkan aliran data input
-dan output serta keterkaitannya dengan data store dan entitas eksternal.
-4.2.3 DFD Level 2 – P1: Manajemen Akun dan Autentikasi
+Berikut adalah representasi visual diagram kelas sistem VeriText AI:
 
-22
-4.2.4 DFD Level 2 – P2: Pra-pemrosesan Dokumen
+![Class Diagram](diagrams/exported/Class%20Diagram.png)
 
-23
-4.2.5 DFD Level 2 – P3: Mesin Audit Hybrid 4-Tier
+Tabel 4.1: Penjelasan 13 Entitas Domain pada Class Diagram
+| Nama Entitas | Multiplisitas & Relasi | Peran dan Tanggung Jawab Domain |
+| :--- | :--- | :--- |
+| User | 1 -- 1 TokenWallet, 1 -- * Document, 1 -- * Invoice, 1 -- * ChatSession | Entitas pengguna utama sistem; menyimpan identitas akun, peran ('FREE'/'PREMIUM'/'ADMIN'), dan status keaktifan. |
+| Session | * -- 1 User | Menyimpan sesi autentikasi pengguna aktif beserta hash refresh token dan waktu kedaluwarsa. |
+| TokenWallet | 1 -- 1 User, 1 -- * TokenTransaction | Menyimpan saldo kredit token komputasi, sisa kuota coba AI (ai_trial_remaining = 3), dan sub-kredit chat. |
+| Invoice | * -- 1 User | Mencatat tagihan pembayaran Midtrans Snap, skema pembelian (By Token / By Paket), dan status settlement. |
+| TokenTransaction | * -- 1 TokenWallet | Buku besar (ledger) mutasi kredit dan debet saldo token yang bersifat append-only dan immutable. |
+| Document | * -- 1 User, 1 -- * AuditTask, 1 -- * ChatSession | Menyimpan metadata berkas naskah yang diunggah, jumlah kata (word_count), dan estimasi biaya token. |
+| AuditTask | * -- 1 Document, 1 -- * AuditSentence, 1 -- 1 AuditReport | Mengelola status pengerjaan pemeriksaan plagiarisme asinkron dan mencatat skor komposit serta waktu eksekusi. |
+| AuditSentence | * -- 1 AuditTask | Menyimpan potongan kalimat individual naskah, tipe sorotan warna ('NONE'/'RED'/'ORANGE'/'YELLOW'/'RESOLVED_GREEN'), dan teks terkini. |
+| AuditReport | 1 -- 1 AuditTask | Menyimpan rekaman sertifikat laporan resmi, UUID sertifikat unik, URL kode QR publik, dan lokasi berkas PDF. |
+| ChatSession | * -- 1 User, * -- 1 Document, 1 -- * ChatMessage | Mengelola sesi percakapan asisten ilmiah yang terikat pada naskah dokumen tertentu. |
+| ChatMessage | * -- 1 ChatSession, * -- 0..1 AuditSentence | Menyimpan riwayat pesan, mode parafrase (SENTENCE/PARAGRAPH/FULL_PAGE), 3 opsi variasi JSONB, dan status terapan. |
+| CorpusDocument | 1 -- * DocumentChunk | Menyimpan metadata karya ilmiah pembanding yang diakuisisi otomatis dari OpenAlex, DOAJ, dan Semantic Scholar. |
+| DocumentChunk | * -- 1 CorpusDocument | Menyimpan potongan teks korpus beserta dense vector embedding 384 dimensi berindeks HNSW pgvector. |
 
-24
-4.2.6 DFD Level 2 – P5: Ingesti dan Pengindeksan Korpus
-4.3 Activity Diagram (Breakdown Per Use Case)
-Sub-bab ini memuat Activity Diagram untuk setiap use case yang telah didefinisikan dalam
-SRS. Setiap diagram menggunakan konvensi flowchart dengan representasi swimlane untuk
-membedakan aksi pengguna (User) dari aksi sistem (System). Decision node
-direpresentasikan dengan bentuk diamond, sedangkan fork/join untuk proses paralel
-direpresentasikan dengan notasi yang sesuai. State awal dan akhir ditandai dengan jelas.
-AD-AUTH-01: Registrasi Akun Mandiri
+4.2. Data Flow Diagram (DFD)
+Data Flow Diagram memodelkan perpindahan dan transformasi aliran data dalam sistem secara berjenjang dari gambaran konteks tingkat tinggi hingga rincian proses komputasi internal.
 
-25
+4.2.1. DFD Level 0 – Context Diagram
+Context Diagram menggambarkan sistem VeriText AI sebagai satu lingkaran proses tunggal yang berinteraksi dengan enam entitas eksternal: Free User, Premium User, Admin (100% Read-Only), Midtrans Payment Gateway, Dual-Scope Academic APIs (OpenAlex, DOAJ, Crossref), dan Google Gemini AI API.
 
-26
-AD-AUTH-02: Login Pengguna dan JWT
+![DFD Level 0](diagrams/exported/DFD0-Context%20Diagram.png)
 
-27
-AD-AUTH-03: Logout Sesi
+4.2.2. DFD Level 1 – System Overview
+DFD Level 1 mendekomposisi sistem menjadi tujuh proses utama yang berinteraksi dengan enam data store (D1 Users & Wallets, D2 Documents & Tasks, D3 Corpus & Embeddings, D4 Reports & Certificates, D5 ChatSessions & Messages, D6 Invoices & Transactions):
+- Proses 1.0: Autentikasi & Akun
+- Proses 2.0: Unggah & Validasi Naskah
+- Proses 3.0: Deteksi Hybrid 3-Tahap
+- Proses 4.0: AI Chatbot & Parafrase Instan
+- Proses 5.0: Pelaporan & QR PDF
+- Proses 6.0: Token & Midtrans Billing
+- Proses 7.0: Monitoring Layanan (Admin Read-Only)
 
-28
-AD-AUTH-04: Ubah Kata Sandi
+![DFD Level 1](diagrams/exported/DFD1-System%20Overview.png)
 
-29
-AD-AUTH-05: Reset Kata Sandi
+4.2.3. DFD Level 2 – Deteksi Plagiarisme Hybrid dan AI Chatbot
+DFD Level 2 merinci proses 3.0 (Deteksi Plagiarisme) dan proses 4.0 (AI Chatbot) menjadi sub-proses komputasi detail:
+- Sub-proses 3.1: Segmentasi Kalimat & Normalisasi Teks
+- Sub-proses 3.2: Step 1 Winnowing Lexical Fingerprinting
+- Sub-proses 3.3: Step 2 SBERT Multilingual & pgvector HNSW
+- Sub-proses 3.4: Step 3 Stilometri & Gemini Contextual AI Judge
+- Sub-proses 3.5: Agregasi Skor Komposit & Heatmap Multi-Warna
+- Sub-proses 4.1: Academic Guardrail & Prompt Validator
+- Sub-proses 4.2: Generator 3 Opsi Parafrase Kalimat/Paragraf
+- Sub-proses 4.3: Terapkan ke Naskah & Hitung Ulang Skor In-Place
 
-30
-AD-AUTH-06: Ubah Profil Pengguna
+![DFD Level 2](diagrams/exported/DFD2-Deteksi%20Plagiarisme%20Hybrid%20dan%20AI%20Chatbot.png)
 
-31
-AD-DOC-01: Upload Dokumen
+4.3. Activity Diagram (Breakdown Per Use Case AD1 s/d AD11)
+Sub-bab ini menyajikan 11 Activity Diagram bergaya swimlane yang berkorespondensi satu-ke-satu dengan 11 Use Case pada dokumen SRS VeriText AI. Seluruh diagram dirancang dengan tata letak swimlane bersih, bebas dari tumpang tindih elemen (zero collision), dan menggunakan notasi UML standar hitam-putih.
 
-32
-AD-DOC-02: Validasi dan Ekstraksi Teks
+### AD1: Aktivitas Masuk dan Registrasi Akun (UC-01)
+Diagram ini memodelkan alur autentikasi pengguna menggunakan metode Email/Password maupun Google OAuth 2.0. Diagram memperlihatkan percabangan verifikasi format, pencocokan hash Bcrypt, penolakan kredensial salah, penukaran auth code Google, hingga penerbitan token JWT dan alokasi otomatis 5 Token & 3x kuota trial asisten AI.
 
-33
-AD-DOC-03: Segmentasi Kalimat
+![AD1: Masuk dan Registrasi Akun](diagrams/exported/AD1-Masuk%20dan%20Registrasi%20Akun.png)
 
-34
-AD-DOC-04: Hapus Dokumen (UU PDP)
+### AD2: Aktivitas Kelola Profil dan Kata Sandi (UC-02)
+Diagram ini memodelkan alur pengaturan akun oleh pengguna yang terbagi ke dalam dua sub-alur terpisah: (1) Pembaruan Nama Lengkap Profil melalui sanitasi anti-XSS, dan (2) Pembaruan Kata Sandi Akun melalui verifikasi hash Bcrypt kata sandi lama, penolakan kata sandi lama yang salah, dan enkripsi kata sandi baru yang otomatis mencabut seluruh sesi aktif lainnya.
 
-35
-AD-DET-01: Orkestrasi Audit Hybrid
+![AD2: Kelola Profil dan Kata Sandi](diagrams/exported/AD2-Kelola%20Profil%20dan%20Kata%20Sandi.png)
 
-36
-AD-DET-02: Tier 1 Winnowing
+### AD3: Aktivitas Unggah dan Validasi Naskah (UC-03)
+Diagram ini memodelkan alur penerimaan dokumen (.pdf, .docx, .txt) atau teks langsung. Sistem memvalidasi ukuran berkas (<= 15 MB) dan magic MIME type, mengekstrak teks bersih, menghitung jumlah kata, membatasi naskah Free User maksimal 2.500 kata (atau memunculkan paywall), serta menghitung biaya token konsumsi sesuai formula min(5, ceil(kata/2500)).
 
-37
-AD-DET-03: Tier 2 Semantic AI
-AD-DET-04: Tier 3 Stilometri
+![AD3: Unggah dan Validasi Naskah](diagrams/exported/AD3-Unggah%20dan%20Validasi%20Naskah.png)
 
-38
-AD-DET-05: Tier 4 Agregasi Skor
+### AD4: Aktivitas Deteksi Plagiarisme Hybrid 3-Tahap (UC-04)
+Diagram ini memodelkan alur eksekusi deteksi plagiarisme cerdas secara asinkron di latar belakang oleh worker Celery: pemotongan token atomik, eksekusi Step 1 Winnowing leksikal (Tag Merah), Step 2 Semantic SBERT + IndoBERT pada pgvector HNSW (Tag Oranye), Step 3 Stilometri dan Gemini AI Judge (Tag Kuning), agregasi skor komposit (0.50 : 0.35 : 0.15), hingga penampilan hasil akhir pada Interactive Heatmap.
 
-39
-AD-DET-06: Smart Polling Status
+![AD4: Deteksi Plagiarisme Hybrid 3-Tahap](diagrams/exported/AD4-Deteksi%20Plagiarisme%20Hybrid%203-Tahap.png)
 
-40
-AD-DET-07: Batalkan Audit
+### AD5: Aktivitas Tinjau Laporan dan Heatmap Kemiripan (UC-05)
+Diagram ini memodelkan alur peninjauan laporan di Split-Screen Studio Workspace: perenderan heatmap dokumen naskah di sebelah kiri, daftar sumber kecocokan di sebelah kanan, penyaringan highlight warna (Merah, Oranye, Kuning), dan pembukaan popover Side-by-Side Comparison saat kalimat bermasalah diklik.
 
-41
-AD-REP-01: Tampilkan Heatmap
+![AD5: Tinjau Laporan dan Heatmap Kemiripan](diagrams/exported/AD5-Tinjau%20Laporan%20dan%20Heatmap%20Kemiripan.png)
 
-42
-AD-REP-02: Side-by-Side Comparison
+### AD6: Aktivitas Konsultasi Naskah via AI Chatbot (UC-06)
+Diagram ini memodelkan alur tanya-jawab bimbingan ilmiah di panel kanan workspace: pemeriksaan kuota (evaluasi status trial 3x untuk Free User / saldo token untuk Premium User), evaluasi Academic Assistant Guardrail (menolak instruksi off-topic atau non-akademik), pengiriman konteks ke Dual-Engine LLM Gateway (Gemini 2.5 Flash / DeepSeek v4.1 Flash via 9Router), pemotongan kuota, dan penampilan respon konsultasi di chat panel.
 
-43
-AD-REP-03: Filter Heatmap
+![AD6: Konsultasi Naskah via AI Chatbot](diagrams/exported/AD6-Konsultasi%20Naskah%20via%20AI%20Chatbot.png)
 
-44
-AD-REP-04: Unduh PDF Resmi
+### AD7: Aktivitas Parafrase Instan dan Cek Ulang Kalimat (UC-07)
+Diagram ini memodelkan alur perbaikan naskah interaktif: pemilihan mode parafrase (Per Kalimat, Per Paragraf, Seluruh Halaman), penghasilan 3 opsi variasi ilmiah oleh AI, pemilihan variasi terbaik oleh pengguna, penerapan teks baru secara in-place, perhitungan ulang skor kemiripan secara real-time, dan perubahan sorotan menjadi Hijau.
 
-45
-AD-REP-05: Verifikasi QR Publik
+![AD7: Parafrase Instan dan Cek Ulang Kalimat](diagrams/exported/AD7-Parafrase%20Instan%20dan%20Cek%20Ulang%20Kalimat.png)
 
-46
-AD-REP-06: Riwayat Audit
+### AD8: Aktivitas Unduh Laporan PDF dan Verifikasi QR (UC-08)
+Diagram ini memodelkan dua sub-alur sertifikasi: (1) Pengunduhan Laporan PDF resmi yang memeriksa status Premium User (menolak Free User dengan paywall) dan mengompilasi laporan ber-QR Code dengan WeasyPrint, dan (2) Verifikasi keaslian dokumen publik melalui pemindaian QR Code yang memeriksa keabsahan UUID sertifikat di database.
 
-47
-AD-REP-07: Ekspor CSV
+![AD8: Unduh Laporan PDF dan Verifikasi QR](diagrams/exported/AD8-Unduh%20Laporan%20PDF%20dan%20Verifikasi%20QR.png)
 
-48
-AD-CORP-01: Bulk Ingest Korpus
+### AD9: Aktivitas Kelola dan Hapus Riwayat Naskah (UC-09)
+Diagram ini memodelkan hak kendali privasi data pengguna sesuai Undang-Undang Perlindungan Data Pribadi (UU PDP No. 27/2022): peninjauan daftar naskah, konfirmasi penghapusan permanen, eksekusi hard-delete cascade (menghapus berkas fisik, task, highlight, dan sesi percakapan chat), serta pencatatan peristiwa penghapusan pada log audit keamanan.
 
-49
-AD-CORP-02: Indeks Vektor Korpus
+![AD9: Kelola dan Hapus Riwayat Naskah](diagrams/exported/AD9-Kelola%20dan%20Hapus%20Riwayat%20Naskah.png)
 
-50
-AD-CORP-03: Lihat Daftar Korpus
+### AD10: Aktivitas Beli Kuota Token dan Upgrade Premium (UC-10)
+Diagram ini memodelkan alur monetisasi dan top-up token: pemilihan skema pembelian (By Token eceran atau By Paket Token), pembuatan invoice PENDING, pembukaan popup pembayaran Midtrans Snap, pembayaran pengguna (QRIS, VA, Kartu), pengiriman webhook notifikasi Midtrans, verifikasi signature SHA-512, penambahan saldo token atomik, dan peningkatan otomatis status akun menjadi Premium User.
 
-51
-AD-CORP-04: Edit Metadata Korpus
+![AD10: Beli Kuota Token dan Upgrade Premium](diagrams/exported/AD10-Beli%20Kuota%20Token%20dan%20Upgrade%20Premium.png)
 
-52
-AD-CORP-05: Hapus Dokumen Korpus
+### AD11: Aktivitas Pantau Dasbor Analitik dan Log Transaksi (UC-11)
+Diagram ini memodelkan aktivitas observasi administrator yang murni bersifat Read-Only: login akun admin, validasi hak akses role == 'ADMIN', eksekusi kueri agregasi SELECT pada basis data, penyajian telemetri kesehatan worker Celery, serta peninjauan tabel log transaksi moneter Midtrans tanpa hak melakukan manipulasi data pengguna.
 
-53
-AD-PAY-01: Lihat Saldo dan Riwayat
+![AD11: Pantau Dasbor Analitik dan Log Transaksi](diagrams/exported/AD11-Pantau%20Dasbor%20Analitik%20dan%20Log%20Transaksi.png)
 
-54
-AD-PAY-02: Beli Token - Midtrans
+4.4. Sequence Diagram (Breakdown Per Use Case SD1 s/d SD11)
+Sub-bab ini menyajikan 11 Sequence Diagram UML 2.0 yang memperlihatkan urutan kronologis pertukaran pesan (pesan sinkron, pesan asinkron, pesan balik/return, dan self-call) antar komponen arsitektur sistem untuk setiap use case.
 
-55
-AD-PAY-03: Proses Webhook Midtrans
+### SD1: Sequence Diagram Masuk dan Registrasi Akun (UC-01)
+Diagram ini memodelkan interaksi antara User, AuthView (Vue 3), AuthAPI (FastAPI), AuthService, PostgreSQL, dan Google OAuth API dalam alur autentikasi email dan Google OAuth.
 
-56
-AD-PAY-04: Unduh Invoice
+![SD1: Masuk dan Registrasi Akun](diagrams/exported/SD1-Masuk%20dan%20Registrasi%20Akun.png)
 
-57
-AD-ADM-01: Lihat Daftar Pengguna
+### SD2: Sequence Diagram Kelola Profil dan Kata Sandi (UC-02)
+Diagram ini memodelkan interaksi pembaruan profil pengguna serta penggantian kata sandi yang melibatkan UserService, hashing Bcrypt, dan pencabutan sesi aktif pada basis data PostgreSQL.
 
-58
-AD-ADM-02: Suspensi Akun
+![SD2: Kelola Profil dan Kata Sandi](diagrams/exported/SD2-Kelola%20Profil%20dan%20Kata%20Sandi.png)
 
-59
-AD-ADM-03: Koreksi Saldo Token
+### SD3: Sequence Diagram Unggah dan Validasi Naskah (UC-03)
+Diagram ini memodelkan interaksi pengunggahan berkas dokumen ke WorkspaceView, validasi MIME magic oleh DocumentAPI, ekstraksi teks dan penghitungan kata oleh PreprocessorEngine, serta kalkulasi biaya token konsumsi oleh TokenWalletService.
 
-60
-AD-ADM-04: Monitor Celery dan Latensi
+![SD3: Unggah dan Validasi Naskah](diagrams/exported/SD3-Unggah%20dan%20Validasi%20Naskah.png)
 
-61
-AD-ADM-05: Reindex HNSW
+### SD4: Sequence Diagram Deteksi Plagiarisme Hybrid 3-Tahap (UC-04)
+Diagram ini memodelkan orkestrasi asinkron penuh antara WorkspaceView, AuditOrchestrator, WinnowingEngine (Tier 1), SemanticVectorEngine (Tier 2 pgvector HNSW), StylometricAIEngine (Tier 3 Gemini AI), dan basis data penyimpanan skor laporan.
 
-62
-AD-ADM-06: Lihat Audit Log
+![SD4: Deteksi Plagiarisme Hybrid 3-Tahap](diagrams/exported/SD4-Deteksi%20Plagiarisme%20Hybrid%203-Tahap.png)
 
-63
-4.4 Sequence Diagram
-Sub-bab ini memuat Sequence Diagram untuk use case-use case yang paling kritis dalam
-sistem VeriText AI. Setiap diagram memperlihatkan interaksi antar komponen sistem
-(participant) dalam urutan kronologis yang presisi, disertai blok alt, opt, dan loop untuk
-memodelkan kondisi alternatif dan pengulangan.
-SD-AUTH-01: Registrasi Akun
+### SD5: Sequence Diagram Tinjau Laporan dan Heatmap Kemiripan (UC-05)
+Diagram ini memodelkan pemanggilan data laporan audit dari ReportAPI, perenderan Interactive Heatmap pada WorkspaceView, filter kategori highlight, dan penampilan popover perbandingan sumber berdampingan.
 
-64
-SD-AUTH-02: Login dan JWT
+![SD5: Tinjau Laporan dan Heatmap Kemiripan](diagrams/exported/SD5-Tinjau%20Laporan%20dan%20Heatmap%20Kemiripan.png)
 
-65
-SD-AUTH-03: Logout
-SD-AUTH-04: Ubah Password
-SD-AUTH-05: Reset Password via Email
+### SD6: Sequence Diagram Konsultasi Naskah via AI Chatbot (UC-06)
+Diagram ini memodelkan alur interaksi chat ilmiah: pengecekan kuota token/trial, validasi etika akademik oleh AcademicGuardrail, pemanggilan Gemini 2.5 Flash API, pemotongan kuota kredit, dan penampilan pesan di ChatPanel.
 
-66
-SD-DOC-01: Upload dan Validasi Dokumen
+![SD6: Konsultasi Naskah via AI Chatbot](diagrams/exported/SD6-Konsultasi%20Naskah%20via%20AI%20Chatbot.png)
 
-67
-SD-DET-01: Orkestrasi Lengkap Hybrid AI
+### SD7: Sequence Diagram Parafrase Instan dan Cek Ulang Kalimat (UC-07)
+Diagram ini memodelkan alur permintaan 3 variasi parafrase ke GeminiAIService, pemilihan variasi oleh pengguna, pembaruan teks in-place oleh AuditOrchestrator, perhitungan ulang skor kalimat, dan pembaruan visual highlight menjadi hijau.
 
-68
-SD-DET-02: Detail Tier 1 Winnowing
+![SD7: Parafrase Instan dan Cek Ulang Kalimat](diagrams/exported/SD7-Parafrase%20Instan%20dan%20Cek%20Ulang%20Kalimat.png)
 
-69
-SD-DET-03: Detail Tier 2 Semantic pgvector
+### SD8: Sequence Diagram Unduh Laporan PDF dan Verifikasi QR (UC-08)
+Diagram ini memodelkan dua alur: (1) Otorisasi role Premium User, kompilasi dokumen PDF ber-QR Code dengan ReportGeneratorService, dan pengunduhan file, serta (2) Pemindaian URL QR publik dan verifikasi keabsahan sertifikat pada database.
 
-70
-SD-DET-04: Detail Tier 3 Stilometri
+![SD8: Unduh Laporan PDF dan Verifikasi QR](diagrams/exported/SD8-Unduh%20Laporan%20PDF%20dan%20Verifikasi%20QR.png)
 
-71
-SD-DET-05: Agregasi Tier 4
+### SD9: Sequence Diagram Kelola dan Hapus Riwayat Naskah (UC-09)
+Diagram ini memodelkan alur pemenuhan hak privasi UU PDP: konfirmasi modal pengguna, panggilan DELETE ke DocumentAPI, penghapusan berkas fisik dari storage, penghapusan berantai (cascade delete) task dan chat di PostgreSQL, serta pencatatan audit log.
 
-72
-SD-DET-06: Smart Polling Status
+![SD9: Kelola dan Hapus Riwayat Naskah](diagrams/exported/SD9-Kelola%20dan%20Hapus%20Riwayat%20Naskah.png)
 
-73
-SD-REP-01: Load Heatmap Viewer
+### SD10: Sequence Diagram Beli Kuota Token dan Upgrade Premium (UC-10)
+Diagram ini memodelkan transaksi pembayaran digital: pembuatan invoice PENDING, request Snap Token ke Midtrans, pembayaran pengguna via QRIS/VA, penangkapan webhook notifikasi, verifikasi signature SHA-512, penambahan saldo token atomik, peningkatan peran menjadi Premium User, dan smart polling frontend yang mendeteksi status settlement.
 
-74
-SD-REP-04: Generate dan Download PDF
-SD-REP-05: Verifikasi QR Publik
+![SD10: Beli Kuota Token dan Upgrade Premium](diagrams/exported/SD10-Beli%20Kuota%20Token%20dan%20Upgrade%20Premium.png)
 
-75
-SD-CORP-01: Bulk Ingest ZIP Korpus
-SD-CORP-02: Indexing Vektor Korpus
+### SD11: Sequence Diagram Pantau Dasbor Analitik dan Log Transaksi (UC-11)
+Diagram ini memodelkan pengawasan pasif oleh Admin: otorisasi role == 'ADMIN', kueri agregasi SELECT data statistik audit, kueri data pendapatan transaksi Midtrans, dan inspeksi telemetri antrean worker Celery secara aman tanpa kemampuan mutasi data.
 
-76
-SD-PAY-02: Midtrans Snap Top Up
+![SD11: Pantau Dasbor Analitik dan Log Transaksi](diagrams/exported/SD11-Pantau%20Dasbor%20Analitik%20dan%20Log%20Transaksi.png)
 
-77
-SD-PAY-03: Webhook Processing
-SD-ADM-04: Monitor Worker dan Health Check
+---
 
-78
-
-79
 Daftar Pustaka
-[1] IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements Specifications.
-New York, NY: IEEE Computer Society, 1998.
-[2] IEEE Std 1016-2009, IEEE Standard for Information Technology — Systems Design —
-Software Design Descriptions. New York, NY: IEEE Computer Society, 2009.
-[3] ISO/IEC/IEEE 42010:2011, Systems and software engineering — Architecture description.
-Geneva, Switzerland: ISO/IEC/IEEE, 2011.
-[4] ISO/IEC/IEEE 29148:2018, Systems and software engineering — Life cycle processes —
-Requirements engineering. Geneva, Switzerland: ISO/IEC/IEEE, 2018.
-[5] S. Schleimer, D. S. Wilkerson, and A. Aiken, "Winnowing: local algorithms for document
-fingerprinting," in Proceedings of the 2003 ACM SIGMOD International Conference on
-Management of Data (SIGMOD '03), San Diego, CA, USA, 2003, pp. 76–85.
-[6] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks,"
-in Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing
-(EMNLP-IJCNLP), Hong Kong, 2019, pp. 3982–3992.
-[7] Y. A. Malkov and D. A. Yashunin, "Efficient and Robust Approximate Nearest Neighbor Search
-Using Hierarchical Navigable Small World Graphs," IEEE Transactions on Pattern Analysis
-and Machine Intelligence, vol. 42, no. 4, pp. 824–836, Apr. 2020.
-[8] R. C. Martin, Clean Architecture: A Craftsman's Guide to Software Structure and Design,
-1st ed. Prentice Hall, 2017.
-[9] P. Henderson et al., "pgvector: Open-source vector similarity search for Postgres,"
-GitHub repository, 2024. [Online]. Tersedia: https://github.com/pgvector/pgvector.
-[10] FastAPI Documentation, "FastAPI Framework, High Performance, Easy to Learn, Fast to Code,
-Ready for Production," [Online]. Tersedia: https://fastapi.tiangolo.com/.
-[11] vue.js Documentation, "vue.js 14 App Router Documentation," Vercel, [Online].
-Tersedia: https://vuejs.org/docs.
-[12] Celery Project, "Celery: Distributed Task Queue," [Online].
-Tersedia: https://docs.celeryq.dev/.
-[13] Midtrans API Documentation, "Core API & Snap Payment Gateway Integration Guide," [Online].
-Tersedia: https://docs.midtrans.com/.
-[14] OWASP Foundation, "OWASP Top Ten Web Application Security Risks," 2021. [Online].
-Tersedia: https://owasp.org/Top10/.
-[15] Pemerintah Republik Indonesia, Undang-Undang Republik Indonesia Nomor 27 Tahun 2022
-tentang Perlindungan Data Pribadi (UU PDP). Lembaran Negara RI Tahun 2022 Nomor 196.
-[16] G. Booch, J. Rumbaugh, and I. Jacobson, The Unified Modeling Language User Guide,
-2nd ed. Boston, MA: Addison-Wesley, 2005.
-[17] M. Fowler, Patterns of Enterprise Application Architecture, 1st ed.
-Boston, MA: Addison-Wesley, 2002.
-[18] Tailwind CSS Documentation, "Tailwind CSS v3 Utility-First Framework," [Online].
-Tersedia: https://tailwindcss.com/docs.
-[19] shadcn/ui, "Re-usable components built with Radix UI and Tailwind CSS," [Online].
-Tersedia: https://ui.shadcn.com/.
+[1] IEEE Std 830-1998, IEEE Recommended Practice for Software Requirements Specifications. New York, NY: IEEE Computer Society, 1998.
+[2] IEEE Std 1016-2009, IEEE Standard for Information Technology — Systems Design — Software Design Descriptions. New York, NY: IEEE Computer Society, 2009.
+[3] ISO/IEC/IEEE 42010:2011, Systems and software engineering — Architecture description. Geneva, Switzerland: ISO/IEC/IEEE, 2011.
+[4] ISO/IEC 25010:2011, Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models. Geneva, Switzerland: ISO/IEC, 2011.
+[5] Pemerintah Republik Indonesia, Undang-Undang Republik Indonesia Nomor 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP). Lembaran Negara RI Tahun 2022 Nomor 196.
+[6] S. Schleimer, D. S. Wilkerson, and A. Aiken, "Winnowing: local algorithms for document fingerprinting," in Proceedings of the 2003 ACM SIGMOD International Conference on Management of Data (SIGMOD '03), San Diego, CA, USA, 2003, pp. 76–85.
+[7] N. Reimers and I. Gurevych, "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks," in Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP-IJCNLP), Hong Kong, 2019, pp. 3982–3992.
+[8] Y. A. Malkov and D. A. Yashunin, "Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs," IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 42, no. 4, pp. 824–836, Apr. 2020.
+[9] K.-I. Goh and A.-L. Barabasi, "Burstiness and memory in complex systems," Europhysics Letters (EPL), vol. 81, no. 4, p. 48002, 2008.
+[10] R. C. Martin, Clean Architecture: A Craftsman's Guide to Software Structure and Design, 1st ed. Prentice Hall, 2017.
+[11] Vue.js Core Team, "Vue.js 3.5 Documentation: The Progressive JavaScript Framework," [Online]. Tersedia: https://vuejs.org/guide/introduction.html.
+[12] Vite Core Team, "Vite: Next Generation Frontend Tooling," [Online]. Tersedia: https://vite.dev/guide/.
+[13] E. San Martin Morote, "Pinia: The intuitive, type safe, and flexible Store for Vue," [Online]. Tersedia: https://pinia.vuejs.org/.
+[14] FastAPI Documentation, "FastAPI Framework, High Performance, Easy to Learn, Fast to Code, Ready for Production," [Online]. Tersedia: https://fastapi.tiangolo.com/.
+[15] P. Henderson et al., "pgvector: Open-source vector similarity search for Postgres," GitHub repository, 2024. [Online]. Tersedia: https://github.com/pgvector/pgvector.
+[16] Celery Project, "Celery: Distributed Task Queue," [Online]. Tersedia: https://docs.celeryq.dev/.
+[17] Midtrans API Documentation, "Core API & Snap Payment Gateway Integration Guide," [Online]. Tersedia: https://docs.midtrans.com/.
+[18] OWASP Foundation, "OWASP Top Ten Web Application Security Risks," 2021. [Online]. Tersedia: https://owasp.org/Top10/.
+[19] Tailwind CSS Documentation, "Tailwind CSS v3 Utility-First Framework," [Online]. Tersedia: https://tailwindcss.com/docs.
+[20] Google DeepMind, "Gemini API Documentation: Gemini 2.5 Flash and Search Grounding," [Online]. Tersedia: https://ai.google.dev/docs.
+[21] OurResearch, "OpenAlex API: An open and comprehensive catalog of scholarly papers, authors, institutions, and more," [Online]. Tersedia: https://docs.openalex.org/.
+[22] WeasyPrint Documentation, "WeasyPrint: The Awesome Document Factory," [Online]. Tersedia: https://weasyprint.org/.
+[23] Hugging Face Documentation, "Sentence Transformers: Multilingual Sentence Embeddings," [Online]. Tersedia: https://www.sbert.net/.
+[24] SQLAlchemy Documentation, "SQLAlchemy 2.0 ORM with Async Support," [Online]. Tersedia: https://docs.sqlalchemy.org/en/20/.
+[25] Redis Documentation, "Redis 7.x: In-memory data structure store," [Online]. Tersedia: https://redis.io/docs/.
 
-80
-[20] TanStack Query Documentation, "Powerful asynchronous state management for TS/JS," [Online].
-Tersedia: https://tanstack.com/query/v5.
-[21] WeasyPrint Documentation, "WeasyPrint: The Awesome Document Factory," [Online].
-Tersedia: https://weasyprint.org/.
-[22] Hugging Face Documentation, "Sentence Transformers: Multilingual Sentence Embeddings," [Online].
-Tersedia: https://www.sbert.net/.
-[23] SQLAlchemy Documentation, "SQLAlchemy 2.0 ORM with Async Support," [Online].
-Tersedia: https://docs.sqlalchemy.org/en/20/.
-[24] Alembic Documentation, "Alembic - A Database Migration Tool for SQLAlchemy," [Online].
-Tersedia: https://alembic.sqlalchemy.org/.
-[25] Redis Documentation, "Redis 7.x: In-memory data structure store," [Online].
-Tersedia: https://redis.io/docs/.
+---
+
+
+---
+
 Revision History
-Versi Tanggal Penulis Deskripsi Perubahan
-0.1 25 September 2026 Mochammad Azriel
-Albian Putra
-Penyusunan draf awal
-struktur SDD dan outline
-bab.
-0.5 26 September 2026 Mochammad Azriel
-Albian Putra
-Penambahan Bab I–III:
-Pendahuluan, Tinjauan
-Sistem, Rancangan
-Lingkungan, DDL Basis
-Data.
-0.8 27 September 2026 Mochammad Azriel
-Albian Putra
-Penambahan Bab IV:
-Class Diagram, DFD
-Level 0-2, 42 Activity
-Diagram, dan 18
-Sequence Diagram.
-1.0 27 September 2026 Mochammad Azriel
-Albian Putra
-Finalisasi SDD lengkap
-standar IEEE 1016
-memuat seluruh artefak
-UML untuk semua use
-case sistem VeriText AI.
+| Versi | Tanggal | Penulis | Deskripsi Perubahan |
+| :--- | :--- | :--- | :--- |
+| 0.1 | 25 September 2026 | Mochammad Azriel Albian Putra | Penyusunan draf awal struktur SDD dan outline bab sesuai acuan IEEE Std 1016-2009. |
+| 0.5 | 26 September 2026 | Mochammad Azriel Albian Putra | Penambahan Bab I-III: Pendahuluan, Tinjauan Sistem, Rancangan Lingkungan Aplikasi, dan DDL Basis Data. |
+| 0.9 | 27 September 2026 | Mochammad Azriel Albian Putra | Penambahan Bab IV: Class Diagram, DFD Level 0-2, Activity Diagram, dan Sequence Diagram. |
+| 1.0 | 28 September 2026 | Mochammad Azriel Albian Putra | Rilis final disetujui: Transformasi penuh ke arsitektur Self-Service SaaS 3-Role (Free, Premium, Admin Read-Only), 3-Step Hybrid AI Pipeline, modul AI Chatbot Asisten Naskah & Parafrase Instan 3-Mode, skema 13 tabel DDL SQL (chat_sessions, chat_messages, token_wallets, invoices), serta penyelarasan penuh tepat 11 Activity Diagram (AD1-AD11) dan 11 Sequence Diagram (SD1-SD11) berkorespondensi satu-ke-satu dengan 11 Use Case dokumen SRS VeriText AI. |

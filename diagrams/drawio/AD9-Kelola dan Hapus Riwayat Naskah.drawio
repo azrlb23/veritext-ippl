@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="dw_ad9" name="Aktivitas Kelola dan Hapus Riwayat Naskah">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="850" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pool_AD9" value="Aktivitas Kelola dan Hapus Riwayat Naskah" style="swimlane;html=1;childLayout=stackLayout;startSize=28;horizontal=0;horizontalStack=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;fontStyle=1;fontSize=12;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="1080" height="790" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_0" value="Pengguna (Free / Premium)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="30" width="360" height="790" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_1" value="Sistem VeriText AI" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="420" y="30" width="360" height="790" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_2" value="Storage &amp; Database (UU PDP)" style="swimlane;html=1;startSize=28;horizontal=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontStyle=1;fontSize=11;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="780" y="30" width="360" height="790" as="geometry" />
+        </mxCell>
+        <mxCell id="n_start" value="" style="ellipse;shape=startState;fillColor=#000000;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="58" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="n_buka_riwayat" value="Buka Halaman Riwayat Naskah&#xa;dan Pilih Dokumen yang Ingin Dihapus" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="115.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_klik_hapus" value="Klik Tombol &#x27;Hapus Permanen&#x27;&#xa;dan Konfirmasi Modal Peringatan" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="215.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_val_owner" value="Validasi Kepemilikan Dokumen&#xa;(Pencocokan user_id Pemilik)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="315.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_hard_delete" value="Eksekusi Hard-Delete Cascade:&#xa;Hapus File Fisik, Hasil Audit &amp; Chat" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="840.0" y="425.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_catat_audit_pdp" value="Catat Peristiwa Penghapusan pada&#xa;Log Audit (Kepatuhan UU PDP No. 27/2022)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480.0" y="535.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_notif_delete" value="Tampilkan Pesan Sukses:&#xa;&#x27;Dokumen Telah Dihapus Permanen&#x27;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="120.0" y="645.0" width="240" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="n_end_delete" value="" style="ellipse;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="748" width="24" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="e_0" source="n_start" target="n_buka_riwayat" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_1" source="n_buka_riwayat" target="n_klik_hapus" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_2" source="n_klik_hapus" target="n_val_owner" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240.0" y="290.0" />
+              <mxPoint x="600.0" y="290.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_3" source="n_val_owner" target="n_hard_delete" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="395.0" />
+              <mxPoint x="960.0" y="395.0" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_4" source="n_hard_delete" target="n_catat_audit_pdp" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960.0" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_5" source="n_catat_audit_pdp" target="n_notif_delete" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600.0" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_6" source="n_notif_delete" target="n_end_delete" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

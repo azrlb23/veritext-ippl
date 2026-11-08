@@ -1,0 +1,107 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="comp-diagram" name="Component Diagram VeriText AI">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1350" pageHeight="880" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="comp_fe" value="&lt;&lt;component&gt;&gt;&#xa;Frontend Web Client&#xa;(Vue 3.5 + Vite + Pinia)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="60" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_auth" value="&lt;&lt;component&gt;&gt;&#xa;Auth &amp; RBAC Service&#xa;(OAuth &amp; JWT Manager)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="60" width="240" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_prep" value="&lt;&lt;component&gt;&gt;&#xa;Document Preprocessor&#xa;(Parser &amp; Word Counter)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="650" y="60" width="250" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_orch" value="&lt;&lt;component&gt;&gt;&#xa;Hybrid Audit Orchestrator&#xa;(3-Step Detection Pipeline)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="960" y="60" width="270" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_bill" value="&lt;&lt;component&gt;&gt;&#xa;Billing &amp; Wallet Service&#xa;(Midtrans Webhook &amp; Token)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="50" y="280" width="250" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_rep" value="&lt;&lt;component&gt;&gt;&#xa;Report &amp; Certificate Service&#xa;(PDF Generator &amp; QR Verifier)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="280" width="250" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_vec" value="&lt;&lt;component&gt;&gt;&#xa;Semantic Vector Engine&#xa;(SBERT + IndoBERT + pgvector)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="650" y="280" width="260" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_chat" value="&lt;&lt;component&gt;&gt;&#xa;Academic Assistant&#xa;(AI Guardrail + Gemini Parafrase)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="960" y="280" width="270" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_adm" value="&lt;&lt;component&gt;&gt;&#xa;Admin Telemetry Service&#xa;(100% Read-Only Monitoring)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="500" width="260" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_db" value="&lt;&lt;database&gt;&gt;&#xa;PostgreSQL 16 &amp; pgvector&#xa;(13 SQL Relational Tables)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="650" y="500" width="270" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="comp_ext" value="&lt;&lt;external&gt;&gt;&#xa;Academic APIs &amp; Midtrans&#xa;(OpenAlex, DOAJ, Midtrans Snap)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="960" y="500" width="270" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="e_fe_auth" value="IAuthAPI" source="comp_fe" target="comp_auth" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_fe_bill" value="IBillingAPI" source="comp_fe" target="comp_bill" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_fe_rep" value="IReportAPI" source="comp_fe" target="comp_rep" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="240" y="210" />
+              <mxPoint x="475" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_auth_prep" value="IDocValidation" source="comp_auth" target="comp_prep" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_prep_orch" value="IPipelineDispatch" source="comp_prep" target="comp_orch" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_orch_vec" value="ISemanticSearch" source="comp_orch" target="comp_vec" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="210" />
+              <mxPoint x="780" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_orch_chat" value="IAssistantContext" source="comp_orch" target="comp_chat" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_vec_db" value="pgvector SQL" source="comp_vec" target="comp_db" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_chat_db" value="Audit Context" source="comp_chat" target="comp_db" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="440" />
+              <mxPoint x="880" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_chat_ext" value="Gemini 2.5 API" source="comp_chat" target="comp_ext" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_bill_db" value="Transaction Ledger" source="comp_bill" target="comp_db" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="175" y="440" />
+              <mxPoint x="650" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_adm_db" value="100% SELECT Only" source="comp_adm" target="comp_db" style="strokeColor=#000000;strokeWidth=1.2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

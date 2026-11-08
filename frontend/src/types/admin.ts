@@ -20,8 +20,7 @@ export interface ManagedUser {
   id: string;
   full_name: string;
   email: string;
-  institution?: string | null;
-  role: "TRIAL" | "PREMIUM" | "REVIEWER" | "ADMIN";
+  role: "FREE" | "PREMIUM" | "ADMIN";
   token_balance: number;
   is_active: boolean;
   created_at: string;

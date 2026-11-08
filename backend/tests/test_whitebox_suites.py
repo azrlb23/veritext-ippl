@@ -47,12 +47,6 @@ from app.models.session import Session
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 
-from app.schemas.admin import (
-    AdminResetPasswordRequest,
-    AdminUserCreateRequest,
-    AdminUserUpdateRequest,
-    TokenAdjustmentRequest,
-)
 from app.schemas.auth import (
     ChangePasswordRequest,
     UserLoginRequest,
@@ -61,13 +55,10 @@ from app.schemas.auth import (
 )
 from app.schemas.audit import AuditStartRequest
 from app.schemas.billing import MidtransWebhookPayload
-from app.schemas.corpus import CorpusDocUpdateRequest
-
 from app.services.auth_service import AuthService
 from app.services.document_service import DocumentService
 from app.services.audit_service import AuditService
 from app.services.billing_service import BillingService, PACKAGES
-from app.services.corpus_service import CorpusService
 from app.services.pdf_certificate_service import generate_pdf_certificate, clean_pdf_filename
 
 import app.api.v1.auth as auth_router
@@ -153,12 +144,11 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
             full_name="Azriel Albian",
             email="azriel.new@kampus.ac.id",
             password="SecurePassword123!",
-            institution="Institut Teknologi Nasional",
         )
         user, access_token, refresh_token = await AuthService.register_user(mock_db, req)
 
         self.assertEqual(user.email, "azriel.new@kampus.ac.id")
-        self.assertEqual(user.role, "TRIAL")
+        self.assertEqual(user.role, "FREE")
         self.assertTrue(user.is_active)
         self.assertIsNotNone(access_token)
         self.assertIsNotNone(refresh_token)
@@ -182,7 +172,7 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
             full_name="Mahasiswa Uji",
             email="mhs@kampus.ac.id",
             password_hash=hashed,
-            role="TRIAL",
+            role="FREE",
             is_active=True,
         )
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([existing_user]))
@@ -192,7 +182,7 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(user.id, existing_user.id)
         decoded = decode_access_token(access_token)
         self.assertEqual(decoded["sub"], str(existing_user.id))
-        self.assertEqual(decoded["role"], "TRIAL")
+        self.assertEqual(decoded["role"], "FREE")
 
     async def test_tc_auth_003_refresh_token_valid_happy_path(self):
         """TC-AUTH-003 [Happy Ending]: Refresh token valid menghasilkan token akses baru."""
@@ -211,7 +201,7 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
 
     async def test_tc_auth_004_logout_session_revocation_happy_path(self):
         """TC-AUTH-004 [Happy Ending]: Logout mencabut sesi refresh token dari basis data."""
-        user = User(id=uuid.uuid4(), email="logout@kampus.ac.id", role="TRIAL", is_active=True)
+        user = User(id=uuid.uuid4(), email="logout@kampus.ac.id", role="FREE", is_active=True)
         sess = Session(user_id=user.id, refresh_token_hash=hash_token("dummy-refresh"))
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([sess]))
         mock_response = MagicMock()
@@ -222,22 +212,20 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
         mock_response.delete_cookie.assert_called_with(key="refresh_token")
 
     async def test_tc_auth_005_update_user_profile_happy_path(self):
-        """TC-AUTH-005 [Happy Ending]: Pengguna memperbarui nama lengkap dan institusi profil."""
+        """TC-AUTH-005 [Happy Ending]: Pengguna memperbarui nama lengkap profil."""
         user = User(
             id=uuid.uuid4(),
             full_name="Nama Lama",
             email="user@kampus.ac.id",
-            institution="Institusi Lama",
-            role="TRIAL",
+            role="FREE",
             is_active=True,
             created_at=datetime.now(timezone.utc),
         )
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        req = UserProfileUpdate(full_name="Nama Baru", institution="Institut Teknologi Bandung")
+        req = UserProfileUpdate(full_name="Nama Baru")
 
         res = await auth_router.update_profile(req=req, current_user=user, db=mock_db)
         self.assertEqual(user.full_name, "Nama Baru")
-        self.assertEqual(user.institution, "Institut Teknologi Bandung")
         self.assertTrue(mock_db.committed)
 
     async def test_tc_auth_006_register_duplicate_email_bad_case(self):
@@ -248,7 +236,6 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
             full_name="Duplikat",
             email="duplicate@kampus.ac.id",
             password="Password123!",
-            institution="Kampus A",
         )
         with self.assertRaises(HTTPException) as ctx:
             await AuthService.register_user(mock_db, req)
@@ -310,18 +297,18 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
         self.assertIn("Invalid or expired access token", ctx.exception.detail)
 
     async def test_tc_auth_011_rbac_unauthorized_role_blocker(self):
-        """TC-AUTH-011 [Blocker]: Pengguna role TRIAL diblokir saat mengakses endpoint khusus ADMIN."""
-        trial_user = User(id=uuid.uuid4(), role="TRIAL", is_active=True)
+        """TC-AUTH-011 [Blocker]: Pengguna role FREE diblokir saat mengakses endpoint khusus ADMIN."""
+        free_user = User(id=uuid.uuid4(), role="FREE", is_active=True)
         checker = require_role("ADMIN")
 
         with self.assertRaises(HTTPException) as ctx:
-            await checker(current_user=trial_user)
+            await checker(current_user=free_user)
         self.assertEqual(ctx.exception.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("Access forbidden", ctx.exception.detail)
 
     async def test_tc_auth_012_malformed_token_subject_bad_case(self):
         """TC-AUTH-012 [Bad Case]: Token JWT dengan subject non-UUID ditolak HTTP 401 Malformed token subject."""
-        raw_token = create_access_token(subject="not-a-valid-uuid-format", role="TRIAL")
+        raw_token = create_access_token(subject="not-a-valid-uuid-format", role="FREE")
         mock_cred = MagicMock()
         mock_cred.credentials = raw_token
         mock_db = MockAsyncSession()
@@ -342,7 +329,7 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
     async def test_tc_auth_014_user_not_found_for_valid_token_bad_case(self):
         """TC-AUTH-014 [Bad Case]: Token JWT valid namun user telah dihapus dari DB ditolak HTTP 401."""
         user_id = uuid.uuid4()
-        raw_token = create_access_token(subject=str(user_id), role="TRIAL")
+        raw_token = create_access_token(subject=str(user_id), role="FREE")
         mock_cred = MagicMock()
         mock_cred.credentials = raw_token
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
@@ -439,7 +426,7 @@ class TestWhiteboxFeature2Documents(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(doc.status, "DELETED")
         self.assertIsNotNone(doc.deleted_at)
         self.assertTrue(mock_db.committed)
-        self.assertIn("UU PDP", resp.message)
+        self.assertIn("deleted permanently", resp.message)
 
     def test_tc_doc_006_unsupported_file_extension_bad_case(self):
         """TC-DOC-006 [Bad Case]: Format berkas ilegal (.exe, .zip, .py) ditolak dengan HTTP 400."""
@@ -743,7 +730,6 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
             verification_uuid=str(uuid.uuid4()),
             document_title="Tesis_Akhir.pdf",
             user_name="Mochammad Azriel Albian Putra",
-            institution="Institut Teknologi Nasional",
             generated_at=datetime.now(timezone.utc),
             score_composite=18.5,
             score_lexical=20.0,
@@ -756,7 +742,7 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
 
     async def test_tc_rep_004_verify_certificate_public_valid_happy_path(self):
         """TC-REP-004 [Happy Ending]: Verifikasi publik QR UUIDv4 mengembalikan keaslian dokumen."""
-        user = User(id=uuid.uuid4(), full_name="Ibnu Dwiki", institution="Universitas Airlangga")
+        user = User(id=uuid.uuid4(), full_name="Ibnu Dwiki")
         doc = Document(id=uuid.uuid4(), original_filename="Skripsi_Ibnu.pdf", deleted_at=None, status="READY")
         task = AuditTask(id=uuid.uuid4())
         v_uuid = uuid.uuid4()
@@ -774,7 +760,7 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
         """TC-REP-005 [Happy Ending]: Pembersihan nama berkas sertifikat PDF membuang karakter ilegal."""
         self.assertEqual(clean_pdf_filename("LPJ FPK.docx_compressed.pdf"), "Sertifikat_VeriText_LPJ_FPK_docx_compressed.pdf")
         self.assertEqual(clean_pdf_filename("Tesis / Skripsi: Final?.pdf"), "Sertifikat_VeriText_Tesis_Skripsi_Final.pdf")
-        self.assertEqual(clean_pdf_filename("   "), "Sertifikat_VeriText_Naskah_Akademik.pdf")
+        self.assertEqual(clean_pdf_filename("   "), "Sertifikat_VeriText_Naskah.pdf")
 
     async def test_tc_rep_006_get_report_not_found_bad_case(self):
         """TC-REP-006 [Bad Case]: Pengambilan laporan audit ID tak terdaftar memicu HTTP 404."""
@@ -800,7 +786,6 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
             verification_uuid=str(uuid.uuid4()),
             document_title="Naskah_Nol.pdf",
             user_name="Pengguna Baru",
-            institution="Institut",
             generated_at=datetime.now(timezone.utc),
             score_composite=0.0,
             score_lexical=0.0,
@@ -832,7 +817,7 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
         resp = await report_router.verify_certificate_public(verification_uuid=v_uuid, db=mock_db)
 
         self.assertFalse(resp.data.is_valid)
-        self.assertIn("UU PDP No. 27/2022", resp.message)
+        self.assertIn("dihapus oleh pemilik", resp.message)
         self.assertIn("kedaluwarsa", resp.data.message)
 
     async def test_tc_rep_011_export_pdf_endpoint_happy_path(self):
@@ -874,69 +859,6 @@ class TestWhiteboxFeature4ReportsVerification(unittest.IsolatedAsyncioTestCase):
 class TestWhiteboxFeature5CorpusBank(unittest.IsolatedAsyncioTestCase):
     """Pengujian Whitebox Fitur 5: Bank Korpus Ilmiah."""
 
-    async def test_tc_crp_001_list_corpus_with_category_filter_happy_path(self):
-        """TC-CRP-001 [Happy Ending]: Listing korpus terindeks dengan filter kategori berhasil."""
-        c1 = CorpusDocument(id=uuid.uuid4(), title="Paper A", category="Informatika", status="INDEXED")
-        c2 = CorpusDocument(id=uuid.uuid4(), title="Paper B", category="Informatika", status="INDEXED")
-
-        call_idx = 0
-        def exec_handler(stmt):
-            nonlocal call_idx
-            call_idx += 1
-            if call_idx == 1:
-                return MockQueryResult(scalar_val=2)
-            return MockQueryResult([c1, c2])
-
-        mock_db = MockAsyncSession(execute_handler=exec_handler)
-        items, total = await CorpusService.list_corpus_documents(mock_db, category="Informatika")
-        self.assertEqual(total, 2)
-        self.assertEqual(len(items), 2)
-
-    async def test_tc_crp_002_ingest_zip_corpus_happy_path(self):
-        """TC-CRP-002 [Happy Ending]: Unggah arsip ZIP korpus baru berhasil dan status PENDING_INDEX."""
-        mock_file = AsyncMock()
-        mock_file.filename = "kumpulan_jurnal.zip"
-        mock_file.read.return_value = b"PK\x03\x04batchcontent123"
-
-        # Check existing hash returns None (belum ada)
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        user_id = uuid.uuid4()
-
-        res = await CorpusService.ingest_zip_corpus(mock_db, user_id, mock_file, category="Jurnal", academic_year="2025/2026")
-        self.assertEqual(res, 1)
-        added_docs = [x for x in mock_db.added if isinstance(x, CorpusDocument)]
-        self.assertEqual(len(added_docs), 1)
-        self.assertEqual(added_docs[0].status, "PENDING_INDEX")
-        self.assertEqual(added_docs[0].category, "Jurnal")
-
-        # Cleanup created upload file
-        stored_path = os.path.join(settings.UPLOAD_DIR, added_docs[0].stored_filename)
-        if os.path.exists(stored_path):
-            os.remove(stored_path)
-
-    async def test_tc_crp_003_update_corpus_metadata_happy_path(self):
-        """TC-CRP-003 [Happy Ending]: Memperbarui metadata korpus (judul, kategori, tahun akademik) berhasil."""
-        doc = CorpusDocument(id=uuid.uuid4(), title="Judul Lama", category="Umum", academic_year="2024", status="INDEXED")
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([doc]))
-
-        req = CorpusDocUpdateRequest(title="Judul Baru", category="Kecerdasan Buatan", academic_year="2025/2026")
-        updated = await CorpusService.update_corpus_doc(mock_db, doc.id, req)
-
-        self.assertEqual(updated.title, "Judul Baru")
-        self.assertEqual(updated.category, "Kecerdasan Buatan")
-        self.assertEqual(updated.academic_year, "2025/2026")
-        self.assertTrue(mock_db.committed)
-
-    async def test_tc_crp_004_delete_corpus_doc_happy_path(self):
-        """TC-CRP-004 [Happy Ending]: Soft delete dokumen korpus mengubah status menjadi DELETED."""
-        doc = CorpusDocument(id=uuid.uuid4(), status="INDEXED")
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([doc]))
-
-        res = await CorpusService.delete_corpus_doc(mock_db, doc.id)
-        self.assertTrue(res)
-        self.assertEqual(doc.status, "DELETED")
-        self.assertTrue(mock_db.committed)
-
     def test_tc_crp_005_reference_corpus_bank_singleton_happy_path(self):
         """TC-CRP-005 [Happy Ending]: Singleton ReferenceCorpusBank memuat paper referensi built-in."""
         bank = ReferenceCorpusBank.get_instance()
@@ -946,98 +868,6 @@ class TestWhiteboxFeature5CorpusBank(unittest.IsolatedAsyncioTestCase):
         self.assertGreater(len(fps), 0)
         self.assertGreater(len(chunks), 0)
 
-    async def test_tc_crp_006_update_nonexistent_corpus_bad_case(self):
-        """TC-CRP-006 [Bad Case]: Update korpus ID yang tidak ditemukan memicu HTTP 404 Not Found."""
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        req = CorpusDocUpdateRequest(title="Baru")
-
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.update_corpus_doc(mock_db, uuid.uuid4(), req)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn("Corpus document not found", ctx.exception.detail)
-
-    async def test_tc_crp_007_delete_nonexistent_corpus_bad_case(self):
-        """TC-CRP-007 [Bad Case]: Hapus korpus ID tak ditemukan memicu HTTP 404 Not Found."""
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.delete_corpus_doc(mock_db, uuid.uuid4())
-        self.assertEqual(ctx.exception.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn("Corpus document not found", ctx.exception.detail)
-
-    async def test_tc_crp_008_empty_corpus_category_filter_bad_case(self):
-        """TC-CRP-008 [Bad Case]: Kategori yang tidak memiliki dokumen mengembalikan list kosong."""
-        call_count = 0
-        def exec_handler(stmt):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return MockQueryResult(scalar_val=0)
-            return MockQueryResult([])
-
-        mock_db = MockAsyncSession(execute_handler=exec_handler)
-        items, total = await CorpusService.list_corpus_documents(mock_db, category="KategoriTakAda")
-        self.assertEqual(total, 0)
-        self.assertEqual(len(items), 0)
-
-    async def test_tc_crp_009_duplicate_corpus_sha256_blocker(self):
-        """TC-CRP-009 [Blocker]: Unggah korpus dengan SHA-256 identik diblokir dengan HTTP 409 Conflict."""
-        mock_file = AsyncMock()
-        mock_file.filename = "duplikat.zip"
-        content = b"PK\x03\x04duplikasi_konten_arsip"
-        mock_file.read.return_value = content
-
-        existing = CorpusDocument(sha256_hash=hashlib.sha256(content).hexdigest())
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([existing]))
-
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.ingest_zip_corpus(mock_db, uuid.uuid4(), mock_file)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_409_CONFLICT)
-        self.assertIn("identical content hash already exists", ctx.exception.detail)
-
-    async def test_tc_crp_010_mahasiswa_role_blocked_from_corpus_blocker(self):
-        """TC-CRP-010 [Blocker]: Role Mahasiswa (TRIAL) dilarang mengakses manajemen korpus (Dosen/Admin only)."""
-        mahasiswa = User(id=uuid.uuid4(), role="TRIAL")
-        checker = require_role("REVIEWER", "ADMIN")
-
-        with self.assertRaises(HTTPException) as ctx:
-            await checker(current_user=mahasiswa)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_403_FORBIDDEN)
-
-    async def test_tc_crp_011_ingest_non_zip_extension_bad_case(self):
-        """TC-CRP-011 [Bad Case]: Unggah berkas korpus non-ZIP (.pdf, .exe, .py) ditolak HTTP 400."""
-        mock_file = AsyncMock()
-        mock_file.filename = "naskah_bukan_zip.pdf"
-        mock_file.read.return_value = b"konten bukan zip"
-        mock_db = MockAsyncSession()
-
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.ingest_zip_corpus(mock_db, uuid.uuid4(), mock_file)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Only ZIP archives (.zip) are allowed", ctx.exception.detail)
-
-    async def test_tc_crp_012_ingest_empty_archive_bad_case(self):
-        """TC-CRP-012 [Bad Case]: Unggah arsip ZIP korpus kosong (0 byte) ditolak HTTP 400."""
-        mock_file = AsyncMock()
-        mock_file.filename = "kosong.zip"
-        mock_file.read.return_value = b""
-        mock_db = MockAsyncSession()
-
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.ingest_zip_corpus(mock_db, uuid.uuid4(), mock_file)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Corpus archive is empty (0 bytes)", ctx.exception.detail)
-
-    async def test_tc_crp_013_ingest_corrupted_zip_header_bad_case(self):
-        """TC-CRP-013 [Bad Case]: Unggah berkas ber-ekstensi .zip namun bukan format ZIP valid (bukan magic PK) ditolak HTTP 400."""
-        mock_file = AsyncMock()
-        mock_file.filename = "rusak.zip"
-        mock_file.read.return_value = b"BUKAN_ZIP_HEADER_DATA_12345"
-        mock_db = MockAsyncSession()
-
-        with self.assertRaises(HTTPException) as ctx:
-            await CorpusService.ingest_zip_corpus(mock_db, uuid.uuid4(), mock_file)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Invalid ZIP archive header", ctx.exception.detail)
 
 
 # ===========================================================================
@@ -1334,116 +1164,32 @@ class TestWhiteboxFeature6WalletBilling(unittest.IsolatedAsyncioTestCase):
 # FITUR 7: KONSOL TATA KELOLA ADMIN & UU PDP (TC-ADM-001 s/d TC-ADM-015)
 # ===========================================================================
 class TestWhiteboxFeature7AdminGovernance(unittest.IsolatedAsyncioTestCase):
-    """Pengujian Whitebox Fitur 7: Konsol Tata Kelola Administrator & Kepatuhan UU PDP."""
+    """Pengujian Whitebox Fitur 7: Konsol Monitoring Read-Only Administrator."""
 
-    async def test_tc_adm_001_list_users_with_filter_happy_path(self):
-        """TC-ADM-001 [Happy Ending]: Admin menampilkan daftar pengguna dengan filter role dan pencarian."""
-        u1 = User(
-            id=uuid.uuid4(),
-            full_name="Admin Sistem",
-            email="admin@veritext.ai",
-            role="ADMIN",
-            is_active=True,
-            failed_login_count=0,
-            created_at=datetime.now(timezone.utc),
-        )
-        call_count = 0
-        def exec_handler(stmt):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 1:
-                return MockQueryResult(scalar_val=1)
-            return MockQueryResult([u1])
+    async def test_tc_adm_001_analytics_happy_path(self):
+        """TC-ADM-001 [Happy Ending]: Mengambil metrik analitik global sistem."""
+        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult(scalar_val=42))
+        resp = await admin_router.get_analytics_route(db=mock_db)
+        self.assertIn("total_documents", resp.data)
+        self.assertEqual(resp.data["total_documents"], 42)
 
-        mock_db = MockAsyncSession(execute_handler=exec_handler)
-        resp = await admin_router.list_users_admin(role="ADMIN", search="veritext", page=1, limit=10, db=mock_db)
-        self.assertEqual(resp.data.total, 1)
-        self.assertEqual(len(resp.data.items), 1)
+    async def test_tc_adm_002_transactions_happy_path(self):
+        """TC-ADM-002 [Happy Ending]: Mengambil log histori transaksi token pengguna."""
+        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult(scalar_val=1000, items=[]))
+        resp = await admin_router.get_transactions_route(limit=20, db=mock_db)
+        self.assertEqual(resp.data["total_revenue"], 1000)
+        self.assertIsInstance(resp.data["items"], list)
 
-    async def test_tc_adm_002_create_user_admin_with_tokens_happy_path(self):
-        """TC-ADM-002 [Happy Ending]: Admin membuat user baru beserta dompet token awal."""
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        req = AdminUserCreateRequest(
-            full_name="Dosen Penguji",
-            email="penguji@kampus.ac.id",
-            password="PasswordDosen#123",
-            role="REVIEWER",
-            initial_tokens=50,
-        )
-        resp = await admin_router.create_user_admin(req=req, db=mock_db)
-        self.assertEqual(resp.data.email, "penguji@kampus.ac.id")
-        self.assertEqual(resp.data.role, "REVIEWER")
-
-        wallets = [x for x in mock_db.added if isinstance(x, TokenWallet)]
-        self.assertEqual(len(wallets), 1)
-        self.assertEqual(wallets[0].balance, 50)
-
-    async def test_tc_adm_003_update_user_admin_happy_path(self):
-        """TC-ADM-003 [Happy Ending]: Admin memperbarui profil, role, dan institusi user."""
-        user = User(
-            id=uuid.uuid4(),
-            full_name="Nama Awal",
-            email="user@kampus.ac.id",
-            role="TRIAL",
-            institution="Kampus Lama",
-            is_active=True,
-            failed_login_count=0,
-            created_at=datetime.now(timezone.utc),
-        )
-        mock_db = MockAsyncSession(
-            get_handler=lambda m, ident: user,
-            execute_handler=lambda s: MockQueryResult([user]),
-        )
-        req = AdminUserUpdateRequest(full_name="Nama Baru", role="PREMIUM", institution="Kampus Baru")
-
-        resp = await admin_router.update_user_admin(user_id=str(user.id), req=req, db=mock_db)
-        self.assertEqual(user.full_name, "Nama Baru")
-        self.assertEqual(user.role, "PREMIUM")
-        self.assertEqual(user.institution, "Kampus Baru")
-
-    async def test_tc_adm_004_reset_password_admin_happy_path(self):
-        """TC-ADM-004 [Happy Ending]: Admin mereset password akun pengguna dengan hash baru."""
-        user = User(id=uuid.uuid4(), full_name="Mhs Reset", password_hash="old_hash")
-        mock_db = MockAsyncSession(get_handler=lambda m, ident: user)
-        req = AdminResetPasswordRequest(new_password="PasswordBaruAdmin#2026")
-
-        resp = await admin_router.reset_password_admin(user_id=str(user.id), req=req, db=mock_db)
-        self.assertTrue(verify_password("PasswordBaruAdmin#2026", user.password_hash))
-        self.assertTrue(mock_db.committed)
-
-    async def test_tc_adm_005_adjust_user_tokens_credit_debit_happy_path(self):
-        """TC-ADM-005 [Happy Ending]: Admin menyesuaikan saldo token (kredit/debit) & mencatat transaksi audit."""
-        user = User(id=uuid.uuid4())
-        wallet = TokenWallet(id=uuid.uuid4(), user_id=user.id, balance=20)
-        mock_db = MockAsyncSession(
-            get_handler=lambda m, ident: user,
-            execute_handler=lambda s: MockQueryResult([wallet]),
-        )
-        req = TokenAdjustmentRequest(amount=15, note="Bonus publikasi Q1")
-
-        resp = await admin_router.adjust_user_tokens(user_id=str(user.id), req=req, db=mock_db)
-        self.assertEqual(wallet.balance, 35)  # 20 + 15
-        txs = [x for x in mock_db.added if isinstance(x, TokenTransaction)]
-        self.assertEqual(len(txs), 1)
-        self.assertEqual(txs[0].transaction_type, "CREDIT_ADMIN")
-        self.assertEqual(txs[0].amount, 15)
-
-    async def test_tc_adm_006_system_health_metrics_happy_path(self):
-        """TC-ADM-006 [Happy Ending]: Mengambil metrik kesehatan sistem, CPU, RAM, DB status, dan Redis."""
+    async def test_tc_adm_003_system_health_metrics_happy_path(self):
+        """TC-ADM-003 [Happy Ending]: Mengambil metrik kesehatan sistem, CPU, RAM, DB status, dan Redis."""
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult(scalar_val=10))
         resp = await admin_router.get_health_metrics(db=mock_db)
         self.assertEqual(resp.data.database_status, "HEALTHY")
         self.assertGreater(resp.data.cpu_percent, 0.0)
         self.assertGreater(resp.data.memory_percent, 0.0)
 
-    async def test_tc_adm_007_reindex_hnsw_pgvector_happy_path(self):
-        """TC-ADM-007 [Happy Ending]: Menjadwalkan rekonstruksi indeks HNSW pgvector."""
-        resp = await admin_router.reindex_hnsw()
-        self.assertEqual(resp.data["status"], "SCHEDULED")
-        self.assertIn("HNSW", resp.message)
-
-    async def test_tc_adm_008_list_audit_logs_happy_path(self):
-        """TC-ADM-008 [Happy Ending]: Mengambil rekam jejak audit log forensik aktivitas sistem."""
+    async def test_tc_adm_004_list_audit_logs_happy_path(self):
+        """TC-ADM-004 [Happy Ending]: Mengambil rekam jejak audit log forensik aktivitas sistem."""
         log1 = AuditLog(
             id=uuid.uuid4(),
             action_type="USER_LOGIN",
@@ -1464,99 +1210,15 @@ class TestWhiteboxFeature7AdminGovernance(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp.data.total, 1)
         self.assertEqual(len(resp.data.items), 1)
 
-    async def test_tc_adm_009_purge_expired_retention_uu_pdp_happy_path(self):
-        """TC-ADM-009 [Happy Ending]: Purge dokumen retensi 30 hari permanen untuk kepatuhan UU PDP No. 27/2022."""
-        doc_old = Document(
-            id=uuid.uuid4(),
-            original_filename="naskah_lama.pdf",
-            stored_filename="naskah_lama.pdf",
-            status="DELETED",
-            deleted_at=datetime.now(timezone.utc) - timedelta(days=35),
-            created_at=datetime.now(timezone.utc) - timedelta(days=40),
-        )
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([doc_old]))
-
-        resp = await admin_router.purge_retention_data(retention_days=30, db=mock_db)
-        self.assertEqual(resp.data["purged_count"], 1)
-        self.assertIn(doc_old, mock_db.deleted)
-
-        logs = [x for x in mock_db.added if isinstance(x, AuditLog)]
-        self.assertEqual(len(logs), 1)
-        self.assertEqual(logs[0].action_type, "DOCUMENT_PURGE")
-        self.assertIn("UU PDP", logs[0].meta_data["compliance"])
-
-    async def test_tc_adm_010_token_adjustment_negative_balance_bad_case(self):
-        """TC-ADM-010 [Bad Case]: Penyesuaian token yang mengakibatkan saldo negatif ditolak HTTP 400."""
-        user = User(id=uuid.uuid4())
-        wallet = TokenWallet(user_id=user.id, balance=5)  # Saldo 5, dikurangi 10 -> -5
-        mock_db = MockAsyncSession(
-            get_handler=lambda m, ident: user,
-            execute_handler=lambda s: MockQueryResult([wallet]),
-        )
-        req = TokenAdjustmentRequest(amount=-10, note="Pengurangan saldo berlebih")
-
-        with self.assertRaises(HTTPException) as ctx:
-            await admin_router.adjust_user_tokens(user_id=str(user.id), req=req, db=mock_db)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("result in negative balance", ctx.exception.detail)
-
-    async def test_tc_adm_011_nonexistent_user_identifier_bad_case(self):
-        """TC-ADM-011 [Bad Case]: Akses detail pengguna dengan ID tidak dikenal memicu HTTP 404."""
-        mock_db = MockAsyncSession(
-            get_handler=lambda m, ident: None,
-            execute_handler=lambda s: MockQueryResult([]),
-        )
-        with self.assertRaises(HTTPException) as ctx:
-            await admin_router.get_user_detail_admin(user_id=str(uuid.uuid4()), db=mock_db)
-        self.assertEqual(ctx.exception.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn("User not found", ctx.exception.detail)
-
-    async def test_tc_adm_012_non_admin_rbac_blocked_blocker(self):
-        """TC-ADM-012 [Blocker]: Pengguna non-admin (TRIAL/REVIEWER) diblokir dari konsol admin (HTTP 403)."""
-        dosen = User(id=uuid.uuid4(), role="REVIEWER")
+    async def test_tc_adm_005_non_admin_rbac_blocked_blocker(self):
+        """TC-ADM-005 [Blocker]: Pengguna non-admin (FREE/PREMIUM) diblokir dari konsol admin (HTTP 403)."""
+        user = User(id=uuid.uuid4(), role="FREE")
         checker = require_role("ADMIN")
 
         with self.assertRaises(HTTPException) as ctx:
-            await checker(current_user=dosen)
+            await checker(current_user=user)
         self.assertEqual(ctx.exception.status_code, status.HTTP_403_FORBIDDEN)
 
-    async def test_tc_adm_013_update_user_status_suspend_activate_happy_path(self):
-        """TC-ADM-013 [Happy Ending]: Admin memperbarui status akun pengguna (suspend/activate)."""
-        user = User(id=uuid.uuid4(), is_active=True)
-        mock_db = MockAsyncSession(get_handler=lambda m, ident: user)
-        from app.schemas.admin import UserStatusUpdateRequest
-
-        # Suspend
-        resp = await admin_router.update_user_status(user_id=str(user.id), req=UserStatusUpdateRequest(is_active=False), db=mock_db)
-        self.assertFalse(user.is_active)
-        self.assertIn("suspended", resp.message)
-
-        # Re-activate
-        resp2 = await admin_router.update_user_status(user_id=str(user.id), req=UserStatusUpdateRequest(is_active=True), db=mock_db)
-        self.assertTrue(user.is_active)
-        self.assertIn("activated", resp2.message)
-
-    async def test_tc_adm_014_delete_user_and_wallet_admin_happy_path(self):
-        """TC-ADM-014 [Happy Ending]: Admin menghapus akun pengguna beserta dompet tokennya."""
-        user = User(id=uuid.uuid4(), full_name="User Hapus")
-        wallet = TokenWallet(user_id=user.id, balance=10)
-        mock_db = MockAsyncSession(
-            get_handler=lambda m, ident: user,
-            execute_handler=lambda s: MockQueryResult([wallet]),
-        )
-        resp = await admin_router.delete_user_admin(user_id=str(user.id), db=mock_db)
-        self.assertIn(wallet, mock_db.deleted)
-        self.assertIn(user, mock_db.deleted)
-        self.assertTrue(mock_db.committed)
-
-    async def test_tc_adm_015_find_user_by_email_identifier_happy_path(self):
-        """TC-ADM-015 [Happy Ending]: Pencarian helper admin menemukan pengguna menggunakan string email (bukan UUID)."""
-        user = User(id=uuid.uuid4(), email="dosen@kampus.ac.id")
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([user]))
-
-        found = await admin_router.find_user_by_identifier("dosen@kampus.ac.id", mock_db)
-        self.assertIsNotNone(found)
-        self.assertEqual(found.email, "dosen@kampus.ac.id")
 
 
 if __name__ == "__main__":

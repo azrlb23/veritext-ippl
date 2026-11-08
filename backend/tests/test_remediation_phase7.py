@@ -32,18 +32,12 @@ from app.models.document import Document
 from app.models.audit import AuditTask, AuditReport
 from app.models.corpus import CorpusDocument
 from app.models.password_reset import PasswordReset
-from app.models.system_config import SystemConfig
 from app.models.wallet import TokenWallet, TokenTransaction
-from app.schemas.admin import AdminUserCreateRequest, AdminUserUpdateRequest
 from app.schemas.auth import ForgotPasswordRequest, ResetPasswordRequest
-from app.schemas.corpus import CorpusDocUpdateRequest
 from app.services.audit_service import AuditService
-from app.services.corpus_service import CorpusService
 from app.workers.tasks import execute_audit_pipeline
 import app.api.v1.auth as auth_router
 import app.api.v1.reports as report_router
-import app.api.v1.corpus as corpus_router
-import app.api.v1.admin as admin_router
 
 
 class MockQueryResult:
@@ -130,7 +124,7 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
             full_name="Mahasiswa Korban Kebocoran",
             email="korban@kampus.ac.id",
             password_hash=get_password_hash("OldSecret#123"),
-            role="TRIAL",
+            role="FREE",
             is_active=True,
         )
 
@@ -184,8 +178,8 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
         other_user_id = uuid.uuid4()
         admin_id = uuid.uuid4()
 
-        owner_user = User(id=owner_id, full_name="Mahasiswa Pemilik", role="TRIAL")
-        other_user = User(id=other_user_id, full_name="Pengguna Penyerang", role="TRIAL")
+        owner_user = User(id=owner_id, full_name="Mahasiswa Pemilik", role="FREE")
+        other_user = User(id=other_user_id, full_name="Pengguna Penyerang", role="FREE")
         admin_user = User(id=admin_id, full_name="Super Admin", role="ADMIN")
 
         task = AuditTask(id=uuid.uuid4(), user_id=owner_id, user=owner_user)
@@ -241,103 +235,7 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
             )
         self.assertEqual(ctx_404.exception.status_code, status.HTTP_404_NOT_FOUND)
 
-    # =========================================================================
-    # TC-SEC-39: Bersihkan Default Backdoor VeriText#2026 di Admin Schemas & Endpoints
-    # =========================================================================
-    def test_tc_sec_39_admin_user_create_no_backdoor_password(self):
-        """
-        TC-SEC-39: Memverifikasi penghapusan default backdoor 'VeriText#2026':
-        - AdminUserCreateRequest tanpa parameter password WAJIB memicu ValidationError
-        - Tidak ada nilai default tersembunyi
-        """
-        # 1. Panggilan tanpa password harus gagal divalidasi oleh Pydantic
-        with self.assertRaises(ValidationError) as ctx_val:
-            AdminUserCreateRequest(
-                full_name="User Tanpa Sandi",
-                email="nopass@kampus.ac.id",
-            )
-        errors = ctx_val.exception.errors()
-        self.assertTrue(any(e["loc"] == ("password",) for e in errors))
 
-        # 2. Panggilan dengan password valid berhasil
-        valid_req = AdminUserCreateRequest(
-            full_name="User Dengan Sandi",
-            email="withpass@kampus.ac.id",
-            password="SecureAdminChosen#2026",
-        )
-        self.assertEqual(valid_req.password, "SecureAdminChosen#2026")
-
-    # =========================================================================
-    # TC-SEC-40: Kunci IDOR Bank Korpus Multi-Reviewer Isolation
-    # =========================================================================
-    async def test_tc_sec_40_corpus_reviewer_ownership_check(self):
-        """
-        TC-SEC-40: Memvalidasi isolasi korpus antar Reviewer:
-        - Reviewer A mengubah/menghapus korpus miliknya -> Sukses
-        - Reviewer B mencoba mengubah/menghapus korpus Reviewer A -> Ditolak HTTP 403 Forbidden
-        - Admin dapat mengelola korpus milik siapa saja -> Sukses
-        """
-        reviewer_a_id = uuid.uuid4()
-        reviewer_b_id = uuid.uuid4()
-        admin_id = uuid.uuid4()
-
-        reviewer_a = User(id=reviewer_a_id, full_name="Dosen A", role="REVIEWER")
-        reviewer_b = User(id=reviewer_b_id, full_name="Dosen B", role="REVIEWER")
-        admin_user = User(id=admin_id, full_name="Admin", role="ADMIN")
-
-        doc_corpus = CorpusDocument(
-            id=uuid.uuid4(),
-            uploaded_by=reviewer_a_id,
-            title="Skripsi Dosen A",
-            category="Informatika",
-            academic_year="2025/2026",
-            stored_filename="skripsi_a.pdf",
-            sha256_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
-            status="INDEXED",
-            total_chunks=5,
-        )
-
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([doc_corpus]))
-
-        # 1. Reviewer B mencoba PATCH korpus Reviewer A -> Ditolak 403 Forbidden
-        req_update = CorpusDocUpdateRequest(title="Perubahan Ilegal oleh Reviewer B")
-        with self.assertRaises(HTTPException) as ctx_patch:
-            await corpus_router.update_corpus(
-                doc_id=doc_corpus.id,
-                req=req_update,
-                current_user=reviewer_b,
-                db=mock_db,
-            )
-        self.assertEqual(ctx_patch.exception.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn("Forbidden", ctx_patch.exception.detail)
-
-        # 2. Reviewer B mencoba DELETE korpus Reviewer A -> Ditolak 403 Forbidden
-        with self.assertRaises(HTTPException) as ctx_del:
-            await corpus_router.delete_corpus(
-                doc_id=doc_corpus.id,
-                current_user=reviewer_b,
-                db=mock_db,
-            )
-        self.assertEqual(ctx_del.exception.status_code, status.HTTP_403_FORBIDDEN)
-
-        # 3. Reviewer A (pemilik) mengubah korpus miliknya -> Sukses
-        resp_update = await corpus_router.update_corpus(
-            doc_id=doc_corpus.id,
-            req=req_update,
-            current_user=reviewer_a,
-            db=mock_db,
-        )
-        self.assertEqual(resp_update.data.title, "Perubahan Ilegal oleh Reviewer B")
-
-        # 4. Admin menghapus korpus milik Reviewer A -> Sukses
-        resp_admin_del = await corpus_router.delete_corpus(
-            doc_id=doc_corpus.id,
-            current_user=admin_user,
-            db=mock_db,
-        )
-        self.assertTrue(resp_admin_del.success)
 
     # =========================================================================
     # TC-SEC-41: Pengembalian Token Otomatis saat Pembatalan Task (cancel_task)
@@ -379,86 +277,6 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
         self.assertIn(refund_tx.transaction_type, ("CREDIT_REFUND", "REFUND"))
         self.assertEqual(refund_tx.tx_type, "REFUND")
 
-    # =========================================================================
-    # TC-SEC-42: Sinkronisasi SystemConfig ke Runtime Celery Worker
-    # =========================================================================
-    def test_tc_sec_42_worker_system_config_hyperparameter_sync(self):
-        """
-        TC-SEC-42: Memverifikasi execute_audit_pipeline menyinkronkan hyperparameter
-        terbaru dari tabel system_config ke settings runtime Celery worker.
-        """
-        sys_config = SystemConfig(
-            lexical_weight=0.60,
-            semantic_weight=0.30,
-            stylometric_weight=0.10,
-            winnowing_kgram=7,
-            winnowing_window=5,
-            similarity_threshold=0.85,
-            stylometric_burstiness_threshold=0.40,
-        )
-
-        task_id = uuid.uuid4()
-        doc_id = uuid.uuid4()
-        task = AuditTask(id=task_id, document_id=doc_id, audit_depth="FULL", status="QUEUED")
-        doc = Document(id=doc_id, stored_filename="dummy.txt", mime_type="text/plain", original_filename="dummy.txt")
-
-        class MockSyncDB:
-            def query(self, model):
-                if model == SystemConfig:
-                    m = MagicMock()
-                    m.order_by.return_value.first.return_value = sys_config
-                    return m
-                elif model == AuditTask:
-                    m = MagicMock()
-                    m.filter.return_value.first.return_value = task
-                    return m
-                elif model == Document:
-                    m = MagicMock()
-                    m.filter.return_value.first.return_value = doc
-                    return m
-                m = MagicMock()
-                m.filter.return_value.first.return_value = None
-                m.filter.return_value.delete.return_value = None
-                m.join.return_value.filter.return_value.all.return_value = []
-                return m
-
-            def commit(self):
-                pass
-
-            def rollback(self):
-                pass
-
-            def add(self, item):
-                pass
-
-        mock_sync_db = MockSyncDB()
-
-        with patch("app.workers.tasks.TextPreprocessor.extract_text_from_file", return_value="Teks contoh untuk pengujian worker."):
-            with patch("app.workers.tasks.HybridAggregator") as MockAggregator:
-                mock_agg = MagicMock()
-                from app.engine.tier4_aggregator import HybridAuditResult
-                mock_agg.run_pipeline.return_value = HybridAuditResult(
-                    score_lexical=10.0,
-                    score_semantic=20.0,
-                    score_stylometric=5.0,
-                    score_composite=12.5,
-                    audit_depth="FULL",
-                    sentences=[],
-                    heatmap_annotations=[],
-                    matched_sources=[],
-                )
-                MockAggregator.return_value = mock_agg
-
-                result = execute_audit_pipeline(mock_sync_db, str(task_id), str(doc_id))
-                self.assertEqual(result["status"], "SUCCESS")
-
-                # Pastikan hyperparameter telah tersinkronkan ke settings
-                self.assertEqual(settings.SIMILARITY_LEXICAL_WEIGHT, 0.60)
-                self.assertEqual(settings.SIMILARITY_SEMANTIC_WEIGHT, 0.30)
-                self.assertEqual(settings.SIMILARITY_STYLO_WEIGHT, 0.10)
-                self.assertEqual(settings.WINNOWING_K_GRAM, 7)
-                self.assertEqual(settings.WINNOWING_WINDOW_SIZE, 5)
-                self.assertEqual(settings.SIMILARITY_THRESHOLD, 0.85)
 
     # =========================================================================
     # TC-SEC-43: Startup Secret Guard Menolak Kunci Default di Mode Produksi
@@ -528,10 +346,7 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
 
             def query(self, model):
                 m = MagicMock()
-                if model == SystemConfig:
-                    m.order_by.return_value.first.return_value = None
-                    return m
-                elif model == AuditTask:
+                if model == AuditTask:
                     m.filter.return_value.first.return_value = task
                     return m
                 elif model == Document:

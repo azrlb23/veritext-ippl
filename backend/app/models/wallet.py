@@ -11,7 +11,10 @@ class TokenWallet(Base):
 
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
-    balance = Column(Integer, nullable=False, default=0)
+    balance = Column(Integer, nullable=False, default=5)
+    ai_trial_remaining = Column(Integer, nullable=False, default=3)
+    ai_chat_allowance_remaining = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
@@ -21,9 +24,10 @@ class TokenWallet(Base):
 
     __table_args__ = (
         CheckConstraint("balance >= 0", name="chk_wallet_balance_positive"),
+        CheckConstraint("ai_trial_remaining >= 0", name="chk_wallet_ai_trial_positive"),
+        CheckConstraint("ai_chat_allowance_remaining >= 0", name="chk_wallet_ai_allowance_positive"),
     )
 
-    # Relationships
     user = relationship("User", back_populates="token_wallet")
     transactions = relationship("TokenTransaction", back_populates="wallet", cascade="all, delete-orphan")
 
@@ -32,17 +36,17 @@ class TokenTransaction(Base):
     __tablename__ = "token_transactions"
 
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
-    wallet_id = Column(GUID(), ForeignKey("token_wallets.id"), nullable=False, index=True)
+    wallet_id = Column(GUID(), ForeignKey("token_wallets.id", ondelete="CASCADE"), nullable=False, index=True)
     transaction_type = Column(String(50), nullable=False)
     amount = Column(Integer, nullable=False)
-    balance_after = Column(Integer, nullable=False)
+    balance_after = Column(Integer, nullable=False, default=0)
     reference_id = Column(GUID(), nullable=True)
     note = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), index=True)
 
     __table_args__ = (
         CheckConstraint(
-            "transaction_type IN ('DEBIT_AUDIT', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN', 'REFUND')",
+            "transaction_type IN ('DEBIT_AUDIT', 'DEBIT_CHAT_PARAPHRASE', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN', 'REFUND')",
             name="chk_transaction_type",
         ),
     )
@@ -51,6 +55,8 @@ class TokenTransaction(Base):
         if "tx_type" in kwargs and "transaction_type" not in kwargs:
             raw = kwargs.pop("tx_type")
             kwargs["transaction_type"] = "CREDIT_REFUND" if raw == "REFUND" else raw
+        if "description" in kwargs and "note" not in kwargs:
+            kwargs["note"] = kwargs.pop("description")
         super().__init__(*args, **kwargs)
 
     @property
@@ -61,5 +67,8 @@ class TokenTransaction(Base):
     def tx_type(self, value: str):
         self.transaction_type = "CREDIT_REFUND" if value == "REFUND" else value
 
-    # Relationship
+    @property
+    def description(self):
+        return self.note
+
     wallet = relationship("TokenWallet", back_populates="transactions")

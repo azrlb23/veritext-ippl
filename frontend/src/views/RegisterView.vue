@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { AuthCard, RegisterForm, type RegisterDTO } from "../components/auth";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables";
+import { getHomeRouteForRole } from "../utils/navigation";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,13 +20,13 @@ async function handleRegister(formData: RegisterDTO) {
   try {
     await authStore.register(formData);
     showNotification(
-      "Pendaftaran berhasil! Akun Anda telah dibuat dan siap digunakan.",
+      "Pendaftaran berhasil! Akun Anda aktif dengan 5 Token Uji Coba Gratis.",
       "success",
-      "Akun Dibuat"
+      "Akun Berhasil Dibuat"
     );
-    router.push("/dashboard");
+    router.push(getHomeRouteForRole(authStore.role));
   } catch (err: any) {
-    if (err?.response) {
+    if (err?.response?.data) {
       errorMessage.value =
         err.response.data?.detail ||
         err.response.data?.message ||
@@ -38,25 +39,33 @@ async function handleRegister(formData: RegisterDTO) {
     isLoading.value = false;
   }
 }
+
+function handleOAuthGoogle() {
+  showNotification("Mengarahkan ke Google...", "info");
+  window.location.href = "/api/v1/auth/google/login";
+}
 </script>
 
 <template>
   <AuthCard
-    title="Pendaftaran Akun Baru"
-    subtitle="Dapatkan akses instan ke 4-Tier Hybrid Plagiarism Detection dan bonus 5 Token Audit."
+    eyebrow="MULAI GRATIS"
+    title="Buat akun baru"
   >
-    <RegisterForm
-      :loading="isLoading"
-      :errorMessage="errorMessage"
-      @submit="handleRegister"
-      @clear-error="errorMessage = ''"
-    />
+    <div class="space-y-3">
+      <div class="text-[15px] font-normal text-[#5B6475] -mt-2">
+        <span>Sudah punya akun? </span>
+        <router-link to="/login" class="text-[#1A73D9] font-medium hover:underline">
+          Masuk
+        </router-link>
+      </div>
 
-    <template #footer>
-      <span>Sudah memiliki akun?</span>
-      <router-link to="/login" class="text-audyr-ink font-medium hover:underline ml-1">
-        Masuk di sini
-      </router-link>
-    </template>
+      <RegisterForm
+        :loading="isLoading"
+        :errorMessage="errorMessage"
+        @submit="handleRegister"
+        @oauth-google="handleOAuthGoogle"
+        @clear-error="errorMessage = ''"
+      />
+    </div>
   </AuthCard>
 </template>

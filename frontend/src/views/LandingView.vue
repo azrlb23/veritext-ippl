@@ -2,31 +2,23 @@
 import {
   HeroSection,
   DashboardShowcaseWindow,
-  InteractiveDemoSnippet,
   PipelineTiersGrid,
-  InvertedDarkSection,
-  FeatureHighlights,
+  CallToActionSection,
 } from "../components/landing";
 </script>
 
 <template>
-  <div class="space-y-20 sm:space-y-28 py-8 sm:py-16">
-    <!-- Hero Section (Steep Editorial Headline with Floating Artifacts) -->
+  <div class="space-y-12 sm:space-y-20 py-4 sm:py-8 font-sans">
+    <!-- 1. Hero Section Sesuai build_landing.py:seg_nav_hero() -->
     <HeroSection />
 
-    <!-- Live Application Window Showcase (Steep Image 1 & 3 macOS Window Mockup) -->
+    <!-- 2. Laporan Diagnostik Interaktif Sesuai build_landing.py:seg_report() -->
     <DashboardShowcaseWindow />
 
-    <!-- Live Interactive Diagnostic Demo (Editorial Manuscript Inspection) -->
-    <InteractiveDemoSnippet />
-
-    <!-- 4-Tier Detection Pipeline Grid (Editorial Bento Grid) -->
+    <!-- 3. Tiga Lapis Pemeriksaan Sesuai build_landing.py:seg_how() -->
     <PipelineTiersGrid />
 
-    <!-- Inverted Ink-Black High-Contrast Section (Steep Image 2 Reference) -->
-    <InvertedDarkSection />
-
-    <!-- Technical Architecture & Compliance Highlights -->
-    <FeatureHighlights />
+    <!-- 4. Call To Action Sesuai build_landing.py:seg_cta_short() -->
+    <CallToActionSection />
   </div>
 </template>

@@ -7,6 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
+        // VeriText Official Design System Tokens (docs/design/system/tokens.json)
+        vt: {
+          bg: "#E8F0FF",
+          bgMid: "#DDF4FF",
+          bgEnd: "#EDE7FF",
+          auroraBlue: "#3B82F6",
+          auroraCyan: "#22D3EE",
+          auroraViolet: "#A78BFA",
+          card: "#FFFFFF",
+          field: "#F3F6FC",
+          hair: "#E4E8F0",
+          track: "#DCE3F0",
+          disabled: "#EDF0F6",
+          ink: "#0B0F19",
+          inkSoft: "#3A3A40",
+          sub: "#5B6475",
+          placeholder: "#636B7A",
+          primary: "#1A73D9",
+          primaryInk: "#1560BD",
+          primaryTint: "#EAF3FE",
+          primaryLight: "#3B5BDB",
+          green: "#15803D",
+          greenTint: "#EAF7EE",
+          red: "#B91C1C",
+          redTint: "#FEF3F2",
+          orange: "#C2410C",
+          orangeTint: "#FFF1E6",
+          yellow: "#A16207",
+          yellowTint: "#FEF7D6",
+          onDark: "#FFFFFF",
+        },
         // Steep Editorial Monochrome & Warm Accent Tokens
         steep: {
           ink: "#17191c",
@@ -58,8 +89,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'sans-serif'],
-        serif: ['"Source Serif 4"', 'Georgia', 'ui-serif', 'serif'],
+        sans: ['"Plus Jakarta Sans"', '"Outfit"', 'Inter', '-apple-system', 'sans-serif'],
+        serif: ['"Plus Jakarta Sans"', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       letterSpacing: {
@@ -68,6 +99,9 @@ export default {
         wide: "0.025em",
       },
       borderRadius: {
+        "vt-card": "20px",
+        "vt-field": "14px",
+        "vt-pill": "999px",
         "steep-card": "24px",
         "steep-small": "16px",
         "steep-elevated": "20px",
@@ -79,6 +113,9 @@ export default {
         "audyr-image": "12px",
       },
       boxShadow: {
+        float: "0 40px 70px -28px rgba(30,41,90,0.30), 0 16px 30px -14px rgba(30,41,90,0.16), 0 1px 3px rgba(30,41,90,0.06)",
+        lift: "0 18px 36px -14px rgba(30,41,90,0.22), 0 3px 8px rgba(30,41,90,0.06)",
+        "btn-dark": "0 16px 30px -10px rgba(11,15,25,0.50), 0 2px 5px rgba(11,15,25,0.22), inset 0 1px 0 rgba(255,255,255,0.16)",
         "steep-artifact": "0 0 0 1px rgba(4,23,43,0.05), 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
         "steep-subtle": "oklab(0 0 0 / 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.08) 0px 4px 24px 0px",
         "audyr-subtle": "0 0 0 1px rgba(4,23,43,0.05), 0 20px 25px -5px rgba(0,0,0,0.06)",

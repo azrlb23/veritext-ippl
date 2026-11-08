@@ -29,15 +29,14 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), server_default=sa.text('gen_random_uuid()'), nullable=False),
         sa.Column('full_name', sa.String(length=255), nullable=False),
         sa.Column('email', sa.String(length=320), nullable=False),
-        sa.Column('institution', sa.String(length=255), nullable=True),
         sa.Column('password_hash', sa.String(length=255), nullable=False),
-        sa.Column('role', sa.String(length=50), server_default='TRIAL', nullable=False),
+        sa.Column('role', sa.String(length=50), server_default='FREE', nullable=False),
         sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
         sa.Column('failed_login_count', sa.SmallInteger(), server_default='0', nullable=False),
         sa.Column('lockout_until', sa.DateTime(timezone=True), nullable=True),
         sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-        sa.CheckConstraint("role IN ('TRIAL', 'PREMIUM', 'REVIEWER', 'ADMIN')", name='chk_users_role'),
+        sa.CheckConstraint("role IN ('FREE', 'PREMIUM', 'ADMIN')", name='chk_users_role'),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('email')
     )

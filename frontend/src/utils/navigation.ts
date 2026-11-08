@@ -29,44 +29,33 @@ export type NotificationDispatcher = (
 ) => void;
 
 /**
+ * Returns the canonical home route according to user role.
+ * ADMIN -> '/admin', FREE/PREMIUM -> '/dashboard'.
+ */
+export function getHomeRouteForRole(role?: string | null): string {
+  const normalizedRole = String(role || "").toUpperCase();
+  return normalizedRole === "ADMIN" ? "/admin" : "/dashboard";
+}
+
+/**
  * Returns segmented navigation links based on user authentication status and role.
- *
- * Kondisi 1: Tamu (Belum Login / !isAuthenticated)
- *   - Beranda, Verifikasi QR
- * Kondisi 2: Mahasiswa Terautentikasi (TRIAL / PREMIUM / USER)
- *   - Beranda, Dashboard, Saldo Token, Verifikasi QR
- * Kondisi 3: Dosen / Reviewer (REVIEWER)
- *   - Beranda, Dashboard, Bank Korpus, Saldo Token, Verifikasi QR
- * Kondisi 4: Super Administrator (ADMIN)
- *   - Dedicated Admin Console: Overview & Metrik, Kelola Pengguna, Bank Korpus, Tuning Engine AI, Log Audit
- *   - (DILARANG menampilkan Beranda publik, Saldo Token pribadi, atau Workspace Upload Mahasiswa)
+ * Strictly enforces 3-Role SaaS Model (FREE, PREMIUM, ADMIN).
  */
 export function getSegmentedNavLinks(isAuthenticated: boolean, role: string): NavLinkItem[] {
   if (!isAuthenticated) {
     return [
       { name: "Beranda", to: "/" },
-      { name: "Verifikasi QR", to: "/verify/sample" },
+      { name: "Verifikasi QR", to: "/verify" },
     ];
   }
 
-  if (role === "ADMIN") {
+  const normalizedRole = String(role || "").toUpperCase();
+  if (normalizedRole === "ADMIN") {
     return [
-      { name: "Overview & Metrik", to: "/admin" },
-      { name: "Kelola Pengguna", to: "/admin#users" },
-      { name: "Bank Korpus", to: "/corpus" },
-      { name: "Tuning Engine AI", to: "/admin#config" },
+      { name: "Analitik Global", to: "/admin" },
+      { name: "Kesehatan Sistem", to: "/admin#health" },
+      { name: "Log Transaksi", to: "/admin#transactions" },
       { name: "Log Audit", to: "/admin#logs" },
-    ];
-  }
-
-
-  if (role === "REVIEWER") {
-    return [
-      { name: "Beranda", to: "/" },
-      { name: "Dashboard", to: "/dashboard" },
-      { name: "Bank Korpus", to: "/corpus" },
-      { name: "Saldo Token", to: "/billing" },
-      { name: "Verifikasi QR", to: "/verify/sample" },
     ];
   }
 
@@ -74,7 +63,7 @@ export function getSegmentedNavLinks(isAuthenticated: boolean, role: string): Na
     { name: "Beranda", to: "/" },
     { name: "Dashboard", to: "/dashboard" },
     { name: "Saldo Token", to: "/billing" },
-    { name: "Verifikasi QR", to: "/verify/sample" },
+    { name: "Verifikasi QR", to: "/verify" },
   ];
 }
 
@@ -88,76 +77,43 @@ export function evaluateNavigationGuard(
 ): { allowed: boolean; redirect?: any } {
   const cleanPath = (to.path || "/").replace(/\/+$/, "") || "/";
   const hasRoleRestriction = Array.isArray(to.meta.roles) && to.meta.roles.length > 0;
+  const rawRole = authStore.user?.role || authStore.role || "FREE";
+  const userRole = String(rawRole).toUpperCase();
   const isAdminRoute =
     cleanPath === "/admin" ||
     to.name === "admin" ||
-    (hasRoleRestriction && to.meta.roles?.includes("ADMIN") && to.meta.roles?.length === 1);
-  const isCorpusRoute =
-    cleanPath === "/corpus" ||
-    to.name === "corpus" ||
-    (hasRoleRestriction && to.meta.roles?.includes("REVIEWER"));
+    (hasRoleRestriction && to.meta.roles?.includes("ADMIN"));
 
-  // 1. Guest-only Routes: /login dan /register (meta: { guestOnly: true })
-  // Jika pengguna sudah login dan membuka /login atau /register, redirect otomatis ke /dashboard.
+  // 1. Guest-only Routes: /login, /register, /onboarding, /auth/callback
   if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return { allowed: false, redirect: { path: "/dashboard" } };
+    return { allowed: false, redirect: { path: getHomeRouteForRole(userRole) } };
   }
 
   // 2. Protected Authenticated Routes: meta: { requiresAuth: true } atau memiliki pembatasan role
-  // Jika belum login, redirect ke /login?redirect=... dengan notifikasi peringatan.
   const needsAuth = Boolean(to.meta.requiresAuth || hasRoleRestriction);
   if (needsAuth && !authStore.isAuthenticated) {
     if (isAdminRoute) {
-      showNotification(
-        "Akses Ditolak: Hanya Super Administrator yang diizinkan",
-        "error",
-        "Akses Ditolak"
-      );
+      showNotification("Akses Ditolak: Hanya Administrator yang diizinkan", "error", "Akses Ditolak");
     } else {
-      showNotification(
-        "Silakan masuk terlebih dahulu untuk mengakses halaman ini.",
-        "warning",
-        "Perlu Autentikasi"
-      );
+      showNotification("Silakan masuk terlebih dahulu untuk mengakses halaman ini.", "warning", "Perlu Autentikasi");
     }
     return {
       allowed: false,
-      redirect: {
-        path: "/login",
-        query: { redirect: to.fullPath },
-      },
+      redirect: { path: "/login", query: { redirect: to.fullPath } },
     };
   }
 
-  // 3. Role-based Protected Routes:
-  // - Protected Dosen / Reviewer: /corpus (roles: ['REVIEWER', 'ADMIN'])
-  // - Protected Super Admin: /admin (roles: ['ADMIN'])
+  // 3. Role-based Protected Routes
   if (hasRoleRestriction && to.meta.roles) {
-    const rawRole = authStore.user?.role || authStore.role || "TRIAL";
-    const userRole = String(rawRole).toUpperCase();
     const isAllowed = to.meta.roles.some((r) => r.toUpperCase() === userRole);
 
     if (!isAllowed) {
-      if (isAdminRoute) {
-        showNotification(
-          "Akses Ditolak: Hanya Super Administrator yang diizinkan",
-          "error",
-          "Akses Ditolak"
-        );
-      } else if (isCorpusRoute) {
-        showNotification(
-          "Akses Ditolak: Hanya Dosen/Reviewer dan Administrator yang dapat mengakses Bank Korpus.",
-          "warning",
-          "Akses Terbatas"
-        );
+      if (to.meta.roles.some((r) => r.toUpperCase() === "ADMIN")) {
+        showNotification("Akses Ditolak: Hanya Administrator yang diizinkan", "error", "Akses Ditolak");
       } else {
-        showNotification(
-          "Akses Ditolak: Anda tidak memiliki izin untuk mengakses halaman ini.",
-          "error",
-          "Akses Ditolak"
-        );
+        showNotification("Akses Ditolak: Halaman ini hanya untuk pengguna reguler.", "error", "Akses Ditolak");
       }
-      return { allowed: false, redirect: { path: "/dashboard" } };
+      return { allowed: false, redirect: { path: getHomeRouteForRole(userRole) } };
     }
   }
 

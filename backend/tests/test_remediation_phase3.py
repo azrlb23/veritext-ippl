@@ -37,16 +37,11 @@ from app.models.invoice import Invoice
 from app.models.session import Session
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
-from app.schemas.admin import AdminUserUpdateRequest, UserStatusUpdateRequest
 from app.schemas.audit import AuditStartRequest
 from app.services.audit_service import AuditService
-from app.services.auth_service import AuthService
-from app.services.corpus_service import CorpusService
 from app.services.document_service import DocumentService
-from app.api.v1 import admin as admin_router
 from app.api.v1 import audits as audits_router
 from app.api.v1 import auth as auth_router
-from app.api.v1 import corpus as corpus_router
 from app.api.v1 import documents as doc_router
 
 
@@ -181,7 +176,7 @@ class TestRemediationPhase3TDD(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(doc.status, "DELETED")
         self.assertIsNotNone(doc.deleted_at)
         self.assertTrue(mock_db.committed)
-        self.assertIn("UU PDP", resp.message)
+        self.assertIn("deleted permanently", resp.message)
 
         # Sub-test: Non-existent document raises 404
         empty_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
@@ -189,92 +184,6 @@ class TestRemediationPhase3TDD(unittest.IsolatedAsyncioTestCase):
             await doc_router.delete_document(doc_id=uuid.uuid4(), current_user=user, db=empty_db)
         self.assertEqual(ctx.exception.status_code, status.HTTP_404_NOT_FOUND)
 
-    async def test_tc_sec_16_corpus_cascade_cleanup_on_delete(self):
-        """
-        [ROUND3-08]:
-        1. Menghapus korpus via CorpusService.delete_corpus_doc menghapus rekaman anak
-           DocumentChunk dan LexicalFingerprint di database.
-        2. Berkas arsip fisik korpus di disk server juga dihapus.
-        3. Status korpus diset menjadi 'DELETED'.
-        """
-        stored_filename, file_path = self._create_temp_upload_file("corpus_archive")
-        self.assertTrue(os.path.exists(file_path))
-
-        corpus_id = uuid.uuid4()
-        corpus_doc = CorpusDocument(
-            id=corpus_id,
-            title="Arsip Skripsi 2024",
-            stored_filename=stored_filename,
-            status="INDEXED",
-        )
-
-        executed_stmts = []
-
-        def exec_handler(stmt):
-            executed_stmts.append(stmt)
-            # When selecting the corpus doc
-            stmt_str = str(stmt).lower()
-            if "select" in stmt_str and "corpus_documents" in stmt_str:
-                return MockQueryResult([corpus_doc])
-            return MockQueryResult([])
-
-        mock_db = MockAsyncSession(execute_handler=exec_handler)
-
-        res = await CorpusService.delete_corpus_doc(mock_db, corpus_id)
-        self.assertTrue(res)
-
-        # 1. Berkas fisik korpus di disk harus terhapus
-        self.assertFalse(
-            os.path.exists(file_path),
-            "Residu fisik berkas arsip korpus masih tertinggal di disk setelah delete!",
-        )
-
-        # 2. Status diubah menjadi DELETED
-        self.assertEqual(corpus_doc.status, "DELETED")
-        self.assertTrue(mock_db.committed)
-
-        # 3. Harus ada delete statement untuk DocumentChunk dan LexicalFingerprint
-        chunk_deleted = False
-        fingerprint_deleted = False
-        for s in executed_stmts:
-            s_str = str(s).lower()
-            if "delete" in s_str and "document_chunks" in s_str:
-                chunk_deleted = True
-            if "delete" in s_str and "lexical_fingerprints" in s_str:
-                fingerprint_deleted = True
-
-        self.assertTrue(
-            chunk_deleted,
-            "DocumentChunk anak tidak dihapus saat korpus dihapus (vektor orphan di DB)",
-        )
-        self.assertTrue(
-            fingerprint_deleted,
-            "LexicalFingerprint anak tidak dihapus saat korpus dihapus (residu sidik jari di DB)",
-        )
-
-        # Sub-test: Non-existent corpus document raises HTTP 404
-        empty_corpus_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-        with self.assertRaises(HTTPException) as ctx_missing:
-            await CorpusService.delete_corpus_doc(empty_corpus_db, uuid.uuid4())
-        self.assertEqual(ctx_missing.exception.status_code, status.HTTP_404_NOT_FOUND)
-
-        # Sub-test: Already deleted corpus document cannot be re-deleted and raises HTTP 404
-        already_deleted_corpus = CorpusDocument(
-            id=uuid.uuid4(),
-            title="Arsip Terhapus",
-            stored_filename="deleted_corpus.pdf",
-            status="DELETED",
-        )
-        def exec_deleted_handler(stmt):
-            s_str = str(stmt).lower()
-            if "status != 'deleted'" in s_str or "status !=" in s_str:
-                return MockQueryResult([])
-            return MockQueryResult([already_deleted_corpus])
-
-        deleted_corpus_db = MockAsyncSession(execute_handler=exec_deleted_handler)
-        with self.assertRaises(HTTPException) as ctx_already_del:
-            await CorpusService.delete_corpus_doc(deleted_corpus_db, already_deleted_corpus.id)
-        self.assertEqual(ctx_already_del.exception.status_code, status.HTTP_404_NOT_FOUND)
 
     async def test_tc_sec_17_self_account_deletion_endpoint(self):
         """
@@ -373,203 +282,6 @@ class TestRemediationPhase3TDD(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ctx2.exception.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(ctx2.exception.detail, "Cannot audit a deleted document")
 
-    async def test_tc_sec_19_audit_log_non_repudiation_actor_recording(self):
-        """
-        [NEW-REV-03 & FINAL-REV-05]:
-        Pembersihan data retensi (/purge-retention) merekam identitas aktor riil
-        (actor_id, actor_ip, actor_user_agent) pada tabel audit_logs dan bukan NULL.
-        """
-        admin = User(id=uuid.uuid4(), email="superadmin@univ.ac.id", role="ADMIN", is_active=True)
-
-        mock_request = MagicMock(spec=Request)
-        mock_request.client.host = "203.0.113.42"
-        mock_request.headers.get.side_effect = lambda h: "VeriText-Security-Inspector/3.0" if h.lower() == "user-agent" else None
-
-        mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
-
-        resp = await admin_router.purge_retention_data(
-            request=mock_request,
-            retention_days=30,
-            current_user=admin,
-            db=mock_db,
-        )
-
-        # Periksa entri AuditLog yang ditambahkan ke database
-        audit_log_entries = [item for item in mock_db.added if isinstance(item, AuditLog)]
-        self.assertTrue(len(audit_log_entries) > 0, "AuditLog tidak dibuat pada operasi purge-retention")
-
-        log = audit_log_entries[0]
-        self.assertEqual(log.actor_id, admin.id, "Non-repudiation violation: actor_id masih bernilai NULL!")
-        self.assertEqual(log.actor_ip, "203.0.113.42", "Non-repudiation violation: actor_ip masih bernilai NULL!")
-        self.assertEqual(
-            log.actor_user_agent,
-            "VeriText-Security-Inspector/3.0",
-            "Non-repudiation violation: actor_user_agent masih bernilai NULL!",
-        )
-        self.assertEqual(log.action_type, "DOCUMENT_PURGE")
-        self.assertEqual(log.action_result, "SUCCESS")
-
-    async def test_tc_sec_20_admin_self_lockout_protection(self):
-        """
-        [NEW-REV-04]:
-        Penonaktifan atau penghapusan akun ditolak jika user tersebut adalah satu-satunya
-        Super Admin aktif (mencegah permanent system lockout).
-        """
-        solo_admin = User(
-            id=uuid.uuid4(),
-            email="solo_admin@univ.ac.id",
-            full_name="Solo Admin",
-            role="ADMIN",
-            is_active=True,
-        )
-
-        # 1 admin aktif di sistem
-        def exec_handler_solo(stmt):
-            s_str = str(stmt).lower()
-            if "get_user" in s_str:
-                return solo_admin
-            if "count(" in s_str:
-                return MockQueryResult(scalar_val=1)
-            if "users" in s_str:
-                return MockQueryResult([solo_admin])
-            return MockQueryResult([])
-
-        # Sub-test A: Penonaktifan admin terakhir ditolak dengan HTTP 400
-        mock_db_deactivate = MockAsyncSession(execute_handler=exec_handler_solo)
-        with self.assertRaises(HTTPException) as ctx_deact:
-            await admin_router.update_user_status(
-                user_id=str(solo_admin.id),
-                req=UserStatusUpdateRequest(is_active=False),
-                db=mock_db_deactivate,
-            )
-        self.assertEqual(ctx_deact.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(ctx_deact.exception.detail, "Cannot deactivate or delete the last active administrator")
-
-        # Sub-test B: Penghapusan admin terakhir via admin route ditolak dengan HTTP 400
-        mock_db_del_admin = MockAsyncSession(execute_handler=exec_handler_solo)
-        with self.assertRaises(HTTPException) as ctx_del_admin:
-            await admin_router.delete_user_admin(
-                user_id=str(solo_admin.id),
-                db=mock_db_del_admin,
-            )
-        self.assertEqual(ctx_del_admin.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(ctx_del_admin.exception.detail, "Cannot deactivate or delete the last active administrator")
-
-        # Sub-test C: Penghapusan admin terakhir via self-delete /auth/me ditolak dengan HTTP 400
-        mock_db_self_del = MockAsyncSession(execute_handler=exec_handler_solo)
-        with self.assertRaises(HTTPException) as ctx_self:
-            await auth_router.delete_own_account(
-                response=Response(),
-                current_user=solo_admin,
-                db=mock_db_self_del,
-            )
-        self.assertEqual(ctx_self.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(ctx_self.exception.detail, "Cannot deactivate or delete the last active administrator")
-
-        # Sub-test D: Jika ada >= 2 admin aktif, deaktifasi atau penghapusan admin diperbolehkan
-        def exec_handler_multi(stmt):
-            s_str = str(stmt).lower()
-            if "get_user" in s_str:
-                return solo_admin
-            if "count(" in s_str:
-                return MockQueryResult(scalar_val=2)
-            if "users" in s_str:
-                return MockQueryResult([solo_admin])
-            return MockQueryResult([])
-
-        mock_db_allowed = MockAsyncSession(execute_handler=exec_handler_multi)
-        resp = await admin_router.update_user_status(
-            user_id=str(solo_admin.id),
-            req=UserStatusUpdateRequest(is_active=False),
-            db=mock_db_allowed,
-        )
-        self.assertFalse(solo_admin.is_active)
-        self.assertTrue(mock_db_allowed.committed)
-
-        # Reset solo_admin to active
-        solo_admin.is_active = True
-        solo_admin.role = "ADMIN"
-
-        # Sub-test E: PUT /admin/users/{user_id} deactivating last admin is blocked
-        mock_db_put_deact = MockAsyncSession(execute_handler=exec_handler_solo)
-        with self.assertRaises(HTTPException) as ctx_put_deact:
-            await admin_router.update_user_admin(
-                user_id=str(solo_admin.id),
-                req=AdminUserUpdateRequest(is_active=False),
-                db=mock_db_put_deact,
-            )
-        self.assertEqual(ctx_put_deact.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(ctx_put_deact.exception.detail, "Cannot deactivate or delete the last active administrator")
-
-        # Sub-test F: PUT /admin/users/{user_id} demoting last admin role is blocked
-        mock_db_put_demote = MockAsyncSession(execute_handler=exec_handler_solo)
-        with self.assertRaises(HTTPException) as ctx_put_demote:
-            await admin_router.update_user_admin(
-                user_id=str(solo_admin.id),
-                req=AdminUserUpdateRequest(role="USER"),
-                db=mock_db_put_demote,
-            )
-        self.assertEqual(ctx_put_demote.exception.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(ctx_put_demote.exception.detail, "Cannot deactivate or delete the last active administrator")
-
-    async def test_tc_sec_21_admin_user_deletion_no_foreign_key_violation_500(self):
-        """
-        [E2 & FINAL-08]:
-        Penghapusan user oleh admin menangani cascading anonymization (mis. set actor_id = NULL
-        di audit_logs) dan menghapus berkas fisik tanpa error FK constraint 500.
-        """
-        stored_f, path_f = self._create_temp_upload_file("target_user_file")
-        self.assertTrue(os.path.exists(path_f))
-
-        target_user = User(
-            id=uuid.uuid4(),
-            email="target_student@univ.ac.id",
-            full_name="Target Student",
-            role="USER",
-            is_active=True,
-        )
-
-        doc = Document(id=uuid.uuid4(), user_id=target_user.id, stored_filename=stored_f)
-        task = AuditTask(id=uuid.uuid4(), user_id=target_user.id, document_id=doc.id)
-        wallet = TokenWallet(id=uuid.uuid4(), user_id=target_user.id, balance=10)
-
-        executed_stmts = []
-
-        def exec_handler(stmt):
-            executed_stmts.append(stmt)
-            s_str = str(stmt).lower()
-            if "select" in s_str and "users" in s_str:
-                return MockQueryResult([target_user])
-            if "select" in s_str and "documents" in s_str:
-                return MockQueryResult([doc])
-            if "select" in s_str and "token_wallets" in s_str:
-                return MockQueryResult([wallet])
-            if "select" in s_str and "audit_tasks" in s_str:
-                return MockQueryResult([task])
-            return MockQueryResult([])
-
-        mock_db = MockAsyncSession(execute_handler=exec_handler)
-
-        resp = await admin_router.delete_user_admin(user_id=str(target_user.id), db=mock_db)
-
-        # 1. Berkas fisik naskah user dihapus dari disk
-        self.assertFalse(os.path.exists(path_f), "Berkas fisik tidak dihapus saat admin menghapus pengguna")
-
-        # 2. User dihapus dari database
-        self.assertIn(target_user, mock_db.deleted)
-        self.assertTrue(mock_db.committed)
-
-        # 3. Cascading anonymization dieksekusi pada audit_logs
-        anonymized_audit = False
-        anonymized_corpus = False
-        for s in executed_stmts:
-            s_str = str(s).lower()
-            if "update" in s_str and "audit_logs" in s_str:
-                anonymized_audit = True
-            if "update" in s_str and "corpus_documents" in s_str:
-                anonymized_corpus = True
-        self.assertTrue(anonymized_audit, "AuditLog actor_id tidak di-anonymize ke NULL saat user dihapus oleh admin")
-        self.assertTrue(anonymized_corpus, "CorpusDocument uploaded_by tidak di-anonymize ke NULL saat user dihapus oleh admin")
 
     async def test_tc_sec_22_csv_formula_injection_sanitization(self):
         """

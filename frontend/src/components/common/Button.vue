@@ -29,16 +29,16 @@ const emit = defineEmits<{
 const variantClasses = computed(() => {
   switch (props.variant) {
     case "secondary":
-      return "bg-transparent hover:bg-[#fafafb] text-[#17191c] border-[#17191c]/20 hover:border-[#17191c] shadow-none";
+      return "bg-white hover:bg-[#F8FAFC] text-[#0B0F19] border-[#E4E8F0] hover:border-[#CBD5E1] shadow-2xs active:scale-[0.98]";
     case "outline":
-      return "bg-white hover:bg-[#fafafb] text-[#17191c] border-[#ededed] hover:border-[#17191c] shadow-none";
+      return "bg-white hover:bg-[#F8FAFC] text-[#0B0F19] border-[#E4E8F0] hover:border-[#1560BD] shadow-2xs active:scale-[0.98]";
     case "danger":
-      return "bg-red-600 hover:bg-red-700 text-white border-transparent shadow-none";
+      return "bg-[#B91C1C] hover:bg-[#DC2626] text-white border-transparent shadow-sm active:scale-[0.98]";
     case "ghost":
-      return "bg-transparent hover:bg-[#f2f2f3] text-[#777b86] hover:text-[#17191c] border-transparent shadow-none";
+      return "bg-transparent hover:bg-[#F3F6FC] text-[#5B6475] hover:text-[#0B0F19] border-transparent shadow-none active:scale-[0.98]";
     case "primary":
     default:
-      return "bg-[#17191c] hover:bg-[#2e3138] text-white border-transparent shadow-none";
+      return "bg-[#1560BD] hover:bg-[#1A73D9] text-white border-transparent shadow-sm active:scale-[0.98]";
   }
 });
 
@@ -67,7 +67,7 @@ function handleClick(event: MouseEvent) {
   <button
     :type="type"
     :disabled="disabled || loading"
-    class="inline-flex items-center justify-center font-medium tracking-tight border transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#17191c]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2"
+    class="inline-flex items-center justify-center font-semibold tracking-tight border transition-all duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1560BD]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2 font-sans cursor-pointer"
     :class="[
       variantClasses,
       sizeClasses,

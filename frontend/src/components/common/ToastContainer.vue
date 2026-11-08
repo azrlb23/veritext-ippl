@@ -23,12 +23,12 @@ const { notifications, dismissNotification } = useNotification();
         <div
           v-for="notif in notifications"
           :key="notif.id"
-          class="pointer-events-auto p-4 rounded-[8px] border shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08)] text-xs flex items-start space-x-3 transition-all duration-300"
+          class="pointer-events-auto p-4 rounded-[16px] border shadow-lg text-xs flex items-start space-x-3 transition-all duration-300"
           :class="{
             'bg-[#ecfdf5] border-[#a7f3d0] text-[#065f46]': notif.type === 'success',
             'bg-[#fef2f2] border-[#fecaca] text-[#991b1b]': notif.type === 'error',
             'bg-[#fff7ed] border-[#fed7aa] text-[#9a3412]': notif.type === 'warning',
-            'bg-white border-[#ededed] text-[#262626]': notif.type === 'info',
+            'bg-white border-[#E4E8F0] text-[#0B0F19]': notif.type === 'info',
           }"
           role="status"
         >
@@ -42,12 +42,12 @@ const { notifications, dismissNotification } = useNotification();
             <svg v-else-if="notif.type === 'error'" class="w-4 h-4 text-[#dc2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            <svg v-else class="w-4 h-4 text-[#262626]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg v-else class="w-4 h-4 text-[#1560BD]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </span>
           <div class="flex-grow">
-            <h6 v-if="notif.title" class="font-semibold text-[#262626] tracking-tight mb-0.5">
+            <h6 v-if="notif.title" class="font-semibold text-[#0B0F19] tracking-tight mb-0.5">
               {{ notif.title }}
             </h6>
             <p class="leading-relaxed">{{ notif.message }}</p>
@@ -55,7 +55,7 @@ const { notifications, dismissNotification } = useNotification();
           <button
             type="button"
             @click="dismissNotification(notif.id)"
-            class="text-[#686868] hover:text-[#262626] p-0.5 rounded-[4px] hover:bg-[#ededed] transition-colors"
+            class="text-[#5B6475] hover:text-[#0B0F19] p-1 rounded-full hover:bg-[#F1F5F9] transition-all"
             aria-label="Tutup notifikasi"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

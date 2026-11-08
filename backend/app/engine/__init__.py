@@ -1,46 +1,51 @@
+from app.engine.ai_detector import GeminiAIDetector
 from app.engine.preprocessor import SentenceSpan, TextPreprocessor
+from app.engine.reference_corpus import (
+    BUILTIN_REFERENCE_PAPERS,
+    ReferenceCorpusBank,
+)
 from app.engine.tier1_lexical import (
-    WinnowingLexicalEngine,
     LexicalAnalysisResult,
     SentenceLexicalMatch,
+    WinnowingLexicalEngine,
 )
 from app.engine.tier2_semantic import (
-    SemanticEngine,
     SemanticAnalysisResult,
+    SemanticEngine,
     SentenceSemanticMatch,
 )
 from app.engine.tier3_stylometric import (
-    StylometricEngine,
     StylometricAnalysisResult,
+    StylometricEngine,
     StylometricSentenceAnomaly,
 )
 from app.engine.tier4_aggregator import (
+    HeatmapAnnotationData,
     HybridAggregator,
     HybridAuditResult,
-    HeatmapAnnotationData,
     MatchedSourceData,
 )
-from app.engine.reference_corpus import (
-    ReferenceCorpusBank,
-    BUILTIN_REFERENCE_PAPERS,
-)
+from app.engine.web_scanner import GeminiWebScanner, WebMatchResult
 
 __all__ = [
-    "SentenceSpan",
-    "TextPreprocessor",
-    "WinnowingLexicalEngine",
-    "LexicalAnalysisResult",
-    "SentenceLexicalMatch",
-    "SemanticEngine",
-    "SemanticAnalysisResult",
-    "SentenceSemanticMatch",
-    "StylometricEngine",
-    "StylometricAnalysisResult",
-    "StylometricSentenceAnomaly",
+    "BUILTIN_REFERENCE_PAPERS",
+    "GeminiAIDetector",
+    "GeminiWebScanner",
+    "HeatmapAnnotationData",
     "HybridAggregator",
     "HybridAuditResult",
-    "HeatmapAnnotationData",
+    "LexicalAnalysisResult",
     "MatchedSourceData",
     "ReferenceCorpusBank",
-    "BUILTIN_REFERENCE_PAPERS",
+    "SemanticAnalysisResult",
+    "SemanticEngine",
+    "SentenceLexicalMatch",
+    "SentenceSemanticMatch",
+    "SentenceSpan",
+    "StylometricAnalysisResult",
+    "StylometricEngine",
+    "StylometricSentenceAnomaly",
+    "TextPreprocessor",
+    "WebMatchResult",
+    "WinnowingLexicalEngine",
 ]

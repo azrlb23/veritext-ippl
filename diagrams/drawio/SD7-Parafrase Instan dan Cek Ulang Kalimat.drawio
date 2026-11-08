@@ -1,0 +1,148 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="sd_sd7" name="Sequence Diagram: Parafrase Instan dan Cek Ulang Kalimat">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1320" pageHeight="900" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="part_user" value="User:Pengguna" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="30.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_view" value=":WorkspaceView" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="254.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_api" value=":ParaphraseAPI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="478.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_llm" value=":GeminiAIService" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="702.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_orch" value=":AuditOrchestrator" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="926.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="part_db" value=":PostgreSQL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;fontStyle=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1150.0" y="40" width="140" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="line_user" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100.0" y="86" as="sourcePoint" />
+            <mxPoint x="100.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_view" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="86" as="sourcePoint" />
+            <mxPoint x="324.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_api" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="86" as="sourcePoint" />
+            <mxPoint x="548.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_llm" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="86" as="sourcePoint" />
+            <mxPoint x="772.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_orch" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="996.0" y="86" as="sourcePoint" />
+            <mxPoint x="996.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line_db" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1220.0" y="86" as="sourcePoint" />
+            <mxPoint x="1220.0" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_0" value="1. Klik &#x27;Parafrase Kalimat Ini&#x27; (Mode Per Kalimat)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100.0" y="110" as="sourcePoint" />
+            <mxPoint x="324.0" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_1" value="2. POST /api/v1/chat/paraphrase (sentence_id, mode)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="160" as="sourcePoint" />
+            <mxPoint x="548.0" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_2" value="3. generate_3_academic_variations(text)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="210" as="sourcePoint" />
+            <mxPoint x="772.0" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_3" value="4. 3 opsi variasi + estimasi skor" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="772.0" y="260" as="sourcePoint" />
+            <mxPoint x="548.0" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_4" value="5. 200 OK (OptionsPayload)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="310" as="sourcePoint" />
+            <mxPoint x="324.0" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_5" value="6. Tampilkan kartu pilihan 3 opsi parafrase" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="360" as="sourcePoint" />
+            <mxPoint x="100.0" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_6" value="7. Pilih Opsi #2 &amp; klik &#x27;Terapkan ke Naskah&#x27;" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="100.0" y="410" as="sourcePoint" />
+            <mxPoint x="324.0" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_7" value="8. POST /api/v1/chat/apply-paraphrase" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="460" as="sourcePoint" />
+            <mxPoint x="548.0" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_8" value="9. recompute_sentence_score(new_text)" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="510" as="sourcePoint" />
+            <mxPoint x="996.0" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_9" value="10. Skor baru turun: 88% -&gt; 8% (Lolos)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="996.0" y="560" as="sourcePoint" />
+            <mxPoint x="548.0" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_10" value="11. UPDATE audit_sentences SET in-place text &amp; tag" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="610" as="sourcePoint" />
+            <mxPoint x="1220.0" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_11" value="12. Record updated" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1220.0" y="660" as="sourcePoint" />
+            <mxPoint x="548.0" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_12" value="13. 200 OK (UpdatedSentence &amp; NewScore)" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="548.0" y="710" as="sourcePoint" />
+            <mxPoint x="324.0" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sd_msg_13" value="14. Ubah highlight jadi Hijau &amp; turunkan skor total" style="dashed=1;strokeColor=#000000;strokeWidth=1.2;endArrow=open;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="324.0" y="760" as="sourcePoint" />
+            <mxPoint x="100.0" y="760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

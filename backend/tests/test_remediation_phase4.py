@@ -169,7 +169,7 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
             full_name="Mahasiswa Penguji Lockout",
             email="lockout_user@kampus.ac.id",
             password_hash=get_password_hash("PasswordBenar#123"),
-            role="TRIAL",
+            role="FREE",
             is_active=True,
             failed_login_count=0,
             lockout_until=None,
@@ -298,7 +298,7 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
             full_name="Mahasiswa Reset Sandi",
             email="reset_target@kampus.ac.id",
             password_hash=get_password_hash(old_password),
-            role="TRIAL",
+            role="FREE",
             is_active=True,
         )
 

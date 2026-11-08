@@ -1,0 +1,82 @@
+<mxfile host="app.diagrams.net" modified="2026-11-07T12:00:00.000Z" agent="Mozilla/5.0" version="24.0.0" type="device">
+  <diagram id="arch-diagram" name="Architecture Diagram VeriText AI">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1360" pageHeight="980" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="layer_40" value="Layer 1: Lapisan Presentasi (Frontend Web Client)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;align=left;verticalAlign=top;fontStyle=1;fontSize=11.5;fontColor=#000000;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_40_0" value="Vue 3.5 SPA&#xa;&#xa;Vue 3.5 Composition API + TypeScript 5.7&#xa;Reactivity Core &amp; Views" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="65" y="84" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_40_1" value="Vite 6 &amp; Pinia 2.3&#xa;&#xa;Vite 6 Bundler &amp; DevServer&#xa;Pinia 2.3 Modular State Management" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="366" y="84" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_40_2" value="Tailwind CSS 3.4&#xa;&#xa;Academic Utility-First Styling&#xa;Split-Screen Workspace Layout" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="667" y="84" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_40_3" value="Axios 1.7 HTTP Client&#xa;&#xa;JWT Bearer Interceptor, Error Handler&#xa;&amp; Smart Polling Manager" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="968" y="84" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="layer_270" value="Layer 2: Lapisan Logika Bisnis &amp; Gateway API (Backend Core)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;align=left;verticalAlign=top;fontStyle=1;fontSize=11.5;fontColor=#000000;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="270" width="1280" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_270_0" value="FastAPI 0.115 Framework&#xa;&#xa;High-Performance ASGI Framework&#xa;Pydantic v2 Request/Response Schemas" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="65" y="314" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_270_1" value="Auth &amp; Security Guard&#xa;&#xa;JWT Access/Refresh Tokens, Google OAuth 2.0&#xa;Password Bcrypt Hashing &amp; Rate Limiting" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="366" y="314" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_270_2" value="Audit Orchestrator&#xa;&#xa;Task Dispatcher, Token Cost Calculator&#xa;&amp; In-Place Paraphrase Manager" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="667" y="314" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_270_3" value="Billing &amp; Webhook Service&#xa;&#xa;Midtrans Snap Integration &amp; SHA-512&#xa;Webhook Instant Role Upgrade (PREMIUM)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="968" y="314" width="285" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="layer_500" value="Layer 3: Lapisan Komputasi Asinkron &amp; AI Pipeline (Celery Worker &amp; ML Engine)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;align=left;verticalAlign=top;fontStyle=1;fontSize=11.5;fontColor=#000000;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="1280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_500_0" value="Step 1: Winnowing Lexical&#xa;&#xa;Rabin-Karp Rolling Hash (k=5, w=4)&#xa;Exact Verbatim Match (Red Tier 1)" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="65" y="544" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_500_1" value="Step 2: Semantic AI &amp; HNSW&#xa;&#xa;paraphrase-multilingual-MiniLM-L12-v2 (384-d)&#xa;LazarusNLP/all-indobert-base-v4 Re-Ranker" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="366" y="544" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_500_2" value="Step 3: Stylometric &amp; AI Judge&#xa;&#xa;Burstiness B &amp; Type-Token Ratio (TTR)&#xa;Gemini 2.5 Flash / OpenRouter Fallback" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="667" y="544" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_500_3" value="Celery Worker Cluster&#xa;&#xa;Redis 7.2 Message Broker &amp; Result Backend&#xa;Priority Queue untuk Pengguna PREMIUM" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="968" y="544" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="layer_740" value="Layer 4: Lapisan Persistensi Data, Korpus Otomatis &amp; Layanan Eksternal" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=2;align=left;verticalAlign=top;fontStyle=1;fontSize=11.5;fontColor=#000000;spacingLeft=16;spacingTop=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="740" width="1280" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_740_0" value="PostgreSQL 16 + pgvector&#xa;&#xa;13 Relational Tables &amp; HNSW Vector Index&#xa;Cosine Distance (&lt;=&gt;) Operator" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="65" y="784" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_740_1" value="Automated Corpus Harvesters&#xa;&#xa;Dual-Scope Academic Graph APIs:&#xa;OpenAlex, DOAJ, Semantic Scholar, Crossref" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="366" y="784" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_740_2" value="Google Grounding / Web Scanner&#xa;&#xa;Gemini Grounding &amp; Campus Repository Search&#xa;Verifikasi Tautan Publik Anti-Halusinasi" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="667" y="784" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="mod_740_3" value="Midtrans Payment Gateway&#xa;&#xa;Snap API, QRIS, Virtual Account, Credit Card&#xa;&amp; Webhook Settlement Auto-Activation" style="rounded=1;whiteSpace=wrap;html=1;arcSize=6;fillColor=#FFFFFF;strokeColor=#000000;strokeWidth=1.2;fontColor=#000000;fontSize=9.5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="968" y="784" width="285" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_l1_l2" value="REST API JSON / Bearer JWT" source="layer_40" target="layer_270" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_l2_l3" value="Celery Task Queue via Redis Broker" source="layer_270" target="layer_500" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge_l3_l4" value="SQLAlchemy Async &amp; pgvector" source="layer_500" target="layer_740" style="strokeColor=#000000;strokeWidth=1.5;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

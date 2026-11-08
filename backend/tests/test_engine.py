@@ -2,6 +2,7 @@ import math
 import os
 import sys
 import unittest
+from unittest.mock import patch
 import uuid
 
 # Ensure backend root is in sys.path
@@ -15,6 +16,7 @@ from app.engine.tier2_semantic import SemanticEngine, SemanticAnalysisResult
 from app.engine.tier3_stylometric import StylometricEngine, StylometricAnalysisResult
 from app.engine.tier4_aggregator import HybridAggregator, HybridAuditResult
 from app.engine.reference_corpus import ReferenceCorpusBank, BUILTIN_REFERENCE_PAPERS
+from app.engine.web_scanner import GeminiWebScanner
 
 
 class TestTextPreprocessor(unittest.TestCase):
@@ -318,7 +320,8 @@ class TestHybridAggregator(unittest.TestCase):
             "Ini adalah kalimat kesimpulan orisinal yang ditulis secara mandiri oleh mahasiswa."
         )
 
-        result = self.aggregator.run_pipeline(original_text=doc_text, audit_depth="FULL")
+        with patch.object(GeminiWebScanner, "scan", return_value=[]):
+            result = self.aggregator.run_pipeline(original_text=doc_text, audit_depth="FULL")
 
         self.assertIsInstance(result, HybridAuditResult)
         self.assertGreater(result.score_lexical, 30.0)
@@ -444,8 +447,9 @@ class TestDatabaseExecutionIntegration(unittest.TestCase):
         mock_db.add(doc)
         mock_db.add(task)
 
-        # Execute
-        result = execute_audit_pipeline(mock_db, str(test_task_id), str(test_doc_id))
+        # Execute with mocked web scanner to ensure fast, offline, deterministic unit test
+        with patch.object(GeminiWebScanner, "scan", return_value=[]):
+            result = execute_audit_pipeline(mock_db, str(test_task_id), str(test_doc_id))
 
         self.assertEqual(result["status"], "SUCCESS")
         self.assertEqual(task.status, "SUCCESS")
