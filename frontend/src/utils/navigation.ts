@@ -60,9 +60,9 @@ export function getSegmentedNavLinks(isAuthenticated: boolean, role: string): Na
   }
 
   return [
-    { name: "Beranda", to: "/" },
-    { name: "Dashboard", to: "/dashboard" },
-    { name: "Saldo Token", to: "/billing" },
+    { name: "Ringkasan", to: "/dashboard" },
+    { name: "Periksa naskah", to: "/periksa" },
+    { name: "Token", to: "/billing" },
     { name: "Verifikasi QR", to: "/verify" },
   ];
 }

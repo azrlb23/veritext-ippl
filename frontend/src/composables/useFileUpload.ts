@@ -8,7 +8,7 @@ export interface FileUploadOptions {
 export function useFileUpload(options: FileUploadOptions = {}) {
   const {
     allowedExtensions = [".pdf", ".docx", ".txt"],
-    maxSizeBytes = 50 * 1024 * 1024, // 50 MB
+    maxSizeBytes = 15 * 1024 * 1024, // 15 MB
   } = options;
 
   const selectedFile = ref<File | null>(null);

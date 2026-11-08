@@ -1,7 +1,23 @@
 import { apiClient } from "./api";
 import type { DocumentItem, DocumentUploadResponse } from "../types";
 
+export interface DocumentEstimate {
+  word_count: number;
+  token_cost: number;
+  within_plan: boolean;
+  max_free_words: number;
+}
+
 export const documentService = {
+  async estimate(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await apiClient.post<{ data: DocumentEstimate }>("/documents/estimate", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data.data;
+  },
+
   async upload(file: File, depth: "FULL" | "TIER1_ONLY" = "FULL") {
     const formData = new FormData();
     formData.append("file", file);

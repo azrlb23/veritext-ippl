@@ -72,3 +72,20 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
 
 ## Backlog (ditunda)
 - [ ] **B1**: UI dua bahasa (Indonesia dan Inggris) dengan i18n frontend. Ditunda sampai mesin multibahasa selesai.
+
+---
+
+## Phase 8: Pemisahan dashboard dan Asisten AI (disetujui 2026-11-08)
+- [x] **T8.1**: Halaman `/periksa` (unggah, pilihan kedalaman, ringkasan biaya) dan navbar pengguna masuk (Ringkasan, Periksa naskah, Token, Verifikasi QR).
+- [x] **T8.2**: Biaya token = `min(5, ceil(kata / 2500))` (`token_pricing.py`, `upload_charging.py`, `word_counter.py`), batas FREE 2.500 kata (402), `POST /documents/estimate`, batas berkas 15 MB, modal sambutan Violet Kaca.
+  - *Verification*: `cd backend && ./venv/bin/pytest -q` (253 passed); `cd frontend && npm run build && node src/tests/navigation.test.mjs`
+- [ ] **T8.3 (Opsi B, skema disetujui)**: Asisten AI dengan konteks dokumen. Migrasi Alembic: `chat_sessions.document_id` menjadi opsional dan tabel relasi `chat_session_documents`; endpoint daftar sesi, riwayat pesan, dan kirim pesan dengan `document_ids`; konteks diambil dari kalimat paling relevan (MiniLM) lalu masuk ke prompt. Perbarui `DATABASE_SCHEMA.md` dan `API_CONTRACT.md`.
+- [ ] **T8.4**: Halaman `/asisten`, `/riwayat`, `/akun` (profil, ganti kata sandi, hapus akun), perampingan `/dashboard` menjadi Ringkasan, `/billing` menjadi Token.
+- [ ] **T8.5**: Rapikan `audits/:id` (ruang kerja), `/admin`, dan komponen lama yang masih bergaya aurora biru.
+- [ ] **T8.6 (celah kontrak)**: `DOC_003` (naskah di bawah 50 kata ditolak, 422) tercantum di kontrak tetapi belum diimplementasikan.
+
+## Phase 9: Pengamanan unggahan dan perombakan sisa halaman (diminta 2026-11-08)
+- [ ] **T9.1 (prioritas, keamanan)**: Pengetatan unggahan. Hanya ekstensi `pdf`, `docx`, `txt`; tolak tanpa ekstensi, ekstensi ganda (misalnya `a.pdf.exe`), nama berkas dengan jalur (`../`), dan ekstensi aneh. Verifikasi isi, bukan hanya nama: PDF harus diawali `%PDF-`, DOCX harus berkas ZIP yang berisi `word/document.xml`, TXT tidak boleh mengandung byte NUL dan harus bisa didekode. Tolak bila tipe MIME bertentangan dengan isi.
+- [ ] **T9.2 (DOC_003)**: Naskah di bawah 50 kata ditolak dengan 422, baik di `POST /documents/upload` maupun `POST /documents/estimate` (estimasi mengembalikan alasan). Perbarui tes lama yang memakai naskah pendek.
+- [ ] **T9.3 (cegah kelebihan beban)**: Batasi agar dokumen tidak membebani sistem: batas halaman PDF, batas ukuran hasil dekompresi DOCX (cegah ZIP bomb), batas waktu ekstraksi, batas jumlah antrean aktif per pengguna, dan batas laju unggah. Usulan nilai ditentukan bersama pengguna; rate limit butuh dependensi baru (misalnya `slowapi`), jadi minta persetujuan dulu.
+- [ ] **T9.4 (perombakan layout)**: Seluruh halaman yang masih bergaya lama diganti ke Violet Kaca: Ringkasan (`/dashboard`), Token (`/billing`), ruang kerja (`/audits/:id`), `/admin`, serta halaman baru Riwayat, Akun, dan Asisten (lihat T8.4 dan T8.5). Mengikuti aturan wajib di `docs/design/VIOLET-KACA.md` (latar `meta.backdrop`, kartu berbayangan, isian berupa garis, responsif 1440/768/390).

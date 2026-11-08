@@ -49,8 +49,8 @@ onMounted(async () => {
   if (activeTasks.value.length > 0) startPolling();
 });
 
-async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ONLY" }) {
-  const cost = payload.depth === "FULL" ? 2 : 1;
+async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ONLY"; cost: number }) {
+  const cost = payload.cost;
   if (authStore.tokenBalance < cost) {
     showNotification(`Saldo token tidak cukup (butuh ${cost}).`, "warning");
     router.push("/billing");

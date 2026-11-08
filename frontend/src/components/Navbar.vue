@@ -67,11 +67,11 @@ onBeforeUnmount(() => {
         :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[64px] shadow-lift'"
       >
         <router-link
-          :to="isAdmin ? '/admin' : '/'"
+          :to="isGuest ? '/' : isAdmin ? '/admin' : '/dashboard'"
           class="inline-flex h-11 flex-shrink-0 items-center rounded-full text-[20px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
           @click="closeMenu"
         >
-          VeriText <span class="text-[#8A3FE0]">AI</span>
+          VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
         </router-link>
 
         <NavLinks class="hidden lg:flex" :links="navLinks" :is-active="isItemActive" />

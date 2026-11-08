@@ -13,9 +13,9 @@ const links = [
         <div class="max-w-md">
           <router-link
             to="/"
-            class="inline-block rounded text-[24px] font-semibold tracking-[-0.04em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            class="inline-flex h-11 items-center rounded text-[24px] font-semibold tracking-[-0.04em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
           >
-            VeriText <span class="text-[#8A3FE0]">AI</span>
+            VeriText <span class="ml-1.5 text-[#8A3FE0]">AI</span>
           </router-link>
           <p class="mt-4 text-[15px] leading-[1.65] text-[#4B4757]">
             Platform audit orisinalitas naskah dengan pemeriksaan kata, makna, dan gaya tulisan.

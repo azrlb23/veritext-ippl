@@ -65,4 +65,5 @@ Elemen interaktif memakai `cursor-pointer` dan cincin fokus `focus-visible:ring-
 | Beranda, navbar, footer | selesai |
 | Verifikasi QR (/verify) | selesai, latar seamless dengan LandingBackdrop versi dim |
 | Login, daftar, lupa dan reset sandi, onboarding | selesai: layout form kiri dan panel kanan dipertahankan, latar `backdrop: "auth"` (ubin memenuhi sisi kanan dan memudar ke kiri); inner form Lupa/Reset/Onboarding baru dirapikan warnanya |
-| Dashboard, billing, admin | belum (masih aurora biru lama) |
+| Periksa naskah (`/periksa`) | selesai (tahap 1 pemisahan dashboard) |
+| Ringkasan (dashboard), Riwayat, Akun, Asisten AI, Token (billing), admin | belum; urutan: Riwayat, Akun, Asisten AI, Ringkasan, Token |

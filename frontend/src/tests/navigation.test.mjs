@@ -33,13 +33,13 @@ const mockRoutes = {
 const guestLinks = getSegmentedNavLinks(false, "FREE");
 assert.deepEqual(guestLinks.map((l) => l.name), ["Beranda", "Verifikasi QR"]);
 assert.deepEqual(guestLinks.map((l) => l.to), ["/", "/verify"]);
-assert.ok(!guestLinks.some((l) => ["Dashboard", "Bank Korpus", "Saldo Token", "Admin"].includes(l.name)));
+assert.ok(!guestLinks.some((l) => ["Ringkasan", "Dashboard", "Periksa naskah", "Bank Korpus", "Saldo Token", "Token", "Admin"].includes(l.name)));
 
 // FREE & PREMIUM
 for (const role of ["FREE", "PREMIUM"]) {
   const links = getSegmentedNavLinks(true, role);
   const names = links.map((l) => l.name);
-  assert.deepEqual(names, ["Beranda", "Dashboard", "Saldo Token", "Verifikasi QR"]);
+  assert.deepEqual(names, ["Ringkasan", "Periksa naskah", "Token", "Verifikasi QR"]);
   assert.ok(!names.includes("Bank Korpus"));
   assert.ok(!names.includes("Admin"));
 }
