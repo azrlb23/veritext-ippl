@@ -3,13 +3,23 @@ from __future__ import annotations
 from typing import Optional
 import uuid
 
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ChatMessageRequest(BaseModel):
-    document_id: uuid.UUID
+    document_id: Optional[uuid.UUID] = None
+    document_ids: list[uuid.UUID] = Field(default_factory=list, max_length=3)
+    session_id: Optional[uuid.UUID] = None
     sentence_id: Optional[uuid.UUID] = None
-    prompt: str
+    prompt: str = Field(min_length=1, max_length=4000)
+
+    def all_document_ids(self) -> list[uuid.UUID]:
+        merged = list(self.document_ids)
+        if self.document_id and self.document_id not in merged:
+            merged.append(self.document_id)
+        return merged[:3]
 
 
 class ChatMessageResponse(BaseModel):
@@ -60,5 +70,24 @@ class ApplyParaphraseResponse(BaseModel):
     new_similarity: float
     new_composite_score: float
     is_modified: bool = True
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ChatSessionItem(BaseModel):
+    id: uuid.UUID
+    title: str
+    document_ids: list[uuid.UUID]
+    last_message: Optional[str] = None
+    message_count: int = 0
+    updated_at: datetime
+
+
+class ChatHistoryItem(BaseModel):
+    id: uuid.UUID
+    role: str
+    content: str
+    mode: Optional[str] = None
+    created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

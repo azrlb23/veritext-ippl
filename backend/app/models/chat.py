@@ -15,7 +15,7 @@ class ChatSession(Base):
 
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    document_id = Column(GUID(), ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_id = Column(GUID(), ForeignKey("documents.id", ondelete="CASCADE"), nullable=True, index=True)
     title = Column(String(255), nullable=False, default="Konsultasi Naskah")
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
@@ -26,7 +26,18 @@ class ChatSession(Base):
         onupdate=func.now(),
     )
 
-    messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
+    messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan", order_by="ChatMessage.created_at")
+    document_links = relationship("ChatSessionDocument", cascade="all, delete-orphan")
+
+
+class ChatSessionDocument(Base):
+    """Relasi banyak-ke-banyak: naskah yang dipakai sebagai konteks sebuah sesi asisten."""
+
+    __tablename__ = "chat_session_documents"
+
+    session_id = Column(GUID(), ForeignKey("chat_sessions.id", ondelete="CASCADE"), primary_key=True)
+    document_id = Column(GUID(), ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True, index=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=func.now())
 
 
 class ChatMessage(Base):

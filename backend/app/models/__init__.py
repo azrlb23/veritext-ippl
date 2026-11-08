@@ -7,7 +7,7 @@ from app.models.wallet import TokenWallet, TokenTransaction
 from app.models.invoice import Invoice
 from app.models.document import Document
 from app.models.audit import AuditTask, AuditSentence, AuditReport
-from app.models.chat import ChatSession, ChatMessage
+from app.models.chat import ChatSession, ChatMessage, ChatSessionDocument
 from app.models.corpus import CorpusDocument, DocumentChunk, LexicalFingerprint
 from app.models.audit_log import AuditLog
 
@@ -27,6 +27,7 @@ __all__ = [
     "AuditReport",
     "ChatSession",
     "ChatMessage",
+    "ChatSessionDocument",
     "CorpusDocument",
     "DocumentChunk",
     "LexicalFingerprint",

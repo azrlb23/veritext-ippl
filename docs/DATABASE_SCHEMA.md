@@ -176,7 +176,7 @@ CREATE INDEX idx_reports_certificate ON audit_reports(certificate_uuid);
 CREATE TABLE chat_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    document_id UUID REFERENCES documents(id) ON DELETE CASCADE, -- opsional; konteks sesi ada di chat_session_documents
     title VARCHAR(255) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -184,6 +184,16 @@ CREATE TABLE chat_sessions (
 );
 CREATE INDEX idx_chat_sessions_doc ON chat_sessions(document_id);
 CREATE INDEX idx_chat_sessions_user ON chat_sessions(user_id);
+
+-- Relasi banyak-ke-banyak: naskah yang dipakai sebagai konteks sebuah sesi (maks. 3 per pesan).
+-- Migrasi 0006_chat_multi_document. Menghapus naskah atau sesi menghapus barisnya (CASCADE).
+CREATE TABLE chat_session_documents (
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (session_id, document_id)
+);
+CREATE INDEX idx_chat_session_documents_document_id ON chat_session_documents(document_id);
 
 CREATE TABLE chat_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
