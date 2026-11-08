@@ -47,14 +47,24 @@ def build_certificate_header_table(
     ]
 
 
+def certificate_verdict(score: float) -> tuple[str, str]:
+    """Label dan warna status berdasarkan skor kemiripan komposit (sama dengan layar hasil)."""
+    if score <= 20:
+        return "Aman", "#065f46"
+    if score <= 40:
+        return "Perlu ditinjau", "#b45309"
+    return "Perlu direvisi", "#b91c1c"
+
+
 def build_certificate_meta_table(
     safe_doc_title: str, report_id: str, safe_user_name: str,
-    date_str: str, body_style: Any, body_bold: Any
+    date_str: str, body_style: Any, body_bold: Any, score_composite: float = 0.0
 ) -> Table:
+    verdict, tone = certificate_verdict(score_composite)
     meta_data = [
         [Paragraph("<b>Judul Naskah:</b>", body_style), Paragraph(f"<b>{safe_doc_title}</b>", body_bold), Paragraph("<b>ID Laporan:</b>", body_style), Paragraph(f"{str(report_id)[:16]}...", body_style)],
         [Paragraph("<b>Penulis:</b>", body_style), Paragraph(safe_user_name, body_style), Paragraph("<b>Tanggal Audit:</b>", body_style), Paragraph(date_str, body_style)],
-        [Paragraph("<b>Status Validasi:</b>", body_style), Paragraph("<font color='#065f46'><b>Lulus Evaluasi</b></font>", body_bold), Paragraph("<b>Sistem:</b>", body_style), Paragraph("VeriText AI Engine", body_style)],
+        [Paragraph("<b>Status Validasi:</b>", body_style), Paragraph(f"<font color='{tone}'><b>{verdict}</b></font>", body_bold), Paragraph("<b>Sistem:</b>", body_style), Paragraph("VeriText AI Engine", body_style)],
     ]
     meta_table = Table(meta_data, colWidths=[110, 180, 80, 152])
     meta_table.setStyle(TableStyle([

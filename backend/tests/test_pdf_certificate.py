@@ -55,3 +55,16 @@ class TestPdfCertificateService(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_certificate_verdict_follows_score_and_source_percentage_is_read():
+    from app.services.pdf_certificate_draw import certificate_verdict
+    from app.services.pdf_certificate_template import build_matched_sources_table
+    from reportlab.platypus import Paragraph
+
+    assert certificate_verdict(10)[0] == "Aman"
+    assert certificate_verdict(30)[0] == "Perlu ditinjau"
+    assert certificate_verdict(62.8)[0] == "Perlu direvisi"
+    table = build_matched_sources_table([{"title": "Sumber", "contribution_pct": 62.8}], None, None)
+    cells = [c for row in table._cellvalues for c in row if isinstance(c, Paragraph)]
+    assert any("62.8%" in c.text for c in cells)

@@ -29,9 +29,9 @@ def get_certificate_styles() -> dict[str, Any]:
 
 def build_scores_table(score_comp: float, score_lex: float, score_sem: float, score_sty: float, s: dict[str, Any]) -> Table:
     box_comp = [Paragraph("SKOR KOMPOSIT", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_comp:.1f}%", s["score_num_comp"]), Spacer(1, 2), Paragraph("Tingkat Kemiripan Total", s["score_sub"])]
-    box_lex = [Paragraph("TIER 1 (LEKSIKAL)", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_lex:.1f}%", s["score_num_lex"]), Spacer(1, 2), Paragraph("Copy-Paste Kata", s["score_sub"])]
-    box_sem = [Paragraph("TIER 2 (SEMANTIK)", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_sem:.1f}%", s["score_num_sem"]), Spacer(1, 2), Paragraph("Parafrasa Makna", s["score_sub"])]
-    box_sty = [Paragraph("TIER 3 (STILOMETRI)", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_sty:.1f}%", s["score_num_sty"]), Spacer(1, 2), Paragraph("Pola Sintaksis AI", s["score_sub"])]
+    box_lex = [Paragraph("KATA SAMA", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_lex:.1f}%", s["score_num_lex"]), Spacer(1, 2), Paragraph("Kalimat disalin utuh", s["score_sub"])]
+    box_sem = [Paragraph("MAKNA SAMA", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_sem:.1f}%", s["score_num_sem"]), Spacer(1, 2), Paragraph("Kalimat ditulis ulang", s["score_sub"])]
+    box_sty = [Paragraph("POLA TULISAN AI", s["score_sub"]), Spacer(1, 2), Paragraph(f"{score_sty:.1f}%", s["score_num_sty"]), Spacer(1, 2), Paragraph("Gaya mirip tulisan mesin", s["score_sub"])]
 
     table = Table([[box_comp, box_lex, box_sem, box_sty]], colWidths=[140, 126, 126, 130])
     table.setStyle(TableStyle([
@@ -53,14 +53,14 @@ def build_scores_table(score_comp: float, score_lex: float, score_sem: float, sc
 
 def build_matched_sources_table(matched_sources: list[dict[str, Any]] | None, body_style: Any, body_bold: Any) -> Table:
     if matched_sources and len(matched_sources) > 0:
-        table_rows = [[Paragraph("<b>No</b>", body_bold), Paragraph("<b>Judul Dokumen Rujukan</b>", body_bold), Paragraph("<b>Tingkat Kemiripan</b>", body_bold), Paragraph("<b>Kategori Tier</b>", body_bold)]]
+        table_rows = [[Paragraph("<b>No</b>", body_bold), Paragraph("<b>Judul Dokumen Rujukan</b>", body_bold), Paragraph("<b>Tingkat Kemiripan</b>", body_bold), Paragraph("<b>Jenis</b>", body_bold)]]
         for idx, src in enumerate(matched_sources[:4], 1):
             raw_title = src.get("source_title") or src.get("title") or "Dokumen Korpus Terindeks"
             src_title = html.escape(str(raw_title))
-            sim_pct = src.get("similarity", 0)
+            sim_pct = float(src.get("contribution_pct", src.get("similarity", 0)) or 0)
             sim_str = f"{sim_pct * 100:.1f}%" if sim_pct <= 1.0 else f"{sim_pct:.1f}%"
             tier = src.get("tier", "T1")
-            tier_label = "Tier 1 (Leksikal)" if tier == "T1" else ("Tier 2 (Semantik)" if tier == "T2" else "Tier 3 (AI)")
+            tier_label = "Kata sama" if tier == "T1" else ("Makna sama" if tier == "T2" else "Pola AI")
             table_rows.append([Paragraph(str(idx), body_style), Paragraph(src_title, body_style), Paragraph(sim_str, body_bold), Paragraph(tier_label, body_style)])
 
         table = Table(table_rows, colWidths=[28, 304, 95, 95])

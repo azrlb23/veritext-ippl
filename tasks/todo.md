@@ -89,3 +89,11 @@ Setiap tugas dirancang berukuran S/M (menyentuh 1–4 berkas, masing-masing $\le
 - [x] **T9.2 (DOC_003)**: Naskah di bawah 50 kata ditolak dengan 422, baik di `POST /documents/upload` maupun `POST /documents/estimate` (estimasi mengembalikan alasan). Perbarui tes lama yang memakai naskah pendek.
 - [x] **T9.3 (cegah kelebihan beban)**: Batasi agar dokumen tidak membebani sistem: batas halaman PDF, batas ukuran hasil dekompresi DOCX (cegah ZIP bomb), batas waktu ekstraksi, batas jumlah antrean aktif per pengguna, dan batas laju unggah. Usulan nilai ditentukan bersama pengguna; rate limit butuh dependensi baru (misalnya `slowapi`), jadi minta persetujuan dulu.
 - [x] **T9.4 (perombakan layout)**: Seluruh halaman yang masih bergaya lama diganti ke Violet Kaca: Ringkasan (`/dashboard`), Token (`/billing`), ruang kerja (`/audits/:id`), `/admin`, serta halaman baru Riwayat, Akun, dan Asisten (lihat T8.4 dan T8.5). Mengikuti aturan wajib di `docs/design/VIOLET-KACA.md` (latar `meta.backdrop`, kartu berbayangan, isian berupa garis, responsif 1440/768/390).
+
+## Phase 10: Penutupan celah (2026-11-08)
+- [x] Sertifikat PDF: persen sumber terbaca (`contribution_pct`), status mengikuti skor, istilah awam, teks privasi akurat. `FRONTEND_URL` harus diganti ke domain publik saat produksi.
+- [x] Hapus naskah kini hard-delete (file, sesi chat terkait, baris dokumen; sisanya via ON DELETE CASCADE).
+- [x] Antrean: tugas dikirim ke Celery SETELAH commit (sebelumnya worker gagal "Task not found"). Redis dan worker berjalan.
+- [x] Midtrans Snap: transaksi dibuat di server bila kunci asli terisi; frontend membuka `snap.js`. Kunci sandbox asli harus diisi pengguna di `.env`.
+- [x] `db/init/02_schema_ddl.sql` memuat `chat_session_documents`; test web-scan dibuat deterministik; komponen lama (Modal, EmptyState, useModal) dihapus.
+- [ ] Tier 2 belum memakai pgvector HNSW; re-ranker IndoBERT belum ada; Python 3.11 belum terpasang; pengujian visual `/admin` dengan akun ADMIN.

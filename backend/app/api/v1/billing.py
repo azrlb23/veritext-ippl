@@ -19,6 +19,7 @@ from app.schemas.billing import (
 )
 from app.schemas.common import APIResponse
 from app.services.billing_service import BillingService
+from app.services.midtrans_snap import client_key, snap_enabled
 from app.services.pdf_invoice_service import clean_invoice_filename, generate_invoice_pdf
 
 router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -44,7 +45,10 @@ async def topup_tokens(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    inv = await BillingService.create_topup_invoice(db, current_user.id, req.package_id, req.token_amount)
+    inv = await BillingService.create_topup_invoice(
+        db, current_user.id, req.package_id, req.token_amount,
+        {"first_name": current_user.full_name or "Pengguna", "email": current_user.email},
+    )
     return APIResponse(
         message="Topup order created. Proceed to payment gateway.",
         data=TopupResponse(
@@ -53,6 +57,8 @@ async def topup_tokens(
             gross_amount=inv.gross_amount,
             package_name=inv.package_name,
             token_amount=inv.token_amount,
+            payment_ready=snap_enabled() and not inv.snap_token.startswith("SNAP-"),
+            client_key=client_key(),
         ),
     )
 

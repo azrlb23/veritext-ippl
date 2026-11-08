@@ -52,9 +52,9 @@ def generate_pdf_certificate(
     story = [
         *build_certificate_header_table(verification_uuid, s["brand_style"], s["brand_sub"], s["badge_style"], styles),
         Paragraph("SERTIFIKAT HASIL AUDIT ORISINALITAS", s["title_style"]),
-        Paragraph("Dokumen resmi bukti pengujian orisinalitas naskah berbasis arsitektur 4-Tier Hybrid Lexical & Semantic AI Engine.", s["body_style"]),
+        Paragraph("Dokumen resmi bukti pengujian orisinalitas naskah yang memeriksa kesamaan kata, kesamaan makna, dan pola tulisan mesin.", s["body_style"]),
         Spacer(1, 8),
-        build_certificate_meta_table(safe_doc_title, report_id, safe_user_name, date_str, s["body_style"], s["body_bold"]),
+        build_certificate_meta_table(safe_doc_title, report_id, safe_user_name, date_str, s["body_style"], s["body_bold"], score_composite),
         Spacer(1, 10),
         build_scores_table(score_composite, score_lexical, score_semantic, score_stylometric, s),
         Spacer(1, 10),
@@ -66,8 +66,8 @@ def generate_pdf_certificate(
         Spacer(1, 8),
         HRFlowable(width="100%", thickness=1, color=colors.HexColor("#E2E8F0"), spaceAfter=5),
         Paragraph(
-            "Sertifikat ini diterbitkan secara otomatis oleh sistem VeriText AI dan memperhatikan perlindungan data pribadi pengguna. "
-            "Seluruh data naskah diuji secara terenkripsi dan dapat diverifikasi validitasnya melalui portal verifikasi publik. Hak Cipta VeriText AI.",
+            "Sertifikat ini diterbitkan secara otomatis oleh sistem VeriText AI dan menjaga data pribadi pengguna: naskah tidak ditambahkan ke basis pembanding. "
+            "Keaslian sertifikat dapat diperiksa melalui portal verifikasi publik. Hak Cipta VeriText AI.",
             ParagraphStyle("Foot", parent=styles["Normal"], fontName="Helvetica", fontSize=7, leading=9.5, textColor=colors.HexColor("#A3A3A3"), alignment=1),
         ),
     ]

@@ -1,6 +1,7 @@
 import { onMounted, ref } from "vue";
 import { billingService } from "../services/billingService";
 import { useAuthStore } from "../stores/auth";
+import { openSnap } from "../utils/midtransSnap";
 import { useNotification } from "./useNotification";
 
 export interface TokenPackage {
@@ -66,9 +67,15 @@ export function useTokenPurchase() {
     processing.value = true;
     try {
       const res = await billingService.topup(target.value.id, target.value.tokenAmount);
-      showNotification(`Pesanan ${res.order_id} dibuat. Selesaikan pembayaran agar token masuk.`, "success");
       target.value = null;
-      await load();
+      if (res.payment_ready && res.client_key) {
+        const result = await openSnap(res.snap_token, res.client_key);
+        const msg = result === "paid" ? "Pembayaran berhasil. Token segera masuk." : result === "pending" ? "Menunggu pembayaran Anda diselesaikan." : "Pembayaran belum diselesaikan.";
+        showNotification(msg, result === "paid" ? "success" : "info");
+      } else {
+        showNotification(`Pesanan ${res.order_id} dicatat, tetapi pembayaran online belum diaktifkan.`, "info");
+      }
+      await Promise.all([load(), authStore.fetchProfile()]);
     } catch (err: any) {
       showNotification(err?.response?.data?.detail || "Pesanan belum bisa dibuat.", "error");
     } finally {

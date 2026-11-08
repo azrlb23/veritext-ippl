@@ -3,14 +3,14 @@ from __future__ import annotations
 import contextlib
 import os
 import uuid
-from datetime import datetime, timezone
 
 from fastapi import HTTPException, UploadFile, status
-from sqlalchemy import select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.audit import AuditTask
+from app.models.chat import ChatSession, ChatSessionDocument
 from app.models.document import Document
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.services.document_validator import validate_file, write_upload_stream
@@ -77,32 +77,32 @@ class DocumentService:
         )
         db.add(tx)
 
+        # Commit dulu agar worker menemukan baris tugas; mengirim ke antrean sebelum commit membuat worker gagal ("Task not found").
+        await db.commit()
         with contextlib.suppress(Exception):
             from app.workers.celery_app import celery_app
             from app.workers.tasks import preprocess_and_audit
-            inspect = celery_app.control.inspect(timeout=0.3)
-            active_workers = inspect.ping() if inspect else None
-            if active_workers:
-                celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
-                task.celery_task_id = celery_res.id
-            else:
-                with contextlib.suppress(Exception):
-                    celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
-                    task.celery_task_id = celery_res.id
 
-        await db.commit()
+            celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
+            task.celery_task_id = celery_res.id
+            await db.commit()
         await db.refresh(doc)
         await db.refresh(task)
         return doc, task
 
     @staticmethod
     async def delete_document(db: AsyncSession, doc: Document) -> None:
+        """Hard-delete: berkas fisik, percakapan asisten yang memakai naskah ini, lalu baris dokumen.
+
+        audit_tasks, audit_sentences, audit_reports, dan chat_messages ikut terhapus lewat ON DELETE CASCADE.
+        """
         if doc.stored_filename:
             file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
             if os.path.exists(file_path):
                 with contextlib.suppress(OSError):
                     os.remove(file_path)
 
-        doc.status = "DELETED"
-        doc.deleted_at = datetime.now(timezone.utc)  # noqa: UP017
+        linked = select(ChatSessionDocument.session_id).where(ChatSessionDocument.document_id == doc.id)
+        await db.execute(delete(ChatSession).where(or_(ChatSession.id.in_(linked), ChatSession.document_id == doc.id)))
+        await db.execute(delete(Document).where(Document.id == doc.id))
         await db.commit()

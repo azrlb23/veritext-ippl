@@ -173,8 +173,8 @@ class TestRemediationPhase3TDD(unittest.IsolatedAsyncioTestCase):
         )
 
         # Verifikasi status logis database
-        self.assertEqual(doc.status, "DELETED")
-        self.assertIsNotNone(doc.deleted_at)
+        self.assertGreaterEqual(len(mock_db.executed_statements), 3)  # cari dokumen, hapus sesi chat, hapus dokumen
+        #  # hapus sesi chat lalu baris dokumen (hard-delete)
         self.assertTrue(mock_db.committed)
         self.assertIn("deleted permanently", resp.message)
 

@@ -268,7 +268,7 @@ CREATE RULE audit_logs_no_delete AS ON DELETE TO audit_logs DO INSTEAD NOTHING;
 CREATE TABLE IF NOT EXISTS chat_sessions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    document_id UUID REFERENCES documents(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL DEFAULT 'Konsultasi Naskah Ilmiah',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -277,6 +277,15 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
 
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions (user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_document_id ON chat_sessions (document_id);
+
+-- 15b. TABEL: chat_session_documents (naskah konteks sesi asisten; migrasi 0006_chat_multi_document)
+CREATE TABLE IF NOT EXISTS chat_session_documents (
+    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    document_id UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (session_id, document_id)
+);
+CREATE INDEX IF NOT EXISTS idx_chat_session_documents_document_id ON chat_session_documents (document_id);
 
 -- 17. TABEL: chat_messages (Riwayat Percakapan & Rekomendasi Parafrase AI)
 CREATE TABLE IF NOT EXISTS chat_messages (

@@ -15,6 +15,8 @@ class TopupResponse(BaseModel):
     gross_amount: int
     package_name: str
     token_amount: int
+    payment_ready: bool = False
+    client_key: Optional[str] = None
 
 
 class TokenTransactionResponse(BaseModel):

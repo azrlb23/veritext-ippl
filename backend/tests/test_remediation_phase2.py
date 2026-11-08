@@ -510,13 +510,14 @@ class TestRemediationPhase2TDD(unittest.IsolatedAsyncioTestCase):
             "Kucing hitam melompati pagar bambu di belakang rumah nenek pada hari selasa siang yang cerah."
         )
 
-        # Run pipeline with empty reference corpus (no overlap)
-        result = aggregator.run_pipeline(
-            original_text=completely_original_text,
-            audit_depth="FULL",
-            custom_corpus_index={},
-            custom_corpus_chunks=[],
-        )
+        # Tanpa korpus dan tanpa pemindaian web (jaringan membuat hasil tidak deterministik)
+        with patch.object(settings, "WEB_SCAN_ENABLED", False):
+            result = aggregator.run_pipeline(
+                original_text=completely_original_text,
+                audit_depth="FULL",
+                custom_corpus_index={},
+                custom_corpus_chunks=[],
+            )
 
         self.assertEqual(result.score_lexical, 0.0)
         self.assertEqual(result.score_semantic, 0.0)

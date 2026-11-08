@@ -121,6 +121,7 @@ class MockAsyncSession:
         self.deleted.append(item)
 
     async def execute(self, stmt):
+        self.executed = getattr(self, "executed", 0) + 1
         if self.execute_handler:
             return await self.execute_handler(stmt) if asyncio.iscoroutinefunction(self.execute_handler) else self.execute_handler(stmt)
         return MockQueryResult()
@@ -423,8 +424,7 @@ class TestWhiteboxFeature2Documents(unittest.IsolatedAsyncioTestCase):
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([doc]))
 
         resp = await doc_router.delete_document(doc_id=doc.id, current_user=user, db=mock_db)
-        self.assertEqual(doc.status, "DELETED")
-        self.assertIsNotNone(doc.deleted_at)
+        self.assertGreaterEqual(mock_db.executed, 2)  # hapus sesi chat lalu baris dokumen (hard-delete)
         self.assertTrue(mock_db.committed)
         self.assertIn("deleted permanently", resp.message)
 
