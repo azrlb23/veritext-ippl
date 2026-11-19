@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS token_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     wallet_id UUID NOT NULL REFERENCES token_wallets(id),
     transaction_type VARCHAR(50) NOT NULL
-        CHECK (transaction_type IN ('DEBIT_AUDIT', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN')),
+        CHECK (transaction_type IN ('DEBIT_AUDIT', 'DEBIT_CHAT_PARAPHRASE', 'CREDIT_TOPUP', 'CREDIT_REFUND', 'CREDIT_ADMIN', 'DEBIT_ADMIN', 'REFUND')),
     amount INTEGER NOT NULL,
     balance_after INTEGER NOT NULL,
     reference_id UUID,
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     gross_amount BIGINT NOT NULL,
     payment_method VARCHAR(100),
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING'
-        CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'FAILED', 'CANCEL')),
+        CHECK (status IN ('PENDING', 'PAID', 'EXPIRED', 'FAILED', 'CANCEL', 'CHALLENGE')),
     midtrans_transaction_id VARCHAR(255),
     paid_at TIMESTAMPTZ,
     expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '24 hours'),

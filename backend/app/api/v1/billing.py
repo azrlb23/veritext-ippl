@@ -7,12 +7,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.invoice import Invoice
 from app.models.user import User
 from app.schemas.billing import (
     InvoiceResponse,
     MidtransWebhookPayload,
+    TokenTransactionResponse,
     TokenWalletResponse,
     TopupRequest,
     TopupResponse,
@@ -31,10 +33,14 @@ async def get_wallet(
     db: AsyncSession = Depends(get_db),
 ):
     wallet = await BillingService.get_wallet(db, current_user.id)
+    txs = await BillingService.get_recent_transactions(db, wallet.id, limit=10)
     return APIResponse(
         message="Token wallet retrieved",
         data=TokenWalletResponse(
-            id=wallet.id, balance=wallet.balance, updated_at=wallet.updated_at, recent_transactions=[]
+            id=wallet.id,
+            balance=wallet.balance,
+            updated_at=wallet.updated_at,
+            recent_transactions=[TokenTransactionResponse.model_validate(tx) for tx in txs],
         ),
     )
 
@@ -59,6 +65,7 @@ async def topup_tokens(
             token_amount=inv.token_amount,
             payment_ready=snap_enabled() and not inv.snap_token.startswith("SNAP-"),
             client_key=client_key(),
+            is_production=settings.MIDTRANS_IS_PRODUCTION,
         ),
     )
 

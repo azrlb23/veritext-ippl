@@ -69,7 +69,7 @@ export function useTokenPurchase() {
       const res = await billingService.topup(target.value.id, target.value.tokenAmount);
       target.value = null;
       if (res.payment_ready && res.client_key) {
-        const result = await openSnap(res.snap_token, res.client_key);
+        const result = await openSnap(res.snap_token, res.client_key, Boolean(res.is_production));
         const msg = result === "paid" ? "Pembayaran berhasil. Token segera masuk." : result === "pending" ? "Menunggu pembayaran Anda diselesaikan." : "Pembayaran belum diselesaikan.";
         showNotification(msg, result === "paid" ? "success" : "info");
       } else {

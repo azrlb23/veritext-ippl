@@ -576,18 +576,25 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(ctx.exception.status_code, status.HTTP_409_CONFLICT)
 
     async def test_google_complete_weak_password_rejected(self):
-        """POST /auth/google/complete menolak kata sandi yang lemah."""
+        """POST /auth/google/complete menolak kata sandi kurang dari 8 karakter (selaras dengan /register)."""
         ticket = create_signup_ticket(email="user@kampus.ac.id", name="User")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
 
-        req_weak = GoogleCompleteRequest(
+        with self.assertRaises(ValidationError):
+            GoogleCompleteRequest(
+                ticket=ticket,
+                full_name="User Valid",
+                password="short7",
+            )
+
+        req_short = GoogleCompleteRequest.model_construct(
             ticket=ticket,
             full_name="User Valid",
-            password="weakpassword",
+            password="short7",
         )
 
         with self.assertRaises(HTTPException) as ctx:
-            await auth_router.google_complete(req=req_weak, db=mock_db)
+            await auth_router.google_complete(req=req_short, db=mock_db)
         self.assertEqual(ctx.exception.status_code, status.HTTP_400_BAD_REQUEST)
 
     async def test_google_complete_short_name_rejected(self):

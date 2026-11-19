@@ -14,6 +14,7 @@ from app.core.security import (
     hash_token,
     verify_password,
 )
+from app.models.audit_log import AuditLog
 from app.models.session import Session
 from app.models.user import User
 from app.models.wallet import TokenWallet
@@ -103,5 +104,17 @@ class AuthService:
             expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         )
         db.add(session_obj)
+        db.add(
+            AuditLog(
+                actor_id=user.id,
+                actor_ip=ip_address,
+                actor_user_agent=user_agent,
+                action_type="AUTH_LOGIN",
+                resource_type="USER",
+                resource_id=user.id,
+                action_result="SUCCESS",
+                meta_data={"email": user.email, "role": user.role},
+            )
+        )
         await db.commit()
         return user, access_token, refresh_token

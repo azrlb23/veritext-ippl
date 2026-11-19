@@ -6,6 +6,7 @@ import AuthField from "../components/auth/AuthField.vue";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables";
 import { getHomeRouteForRole } from "../utils/navigation";
+import { readableDetail } from "../utils/errorMessage";
 
 const route = useRoute();
 const router = useRouter();
@@ -55,7 +56,7 @@ onMounted(() => {
   fullName.value = payload.name || payload.full_name || (payload.email ? payload.email.split("@")[0] : "");
 });
 
-const isPassValid = computed(() => password.value.length >= 8 && /[A-Z]/.test(password.value) && /[0-9]/.test(password.value));
+const isPassValid = computed(() => password.value.length >= 8);
 const isFormValid = computed(() => fullName.value.trim().length >= 2 && isPassValid.value && password.value === confirmPassword.value && agreePDP.value && !isLoading.value);
 
 async function handleSubmit() {
@@ -68,11 +69,12 @@ async function handleSubmit() {
     router.replace(getHomeRouteForRole(authStore.role));
   } catch (err: any) {
     const status = err?.response?.status;
+    const detail = readableDetail(err?.response?.data?.detail, "");
     if (status === 401 || status === 409) {
       isTicketInvalid.value = true;
-      ticketErrorMessage.value = err?.response?.data?.detail || "Tiket pendaftaran telah kedaluwarsa atau tidak valid.";
+      ticketErrorMessage.value = detail || "Tiket pendaftaran telah kedaluwarsa atau tidak valid.";
     } else {
-      errorMessage.value = err?.response?.data?.detail || err?.message || "Gagal menyimpan data akun.";
+      errorMessage.value = detail || err?.message || "Gagal menyimpan data akun.";
     }
   } finally {
     isLoading.value = false;
@@ -101,7 +103,7 @@ async function handleSubmit() {
       </div>
 
       <AuthField id="onb-name" v-model="fullName" label="Nama lengkap" autocomplete="name" placeholder="Nama lengkap resmi" />
-      <AuthField id="onb-pass" v-model="password" label="Kata sandi baru" type="password" revealable autocomplete="new-password" placeholder="Minimal 8 karakter, huruf besar dan angka" />
+      <AuthField id="onb-pass" v-model="password" label="Kata sandi baru" type="password" revealable autocomplete="new-password" placeholder="Minimal 8 karakter" />
       <AuthField id="onb-conf" v-model="confirmPassword" label="Konfirmasi kata sandi" type="password" revealable autocomplete="new-password" placeholder="Ulangi kata sandi" :invalid="confirmPassword.length > 0 && password !== confirmPassword" />
       <p v-if="confirmPassword && password !== confirmPassword" class="-mt-3 text-[13px] font-medium text-[#B91C1C]">Kata sandi belum cocok.</p>
 

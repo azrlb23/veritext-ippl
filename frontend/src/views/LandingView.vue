@@ -8,7 +8,7 @@ import {
 </script>
 
 <template>
-  <div class="space-y-12 sm:space-y-20 py-4 sm:py-8 font-sans">
+  <div class="overflow-x-clip space-y-12 sm:space-y-20 py-4 sm:py-8 font-sans">
     <!-- 1. Hero Section Sesuai build_landing.py:seg_nav_hero() -->
     <HeroSection />
 

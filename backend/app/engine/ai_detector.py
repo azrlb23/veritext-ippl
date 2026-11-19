@@ -30,26 +30,31 @@ class GeminiAIDetector:
     ) -> None:
         self.api_key = api_key if api_key is not None else settings.GEMINI_API_KEY
         self.model = model or settings.GEMINI_MODEL
-        self.openrouter_key = openrouter_key if openrouter_key is not None else settings.OPENROUTER_API_KEY
-        self.openrouter_model = openrouter_model or settings.OPENROUTER_MODEL or "nvidia/nemotron-3.5-lightning:free"
         self.timeout_s = timeout_s or settings.WEB_SCAN_TIMEOUT_S
         self.stylometric_engine = stylometric_engine or StylometricEngine()
         self.gemini_client = GeminiFlashClient(self.api_key, self.model, self.timeout_s)
-        self.deepseek_client = DeepSeekRouterClient(
-            api_key=self.openrouter_key, model=self.openrouter_model, timeout_s=self.timeout_s
-        )
+        if openrouter_key is None and openrouter_model is None:
+            self.deepseek_client = DeepSeekRouterClient(timeout_s=self.timeout_s)
+        else:
+            key = openrouter_key if openrouter_key is not None else settings.OPENROUTER_API_KEY
+            mdl = openrouter_model or settings.OPENROUTER_MODEL or "nvidia/nemotron-3.5-lightning:free"
+            self.deepseek_client = DeepSeekRouterClient(api_key=key, model=mdl, timeout_s=self.timeout_s)
+        self.openrouter_key = self.deepseek_client.api_key
+        self.openrouter_model = self.deepseek_client.model
         self.gateway = DualEngineLLMGateway(self.gemini_client, self.deepseek_client)
 
     def _prepare_prompt(self, sentences: list[SentenceSpan]) -> str:
         return self.gateway.build_judge_prompt(sentences)
 
-    def detect_openrouter(self, sentences: list[SentenceSpan]) -> dict[str, Any] | None:
-        if not self.openrouter_key or not self.openrouter_key.strip():
+    def _detect_with_client(
+        self, client: Any, key: str, sentences: list[SentenceSpan]
+    ) -> dict[str, Any] | None:
+        if not key or not key.strip():
             return None
         valid = [s for s in sentences if not s.is_citation and s.word_count >= 3]
         if not valid:
             return None
-        raw = self.deepseek_client.generate_json(self._prepare_prompt(valid[: settings.WEB_SCAN_MAX_SENTENCES]))
+        raw = client.generate_json(self._prepare_prompt(valid[: settings.WEB_SCAN_MAX_SENTENCES]))
         if not raw:
             return None
         return {
@@ -57,19 +62,11 @@ class GeminiAIDetector:
             "suspicious_sentences": raw.get("suspicious_sentences", []),
         }
 
+    def detect_openrouter(self, sentences: list[SentenceSpan]) -> dict[str, Any] | None:
+        return self._detect_with_client(self.deepseek_client, self.openrouter_key, sentences)
+
     def detect_gemini(self, sentences: list[SentenceSpan]) -> dict[str, Any] | None:
-        if not self.api_key or not self.api_key.strip():
-            return None
-        valid = [s for s in sentences if not s.is_citation and s.word_count >= 3]
-        if not valid:
-            return None
-        raw = self.gemini_client.generate_json(self._prepare_prompt(valid[: settings.WEB_SCAN_MAX_SENTENCES]))
-        if not raw:
-            return None
-        return {
-            "ai_probability": max(0.0, min(100.0, float(raw.get("ai_probability", 0.0)))),
-            "suspicious_sentences": raw.get("suspicious_sentences", []),
-        }
+        return self._detect_with_client(self.gemini_client, self.api_key, sentences)
 
     def analyze_document(
         self, original_text: str, sentences: list[SentenceSpan]
@@ -78,15 +75,7 @@ class GeminiAIDetector:
         if not sentences or not original_text.strip():
             return local_res
 
-        llm_data, evaluator_name = None, "LLM"
-        if self.openrouter_key:
-            llm_data = self.detect_openrouter(sentences)
-            if llm_data:
-                evaluator_name = f"OpenRouter ({self.openrouter_model})"
-        if not llm_data and self.api_key:
-            llm_data = self.detect_gemini(sentences)
-            if llm_data:
-                evaluator_name = f"Gemini ({self.model})"
+        llm_data, evaluator_name = self.gateway.evaluate_sentences(sentences)
         if not llm_data:
             return local_res
 

@@ -10,9 +10,10 @@ const findings = [
 <template>
   <div class="grid gap-10 md:grid-cols-3 md:gap-6 lg:block lg:space-y-12">
     <div
-      v-for="f in findings"
+      v-for="(f, idx) in findings"
       :key="f.unit"
-      class="group cursor-default rounded-[24px] p-2 transition-all duration-300 hover:bg-[#F3EEFA]/30"
+      class="vt-reveal-left group cursor-default rounded-[24px] p-2 transition-all duration-300 hover:bg-[#F3EEFA]/30"
+      :style="{ '--vt-d': `${100 + idx * 90}ms` }"
     >
       <div class="flex items-baseline gap-3">
         <span class="text-[64px] font-semibold leading-none tracking-[-0.055em] text-[#14111C] md:text-[56px] lg:text-[76px] transition-transform duration-300 group-hover:scale-105 origin-left tabular-nums">

@@ -4,13 +4,13 @@ import { useRouter } from "vue-router";
 import { AuthCard } from "../components/auth";
 import AuthField from "../components/auth/AuthField.vue";
 import { authService } from "../services/authService";
+import { readableDetail } from "../utils/errorMessage";
 
 const router = useRouter();
 const email = ref("");
 const isLoading = ref(false);
 const isSuccess = ref(false);
 const errorMessage = ref("");
-const devResetUrl = ref<string | null>(null);
 
 function validateEmail(val: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -18,20 +18,18 @@ function validateEmail(val: string): boolean {
 
 async function handleSubmit() {
   errorMessage.value = "";
-  devResetUrl.value = null;
   if (!email.value.trim() || !validateEmail(email.value.trim())) {
     errorMessage.value = "Silakan masukkan alamat email yang valid.";
     return;
   }
   isLoading.value = true;
   try {
-    const res: any = await authService.forgotPassword(email.value.trim());
+    await authService.forgotPassword(email.value.trim());
     isSuccess.value = true;
-    if (res?.data?.reset_url) devResetUrl.value = res.data.reset_url;
   } catch (err: any) {
     if (err?.response?.status === 404) errorMessage.value = "Jika email terdaftar, tautan pemulihan telah dikirim.";
     else if (err?.response?.status === 429) errorMessage.value = "Terlalu sering meminta tautan. Tunggu 5 menit.";
-    else errorMessage.value = err?.response?.data?.detail || "Gagal mengirimkan permintaan.";
+    else errorMessage.value = readableDetail(err?.response?.data?.detail, "Gagal mengirimkan permintaan.");
   } finally {
     isLoading.value = false;
   }
@@ -39,17 +37,11 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AuthCard eyebrow="Pemulihan akun" title="Lupa kata sandi" :subtitle="['Masukkan alamat email terdaftar. Kami kirim tautan', 'pemulihan yang berlaku 15 menit.']">
+  <AuthCard eyebrow="Pemulihan akun" title="Lupa kata sandi" :subtitle="['Masukkan alamat email terdaftar. Kami kirim tautan', 'pemulihan yang berlaku 1 jam.']">
     <div v-if="isSuccess" class="space-y-5">
       <div class="rounded-[22px] bg-[#F3EEFA] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
         <div class="text-[17px] font-semibold text-[#15803D]">Tautan pemulihan dikirim</div>
         <p class="mt-1.5">Kami mengirim tautan pemulihan ke <strong class="font-semibold text-[#14111C]">{{ email }}</strong>. Periksa kotak masuk atau spam.</p>
-      </div>
-
-      <div v-if="devResetUrl" class="space-y-3 rounded-[22px] bg-[#F3EEFA] p-5">
-        <div class="text-[13.5px] font-semibold text-[#6D28D9]">Mode pengujian lokal</div>
-        <p class="text-[14px] leading-[1.6] text-[#4B4757]">Tautan aktif. Buka formulir kata sandi baru:</p>
-        <router-link :to="devResetUrl.replace(/^https?:\/\/[^\/]+/, '')" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Setel ulang kata sandi</router-link>
       </div>
 
       <router-link to="/login" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#EBE3F6]">Kembali ke halaman masuk</router-link>

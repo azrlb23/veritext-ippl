@@ -16,7 +16,7 @@ from app.schemas.common import APIResponse
 from app.services.pdf_certificate_service import clean_pdf_filename, generate_pdf_certificate
 
 
-def check_report_authorization(report: AuditReport, current_user: User) -> None:
+def check_report_authorization(report: AuditReport, current_user: User, allow_free: bool = True) -> None:
     eff = current_user
     if isinstance(eff, DependsParam) or hasattr(eff, "dependency"):
         if report.audit_task and report.audit_task.user:
@@ -24,15 +24,20 @@ def check_report_authorization(report: AuditReport, current_user: User) -> None:
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
-    is_admin = (getattr(eff, "role", None) or "").upper() == "ADMIN"
+    role_upper = (getattr(eff, "role", None) or "").upper()
+    is_admin = role_upper == "ADMIN"
     t_owner = report.audit_task.user_id if (report.audit_task and report.audit_task.user_id) else (
         report.audit_task.user.id if (report.audit_task and report.audit_task.user) else None
     )
     if not is_admin and (t_owner is None or str(t_owner) != str(eff.id)):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: You do not have permission to access this report")
+    if not allow_free and role_upper == "FREE":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: Free users cannot download official PDF certificates.")
 
 
-def build_report_pdf_response(report: AuditReport) -> Response:
+def build_report_pdf_response(report: AuditReport, current_user: User | None = None) -> Response:
+    if current_user is not None and (getattr(current_user, "role", None) or "").upper() == "FREE":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: Free users cannot download official PDF certificates.")
     doc_title = report.document_title or "Naskah"
     pdf_bytes = generate_pdf_certificate(
         report_id=str(report.id),

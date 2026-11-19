@@ -64,6 +64,20 @@ async def get_transactions(db: AsyncSession, limit: int = 50) -> dict[str, Any]:
     return {"total_revenue": int(total_rev), "items": items}
 
 
+async def _check_redis_status() -> str:
+    try:
+        import redis.asyncio as aioredis
+        from app.core.config import settings
+
+        client = aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=0.5, socket_timeout=0.5)
+        try:
+            return "HEALTHY" if await client.ping() else "DEGRADED"
+        finally:
+            await client.aclose()
+    except Exception:  # noqa: BLE001
+        return "DOWN"
+
+
 async def get_system_health_metrics(db: AsyncSession) -> SystemHealthMetricsResponse:
     t0 = datetime.now(timezone.utc)  # noqa: UP017
     try:
@@ -73,30 +87,33 @@ async def get_system_health_metrics(db: AsyncSession) -> SystemHealthMetricsResp
         db_status = "DEGRADED"
     latency = (datetime.now(timezone.utc) - t0).total_seconds() * 1000  # noqa: UP017
 
+    active_tasks, queue_depth = 0, 0
     try:
         audits_count = (await db.execute(select(func.count(AuditTask.id)))).scalar() or 0
         corpus_count = (await db.execute(select(func.count(CorpusDocument.id)))).scalar() or 0
         chunks_count = (await db.execute(select(func.count(DocumentChunk.id)))).scalar() or 0
+        status_stmt = (
+            select(AuditTask.status, func.count(AuditTask.id))
+            .where(AuditTask.status.in_(["PROCESSING", "QUEUED"]))
+            .group_by(AuditTask.status)
+        )
+        for st, cnt in (await db.execute(status_stmt)).all():
+            if st == "PROCESSING":
+                active_tasks = int(cnt or 0)
+            elif st == "QUEUED":
+                queue_depth = int(cnt or 0)
     except Exception:  # noqa: BLE001
-        audits_count = 0
-        corpus_count = 0
-        chunks_count = 0
+        audits_count, corpus_count, chunks_count = 0, 0, 0
+
+    redis_status = await _check_redis_status()
 
     return SystemHealthMetricsResponse(
-        cpu_percent=18.5,
-        memory_percent=42.1,
-        database_status=db_status,
-        redis_status="HEALTHY",
-        celery_active_tasks=0,
-        db_latency_ms=round(latency, 2),
-        timestamp=datetime.now(timezone.utc),  # noqa: UP017
-        total_audits=audits_count,
-        total_corpus_docs=corpus_count,
-        total_vector_chunks=chunks_count,
-        celery_workers=1,
-        queue_depth=0,
-        redis_mem_mb=12.5,
-        pgvector_latency_ms=round(latency, 2),
+        cpu_percent=18.5, memory_percent=42.1, database_status=db_status,
+        redis_status=redis_status, celery_active_tasks=active_tasks,
+        db_latency_ms=round(latency, 2), timestamp=datetime.now(timezone.utc),  # noqa: UP017
+        total_audits=audits_count, total_corpus_docs=corpus_count,
+        total_vector_chunks=chunks_count, celery_workers=1,
+        queue_depth=queue_depth, redis_mem_mb=12.5, pgvector_latency_ms=round(latency, 2),
     )
 
 

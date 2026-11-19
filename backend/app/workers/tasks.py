@@ -47,7 +47,7 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
 
     try:
         task.status, task.started_at, task.progress_pct = "PROCESSING", datetime.now(UTC), 15
-        task.current_stage = "Tahap 1 · Ekstraksi struktur teks & segmentasi kalimat"
+        task.current_stage = "Tahap 1 - Ekstraksi struktur teks & segmentasi kalimat"
         db.commit()
 
         file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
@@ -69,7 +69,7 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
 
         corpus_bank = ReferenceCorpusBank.get_instance()
         corpus_index, corpus_chunks = load_corpus_indexes(db, corpus_bank, logger)
-        task.progress_pct, task.current_stage = 40, "Tahap 2 · Penelusuran internet & korpus"
+        task.progress_pct, task.current_stage = 40, "Tahap 2 - Penelusuran internet & korpus"
         db.commit()
 
         def update_progress(pct: int, stage_text: str):
@@ -87,6 +87,12 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
         )
 
         handle_web_scan_refund(db, task, result, logger)
+        anno_by_start = {int(a["start"]): a for a in result.heatmap_annotations if isinstance(a, dict) and "start" in a}
+        for db_sent in db.query(AuditSentence).filter(AuditSentence.audit_task_id == task.id).all():
+            if anno := anno_by_start.get(db_sent.start_char):
+                db_sent.match_type = anno.get("color", "NONE")
+                sim = float(anno.get("similarity", 0.0))
+                db_sent.similarity_score = round(sim * 100.0, 2) if sim <= 1.0 else round(sim, 2)
         task.progress_pct, task.current_stage = 95, "SAVING_AUDIT_REPORT"
         db.commit()
 

@@ -10,9 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.audit import AuditTask
+from app.models.audit_log import AuditLog
 from app.models.chat import ChatSession, ChatSessionDocument
 from app.models.document import Document
 from app.models.wallet import TokenTransaction, TokenWallet
+from app.services.audit_log_helper import record_token_debit
 from app.services.document_validator import validate_file, write_upload_stream
 from app.services.upload_charging import debit_wallet, remove_stored_file, stage_upload
 
@@ -76,6 +78,17 @@ class DocumentService:
             balance_after=wallet.balance, reference_id=task.id, note=f"Audit execution for document {doc.original_filename}",
         )
         db.add(tx)
+        db.add(
+            AuditLog(
+                actor_id=user_id,
+                action_type="AUDIT_SUBMIT",
+                resource_type="DOCUMENT",
+                resource_id=doc.id,
+                action_result="SUCCESS",
+                meta_data={"task_id": str(task.id), "filename": doc.original_filename, "token_cost": token_cost},
+            )
+        )
+        record_token_debit(db, user_id, "DOCUMENT", doc.id, token_cost, f"Audit {doc.original_filename}")
 
         # Commit dulu agar worker menemukan baris tugas; mengirim ke antrean sebelum commit membuat worker gagal ("Task not found").
         await db.commit()
@@ -92,10 +105,24 @@ class DocumentService:
 
     @staticmethod
     async def delete_document(db: AsyncSession, doc: Document) -> None:
-        """Hard-delete: berkas fisik, percakapan asisten yang memakai naskah ini, lalu baris dokumen.
+        """Hard-delete: revoke task aktif, berkas fisik, percakapan asisten, lalu baris dokumen."""
+        active_tasks = (
+            await db.execute(
+                select(AuditTask.celery_task_id).where(
+                    AuditTask.document_id == doc.id,
+                    AuditTask.status.in_(["QUEUED", "PROCESSING"]),
+                    AuditTask.celery_task_id.isnot(None),
+                )
+            )
+        ).scalars().all()
+        if active_tasks:
+            with contextlib.suppress(Exception):
+                from app.workers.celery_app import celery_app
 
-        audit_tasks, audit_sentences, audit_reports, dan chat_messages ikut terhapus lewat ON DELETE CASCADE.
-        """
+                for c_id in active_tasks:
+                    if isinstance(c_id, str) and c_id:
+                        celery_app.control.revoke(c_id, terminate=True)
+
         if doc.stored_filename:
             file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
             if os.path.exists(file_path):
@@ -105,4 +132,14 @@ class DocumentService:
         linked = select(ChatSessionDocument.session_id).where(ChatSessionDocument.document_id == doc.id)
         await db.execute(delete(ChatSession).where(or_(ChatSession.id.in_(linked), ChatSession.document_id == doc.id)))
         await db.execute(delete(Document).where(Document.id == doc.id))
+        db.add(
+            AuditLog(
+                actor_id=doc.user_id,
+                action_type="DOCUMENT_PURGE",
+                resource_type="DOCUMENT",
+                resource_id=doc.id,
+                action_result="SUCCESS",
+                meta_data={"filename": doc.original_filename},
+            )
+        )
         await db.commit()

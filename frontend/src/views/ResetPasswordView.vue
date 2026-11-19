@@ -5,6 +5,7 @@ import { AuthCard } from "../components/auth";
 import AuthField from "../components/auth/AuthField.vue";
 import { authService } from "../services/authService";
 import { useNotification } from "../composables";
+import { readableDetail } from "../utils/errorMessage";
 
 const route = useRoute();
 const { showNotification } = useNotification();
@@ -48,9 +49,9 @@ async function handleSubmit() {
     showNotification("Kata sandi berhasil diperbarui!", "success");
   } catch (err: any) {
     if (err?.response?.status === 400) {
-      errorMessage.value = err?.response?.data?.detail || "Tautan pemulihan kedaluwarsa.";
+      errorMessage.value = readableDetail(err?.response?.data?.detail, "Tautan pemulihan kedaluwarsa.");
       isTokenInvalid.value = true;
-    } else errorMessage.value = err?.response?.data?.detail || "Gagal memperbarui kata sandi.";
+    } else errorMessage.value = readableDetail(err?.response?.data?.detail, "Gagal memperbarui kata sandi.");
   } finally {
     isLoading.value = false;
   }
@@ -58,7 +59,7 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <AuthCard eyebrow="Kata sandi baru" :title="isTokenInvalid ? 'Tautan tidak berlaku' : 'Setel ulang sandi'" :subtitle="isTokenInvalid ? 'Minta tautan baru untuk melanjutkan.' : 'Minimal 8 karakter dengan angka dan simbol.'">
+  <AuthCard eyebrow="Kata sandi baru" :title="isTokenInvalid ? 'Tautan tidak berlaku' : 'Setel ulang sandi'" :subtitle="isTokenInvalid ? 'Minta tautan baru untuk melanjutkan.' : 'Minimal 8 karakter.'">
     <div v-if="isCheckingToken" class="flex items-center gap-4 py-6" role="status">
       <svg class="h-8 w-8 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
         <circle cx="18" cy="18" r="15" stroke="#EFEAF6" stroke-width="4" />

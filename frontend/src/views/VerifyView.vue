@@ -27,15 +27,20 @@ async function handleLookup(targetUuid: string) {
   try {
     const res = await auditService.verifyCertificate(clean);
     isValid.value = Boolean(res?.is_valid);
+    const rawDate = res?.audit_date ? new Date(res.audit_date) : null;
+    const formattedDate =
+      rawDate && !Number.isNaN(rawDate.getTime())
+        ? rawDate.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+        : "-";
     certDetails.value = {
       uuid: clean,
-      title: res?.title || "Naskah Terverifikasi",
-      examiner: res?.examiner_name || "Pengguna terdaftar",
-      auditDate: res?.audit_date || new Date().toLocaleDateString("id-ID"),
+      title: res?.document_title || "Naskah Terverifikasi",
+      examiner: res?.user_name || "Pengguna terdaftar",
+      auditDate: formattedDate,
       compositeScore: res?.score_composite ?? 0,
-      lexicalScore: res?.score_lexical ?? 0,
-      semanticScore: res?.score_semantic ?? 0,
-      styloScore: res?.score_stylometric ?? 0,
+      lexicalScore: res?.tier_scores?.lexical ?? 0,
+      semanticScore: res?.tier_scores?.semantic ?? 0,
+      styloScore: res?.tier_scores?.stylometric ?? 0,
     };
     if (res?.is_valid) showNotification("Sertifikat berhasil divalidasi.", "success");
     else showNotification(res?.message || "Kode sertifikat tidak ditemukan.", "error");
@@ -75,18 +80,23 @@ onMounted(() => {
 });
 
 watch(() => route.params.uuid, (n) => {
-  if (n && typeof n === "string" && n !== certDetails.value.uuid && n !== "sample") void handleLookup(n);
+  if (!n) {
+    certDetails.value.uuid = "";
+    isValid.value = false;
+  } else if (typeof n === "string" && n !== certDetails.value.uuid && n !== "sample") {
+    void handleLookup(n);
+  }
 });
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-8 font-sans sm:px-6 sm:pt-14">
-    <div class="mx-auto mb-10 max-w-2xl text-center animate-fade-up">
-      <p class="text-[14px] font-medium text-[#5E5A6B]">Verifikasi sertifikat</p>
-      <h1 class="mt-3 text-[38px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[56px]">
+  <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-6 font-sans sm:px-6 sm:pt-9">
+    <div class="mx-auto mb-7 max-w-2xl text-center animate-fade-up">
+      <p class="text-[13px] font-medium text-[#5E5A6B]">Verifikasi sertifikat</p>
+      <h1 class="mt-2 text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">
         Pastikan sertifikat itu <span class="vt-accent">benar-benar asli.</span>
       </h1>
-      <p class="mx-auto mt-5 max-w-[520px] text-[16px] leading-[1.65] text-[#4B4757] sm:text-[17px]">
+      <p class="mx-auto mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#4B4757]">
         Masukkan kode UUID dari lembar sertifikat atau pindai kode QR-nya. Hasilnya langsung tampil di sini.
       </p>
     </div>

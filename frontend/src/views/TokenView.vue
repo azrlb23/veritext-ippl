@@ -12,10 +12,10 @@ const p = useTokenPurchase();
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-8 font-sans sm:px-6 sm:pt-12">
-    <div class="mb-9 max-w-2xl">
-      <p class="text-[14px] font-medium text-[#5E5A6B]">Token</p>
-      <h1 class="mt-3 text-[36px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[52px]">
+  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
+    <div class="mb-6 max-w-4xl">
+      <p class="text-[13px] font-medium text-[#5E5A6B]">Token</p>
+      <h1 class="mt-1.5 text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Bayar yang Anda pakai, <span class="vt-accent">tanpa langganan.</span>
       </h1>
     </div>

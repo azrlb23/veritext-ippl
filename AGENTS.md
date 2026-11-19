@@ -14,10 +14,11 @@ Baca berkas ini terlebih dahulu pada setiap sesi baru. Berkas ini adalah rujukan
   - **Step 1 (Lexical)**: Algoritma Winnowing ($k=5, w=4$) + Rabin-Karp Rolling Hash ($b=257, M=10^9+7$)
   - **Step 2 (Semantic)**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (384-d) + Re-ranker Indonesia `LazarusNLP/all-indobert-base-v4` (768-d)
   - **Step 3 (Stylometric & Contextual Judge)**: Goh & Barabasi Burstiness $B = (\sigma_L - \mu_L)/(\sigma_L + \mu_L)$ & TTR + **Dual-Engine LLM Gateway** (Primary: Google Gemini Flash (model aktif `gemini-3.8-flash`; 2.5 Flash sudah dipensiunkan Google untuk kunci baru); Failover: DeepSeek v4.1 Flash via 9Router `http://localhost:20128/v1`)
+  - **Web Search Fallback**: Pencarian web fallback menggunakan paket `ddgs` (DuckDuckGo Search)
 - **Frontend Framework**: Vue 3.5.x (Composition API `<script setup lang="ts">`) + Vite 6.x + TypeScript 5.7.x
 - **Frontend State, Routing & Styling**: Pinia 2.3.x + Vue Router 4.5.x + Axios 1.7.x + Tailwind CSS 3.4.x
 - **Payment Gateway**: Midtrans Core & Snap API v2 (Webhook SHA-512 Verification)
-- **PDF Engine**: WeasyPrint 61.x + `qrcode` (Dynamic QR Verification `/verify/{certificate_uuid}`)
+- **PDF Engine**: ReportLab 4.2+ + `qrcode` (Dynamic QR Verification `/verify/{certificate_uuid}`)
 
 ---
 

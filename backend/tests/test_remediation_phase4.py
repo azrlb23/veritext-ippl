@@ -487,6 +487,8 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
                     class WalletQ:
                         def filter(self, *conds):
                             class WalletFirst:
+                                def with_for_update(inner_self):
+                                    return inner_self
                                 def first(inner_self):
                                     # Kembalikan wallet user1
                                     return sess.wallets.get(user1_id)

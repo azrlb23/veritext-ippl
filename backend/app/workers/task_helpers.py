@@ -46,7 +46,7 @@ def _refund_audit_debit(db: Any, task: Any, note: str) -> None:
     already = db.query(TokenTransaction).filter(
         TokenTransaction.reference_id == task.id, TokenTransaction.transaction_type == "CREDIT_REFUND"
     ).first()
-    if debit and not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()):
+    if debit and not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()):
         wallet.balance += abs(debit.amount)
         db.add(TokenTransaction(
             wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=abs(debit.amount),
@@ -62,7 +62,7 @@ def handle_web_scan_refund(db: Any, task: AuditTask, result: Any, logger: Any) -
             TokenTransaction.reference_id == task.id,
             TokenTransaction.transaction_type.in_(["CREDIT_REFUND", "REFUND"]),
         ).first()
-        if not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).first()):
+        if not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()):
             wallet.balance += 1
             db.add(TokenTransaction(
                 wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=1,

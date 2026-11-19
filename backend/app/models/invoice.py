@@ -30,7 +30,7 @@ class Invoice(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "status IN ('PENDING', 'PAID', 'EXPIRED', 'FAILED', 'CANCEL')",
+            "status IN ('PENDING', 'PAID', 'EXPIRED', 'FAILED', 'CANCEL', 'CHALLENGE')",
             name="chk_invoice_status",
         ),
     )

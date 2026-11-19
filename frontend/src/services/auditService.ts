@@ -21,10 +21,23 @@ export const auditService = {
   },
 
   async getTasks(page: number = 1, limit: number = 20, search?: string) {
-    const res = await apiClient.get<{ data: { items: AuditTask[]; total: number } }>("/audits/tasks", {
+    const res = await apiClient.get<{ data: { items: AuditTask[]; total: number; page?: number; pages?: number } }>("/audits/tasks", {
       params: { page, limit, search },
     });
     return res.data.data;
+  },
+
+  async exportHistoryCsv() {
+    const res = await apiClient.get("/audits/history/export-csv", { responseType: "blob" });
+    const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "veritext_audit_history.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   },
 
   async getHistory(page: number = 1, limit: number = 20) {

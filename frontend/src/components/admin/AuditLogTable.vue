@@ -45,7 +45,7 @@ const nav = "inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EE
       <li v-for="l in logs" :key="l.id" class="flex items-center justify-between gap-4 py-4">
         <div class="min-w-0">
           <p class="truncate text-[15px] font-semibold text-[#14111C]">{{ actionLabel(l.action_type) }}</p>
-          <p class="text-[13px] text-[#5E5A6B]">{{ date(l.created_at) }}<span v-if="l.actor_ip"> &middot; {{ l.actor_ip }}</span></p>
+          <p class="text-[13px] text-[#5E5A6B]">{{ date(l.created_at) }}<span v-if="l.actor_ip"> ({{ l.actor_ip }})</span></p>
         </div>
         <p class="flex-shrink-0 text-[14px] font-medium" :class="failed(l.action_result) ? 'text-[#B91C1C]' : 'text-[#5E5A6B]'">{{ failed(l.action_result) ? "Gagal" : "Berhasil" }}</p>
       </li>

@@ -5,6 +5,9 @@ import ChatComposer from "../asisten/ChatComposer.vue";
 import MessageList from "../asisten/MessageList.vue";
 import { chatService, type ChatHistoryItem } from "../../services/chatService";
 import { friendlyChatError } from "../../composables/useAssistant";
+import { useAuthStore } from "../../stores/auth";
+
+const authStore = useAuthStore();
 
 const props = defineProps<{ documentId: string; selected?: HeatmapAnnotation | null }>();
 const messages = ref<ChatHistoryItem[]>([]);
@@ -24,6 +27,7 @@ async function send(prompt: string) {
     });
     sessionId.value = res.session_id;
     messages.value.push({ id: res.message_id, role: "ASSISTANT", content: res.content, created_at: "" });
+    void authStore.fetchProfile();
   } catch (err: any) {
     messages.value.pop();
     error.value = friendlyChatError(err);

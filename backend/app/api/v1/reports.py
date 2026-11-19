@@ -65,8 +65,8 @@ async def export_pdf(
     if not report:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
 
-    check_report_authorization(report, current_user)
-    return build_report_pdf_response(report)
+    check_report_authorization(report, current_user, allow_free=False)
+    return build_report_pdf_response(report, current_user=current_user)
 
 
 @router.get("/verify/{verification_uuid}", response_model=APIResponse[AuditVerificationResponse])

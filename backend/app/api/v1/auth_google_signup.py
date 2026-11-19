@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.auth_helpers import (
     format_user_profile,
     set_refresh_cookie,
-    validate_strong_password,
 )
 from app.core.config import settings
 from app.core.database import get_db
@@ -105,7 +104,11 @@ async def google_complete(
             detail="Nama lengkap minimal 2 karakter.",
         )
 
-    validate_strong_password(req.password)
+    if len(req.password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kata sandi minimal harus 8 karakter.",
+        )
 
     new_user = User(
         full_name=clean_name,

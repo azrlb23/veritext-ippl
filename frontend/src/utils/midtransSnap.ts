@@ -1,4 +1,5 @@
-const SNAP_SRC = "https://app.sandbox.midtrans.com/snap/snap.js";
+const SANDBOX_SNAP_SRC = "https://app.sandbox.midtrans.com/snap/snap.js";
+const PRODUCTION_SNAP_SRC = "https://app.midtrans.com/snap/snap.js";
 
 declare global {
   interface Window {
@@ -6,11 +7,11 @@ declare global {
   }
 }
 
-function loadScript(clientKey: string): Promise<void> {
+function loadScript(clientKey: string, isProduction = false): Promise<void> {
   if (window.snap) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const tag = document.createElement("script");
-    tag.src = SNAP_SRC;
+    tag.src = isProduction ? PRODUCTION_SNAP_SRC : SANDBOX_SNAP_SRC;
     tag.dataset.clientKey = clientKey;
     tag.onload = () => resolve();
     tag.onerror = () => reject(new Error("Halaman pembayaran tidak dapat dimuat."));
@@ -19,8 +20,8 @@ function loadScript(clientKey: string): Promise<void> {
 }
 
 /** Membuka jendela pembayaran Midtrans Snap; mengembalikan hasil akhir yang dipilih pengguna. */
-export async function openSnap(token: string, clientKey: string): Promise<"paid" | "pending" | "closed"> {
-  await loadScript(clientKey);
+export async function openSnap(token: string, clientKey: string, isProduction = false): Promise<"paid" | "pending" | "closed"> {
+  await loadScript(clientKey, isProduction);
   return new Promise((resolve) => {
     window.snap!.pay(token, {
       onSuccess: () => resolve("paid"),

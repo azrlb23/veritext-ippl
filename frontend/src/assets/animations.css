@@ -1,0 +1,59 @@
+.vt-reveal,
+.vt-reveal-left,
+.vt-reveal-right,
+.vt-reveal-zoom {
+  transition:
+    opacity 0.62s cubic-bezier(0.16, 1, 0.3, 1) var(--vt-d, 0ms),
+    transform 0.62s cubic-bezier(0.16, 1, 0.3, 1) var(--vt-d, 0ms);
+  will-change: opacity, transform;
+}
+
+.vt-reveal {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0) scale(0.985);
+}
+
+.vt-reveal-left {
+  opacity: 0;
+  transform: translate3d(-24px, 0, 0);
+}
+
+.vt-reveal-right {
+  opacity: 0;
+  transform: translate3d(24px, 0, 0);
+}
+
+.vt-reveal-zoom {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.95);
+}
+
+.vt-section.is-visible .vt-reveal,
+.vt-section.is-visible .vt-reveal-left,
+.vt-section.is-visible .vt-reveal-right,
+.vt-section.is-visible .vt-reveal-zoom,
+.vt-reveal.is-visible,
+.vt-reveal-left.is-visible,
+.vt-reveal-right.is-visible,
+.vt-reveal-zoom.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.vt-d-1 { --vt-d: 80ms; }
+.vt-d-2 { --vt-d: 160ms; }
+.vt-d-3 { --vt-d: 240ms; }
+.vt-d-4 { --vt-d: 320ms; }
+.vt-d-5 { --vt-d: 420ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vt-reveal,
+  .vt-reveal-left,
+  .vt-reveal-right,
+  .vt-reveal-zoom {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}

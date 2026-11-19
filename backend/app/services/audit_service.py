@@ -93,8 +93,18 @@ class AuditService:
 
         wallet_stmt = select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update()
         wallet = (await db.execute(wallet_stmt)).scalar_one_or_none()
-        refund_amount = 1 if getattr(task, "audit_depth", "FULL") == "TIER1_ONLY" else 2
-        if wallet:
+        debit_stmt = select(TokenTransaction).where(
+            TokenTransaction.reference_id == task.id,
+            TokenTransaction.transaction_type == "DEBIT_AUDIT",
+        )
+        debit_tx = (await db.execute(debit_stmt)).scalar_one_or_none()
+        refund_stmt = select(TokenTransaction).where(
+            TokenTransaction.reference_id == task.id,
+            TokenTransaction.transaction_type == "CREDIT_REFUND",
+        )
+        already_refunded = (await db.execute(refund_stmt)).scalar_one_or_none()
+        if wallet and isinstance(debit_tx, TokenTransaction) and not isinstance(already_refunded, TokenTransaction):
+            refund_amount = abs(debit_tx.amount)
             wallet.balance += refund_amount
             tx = TokenTransaction(
                 wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=refund_amount,

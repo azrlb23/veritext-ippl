@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { VtIcon } from "../common";
 import VerifySeal from "./VerifySeal.vue";
 
 export interface CertificateDetails {
@@ -45,9 +46,7 @@ const rows = computed(() => [
   <div class="relative mx-auto max-w-[980px] rounded-[40px] bg-white p-7 pt-10 shadow-float sm:p-12 font-sans select-none">
     <div class="absolute -top-9 right-5 sm:right-10"><VerifySeal /></div>
     <div class="flex items-center gap-2 text-[14px] font-semibold text-[#15803D]">
-      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
+      <VtIcon name="verified" tone="current" class="h-5 w-5 shrink-0" />
       Sertifikat terverifikasi
     </div>
 

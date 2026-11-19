@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Tiga kartu metrik kecil interaktif yang bisa diklik untuk memfilter naskah.
-defineProps<{ activeFilter?: string }>();
+defineProps<{ activeFilter?: string; active?: boolean }>();
 const emit = defineEmits<{ (e: "select", key: string): void }>();
 
 const items = [
@@ -22,7 +22,7 @@ const items = [
       <div class="text-[12px] text-[#5E5A6B] group-hover:text-[#14111C] transition-colors">{{ m.label }}</div>
       <div class="mt-1 text-[26px] font-semibold tracking-[-0.03em] text-[#14111C] tabular-nums group-hover:scale-105 transition-transform origin-left">{{ m.value }}</div>
       <div class="mt-3 h-1.5 w-full rounded-full bg-[#EFEAF6] overflow-hidden">
-        <div class="h-1.5 rounded-full transition-all duration-700 ease-out group-hover:opacity-90" :class="m.bar" :style="{ width: m.width }"></div>
+        <div class="h-1.5 rounded-full transition-all duration-700 ease-out group-hover:opacity-90" :class="m.bar" :style="{ width: active === false ? '0%' : m.width }"></div>
       </div>
     </div>
   </div>

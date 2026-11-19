@@ -666,6 +666,8 @@ class TestJalur1GeminiAIAndWebScanner(unittest.TestCase):
                 class QueryMock:
                     def filter(self, *conds):
                         return self
+                    def with_for_update(self):
+                        return self
                     def order_by(self, *a):
                         return self
                     def first(self):

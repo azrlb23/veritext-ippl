@@ -40,11 +40,12 @@ async function load(id: string) {
       return;
     }
     const data = await auditService.getReport(id);
+    const prevId = selected.value?.sentence_id;
     report.value = data;
     documentText.value = data.document_text || "";
     annotations.value = data.heatmap_annotations || [];
     sources.value = data.matched_sources || [];
-    selected.value = annotations.value[0] ?? null;
+    selected.value = (prevId ? annotations.value.find((x) => x.sentence_id === prevId) : undefined) || annotations.value[0] || null;
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.detail || "Laporan belum bisa dimuat.";
   } finally {
@@ -52,7 +53,7 @@ async function load(id: string) {
   }
 }
 
-function onApplied(ev: { appliedText: string; newCompositeScore?: number }) {
+async function onApplied(ev: { appliedText: string; newCompositeScore?: number }) {
   const a = selected.value;
   if (!a) return;
   a.color = "RESOLVED_GREEN";
@@ -61,6 +62,7 @@ function onApplied(ev: { appliedText: string; newCompositeScore?: number }) {
   a.text_snippet = ev.appliedText;
   if (report.value && ev.newCompositeScore !== undefined) report.value.score_composite = ev.newCompositeScore;
   showNotification("Kalimat baru sudah dipakai di naskah.", "success");
+  await load(route.params.id as string);
 }
 
 async function download() {
@@ -78,7 +80,10 @@ async function download() {
 
 onMounted(() => load(route.params.id as string));
 onUnmounted(() => { if (timer) clearTimeout(timer); });
-watch(() => route.params.id, (id) => id && load(id as string));
+watch(() => route.params.id, (id) => {
+  if (timer) { clearTimeout(timer); timer = null; }
+  if (id) void load(id as string);
+});
 </script>
 
 <template>
@@ -97,9 +102,9 @@ watch(() => route.params.id, (id) => id && load(id as string));
           <div class="mb-5 grid grid-cols-3 gap-1 rounded-full bg-[#F3EEFA] p-1" role="tablist">
             <button v-for="t in TABS" :key="t.key" type="button" role="tab" :aria-selected="tab === t.key" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]" :class="tab === t.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B]'" @click="tab = t.key">{{ t.label }}</button>
           </div>
-          <SourcesPanel v-if="tab === 'sources'" :selected="selected" :sources="sources" @rewrite="(a) => { selected = a; tab = 'rewrite'; }" />
-          <ParaphrasePanel v-else-if="tab === 'rewrite'" :selected="selected" @applied="onApplied" />
-          <ChatPanel v-else :document-id="documentId" :selected="selected" />
+          <SourcesPanel v-show="tab === 'sources'" :selected="selected" :sources="sources" @rewrite="(a) => { selected = a; tab = 'rewrite'; }" />
+          <ParaphrasePanel v-show="tab === 'rewrite'" :selected="selected" @applied="onApplied" />
+          <ChatPanel v-show="tab === 'ask'" :document-id="documentId" :selected="selected" />
         </aside>
       </div>
     </div>

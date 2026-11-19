@@ -1,9 +1,26 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { rupiah, type InvoiceRow } from "../../composables/useTokenPurchase";
+import { useNotification } from "../../composables/useNotification";
+import { billingService } from "../../services/billingService";
 
 defineProps<{ invoices: InvoiceRow[] }>();
+const { showNotification } = useNotification();
+const downloading = ref<string | null>(null);
 const label = (s: string) => ({ PAID: "Lunas", PENDING: "Menunggu pembayaran", EXPIRED: "Kedaluwarsa", FAILED: "Gagal", CANCEL: "Dibatalkan" } as Record<string, string>)[s] || s;
 const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#6D28D9]" : "text-[#B91C1C]");
+
+async function downloadReceipt(orderId: string) {
+  if (!orderId || orderId === "-") return;
+  downloading.value = orderId;
+  try {
+    await billingService.downloadInvoicePdf(orderId);
+  } catch {
+    showNotification("Kuitansi PDF belum bisa diunduh.", "error");
+  } finally {
+    downloading.value = null;
+  }
+}
 </script>
 
 <template>
@@ -11,14 +28,20 @@ const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ?
     <h3 id="tagihan-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Riwayat pembelian</h3>
     <p v-if="invoices.length === 0" class="py-10 text-center text-[15px] text-[#5E5A6B]">Belum ada pembelian token.</p>
     <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">
-      <li v-for="i in invoices" :key="i.orderId" class="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <li v-for="i in invoices" :key="i.orderId" class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <div class="min-w-0">
           <p class="truncate text-[16px] font-semibold text-[#14111C]">{{ i.name }}</p>
-          <p class="text-[14px] text-[#5E5A6B]">{{ i.date }} <span aria-hidden="true">&middot;</span> {{ i.orderId }}</p>
+          <p class="text-[14px] text-[#5E5A6B]">{{ i.date }} ({{ i.orderId }})</p>
         </div>
-        <div class="flex items-baseline justify-between gap-6 sm:justify-end">
+        <div class="flex flex-wrap items-center justify-between gap-4 sm:justify-end">
           <p class="text-[16px] font-semibold tabular-nums text-[#14111C]">{{ rupiah(i.amount) }}</p>
-          <p class="min-w-[150px] text-[14px] font-medium sm:text-right" :class="tone(i.status)">{{ label(i.status) }}</p>
+          <p class="min-w-[130px] text-[14px] font-medium sm:text-right" :class="tone(i.status)">{{ label(i.status) }}</p>
+          <button
+            type="button"
+            :disabled="downloading === i.orderId"
+            class="inline-flex h-10 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-4 text-[13.5px] font-semibold text-[#14111C] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-50"
+            @click="downloadReceipt(i.orderId)"
+          >{{ downloading === i.orderId ? "Mengunduh..." : "Unduh kuitansi" }}</button>
         </div>
       </li>
     </ul>

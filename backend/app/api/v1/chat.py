@@ -7,21 +7,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.llm.gateway import DualEngineLLMGateway
-from app.models.audit import AuditReport, AuditSentence
+from app.models.audit import AuditReport, AuditSentence, AuditTask
 from app.models.chat import ChatMessage
 from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.chat import (
-    ApplyParaphraseRequest,
-    ApplyParaphraseResponse,
-    ChatMessageRequest,
-    ChatMessageResponse,
-    ParaphraseRequest,
-    ParaphraseResponse,
-    ParaphraseVariation,
+    ApplyParaphraseRequest, ApplyParaphraseResponse, ChatMessageRequest,
+    ChatMessageResponse, ParaphraseRequest, ParaphraseResponse, ParaphraseVariation,
 )
 from app.schemas.common import APIResponse
 from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
+from app.services.audit_log_helper import record_token_debit
 from app.services.chat_context import build_document_context_async, load_owned_documents
 from app.services.chat_prompt import build_prompt
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
@@ -67,6 +63,7 @@ async def send_chat_message(
             wallet_id=wallet.id, transaction_type="DEBIT_CHAT_PARAPHRASE", amount=-1,
             balance_after=wallet.balance, reference_id=session.id, note="AI Chatbot token debit",
         ))
+        record_token_debit(db, current_user.id, "CHAT_SESSION", session.id, 1, "AI Chatbot token debit")
 
     ai_text, engine = DualEngineLLMGateway().generate_text_with_failover(build_prompt(payload.prompt, context, history))
     if not ai_text:
@@ -90,15 +87,25 @@ async def send_chat_message(
     ))
 
 
+async def _get_owned_sentence(db: AsyncSession, sentence_id, user_id) -> AuditSentence:
+    stmt = (
+        select(AuditSentence)
+        .join(AuditTask, AuditSentence.audit_task_id == AuditTask.id)
+        .where(AuditSentence.id == sentence_id, AuditTask.user_id == user_id)
+    )
+    sentence = (await db.execute(stmt)).scalar_one_or_none()
+    if not sentence:
+        raise HTTPException(status_code=404, detail="Sentence not found")
+    return sentence
+
+
 @router.post("/paraphrase", response_model=APIResponse[ParaphraseResponse])
 async def paraphrase_sentence(
     payload: ParaphraseRequest,
     current_user: User = Depends(get_current_user),  # noqa: B008
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
-    sentence = await db.get(AuditSentence, payload.sentence_id)
-    if not sentence:
-        raise HTTPException(status_code=404, detail="Sentence not found")
+    sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
 
     wallet = await _lock_wallet(db, current_user.id)
     _, _, _, token_ded = AssistantService.consume_ai_quota(current_user, wallet, mode=payload.mode)
@@ -107,6 +114,7 @@ async def paraphrase_sentence(
             wallet_id=wallet.id, transaction_type="DEBIT_CHAT_PARAPHRASE", amount=-1,
             balance_after=wallet.balance, reference_id=sentence.id, note=f"Paraphrase {payload.mode} token debit",
         ))
+        record_token_debit(db, current_user.id, "AUDIT_SENTENCE", sentence.id, 1, f"Paraphrase {payload.mode} token debit")
 
     try:
         variations, active_engine = AssistantService.generate_paraphrase_variations(
@@ -125,12 +133,10 @@ async def paraphrase_sentence(
 @router.post("/apply-paraphrase", response_model=APIResponse[ApplyParaphraseResponse])
 async def apply_paraphrase(
     payload: ApplyParaphraseRequest,
-    _current_user: User = Depends(get_current_user),  # noqa: B008
+    current_user: User = Depends(get_current_user),  # noqa: B008
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
-    sentence = await db.get(AuditSentence, payload.sentence_id)
-    if not sentence:
-        raise HTTPException(status_code=404, detail="Sentence not found")
+    sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
 
     all_s = (await db.execute(select(AuditSentence).where(AuditSentence.audit_task_id == sentence.audit_task_id))).scalars().all()
     report = (await db.execute(select(AuditReport).where(AuditReport.audit_task_id == sentence.audit_task_id))).scalar_one_or_none()

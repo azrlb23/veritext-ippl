@@ -10,6 +10,7 @@ from app.llm.gateway import DualEngineLLMGateway
 from app.models.audit import AuditReport, AuditSentence
 from app.models.user import User
 from app.models.wallet import TokenWallet
+from app.services.paraphrase_helper import apply_paraphrase_update
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,11 @@ class AssistantService:
     ) -> tuple[list[dict[str, Any]], str]:
         gw = gateway or DualEngineLLMGateway()
         prompt = (
-            f"Parafrasekan teks berikut ({mode}):\n{original_text}\n"
+            f"Parafrasekan teks berikut ({mode}) menjadi 3 variasi gaya akademik.\n"
+            "WAJIB pertahankan bahasa yang sama persis dengan teks asli "
+            "(jika teks berbahasa Indonesia, seluruh variasi WAJIB berbahasa Indonesia akademik baku; "
+            "jangan diterjemahkan ke bahasa lain).\n"
+            f"Teks asli:\n{original_text}\n"
             "Format JSON: [{\"option_id\": 1, \"style\": \"Formal\", "
             "\"text\": \"...\", \"predicted_score\": 8.2}, ...]"
         )
@@ -113,28 +118,4 @@ class AssistantService:
         all_sentences: list[AuditSentence],
         report: AuditReport | None = None,
     ) -> dict[str, Any]:
-        sentence.current_text = selected_text
-        sentence.sentence_text = selected_text
-        sentence.match_type = "RESOLVED_GREEN"
-        sentence.is_modified = True
-        sentence.similarity_score = 6.0
-        sentence.lexical_similarity = 0.06
-        sentence.semantic_similarity = 0.06
-
-        scores = [
-            6.0 if (s.id == sentence.id or s.match_type == "RESOLVED_GREEN")
-            else (0.0 if s.match_type == "NONE" else float(s.similarity_score or 0.0))
-            for s in all_sentences
-        ] if all_sentences else [6.0]
-        new_comp = round(sum(scores) / max(len(scores), 1), 2)
-        if report is not None:
-            report.score_composite = new_comp
-
-        return {
-            "sentence_id": sentence.id,
-            "current_text": sentence.current_text,
-            "match_type": "RESOLVED_GREEN",
-            "new_similarity": 6.0,
-            "new_composite_score": new_comp,
-            "is_modified": True,
-        }
+        return apply_paraphrase_update(sentence, selected_text, all_sentences, report)

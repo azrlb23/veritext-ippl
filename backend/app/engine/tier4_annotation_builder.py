@@ -92,7 +92,7 @@ def build_heatmap_annotations(
             t3 = tier3_anomalies_by_index[s.index]
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T3", color="YELLOW",
-                similarity=t3.anomaly_score, source_title="Evaluator AI · Gemini Flash",
+                similarity=t3.anomaly_score, source_title="Evaluator AI - Gemini Flash",
                 text_snippet=s.text, reason=t3.reason,
             ).to_dict())
 

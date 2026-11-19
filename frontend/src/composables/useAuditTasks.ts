@@ -1,11 +1,13 @@
 import { computed, onMounted, ref } from "vue";
 import { auditService } from "../services/auditService";
+import { documentService } from "../services/documentService";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "./useNotification";
 import { usePolling } from "./usePolling";
 
 export interface AuditTaskRow {
   id: string;
+  documentId: string;
   title: string;
   depth: string;
   status: string;
@@ -19,11 +21,14 @@ const ACTIVE = ["QUEUED", "PROCESSING"];
 export const isActiveStatus = (s: string) => ACTIVE.includes(s);
 export const isFailedStatus = (s: string) => ["FAILED", "REVOKED", "CANCELLED"].includes(s);
 
-export function useAuditTasks(limit = 50) {
+export function useAuditTasks(limit = 20) {
   const authStore = useAuthStore();
   const { showNotification } = useNotification();
   const tasks = ref<AuditTaskRow[]>([]);
   const loading = ref(true);
+  const page = ref(1);
+  const pages = ref(1);
+  const total = ref(0);
 
   const activeTasks = computed(() => tasks.value.filter((t) => isActiveStatus(t.status)));
   const doneTasks = computed(() => tasks.value.filter((t) => t.status === "SUCCESS"));
@@ -31,9 +36,10 @@ export function useAuditTasks(limit = 50) {
   async function fetchTasks(): Promise<boolean> {
     if (!authStore.token) return true;
     try {
-      const data = await auditService.getTasks(1, limit);
+      const data = await auditService.getTasks(page.value, limit);
       tasks.value = (data?.items ?? []).map((i: any) => ({
         id: i.task_id || i.id || "",
+        documentId: i.document_id || "",
         title: i.document_title || "Naskah",
         depth: i.audit_depth,
         status: i.status,
@@ -42,6 +48,8 @@ export function useAuditTasks(limit = 50) {
         score: i.score_composite ?? null,
         createdAt: i.created_at ?? "",
       }));
+      total.value = data?.total ?? tasks.value.length;
+      pages.value = data?.pages ?? Math.max(1, Math.ceil(total.value / limit));
     } catch {
       /* jaringan terputus: tampilkan data terakhir */
     } finally {
@@ -57,6 +65,13 @@ export function useAuditTasks(limit = 50) {
     if (activeTasks.value.length > 0) startPolling();
   }
 
+  async function changePage(nextPage: number) {
+    if (nextPage < 1 || nextPage > pages.value || nextPage === page.value) return;
+    page.value = nextPage;
+    loading.value = true;
+    await refresh();
+  }
+
   async function cancel(id: string) {
     try {
       await auditService.cancelAudit(id);
@@ -68,8 +83,29 @@ export function useAuditTasks(limit = 50) {
     }
   }
 
+  async function removeDocument(documentId: string) {
+    if (!documentId) return;
+    try {
+      await documentService.delete(documentId);
+      showNotification("Naskah dan seluruh riwayatnya telah dihapus permanen.", "success");
+      if (tasks.value.length <= 1 && page.value > 1) page.value -= 1;
+      await refresh();
+    } catch {
+      showNotification("Naskah tidak bisa dihapus.", "error");
+    }
+  }
+
+  async function exportCsv() {
+    try {
+      await auditService.exportHistoryCsv();
+      showNotification("Riwayat pemeriksaan berhasil diunduh.", "success");
+    } catch {
+      showNotification("Gagal mengunduh riwayat CSV.", "error");
+    }
+  }
+
   onMounted(refresh);
-  return { tasks, loading, activeTasks, doneTasks, refresh, cancel };
+  return { tasks, loading, page, pages, total, activeTasks, doneTasks, refresh, changePage, cancel, removeDocument, exportCsv };
 }
 
 const STAGE_LABELS: Record<string, string> = {

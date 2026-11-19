@@ -180,7 +180,7 @@ class TestRemediationPhase1(unittest.IsolatedAsyncioTestCase):
         other_user_id = uuid.uuid4()
         admin_id = uuid.uuid4()
 
-        owner_user = User(id=owner_id, full_name="Pemilik Naskah", email="owner@kampus.ac.id", role="FREE", is_active=True)
+        owner_user = User(id=owner_id, full_name="Pemilik Naskah", email="owner@kampus.ac.id", role="PREMIUM", is_active=True)
         other_user = User(id=other_user_id, full_name="User Asing", email="other@kampus.ac.id", role="FREE", is_active=True)
         admin_user = User(id=admin_id, full_name="Admin VeriText", email="admin@veritext.ai", role="ADMIN", is_active=True)
 

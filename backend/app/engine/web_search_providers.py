@@ -73,12 +73,12 @@ def call_ddg_search_api(
 ) -> list[dict[str, Any]] | None:
     """Fallback pencarian web menggunakan DuckDuckGo Search."""
     try:
-        from duckduckgo_search import DDGS
+        from ddgs import DDGS
     except ImportError:
         try:
-            from ddgs import DDGS
+            from duckduckgo_search import DDGS
         except ImportError:
-            logger.warning("Package duckduckgo_search tidak terpasang.")
+            logger.warning("Package ddgs tidak terpasang.")
             return None
 
     results_list: list[dict[str, Any]] = []

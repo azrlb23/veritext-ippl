@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
+import { VtIcon } from "../common";
 
+const props = defineProps<{ active?: boolean }>();
 const displayScore = ref(0);
 const activeMetric = ref<number | null>(null);
+let rafId: number | null = null;
 
 const metrics = [
   { label: "Kecocokan kata", value: 8, bar: "bg-[#EF4444]" },
@@ -11,25 +14,28 @@ const metrics = [
 ];
 
 function triggerScoreCount() {
+  if (rafId !== null) cancelAnimationFrame(rafId);
   displayScore.value = 0;
-  const target = 88;
-  const duration = 1200;
-  const start = performance.now();
-
-  function step(now: number) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const ease = 1 - Math.pow(1 - progress, 3);
-    displayScore.value = Math.round(ease * target);
-    if (progress < 1) {
-      requestAnimationFrame(step);
-    }
-  }
-  requestAnimationFrame(step);
+  const target = 88, duration = 1200, start = performance.now();
+  const step = (now: number) => {
+    const p = Math.min((now - start) / duration, 1);
+    displayScore.value = Math.round((1 - Math.pow(1 - p, 3)) * target);
+    rafId = p < 1 ? requestAnimationFrame(step) : null;
+  };
+  rafId = requestAnimationFrame(step);
 }
 
+watch(() => props.active, (active) => {
+  if (active) triggerScoreCount();
+  else if (active === false) {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    displayScore.value = 0;
+  }
+});
+
 onMounted(() => {
-  setTimeout(triggerScoreCount, 400);
+  if (props.active === undefined) setTimeout(triggerScoreCount, 400);
+  else if (props.active) triggerScoreCount();
 });
 </script>
 
@@ -40,11 +46,7 @@ onMounted(() => {
     @mouseenter="triggerScoreCount"
   >
     <div class="flex items-center gap-3">
-      <div class="h-10 w-10 rounded-[12px] bg-[#F3EEFA] flex items-center justify-center text-[#14111C] transition-transform duration-300 group-hover:scale-105">
-        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" />
-        </svg>
-      </div>
+      <VtIcon name="document" class="h-6 w-6 shrink-0 text-[#14111C]" />
       <div class="min-w-0">
         <div class="text-[13px] font-semibold text-[#14111C] truncate">Naskah-Laporan.pdf</div>
         <div class="text-[11.5px] text-[#5E5A6B]">2.140 kata, 1 token</div>

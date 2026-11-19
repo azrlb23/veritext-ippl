@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { VtIcon } from "../common";
 
 defineProps<{ file: File | null; isDragging: boolean; error: string }>();
 const emit = defineEmits<{
@@ -34,18 +35,14 @@ defineExpose({ clear, pick });
     <input ref="input" type="file" accept=".pdf,.docx,.txt" class="hidden" aria-label="Pilih berkas naskah" @change="onChange" />
 
     <div
-      class="flex min-h-[300px] flex-col items-center justify-center rounded-[28px] p-8 text-center transition-colors duration-200"
-      :class="isDragging ? 'bg-[#E7D9F8]' : 'bg-[#F3EEFA]'"
+      class="flex min-h-[220px] flex-col items-center justify-center rounded-[32px] p-8 text-center transition-colors duration-200 sm:min-h-[240px]"
+      :class="isDragging ? 'border-2 border-dashed border-[#8A3FE0] bg-[#E7D9F8]' : file ? 'bg-[#F3EEFA]' : 'border-2 border-dashed border-[#8A3FE0]/20 bg-[#F3EEFA]/75'"
       @dragover.prevent="emit('dragover', $event)"
       @dragleave="emit('dragleave', $event)"
       @drop.prevent="emit('drop', $event)"
     >
       <template v-if="!file">
-        <div class="flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#6D28D9] shadow-lift">
-          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M5 16v2a2 2 0 002 2h10a2 2 0 002-2v-2" />
-          </svg>
-        </div>
+        <VtIcon name="upload" class="h-10 w-10 text-[#6D28D9]" />
         <p class="mt-5 text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">Tarik dan lepas naskah di sini</p>
         <p class="mt-1.5 text-[14px] text-[#5E5A6B]">PDF, DOCX, atau TXT, maksimal 15 MB</p>
         <button
@@ -58,11 +55,7 @@ defineExpose({ clear, pick });
       </template>
 
       <template v-else>
-        <div class="flex h-16 w-16 items-center justify-center rounded-[20px] bg-white text-[#14111C] shadow-lift">
-          <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" />
-          </svg>
-        </div>
+        <VtIcon name="document" class="h-10 w-10 text-[#14111C]" />
         <p class="mt-5 max-w-full truncate text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">{{ file.name }}</p>
         <p class="mt-1.5 text-[14px] tabular-nums text-[#5E5A6B]">{{ (file.size / (1024 * 1024)).toFixed(2) }} MB</p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-3">

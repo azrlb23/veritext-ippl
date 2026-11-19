@@ -256,10 +256,28 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
             audit_depth="FULL",
             status="QUEUED",
         )
-
-        mock_db = MockAsyncSession(
-            execute_handler=lambda s: MockQueryResult([task_full] if "audit_tasks" in str(s).lower() else [wallet])
+        debit_tx = TokenTransaction(
+            wallet_id=wallet.id,
+            transaction_type="DEBIT_AUDIT",
+            amount=-2,
+            balance_after=3,
+            reference_id=task_full.id,
         )
+
+        exec_calls = 0
+
+        def _exec_handler(stmt):
+            nonlocal exec_calls
+            exec_calls += 1
+            if "audit_tasks" in str(stmt).lower():
+                return MockQueryResult([task_full])
+            if exec_calls == 2:
+                return MockQueryResult([wallet])
+            if exec_calls == 3:
+                return MockQueryResult([debit_tx])
+            return MockQueryResult([])
+
+        mock_db = MockAsyncSession(execute_handler=_exec_handler)
 
         res = await AuditService.cancel_task(mock_db, task_full.id, user_id)
         self.assertTrue(res)
@@ -366,6 +384,7 @@ class TestRemediationPhase7(unittest.IsolatedAsyncioTestCase):
                     return m_tx
                 elif model == TokenWallet:
                     m.filter.return_value.first.return_value = wallet
+                    m.filter.return_value.with_for_update.return_value.first.return_value = wallet
                     return m
                 return m
 

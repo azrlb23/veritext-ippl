@@ -3,6 +3,9 @@ import { ref } from "vue";
 import type { HeatmapAnnotation } from "../../types";
 import { chatService, type ParaphraseVariation } from "../../services/chatService";
 import { friendlyChatError } from "../../composables/useAssistant";
+import { useAuthStore } from "../../stores/auth";
+
+const authStore = useAuthStore();
 
 const props = defineProps<{ selected?: HeatmapAnnotation | null }>();
 const emit = defineEmits<{ (e: "applied", d: { appliedText: string; newCompositeScore?: number }): void }>();
@@ -26,6 +29,7 @@ async function generate() {
   variations.value = [];
   try {
     variations.value = (await chatService.paraphrase(props.selected.sentence_id, mode.value)).variations;
+    void authStore.fetchProfile();
   } catch (err: any) {
     error.value = friendlyChatError(err);
   } finally {

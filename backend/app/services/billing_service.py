@@ -10,7 +10,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.models.audit_log import AuditLog
 from app.models.invoice import Invoice
+from app.models.user import User
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.billing import MidtransWebhookPayload
 from app.services.midtrans_snap import create_snap_token
@@ -27,6 +29,18 @@ class BillingService:
             await db.commit()
             await db.refresh(wallet)
         return wallet
+
+    @staticmethod
+    async def get_recent_transactions(
+        db: AsyncSession, wallet_id: uuid.UUID, limit: int = 10
+    ) -> list[TokenTransaction]:
+        stmt = (
+            select(TokenTransaction)
+            .where(TokenTransaction.wallet_id == wallet_id)
+            .order_by(TokenTransaction.created_at.desc())
+            .limit(limit)
+        )
+        return list((await db.execute(stmt)).scalars().all())
 
     @staticmethod
     async def create_topup_invoice(
@@ -102,6 +116,26 @@ class BillingService:
                     note=f"Top-up {invoice.package_name}",
                 )
                 db.add(tx)
+
+                user_stmt = select(User).where(User.id == invoice.user_id).with_for_update()
+                user = (await db.execute(user_stmt)).scalar_one_or_none()
+                if isinstance(user, User) and (user.role or "").upper() == "FREE":
+                    user.role = "PREMIUM"
+
+                db.add(
+                    AuditLog(
+                        actor_id=invoice.user_id,
+                        action_type="BILLING_TOPUP",
+                        resource_type="INVOICE",
+                        resource_id=invoice.id,
+                        action_result="SUCCESS",
+                        meta_data={
+                            "order_id": invoice.order_id,
+                            "token_amount": invoice.token_amount,
+                            "gross_amount": int(invoice.gross_amount or 0),
+                        },
+                    )
+                )
         elif payload.transaction_status in ("cancel", "expire"):
             invoice.status = "EXPIRED" if payload.transaction_status == "expire" else "CANCEL"
         elif payload.transaction_status in ("deny", "failed"):

@@ -39,7 +39,7 @@ def scan_web_sources(
         return [], False, "Pemindaian web dinonaktifkan di konfigurasi sistem."
     try:
         if on_progress:
-            on_progress(45, "Tahap 2 · Penelusuran sumber internet publik (Google Search Grounding)")
+            on_progress(45, "Tahap 2 - Penelusuran sumber internet publik (Google Search Grounding)")
         matches = web_scanner.scan(sentences)
         avail = getattr(web_scanner, "last_scan_available", True)
         note = getattr(web_scanner, "last_scan_note", None)
