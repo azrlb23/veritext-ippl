@@ -61,24 +61,24 @@ onBeforeUnmount(() => {
 <template>
   <div v-if="isMenuOpen" class="fixed inset-0 z-40 bg-[#14111C]/10 backdrop-blur-[2px] lg:hidden" aria-hidden="true" @click="closeMenu"></div>
 
-  <header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex select-none justify-center px-3 pt-3 sm:px-5 sm:pt-4">
-    <div class="pointer-events-auto relative w-full max-w-[1120px]">
-      <div
-        class="grid grid-cols-[auto_1fr] lg:grid-cols-[1fr_auto_1fr] items-center rounded-full bg-white/95 px-4 sm:px-6 transition-all duration-300 border border-[#14111C]/[0.04]"
-        :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[62px] shadow-lift'"
-      >
-        <div class="flex items-center justify-start">
+  <header
+    class="fixed inset-x-0 top-0 z-50 select-none transition-colors duration-200"
+    :class="isScrolled ? 'bg-white/95 shadow-[0_1px_0_rgba(20,17,28,0.06)]' : 'bg-transparent'"
+  >
+    <div class="relative mx-auto w-full max-w-[1180px] px-4 sm:px-6">
+      <div class="flex h-[64px] items-center justify-between">
+        <div class="flex items-center gap-6 lg:gap-8">
           <router-link
             :to="isGuest ? '/' : isAdmin ? '/admin' : '/dashboard'"
-            class="inline-flex h-10 flex-shrink-0 items-center rounded-full text-[19px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            class="inline-flex h-10 flex-shrink-0 items-center rounded-full text-[19px] font-semibold tracking-[-0.03em] text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             @click="closeMenu"
           >
-            VeriText <span class="ml-1 text-[#8A3FE0]">AI</span>
+            VeriText <span class="ml-1 text-[#0F766E]">AI</span>
           </router-link>
-        </div>
 
-        <div class="hidden lg:flex items-center justify-center">
-          <NavLinks :links="navLinks" :is-active="isItemActive" />
+          <div class="hidden lg:flex items-center">
+            <NavLinks :links="navLinks" :is-active="isItemActive" />
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-2">

@@ -15,16 +15,16 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
 
 <template>
   <div class="flex items-center gap-2">
-    <template v-if="isGuest">
+    <div v-if="isGuest" class="inline-flex items-center rounded-full bg-[#F2F3F5] p-1">
       <router-link
         to="/login"
-        class="inline-flex h-10 cursor-pointer items-center rounded-full px-3.5 text-[13.5px] font-medium text-[#4B4757] transition-colors duration-200 hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        class="inline-flex h-8 cursor-pointer items-center rounded-full px-4 text-[13.5px] font-medium text-[#14111C] transition-colors duration-200 hover:text-[#0F766E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
       >Masuk</router-link>
       <router-link
         to="/register"
-        class="inline-flex h-10 cursor-pointer items-center rounded-full bg-[#14111C] px-5 text-[13.5px] font-semibold text-white shadow-btn-dark transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#2B2438] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+        class="inline-flex h-8 cursor-pointer items-center rounded-full bg-[#14111C] px-4 text-[13.5px] font-semibold text-white transition-colors duration-200 hover:bg-[#272230] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
       >Daftar</router-link>
-    </template>
+    </div>
     <template v-else>
       <div ref="root" class="relative">
         <button
