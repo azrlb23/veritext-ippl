@@ -84,7 +84,10 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="vt-reveal vt-d-2 flex flex-col items-stretch gap-4 md:flex-row md:items-center lg:gap-5">
+    <div
+      class="vt-reveal vt-d-2 flex flex-col items-stretch gap-4 md:h-[460px] md:flex-row md:items-center lg:gap-5"
+      style="contain: layout style;"
+    >
       <PipelineTierCard
         v-for="tier in tiers"
         :key="tier.id"

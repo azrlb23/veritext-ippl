@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
   <header class="pointer-events-none fixed inset-x-0 top-0 z-50 flex select-none justify-center px-3 pt-3 sm:px-5 sm:pt-4">
     <div class="pointer-events-auto relative w-full max-w-[1120px]">
       <div
-        class="grid grid-cols-[auto_1fr] lg:grid-cols-[1fr_auto_1fr] items-center rounded-full bg-white/80 px-4 sm:px-6 backdrop-blur-2xl transition-all duration-300 border border-[#14111C]/[0.04]"
+        class="grid grid-cols-[auto_1fr] lg:grid-cols-[1fr_auto_1fr] items-center rounded-full bg-white/95 px-4 sm:px-6 transition-all duration-300 border border-[#14111C]/[0.04]"
         :class="isScrolled ? 'h-[56px] shadow-float' : 'h-[62px] shadow-lift'"
       >
         <div class="flex items-center justify-start">

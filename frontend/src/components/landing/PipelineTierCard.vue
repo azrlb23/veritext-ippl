@@ -21,9 +21,10 @@ const stepNumber = computed(() => `${String(props.tier.id + 1).padStart(2, "0")}
 <template>
   <button
     type="button"
+    @mouseenter="$emit('select')"
     @click="$emit('select')"
     :aria-pressed="isActive"
-    class="group w-full cursor-pointer text-left transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+    class="group w-full cursor-pointer text-left transition-[flex-grow,transform,border-color] duration-300 ease-out"
     :class="isActive
       ? 'md:flex-[1.95] md:h-[460px] rounded-[22px] border border-[#E6DDF7] bg-white p-5 sm:p-6 shadow-[0_28px_64px_-20px_rgba(122,47,214,0.18)] flex flex-col justify-between'
       : 'md:flex-[0.88] md:h-[360px] rounded-[20px] border border-[#ECE8F4] bg-white p-6 shadow-[0_12px_32px_-16px_rgba(20,17,28,0.08)] flex flex-col justify-between hover:-translate-y-1 hover:border-[#DDD0F7] hover:shadow-float'"
