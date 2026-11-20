@@ -31,7 +31,7 @@ const lineActive = computed(() => focused.value || props.invalid || props.modelV
       <label
         :for="id"
         class="select-none text-[13px] font-medium transition-colors duration-200"
-        :class="invalid ? 'text-[#B91C1C]' : focused ? 'text-[#6D28D9]' : 'text-[#5E5A6B]'"
+        :class="invalid ? 'text-[#B91C1C]' : focused ? 'text-[#0F766E]' : 'text-[#5E5A6B]'"
       >{{ label }}</label>
       <button
         v-if="revealable"
@@ -59,7 +59,7 @@ const lineActive = computed(() => focused.value || props.invalid || props.modelV
     <div class="h-[2px] w-full rounded-full bg-[#14111C]/45"></div>
     <div
       class="absolute bottom-0 left-0 h-[3px] rounded-full transition-[width] duration-300 ease-out motion-reduce:transition-none"
-      :class="[invalid ? 'bg-[#B91C1C]' : 'bg-[#8A3FE0]', lineActive ? 'w-full' : 'w-0']"
+      :class="[invalid ? 'bg-[#B91C1C]' : 'bg-[#0F766E]', lineActive ? 'w-full' : 'w-0']"
     ></div>
   </div>
 </template>

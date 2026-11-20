@@ -13,6 +13,10 @@ const tiles: Array<{ icon: VtIconName; cls: string }> = [
   { icon: "stylometric", cls: "right-[1%] top-[156px] h-11 w-11 rounded-[14px] -rotate-12 animate-float-a text-[#D97706]" },
   { icon: "verified", cls: "right-[2%] top-[336px] h-9 w-9 rounded-[12px] rotate-12 animate-float-b text-[#14111C]" },
 ];
+
+function scrollToShowcase() {
+  document.getElementById("laporan-diagnostik")?.scrollIntoView({ behavior: "smooth" });
+}
 </script>
 
 <template>
@@ -20,8 +24,9 @@ const tiles: Array<{ icon: VtIconName; cls: string }> = [
     <div
       v-for="c in chips"
       :key="c.title"
-      class="pointer-events-auto absolute flex w-max cursor-default items-center gap-2.5 whitespace-nowrap rounded-full bg-white px-4 py-2.5 shadow-lift transition-all duration-300 hover:scale-105 hover:shadow-float"
+      class="pointer-events-auto absolute flex w-max cursor-pointer items-center gap-2.5 whitespace-nowrap rounded-full bg-white px-4 py-2.5 shadow-lift transition-all duration-300 hover:scale-110 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-float"
       :class="[c.pos, c.anim]"
+      @click="scrollToShowcase"
     >
       <VtIcon :name="c.icon" tone="current" class="h-[18px] w-[18px] shrink-0 text-[#0F766E]" />
       <span class="text-[12.5px] font-semibold text-[#14111C]">{{ c.title }}</span>
@@ -29,8 +34,9 @@ const tiles: Array<{ icon: VtIconName; cls: string }> = [
     <div
       v-for="(t, i) in tiles"
       :key="`${t.icon}-${i}`"
-      class="absolute flex items-center justify-center bg-white shadow-lift"
+      class="pointer-events-auto absolute flex cursor-pointer items-center justify-center bg-white shadow-lift transition-all duration-300 hover:scale-110 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-float"
       :class="t.cls"
+      @click="scrollToShowcase"
     >
       <VtIcon :name="t.icon" tone="current" class="h-[18px] w-[18px]" />
     </div>

@@ -43,7 +43,7 @@ const links = [
             <li v-for="l in links" :key="l.to">
               <router-link
                 :to="l.to"
-                class="inline-flex min-h-[44px] items-center rounded transition-colors duration-200 hover:text-[#6D28D9] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+                class="inline-flex min-h-[44px] items-center rounded transition-colors duration-200 hover:text-[#0F766E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
               >
                 {{ l.name }}
               </router-link>
@@ -57,7 +57,7 @@ const links = [
 
     <div class="vt-reveal vt-d-3 pointer-events-none relative mt-6 h-[clamp(70px,13vw,190px)] overflow-hidden text-center" aria-hidden="true">
       <span
-        class="block bg-gradient-to-b from-[#8A3FE0]/30 to-transparent bg-clip-text text-[clamp(90px,21vw,320px)] font-semibold leading-[0.9] tracking-[-0.06em] text-transparent"
+        class="block bg-gradient-to-b from-[#0F766E]/25 to-transparent bg-clip-text text-[clamp(90px,21vw,320px)] font-semibold leading-[0.9] tracking-[-0.06em] text-transparent"
       >VeriText AI</span>
     </div>
   </footer>

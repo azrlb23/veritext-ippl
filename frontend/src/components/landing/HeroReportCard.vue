@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
+import { downloadSampleReportPdf } from "../../utils/sampleReportPdf";
 
 const props = defineProps<{ active?: boolean }>();
 const displayScore = ref(0);
@@ -95,8 +96,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="mt-5 h-10 rounded-full bg-[#14111C] text-white text-[12.5px] font-semibold flex items-center justify-center shadow-btn-dark transition-all duration-200 hover:bg-[#2B2438] active:scale-[0.98]">
+    <button
+      type="button"
+      class="mt-5 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[12.5px] font-semibold text-white shadow-btn-dark transition-all duration-200 hover:bg-[#2B2438] active:scale-[0.98]"
+      @click.stop="downloadSampleReportPdf"
+    >
       Unduh sertifikat
-    </div>
+    </button>
   </div>
 </template>
