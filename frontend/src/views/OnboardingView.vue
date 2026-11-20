@@ -89,7 +89,7 @@ async function handleSubmit() {
         <p class="font-semibold text-[#B91C1C]">Tiket tidak valid</p>
         <p class="text-[#4B4757]">{{ ticketErrorMessage }}</p>
       </div>
-      <router-link to="/register" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Kembali ke pendaftaran</router-link>
+      <router-link to="/register" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold">Kembali ke pendaftaran</router-link>
     </div>
 
     <form v-else class="space-y-6" @submit.prevent="handleSubmit">
@@ -112,7 +112,7 @@ async function handleSubmit() {
         <span>Setujui pemrosesan data identitas Anda untuk pembuatan akun.</span>
       </label>
 
-      <button type="submit" :disabled="!isFormValid" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">{{ isLoading ? "Menyimpan..." : "Simpan dan masuk" }}</button>
+      <button type="submit" :disabled="!isFormValid" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-50">{{ isLoading ? "Menyimpan..." : "Simpan dan masuk" }}</button>
     </form>
   </AuthCard>
 </template>

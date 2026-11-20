@@ -29,7 +29,7 @@ const { sectionRef, isVisible } = useSectionReveal({ threshold: 0.15 });
         <div class="vt-reveal vt-d-3 mt-7">
           <router-link
             to="/dashboard"
-            class="inline-flex h-[54px] cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-9 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+            class="vt-btn-dark inline-flex h-[54px] cursor-pointer items-center justify-center rounded-full px-9 text-[15px] font-semibold"
           >
             Mulai periksa gratis
           </router-link>

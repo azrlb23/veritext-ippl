@@ -92,7 +92,7 @@ const rows = computed(() => [
       <button
         type="button"
         @click="emit('copyLink')"
-        class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-7 text-[14px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 sm:h-11 sm:w-auto"
+        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-7 text-[14px] font-semibold sm:h-11 sm:w-auto"
       >
         Bagikan tautan
       </button>

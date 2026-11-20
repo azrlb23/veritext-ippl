@@ -9,7 +9,7 @@ defineEmits<{ (e: "open", id: string | null): void; (e: "remove", id: string): v
   <div class="flex h-full flex-col">
     <button
       type="button"
-      class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+      class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
       @click="$emit('open', null)"
     >Percakapan baru</button>
 

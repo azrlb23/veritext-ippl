@@ -40,14 +40,14 @@ function scrollToReport() {
         <div class="vt-reveal vt-d-2 mt-9 flex flex-wrap items-center justify-center gap-3">
           <router-link
             to="/dashboard"
-            class="inline-flex h-[52px] cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-8 text-[15px] font-semibold text-white shadow-btn-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98]"
+            class="vt-btn-dark inline-flex h-[52px] cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold"
           >
             Mulai periksa gratis
           </router-link>
           <button
             type="button"
             @click="scrollToReport"
-            class="inline-flex h-[52px] cursor-pointer items-center justify-center rounded-full bg-white px-7 text-[15px] font-semibold text-[#14111C] shadow-lift transition-all duration-300 hover:-translate-y-1 hover:shadow-float active:scale-[0.98]"
+            class="vt-btn-light inline-flex h-[52px] cursor-pointer items-center justify-center rounded-full px-7 text-[15px] font-semibold"
           >
             Lihat contoh laporan
           </button>

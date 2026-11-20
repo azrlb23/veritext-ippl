@@ -19,7 +19,7 @@ defineProps<{
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
         <router-link
           to="/periksa"
-          class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-8 text-[15px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+          class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
         >Periksa naskah</router-link>
         <router-link
           to="/billing"

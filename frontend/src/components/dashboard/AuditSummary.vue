@@ -73,7 +73,7 @@ const words = () => (props.estimate ? props.estimate.word_count.toLocaleString("
       <button
         type="button"
         :disabled="!isReady"
-        class="mt-5 flex h-[54px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none disabled:hover:translate-y-0"
+        class="vt-btn-dark mt-5 flex h-[54px] w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold disabled:cursor-not-allowed disabled:bg-none disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none"
         @click="emit('start')"
       >
         {{ isUploading ? "Mengunggah ke antrean..." : "Mulai periksa" }}

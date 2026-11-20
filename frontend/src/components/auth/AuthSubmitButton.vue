@@ -23,8 +23,8 @@ withDefaults(defineProps<Props>(), {
     :title="iconOnly ? label : undefined"
     :class="
       iconOnly
-        ? 'h-[52px] w-[52px] shrink-0 rounded-full bg-[#14111C] text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0'
-        : 'flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-1 sm:max-w-[190px]'
+        ? 'vt-btn-dark h-[52px] w-[52px] shrink-0 rounded-full flex items-center justify-center cursor-pointer disabled:cursor-not-allowed disabled:opacity-50'
+        : 'vt-btn-dark flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 sm:max-w-[190px]'
     "
   >
     <template v-if="iconOnly">

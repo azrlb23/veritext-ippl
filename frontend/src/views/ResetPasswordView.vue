@@ -70,7 +70,7 @@ async function handleSubmit() {
 
     <div v-else-if="isTokenInvalid" class="space-y-5">
       <p class="text-[14.5px] leading-[1.65] text-[#B91C1C]">Tautan pemulihan tidak valid atau sudah kedaluwarsa.</p>
-      <router-link to="/forgot-password" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Minta tautan baru</router-link>
+      <router-link to="/forgot-password" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold">Minta tautan baru</router-link>
     </div>
 
     <div v-else-if="isSuccess" class="space-y-5">
@@ -78,7 +78,7 @@ async function handleSubmit() {
         <div class="text-[17px] font-semibold text-[#15803D]">Kata sandi berhasil diperbarui</div>
         <p class="mt-1.5">Silakan masuk menggunakan kata sandi baru Anda.</p>
       </div>
-      <router-link to="/login" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">Masuk sekarang</router-link>
+      <router-link to="/login" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold">Masuk sekarang</router-link>
     </div>
 
     <form v-else class="space-y-6" @submit.prevent="handleSubmit">
@@ -90,7 +90,7 @@ async function handleSubmit() {
       <AuthField id="reset-conf" v-model="confirmPassword" label="Konfirmasi kata sandi" type="password" revealable autocomplete="new-password" placeholder="Ulangi kata sandi baru" :disabled="isLoading" :invalid="isPasswordMismatch" />
       <p v-if="isPasswordMismatch" class="-mt-3 text-[13px] font-medium text-[#B91C1C]">Konfirmasi kata sandi tidak cocok.</p>
 
-      <button type="submit" :disabled="isLoading" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">{{ isLoading ? 'Menyimpan...' : 'Simpan kata sandi baru' }}</button>
+      <button type="submit" :disabled="isLoading" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-50">{{ isLoading ? 'Menyimpan...' : 'Simpan kata sandi baru' }}</button>
     </form>
   </AuthCard>
 </template>

@@ -61,7 +61,7 @@ async function apply(text: string) {
     <p v-if="!selected" class="py-10 text-center text-[15px] text-[#5E5A6B]">Pilih kalimat yang tersorot di naskah, lalu minta asisten menulis ulang.</p>
     <template v-else>
       <p class="mt-5 rounded-[20px] bg-[#F3EEFA] p-4 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet }}</p>
-      <button type="button" :disabled="busy || !selected.sentence_id" class="mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
+      <button type="button" :disabled="busy || !selected.sentence_id" class="vt-btn-dark mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
     </template>
     <p v-if="error" class="mt-3 text-[14px] font-medium text-[#B91C1C]" role="alert">{{ error }}</p>
 
@@ -71,7 +71,7 @@ async function apply(text: string) {
         <p class="mt-1 text-[15.5px] leading-relaxed text-[#14111C]">{{ v.text }}</p>
         <div class="mt-4 flex items-center justify-between gap-3">
           <p class="text-[14px] text-[#5E5A6B]">Perkiraan kemiripan <span class="font-semibold tabular-nums text-[#14111C]">{{ v.predicted_score.toFixed(1).replace(".", ",") }}%</span></p>
-          <button type="button" :disabled="applying" class="inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-5 text-[14px] font-semibold text-white shadow-btn-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40" @click="apply(v.text)">Pakai</button>
+          <button type="button" :disabled="applying" class="vt-btn-dark inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40" @click="apply(v.text)">Pakai</button>
         </div>
       </li>
     </ul>

@@ -16,7 +16,7 @@ const pct = (v: number) => (v > 1 ? v : v * 100).toFixed(1).replace(".", ",");
         <p class="mt-1 text-[15px] leading-relaxed text-[#4B4757]">{{ selected.reason || "Ditemukan kemiripan dengan sumber pembanding." }}</p>
         <div class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p class="text-[32px] font-semibold leading-none tracking-[-0.04em] tabular-nums text-[#14111C]">{{ pct(selected.similarity ?? 0) }}%<span class="ml-2 text-[14px] font-medium tracking-normal text-[#5E5A6B]">mirip</span></p>
-          <button type="button" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[14px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2" @click="$emit('rewrite', selected)">Tulis ulang kalimat ini</button>
+          <button type="button" class="vt-btn-dark inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-6 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2" @click="$emit('rewrite', selected)">Tulis ulang kalimat ini</button>
         </div>
       </template>
       <p v-else class="py-6 text-center text-[15px] text-[#5E5A6B]">Pilih kalimat yang tersorot di naskah untuk melihat pembandingnya.</p>

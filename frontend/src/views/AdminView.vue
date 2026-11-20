@@ -85,7 +85,7 @@ onMounted(() => {
 
     <div v-if="hasError && !isLoading" class="mb-6 flex flex-col gap-3 rounded-[28px] bg-white p-6 shadow-float sm:flex-row sm:items-center sm:justify-between" role="alert">
       <p class="text-[15px] font-medium text-[#B91C1C]">{{ errorMessage || "Data pemantauan belum bisa dimuat." }}</p>
-      <button type="button" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[14px] font-semibold text-white shadow-btn-dark" @click="fetchData">Coba lagi</button>
+      <button type="button" class="vt-btn-dark inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-6 text-[14px] font-semibold" @click="fetchData">Coba lagi</button>
     </div>
 
     <div class="space-y-6">

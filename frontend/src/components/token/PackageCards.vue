@@ -20,8 +20,7 @@ const perToken = (p: { price: number; tokens: number }) => rupiah(Math.round(p.p
       <p class="text-[13px]" :class="p.featured ? 'text-white/80' : 'text-[#5E5A6B]'">{{ perToken(p) }} per token</p>
       <button
         type="button"
-        class="mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
-        :class="p.featured ? 'bg-[#14111C] text-white shadow-btn-dark' : 'bg-[#14111C] text-white shadow-btn-dark'"
+        class="vt-btn-dark mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
         @click="$emit('choose', { id: p.id, name: `Paket ${p.name}`, tokens: p.tokens, price: p.price })"
       >Pilih {{ p.name }}</button>
     </article>

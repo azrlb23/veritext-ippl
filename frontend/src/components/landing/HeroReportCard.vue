@@ -98,7 +98,7 @@ onMounted(() => {
     <a
       href="/Laporan-Sampel-VeriText-AI.pdf"
       download="Laporan-Sampel-VeriText-AI.pdf"
-      class="mt-5 flex h-10 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[12.5px] font-semibold text-white shadow-btn-dark transition-all duration-200 hover:bg-[#2B2438] active:scale-[0.98]"
+      class="vt-btn-dark mt-5 flex h-10 w-full cursor-pointer items-center justify-center rounded-full text-[12.5px] font-semibold"
       @click.stop
     >
       Unduh sertifikat

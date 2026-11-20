@@ -29,7 +29,7 @@ const emit = defineEmits<{
 const variantClasses = computed(() => {
   switch (props.variant) {
     case "secondary":
-      return "bg-white hover:bg-[#F8FAFC] text-[#0B0F19] border-[#E4E8F0] hover:border-[#CBD5E1] shadow-2xs active:scale-[0.98]";
+      return "vt-btn-light border-[#ECECEF]";
     case "outline":
       return "bg-white hover:bg-[#F8FAFC] text-[#0B0F19] border-[#E4E8F0] hover:border-[#1560BD] shadow-2xs active:scale-[0.98]";
     case "danger":
@@ -38,7 +38,7 @@ const variantClasses = computed(() => {
       return "bg-transparent hover:bg-[#F3F6FC] text-[#5B6475] hover:text-[#0B0F19] border-transparent shadow-none active:scale-[0.98]";
     case "primary":
     default:
-      return "bg-[#1560BD] hover:bg-[#1A73D9] text-white border-transparent shadow-sm active:scale-[0.98]";
+      return "vt-btn-dark border-transparent";
   }
 });
 

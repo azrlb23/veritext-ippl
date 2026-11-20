@@ -47,7 +47,7 @@ defineExpose({ clear, pick });
         <p class="mt-1.5 text-[14px] text-[#5E5A6B]">PDF, DOCX, atau TXT, maksimal 15 MB</p>
         <button
           type="button"
-          class="mt-6 inline-flex h-12 cursor-pointer items-center rounded-full bg-[#14111C] px-7 text-[14px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[14px] font-semibold"
           @click="pick"
         >
           Pilih berkas

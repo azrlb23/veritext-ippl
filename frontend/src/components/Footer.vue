@@ -31,7 +31,7 @@ const links = [
           </p>
           <router-link
             to="/dashboard"
-            class="mt-6 inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5"
+            class="vt-btn-dark mt-6 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold"
           >
             Mulai periksa gratis
           </router-link>

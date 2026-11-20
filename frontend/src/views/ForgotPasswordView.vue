@@ -56,7 +56,7 @@ async function handleSubmit() {
 
       <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
         <button type="button" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#EBE3F6] sm:flex-1" @click="router.push('/login')">Kembali</button>
-        <button type="submit" :disabled="isLoading" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 sm:flex-1">{{ isLoading ? 'Mengirim...' : 'Kirim tautan' }}</button>
+        <button type="submit" :disabled="isLoading" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1">{{ isLoading ? 'Mengirim...' : 'Kirim tautan' }}</button>
       </div>
     </form>
   </AuthCard>

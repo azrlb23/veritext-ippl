@@ -90,7 +90,7 @@ onBeforeUnmount(() => {
             <router-link
               v-if="isGuest"
               to="/register"
-              class="inline-flex h-9 cursor-pointer items-center rounded-full bg-[#14111C] px-4 text-[13px] font-semibold text-white shadow-btn-dark"
+              class="vt-btn-dark inline-flex h-9 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold"
               @click="closeMenu"
             >Daftar</router-link>
             <button

@@ -29,7 +29,7 @@ defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
         >Masuk</router-link>
         <router-link
           to="/register"
-          class="inline-flex h-12 w-full cursor-pointer sm:flex-1 items-center justify-center rounded-full bg-[#14111C] text-[15px] font-semibold text-white shadow-btn-dark"
+          class="vt-btn-dark inline-flex h-12 w-full cursor-pointer sm:flex-1 items-center justify-center rounded-full text-[15px] font-semibold"
           @click="$emit('close')"
         >Daftar gratis</router-link>
       </template>

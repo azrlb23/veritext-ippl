@@ -92,7 +92,7 @@ watch(() => route.params.id, (id) => {
     <div v-else-if="errorMessage || !report" class="mx-auto max-w-md rounded-[32px] bg-white p-8 text-center shadow-float">
       <h1 class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Laporan tidak ditemukan</h1>
       <p class="mt-2 text-[15px] text-[#4B4757]">{{ errorMessage || "Naskah tidak ada atau sudah dihapus." }}</p>
-      <router-link to="/riwayat" class="mt-6 inline-flex h-12 cursor-pointer items-center rounded-full bg-[#14111C] px-7 text-[15px] font-semibold text-white shadow-btn-dark">Kembali ke Riwayat</router-link>
+      <router-link to="/riwayat" class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold">Kembali ke Riwayat</router-link>
     </div>
     <div v-else class="space-y-6">
       <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" @download="download" />

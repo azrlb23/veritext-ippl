@@ -42,7 +42,7 @@ function handleMetricSelect(key: string) {
         <div class="vt-reveal vt-d-4 mt-10">
           <router-link
             to="/dashboard"
-            class="inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98]"
+            class="vt-btn-dark inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold"
           >
             Buka workspace
           </router-link>

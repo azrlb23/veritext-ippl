@@ -129,7 +129,7 @@ watch(() => route.params.uuid, (n) => {
         <button
           type="button"
           @click="resetVerification"
-          class="mt-7 inline-flex h-11 cursor-pointer items-center rounded-full bg-[#14111C] px-6 text-[13.5px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5"
+          class="vt-btn-dark mt-7 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold"
         >
           Periksa kode lain
         </button>

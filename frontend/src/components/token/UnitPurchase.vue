@@ -23,7 +23,7 @@ const stepBtn = "flex h-12 w-12 cursor-pointer items-center justify-center round
       </div>
       <button
         type="button"
-        class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-8 text-[15px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+        class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
         @click="emit('choose', { id: 'pkg_tokens', name: `${count} token satuan`, tokens: count, price: total, tokenAmount: count })"
       >Beli {{ rupiah(total) }}</button>
     </div>

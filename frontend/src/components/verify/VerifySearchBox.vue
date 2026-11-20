@@ -41,7 +41,7 @@ function handleVerify() {
         type="button"
         :disabled="!inputUuid.trim() || loading"
         @click="handleVerify"
-        class="inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full bg-[#14111C] px-8 text-[14px] font-semibold text-white shadow-btn-dark transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none disabled:hover:translate-y-0"
+        class="vt-btn-dark inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full px-8 text-[14px] font-semibold disabled:cursor-not-allowed disabled:bg-none disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none"
       >
         {{ loading ? "Memvalidasi..." : "Verifikasi sertifikat" }}
       </button>

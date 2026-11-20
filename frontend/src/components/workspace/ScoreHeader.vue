@@ -65,7 +65,7 @@ function download() {
         <button
           type="button"
           :disabled="exporting"
-          class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-8 text-[15px] font-semibold text-white shadow-btn-dark transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40 lg:w-auto"
+          class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40 lg:w-auto"
           @click="download"
         >{{ exporting ? "Menyiapkan..." : isFree ? "Unduh PDF (Premium)" : "Unduh sertifikat PDF" }}</button>
       </div>

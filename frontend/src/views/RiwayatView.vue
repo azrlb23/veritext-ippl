@@ -65,7 +65,7 @@ async function confirmDelete() {
         <router-link
           v-if="tasks.length === 0"
           to="/periksa"
-          class="mt-6 inline-flex h-12 cursor-pointer items-center rounded-full bg-[#14111C] px-7 text-[15px] font-semibold text-white shadow-btn-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
         >Periksa naskah</router-link>
       </div>
       <ul v-else class="mt-4 divide-y divide-[#14111C]/[0.06]">
@@ -85,7 +85,7 @@ async function confirmDelete() {
         <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Pemeriksaan dihentikan dan token Anda dikembalikan.</p>
         <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="pendingCancel = null">Kembali</button>
-          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark" @click="confirmCancel">Ya, batalkan</button>
+          <button type="button" class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold" @click="confirmCancel">Ya, batalkan</button>
         </div>
       </div>
     </div>

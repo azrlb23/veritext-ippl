@@ -64,7 +64,7 @@ onUnmounted(() => {
           <button
             ref="continueBtn"
             type="button"
-            class="mt-7 inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C] text-[15px] font-semibold text-white shadow-btn-dark transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+            class="vt-btn-dark mt-7 inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
             @click="handleClose"
           >
             Lanjutkan

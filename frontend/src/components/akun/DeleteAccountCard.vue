@@ -54,7 +54,7 @@ async function removeAccount() {
           <button
             type="button"
             :disabled="!confirmed || busy"
-            class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#14111C] px-6 text-[15px] font-semibold text-white shadow-btn-dark disabled:cursor-not-allowed disabled:opacity-40"
+            class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-40"
             @click="removeAccount"
           >{{ busy ? "Menghapus..." : "Hapus permanen" }}</button>
         </div>
