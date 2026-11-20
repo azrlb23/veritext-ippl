@@ -61,13 +61,13 @@ onMounted(() => {
         <div class="mt-1.5 text-[12px] text-[#5E5A6B]">Skor orisinalitas</div>
       </div>
       <svg class="h-14 w-14 -rotate-90" viewBox="0 0 36 36">
-        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EFEAF6" stroke-width="3.6" />
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E6F2F0" stroke-width="3.6" />
         <circle
           cx="18"
           cy="18"
           r="15.9"
           fill="none"
-          stroke="#8A3FE0"
+          stroke="#0F766E"
           stroke-width="3.6"
           stroke-linecap="round"
           :stroke-dasharray="`${displayScore} 100`"
@@ -89,7 +89,7 @@ onMounted(() => {
           <span class="text-[#4B4757]">{{ m.label }}</span>
           <span class="font-semibold text-[#14111C] tabular-nums">{{ m.value }}%</span>
         </div>
-        <div class="mt-1.5 h-1.5 w-full rounded-full bg-[#EFEAF6] overflow-hidden">
+        <div class="mt-1.5 h-1.5 w-full rounded-full bg-[#E6F2F0] overflow-hidden">
           <div
             class="h-1.5 rounded-full transition-all duration-700 ease-out"
             :class="m.bar"

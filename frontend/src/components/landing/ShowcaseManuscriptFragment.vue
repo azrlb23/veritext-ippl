@@ -66,7 +66,7 @@ const isOn = (key?: Filter) => key !== undefined && (active.value === "all" || a
           {{ l.label }}
         </span>
       </div>
-      <div class="flex items-center gap-1 rounded-full bg-[#F3EEFA] p-1 text-[12px]">
+      <div class="flex items-center gap-1 rounded-full bg-[#E6F7F5] p-1 text-[12px]">
         <button
           v-for="f in filters"
           :key="f.key"
@@ -87,7 +87,7 @@ const isOn = (key?: Filter) => key !== undefined && (active.value === "all" || a
           class="rounded-[8px] px-1.5 py-0.5 transition-all duration-200 cursor-pointer"
           :class="[
             isOn(p.key) ? p.mark : 'opacity-40',
-            hoveredTag === p.n ? 'ring-2 ring-[#8A3FE0] scale-105 shadow-sm' : ''
+            hoveredTag === p.n ? 'ring-2 ring-[#0F766E] scale-105 shadow-sm' : ''
           ]"
           @mouseenter="hoveredTag = p.n ?? null"
           @mouseleave="hoveredTag = null"

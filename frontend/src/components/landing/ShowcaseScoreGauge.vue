@@ -45,13 +45,13 @@ onBeforeUnmount(clearTimers);
         {{ displayScore }}%
       </div>
       <svg class="h-[60px] w-[60px] shrink-0 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
-        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EFEAF6" stroke-width="3.6" />
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E6F2F0" stroke-width="3.6" />
         <circle
           cx="18"
           cy="18"
           r="15.9"
           fill="none"
-          stroke="#8A3FE0"
+          stroke="#0F766E"
           stroke-width="3.6"
           stroke-linecap="round"
           :stroke-dasharray="`${dashOffset} 100`"

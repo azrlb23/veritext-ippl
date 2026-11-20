@@ -17,11 +17,11 @@ const options = [
   >
     <div class="flex items-center justify-between">
       <div class="text-[14px] font-semibold text-[#14111C]">Parafrase kalimat</div>
-      <div class="text-[11px] font-medium text-[#6D28D9] bg-[#F3EEFA] px-2.5 py-0.5 rounded-full">Klik gaya</div>
+      <div class="text-[11px] font-medium text-[#0F766E] bg-[#E6F7F5] px-2.5 py-0.5 rounded-full">Klik gaya</div>
     </div>
 
     <p class="mt-4 text-[12.5px] leading-[1.65] text-[#14111C]">
-      <span class="rounded-[6px] bg-[#F1E8FC] px-1.5 py-0.5 text-[#6D28D9] font-medium transition-all duration-300">
+      <span class="rounded-[6px] bg-[#E6F7F5] px-1.5 py-0.5 text-[#0F766E] font-medium transition-all duration-300">
         {{ options.find((o) => o.style === activeStyle)?.text }}
       </span>
     </p>
@@ -31,7 +31,7 @@ const options = [
         v-for="o in options"
         :key="o.style"
         class="rounded-[16px] px-3.5 py-2.5 cursor-pointer transition-all duration-200"
-        :class="activeStyle === o.style ? 'bg-[#F1E8FC] shadow-sm scale-[1.02]' : 'bg-[#F5F2F9] hover:bg-[#EFEBF5]'"
+        :class="activeStyle === o.style ? 'bg-[#E6F7F5] shadow-sm scale-[1.02]' : 'bg-[#F2F7F6] hover:bg-[#E9F2F0]'"
         @click="activeStyle = o.style"
       >
         <div class="flex items-center justify-between">
