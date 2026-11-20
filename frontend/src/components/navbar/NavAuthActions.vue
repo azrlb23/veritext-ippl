@@ -15,14 +15,14 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
 
 <template>
   <div class="flex items-center gap-2">
-    <div v-if="isGuest" class="inline-flex items-center rounded-full bg-[#F2F3F5] p-1">
+    <div v-if="isGuest" class="inline-flex items-center rounded-full border border-[#ECECEF] bg-white p-1 shadow-[0_6px_20px_-6px_rgba(20,17,28,0.12)]">
       <router-link
         to="/login"
-        class="inline-flex h-8 cursor-pointer items-center rounded-full px-4 text-[13.5px] font-medium text-[#14111C] transition-colors duration-200 hover:text-[#0F766E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+        class="inline-flex h-8 cursor-pointer items-center rounded-full px-4 text-[13.5px] font-medium text-[#4B4757] transition-colors duration-200 hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
       >Masuk</router-link>
       <router-link
         to="/register"
-        class="inline-flex h-8 cursor-pointer items-center rounded-full bg-[#14111C] px-4 text-[13.5px] font-semibold text-white transition-colors duration-200 hover:bg-[#272230] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+        class="inline-flex h-8 cursor-pointer items-center rounded-full bg-gradient-to-b from-[#2A2633] to-[#110E18] px-4 text-[13.5px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_4px_12px_-2px_rgba(17,14,24,0.45)] transition-all duration-200 hover:brightness-110 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
       >Daftar</router-link>
     </div>
     <template v-else>
