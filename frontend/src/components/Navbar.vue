@@ -61,12 +61,14 @@ onBeforeUnmount(() => {
 <template>
   <div v-if="isMenuOpen" class="fixed inset-0 z-40 bg-[#14111C]/10 backdrop-blur-[2px] lg:hidden" aria-hidden="true" @click="closeMenu"></div>
 
-  <header
-    class="fixed inset-x-0 top-0 z-50 select-none transition-colors duration-200"
-    :class="isScrolled ? 'bg-white/95 shadow-[0_1px_0_rgba(20,17,28,0.06)]' : 'bg-transparent'"
-  >
-    <div class="relative mx-auto w-full max-w-[1180px] px-4 sm:px-6">
-      <div class="flex h-[64px] items-center justify-between">
+  <header class="pointer-events-none fixed inset-x-0 top-0 z-50 select-none px-3 transition-all duration-300 sm:px-5" :class="isScrolled ? 'pt-3' : 'pt-0'">
+    <div
+      class="pointer-events-auto relative mx-auto w-full transition-all duration-300"
+      :class="isScrolled
+        ? 'max-w-[1120px] rounded-full border border-white/60 bg-white/70 px-5 shadow-[0_12px_32px_-10px_rgba(20,17,28,0.12)] backdrop-blur-md sm:px-6'
+        : 'max-w-[1180px] bg-transparent px-1 sm:px-2'"
+    >
+      <div class="flex items-center justify-between transition-[height] duration-300" :class="isScrolled ? 'h-[56px]' : 'h-[64px]'">
         <div class="flex items-center gap-6 lg:gap-8">
           <router-link
             :to="isGuest ? '/' : isAdmin ? '/admin' : '/dashboard'"
