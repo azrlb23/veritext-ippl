@@ -2,6 +2,7 @@
 // Latar satu halaman penuh: sapuan warna lembut, tekstur titik/grain, medan ubin kaca, dan kapsul kaca tanpa tepi terpotong.
 import { computed } from "vue";
 import GlassTileField from "./GlassTileField.vue";
+import LandingFloatingIcons from "./LandingFloatingIcons.vue";
 
 const props = defineProps<{ variant?: "home" | "page" | "auth" }>();
 
@@ -118,5 +119,6 @@ const pills = computed(() => (mode.value === "home" ? homePills : mode.value ===
     />
 
     <div v-for="(p, i) in pills" :key="mode + '-p-' + i" class="vt-glass-pill absolute" :class="p"></div>
+    <LandingFloatingIcons v-if="mode === 'home'" />
   </div>
 </template>

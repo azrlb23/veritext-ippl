@@ -2,7 +2,6 @@
 import { useSectionReveal } from "../../composables";
 import HeroFeatureChips from "./HeroFeatureChips.vue";
 import HeroGlassBackdrop from "./HeroGlassBackdrop.vue";
-import HeroIconArc from "./HeroIconArc.vue";
 import HeroParaphraseCard from "./HeroParaphraseCard.vue";
 import HeroReportCard from "./HeroReportCard.vue";
 import HeroSentencePanel from "./HeroSentencePanel.vue";
@@ -54,10 +53,9 @@ function scrollToReport() {
           </button>
         </div>
         <p class="vt-reveal vt-d-3 mt-4 text-[13px] text-[#5E5A6B]">5 token gratis saat daftar. Tanpa kartu kredit.</p>
-        <HeroIconArc class="vt-reveal vt-d-3 mt-8" />
       </div>
 
-      <div class="relative mx-auto mt-10 h-[300px] max-w-[1180px] px-5 sm:mt-12 sm:h-[372px]">
+      <div class="relative mx-auto mt-16 h-[300px] max-w-[1180px] px-5 sm:h-[372px]">
         <div class="vt-reveal-left vt-d-4 absolute bottom-0 left-0 hidden lg:block">
           <HeroReportCard :active="isVisible" />
         </div>
