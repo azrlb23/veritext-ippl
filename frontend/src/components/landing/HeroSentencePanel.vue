@@ -45,7 +45,7 @@ onBeforeUnmount(() => {
     <div class="rounded-[30px] bg-white px-4 pb-4 pt-9 shadow-float transition-all duration-300">
       <div class="flex items-center justify-between px-2 pb-3">
         <span class="text-[14px] font-semibold text-[#14111C]">Hasil per kalimat</span>
-        <span class="text-[11px] font-medium text-[#0F766E] bg-[#E6F7F5] px-2.5 py-0.5 rounded-full">Sorot kalimat</span>
+        <span class="text-[11.5px] font-medium text-[#0F766E]">Sorot kalimat</span>
       </div>
 
       <div class="space-y-1">

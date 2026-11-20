@@ -17,7 +17,7 @@ const options = [
   >
     <div class="flex items-center justify-between">
       <div class="text-[14px] font-semibold text-[#14111C]">Parafrase kalimat</div>
-      <div class="text-[11px] font-medium text-[#0F766E] bg-[#E6F7F5] px-2.5 py-0.5 rounded-full">Klik gaya</div>
+      <div class="text-[11.5px] font-medium text-[#0F766E]">Klik gaya</div>
     </div>
 
     <p class="mt-4 text-[12.5px] leading-[1.65] text-[#14111C]">

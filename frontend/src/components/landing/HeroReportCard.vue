@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { VtIcon } from "../common";
 
 const props = defineProps<{ active?: boolean }>();
 const displayScore = ref(0);
@@ -45,12 +44,9 @@ onMounted(() => {
     aria-hidden="true"
     @mouseenter="triggerScoreCount"
   >
-    <div class="flex items-center gap-3">
-      <VtIcon name="document" class="h-6 w-6 shrink-0 text-[#14111C]" />
-      <div class="min-w-0">
-        <div class="text-[13px] font-semibold text-[#14111C] truncate">Naskah-Laporan.pdf</div>
-        <div class="text-[11.5px] text-[#5E5A6B]">2.140 kata, 1 token</div>
-      </div>
+    <div class="min-w-0">
+      <div class="text-[13px] font-semibold text-[#14111C] truncate">Naskah-Laporan.pdf</div>
+      <div class="text-[11.5px] text-[#5E5A6B]">2.140 kata, 1 token</div>
     </div>
 
     <div class="mt-5 flex items-end justify-between">
