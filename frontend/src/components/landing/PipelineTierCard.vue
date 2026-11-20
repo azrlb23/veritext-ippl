@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { VtIcon, type VtIconName } from "../common";
+import type { VtIconName } from "../common";
 import PipelineWaveArtwork from "./PipelineWaveArtwork.vue";
 
 export interface TierItem {
@@ -38,11 +38,8 @@ const stepNumber = computed(() => `${String(props.tier.id + 1).padStart(2, "0")}
     </span>
 
     <div v-if="isActive" class="mt-6">
-      <div class="flex items-center gap-2.5">
-        <VtIcon :name="tier.icon" tone="current" class="h-5 w-5 shrink-0 text-[#0F766E]" />
-        <span class="text-[12px] font-semibold tracking-wide text-[#0F766E]">{{ tier.weight }}</span>
-      </div>
-      <h3 class="mt-4 text-[24px] font-medium leading-[1.15] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
+      <span class="text-[12px] font-semibold tracking-wide text-[#0F766E]">{{ tier.weight }}</span>
+      <h3 class="mt-2.5 text-[24px] font-medium leading-[1.15] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         {{ tier.title }}
       </h3>
       <p class="mt-3 text-[13.5px] leading-[1.6] text-[#5E5A6B]">
@@ -51,8 +48,7 @@ const stepNumber = computed(() => `${String(props.tier.id + 1).padStart(2, "0")}
     </div>
 
     <div v-else class="mt-8">
-      <VtIcon :name="tier.icon" tone="current" class="h-5 w-5 text-[#0F766E]" />
-      <h3 class="mt-4 text-[15px] font-medium leading-[1.3] text-[#14111C]">
+      <h3 class="text-[15px] font-medium leading-[1.3] text-[#14111C]">
         {{ tier.shortTitle }}
       </h3>
     </div>
