@@ -97,7 +97,7 @@ async function handleSubmit() {
         <span>{{ errorMessage }}</span>
         <button type="button" class="-mr-2 -mt-1.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-[20px] leading-none transition-colors hover:bg-[#14111C]/[0.05]" aria-label="Tutup pesan" @click="errorMessage = ''">&times;</button>
       </p>
-      <div class="rounded-[20px] bg-[#F3EEFA] px-5 py-4">
+      <div class="rounded-[20px] border border-[#D5ECE8] bg-[#EBF8F6] px-5 py-4">
         <p class="text-[12.5px] font-medium text-[#5E5A6B]">Terhubung lewat Google</p>
         <p class="mt-0.5 truncate text-[15px] font-semibold text-[#14111C]">{{ email || "Akun Google" }}</p>
       </div>
@@ -108,7 +108,7 @@ async function handleSubmit() {
       <p v-if="confirmPassword && password !== confirmPassword" class="-mt-3 text-[13px] font-medium text-[#B91C1C]">Kata sandi belum cocok.</p>
 
       <label class="flex min-h-[44px] cursor-pointer select-none items-center space-x-2.5 text-[13.5px] leading-tight text-[#4B4757]">
-        <input v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#8A3FE0]" />
+        <input v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#0F766E]" />
         <span>Setujui pemrosesan data identitas Anda untuk pembuatan akun.</span>
       </label>
 

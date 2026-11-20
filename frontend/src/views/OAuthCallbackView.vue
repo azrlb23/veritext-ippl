@@ -63,18 +63,18 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-[#E8F0FF] via-[#DDF4FF] to-[#EDE7FF] flex items-center justify-center p-4 font-sans select-none overflow-hidden">
+  <div class="relative min-h-screen bg-gradient-to-br from-[#FFFFFF] via-[#EBF8F6] to-[#E6F7F5] flex items-center justify-center p-4 font-sans select-none overflow-hidden">
     <div class="absolute inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
-      <div class="absolute -top-32 right-10 w-96 h-96 rounded-full bg-[#3B82F6]/30 blur-[100px]"></div>
-      <div class="absolute top-[400px] -left-20 w-[450px] h-[450px] rounded-full bg-[#22D3EE]/25 blur-[120px]"></div>
+      <div class="absolute -top-32 right-10 w-96 h-96 rounded-full bg-[#0F766E]/15 blur-[100px]"></div>
+      <div class="absolute top-[400px] -left-20 w-[450px] h-[450px] rounded-full bg-[#0D9488]/15 blur-[120px]"></div>
     </div>
 
-    <div class="w-full max-w-md bg-white rounded-[32px] border border-white/80 shadow-[0_16px_48px_rgba(138,152,184,0.18)] p-8 text-center space-y-6">
+    <div class="w-full max-w-md bg-white rounded-[32px] border border-[#E8ECEB] shadow-float p-8 text-center space-y-6">
       <div v-if="isProcessing" class="space-y-4 py-4">
-        <div class="w-12 h-12 rounded-full border-3 border-[#1560BD] border-t-transparent animate-spin mx-auto"></div>
+        <div class="w-12 h-12 rounded-full border-3 border-[#0F766E] border-t-transparent animate-spin mx-auto"></div>
         <div class="space-y-1">
-          <h3 class="text-base font-bold text-[#0B0F19]">Menghubungkan Akun Google...</h3>
-          <p class="text-xs text-[#5B6475]">Menyiapkan sesi aman dan kredensial akun Anda.</p>
+          <h3 class="text-base font-bold text-[#14111C]">Menghubungkan Akun Google...</h3>
+          <p class="text-xs text-[#5E5A6B]">Menyiapkan sesi aman dan kredensial akun Anda.</p>
         </div>
       </div>
 
@@ -85,15 +85,15 @@ onMounted(async () => {
           </svg>
         </div>
         <div class="space-y-1">
-          <h3 class="text-base font-bold text-[#0B0F19]">Autentikasi Google Gagal</h3>
-          <p class="text-xs text-[#5B6475] leading-relaxed max-w-xs mx-auto">
+          <h3 class="text-base font-bold text-[#14111C]">Autentikasi Google Gagal</h3>
+          <p class="text-xs text-[#5E5A6B] leading-relaxed max-w-xs mx-auto">
             {{ errorMessage || "Terjadi kesalahan saat memproses login Google." }}
           </p>
         </div>
         <div class="pt-2">
           <router-link
             to="/login"
-            class="inline-flex items-center px-6 py-2.5 bg-[#1560BD] hover:bg-[#1A73D9] text-white text-xs font-semibold rounded-full shadow-xs transition-all"
+            class="vt-btn-dark inline-flex items-center px-6 py-2.5 text-xs font-semibold rounded-full transition-all"
           >
             Kembali ke Halaman Masuk
           </router-link>

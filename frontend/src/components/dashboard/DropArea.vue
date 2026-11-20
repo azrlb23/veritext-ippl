@@ -36,13 +36,13 @@ defineExpose({ clear, pick });
 
     <div
       class="flex min-h-[220px] flex-col items-center justify-center rounded-[32px] p-8 text-center transition-colors duration-200 sm:min-h-[240px]"
-      :class="isDragging ? 'border-2 border-dashed border-[#8A3FE0] bg-[#E7D9F8]' : file ? 'bg-[#F3EEFA]' : 'border-2 border-dashed border-[#8A3FE0]/20 bg-[#F3EEFA]/75'"
+      :class="isDragging ? 'border-2 border-dashed border-[#0F766E] bg-[#D5ECE8]' : file ? 'bg-[#EBF8F6]' : 'border-2 border-dashed border-[#0F766E]/25 bg-[#EBF8F6]/75'"
       @dragover.prevent="emit('dragover', $event)"
       @dragleave="emit('dragleave', $event)"
       @drop.prevent="emit('drop', $event)"
     >
       <template v-if="!file">
-        <VtIcon name="upload" class="h-10 w-10 text-[#6D28D9]" />
+        <VtIcon name="upload" tone="current" class="h-10 w-10 text-[#0F766E]" />
         <p class="mt-5 text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">Tarik dan lepas naskah di sini</p>
         <p class="mt-1.5 text-[14px] text-[#5E5A6B]">PDF, DOCX, atau TXT, maksimal 15 MB</p>
         <button
@@ -55,13 +55,13 @@ defineExpose({ clear, pick });
       </template>
 
       <template v-else>
-        <VtIcon name="document" class="h-10 w-10 text-[#14111C]" />
+        <VtIcon name="document" tone="current" class="h-10 w-10 text-[#0F766E]" />
         <p class="mt-5 max-w-full truncate text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">{{ file.name }}</p>
         <p class="mt-1.5 text-[14px] tabular-nums text-[#5E5A6B]">{{ (file.size / (1024 * 1024)).toFixed(2) }} MB</p>
         <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
-            class="inline-flex h-11 cursor-pointer items-center rounded-full bg-white px-6 text-[14px] font-semibold text-[#14111C] shadow-lift transition-transform duration-200 hover:-translate-y-0.5"
+            class="vt-btn-light inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[14px] font-semibold"
             @click="pick"
           >
             Ganti naskah

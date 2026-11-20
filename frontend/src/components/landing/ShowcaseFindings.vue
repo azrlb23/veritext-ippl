@@ -12,7 +12,7 @@ const findings = [
     <div
       v-for="(f, idx) in findings"
       :key="f.unit"
-      class="vt-reveal-left group cursor-default rounded-[24px] p-2 transition-all duration-300 hover:bg-[#F3EEFA]/30"
+      class="vt-reveal-left group cursor-default rounded-[24px] p-2 transition-all duration-300 hover:bg-[#EBF8F6]/50"
       :style="{ '--vt-d': `${100 + idx * 90}ms` }"
     >
       <div class="flex items-baseline gap-3">

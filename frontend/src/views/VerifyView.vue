@@ -93,7 +93,7 @@ watch(() => route.params.uuid, (n) => {
   <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-6 font-sans sm:px-6 sm:pt-9">
     <div class="mx-auto mb-7 max-w-2xl text-center animate-fade-up">
       <h1 class="text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">
-        Pastikan sertifikat itu <span class="vt-accent">benar-benar asli.</span>
+        Pastikan sertifikat itu benar-benar asli.
       </h1>
       <p class="mx-auto mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#4B4757]">
         Masukkan kode UUID dari lembar sertifikat atau pindai kode QR-nya. Hasilnya langsung tampil di sini.
@@ -107,8 +107,8 @@ watch(() => route.params.uuid, (n) => {
     <div class="mt-14 animate-fade-up [animation-delay:300ms]">
       <div v-if="isChecking" class="mx-auto flex max-w-[620px] items-center gap-5 rounded-[36px] bg-white p-7 shadow-float sm:p-9" role="status">
         <svg class="h-9 w-9 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-          <circle cx="18" cy="18" r="15" stroke="#EFEAF6" stroke-width="4" />
-          <path d="M18 3 a15 15 0 0 1 15 15" stroke="#8A3FE0" stroke-width="4" stroke-linecap="round" />
+          <circle cx="18" cy="18" r="15" stroke="#E6ECEB" stroke-width="4" />
+          <path d="M18 3 a15 15 0 0 1 15 15" stroke="#0F766E" stroke-width="4" stroke-linecap="round" />
         </svg>
         <div>
           <div class="text-[17px] font-semibold tracking-[-0.02em] text-[#14111C]">Memeriksa sertifikat</div>

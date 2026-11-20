@@ -9,7 +9,7 @@ defineEmits<{ (e: "open", id: string | null): void; (e: "remove", id: string): v
   <div class="flex h-full flex-col">
     <button
       type="button"
-      class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+      class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       @click="$emit('open', null)"
     >Percakapan baru</button>
 
@@ -18,16 +18,16 @@ defineEmits<{ (e: "open", id: string | null): void; (e: "remove", id: string): v
       <li v-for="s in sessions" :key="s.id" class="group relative">
         <button
           type="button"
-          class="block min-h-[56px] w-full cursor-pointer rounded-[20px] px-4 py-3 pr-12 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-          :class="activeId === s.id ? 'bg-white shadow-lift' : 'hover:bg-white/60'"
+          class="block min-h-[56px] w-full cursor-pointer rounded-[20px] px-4 py-3 pr-12 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+          :class="activeId === s.id ? 'border border-[#D5ECE8] bg-[#EBF8F6] shadow-lift' : 'border border-transparent hover:bg-white/70'"
           @click="$emit('open', s.id)"
         >
-          <span class="block truncate text-[15px] font-semibold text-[#14111C]">{{ s.title }}</span>
+          <span class="block truncate text-[15px] font-semibold" :class="activeId === s.id ? 'text-[#0F766E]' : 'text-[#14111C]'">{{ s.title }}</span>
           <span class="mt-0.5 block truncate text-[13px] text-[#5E5A6B]">{{ s.last_message || "Belum ada pesan" }}</span>
         </button>
         <button
           type="button"
-          class="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-[#5E5A6B] transition-colors hover:bg-[#FEE2E2] hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          class="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-[#5E5A6B] transition-colors hover:bg-[#FEE2E2] hover:text-[#B91C1C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
           :aria-label="`Hapus percakapan ${s.title}`"
           @click="$emit('remove', s.id)"
         >

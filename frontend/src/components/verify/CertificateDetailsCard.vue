@@ -20,7 +20,7 @@ const emit = defineEmits<{ (e: "reset"): void; (e: "copyLink"): void }>();
 const composite = computed(() => Math.min(100, Math.max(0, props.details.compositeScore)));
 const originality = computed(() => Math.max(0, Math.min(100, 100 - composite.value)));
 const isPassed = computed(() => composite.value <= 20);
-const ringColor = computed(() => (isPassed.value ? "#8A3FE0" : "#C2410C"));
+const ringColor = computed(() => (isPassed.value ? "#0F766E" : "#C2410C"));
 const fmt = (v: number) => v.toFixed(1).replace(".", ",");
 
 const statusLabel = computed(() => {
@@ -54,7 +54,7 @@ const rows = computed(() => [
       <div class="md:col-span-5">
         <div class="relative mx-auto h-[210px] w-[210px] md:mx-0">
           <svg class="h-full w-full -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EFEAF6" stroke-width="2.6" />
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E6ECEB" stroke-width="2.6" />
             <circle cx="18" cy="18" r="15.9" fill="none" :stroke="ringColor" stroke-width="2.6" stroke-linecap="round" :stroke-dasharray="`${originality} 100`" />
           </svg>
           <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -80,7 +80,7 @@ const rows = computed(() => [
               <span class="font-medium text-[#14111C]">{{ b.label }}</span>
               <span class="font-semibold text-[#14111C] tabular-nums">{{ fmt(b.value) }}%</span>
             </div>
-            <div class="mt-2 h-1.5 w-full rounded-full bg-[#EFEAF6]">
+            <div class="mt-2 h-1.5 w-full rounded-full bg-[#E6ECEB]">
               <div class="h-1.5 rounded-full" :class="b.bar" :style="{ width: Math.min(100, b.value) + '%' }"></div>
             </div>
           </div>
@@ -96,7 +96,7 @@ const rows = computed(() => [
       >
         Bagikan tautan
       </button>
-      <button type="button" @click="emit('reset')" class="h-12 w-full cursor-pointer text-[14px] font-medium text-[#4B4757] transition-colors hover:text-[#6D28D9] sm:h-auto sm:w-auto">
+      <button type="button" @click="emit('reset')" class="vt-btn-light inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[14px] font-semibold sm:h-11 sm:w-auto">
         Periksa kode lain
       </button>
     </div>

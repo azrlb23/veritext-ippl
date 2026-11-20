@@ -10,7 +10,7 @@ const layers = reactive<Record<Kind, boolean>>({ RED: true, ORANGE: true, YELLOW
 const KINDS: { key: Kind; label: string; bg: string }[] = [
   { key: "RED", label: "Kata sama", bg: "bg-[#FEE2E2]" },
   { key: "ORANGE", label: "Makna sama", bg: "bg-[#FFEDD5]" },
-  { key: "YELLOW", label: "Pola AI", bg: "bg-[#FEF3C7]" },
+  { key: "YELLOW", label: "Pola AI", bg: "bg-[#FEF9C3]" },
   { key: "RESOLVED_GREEN", label: "Sudah diperbaiki", bg: "bg-[#DCFCE7]" },
 ];
 
@@ -40,14 +40,14 @@ const slices = computed(() => {
 </script>
 
 <template>
-  <section class="rounded-[32px] bg-white p-5 shadow-float sm:p-8" aria-label="Naskah dengan sorotan">
+  <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-5 shadow-float sm:p-8" aria-label="Naskah dengan sorotan">
     <div class="flex flex-wrap gap-2" role="group" aria-label="Saring sorotan">
       <button
         v-for="k in KINDS"
         :key="k.key"
         type="button"
         :aria-pressed="layers[k.key]"
-        class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         :class="[k.bg, layers[k.key] ? '' : 'opacity-40']"
         @click="layers[k.key] = !layers[k.key]"
       >{{ k.label }}</button>
@@ -59,7 +59,7 @@ const slices = computed(() => {
             v-if="s.anno"
             role="button"
             tabindex="0"
-            class="cursor-pointer rounded-md px-0.5 transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            class="cursor-pointer rounded-md px-0.5 transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             :class="[layers[kindOf(s.anno)] ? bgOf(s.anno) : '', isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']"
             @click="emit('select', s.anno)"
             @keydown.enter.prevent="emit('select', s.anno)"

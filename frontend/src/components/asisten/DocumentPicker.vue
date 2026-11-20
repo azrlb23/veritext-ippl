@@ -22,8 +22,8 @@ function toggle(id: string) {
         :key="d.id"
         type="button"
         :aria-pressed="modelValue.includes(d.id)"
-        class="inline-flex h-11 max-w-full cursor-pointer items-center rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-        :class="modelValue.includes(d.id) ? 'vt-btn-dark' : 'bg-white text-[#14111C] shadow-lift hover:-translate-y-0.5'"
+        class="inline-flex h-11 max-w-full cursor-pointer items-center rounded-full px-5 text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+        :class="modelValue.includes(d.id) ? 'border border-[#0F766E] bg-[#0F766E] text-white shadow-lift' : 'vt-btn-light hover:border-[#D5ECE8] hover:bg-[#EBF8F6]/50'"
         @click="toggle(d.id)"
       ><span class="truncate">{{ d.original_filename }}</span></button>
     </div>

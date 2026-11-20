@@ -30,14 +30,14 @@ function onKey(e: KeyboardEvent) {
           rows="2"
           maxlength="4000"
           placeholder="Tulis pertanyaan tentang naskah Anda"
-          class="block min-h-[56px] w-full resize-none border-0 border-b-2 border-[#14111C]/20 bg-transparent py-2 text-[16px] text-[#14111C] outline-none transition-colors placeholder:text-[#6B6679] focus:border-[#8A3FE0]"
+          class="block min-h-[56px] w-full resize-none border-0 border-b-2 border-[#14111C]/20 bg-transparent py-2 text-[16px] text-[#14111C] outline-none transition-colors placeholder:text-[#6B6679] focus:border-[#0F766E]"
           @keydown="onKey"
         ></textarea>
       </label>
       <button
         type="submit"
         :disabled="disabled || !text.trim()"
-        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >Kirim</button>
     </div>
   </form>

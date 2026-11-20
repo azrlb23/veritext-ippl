@@ -14,14 +14,14 @@ const options: { key: RiwayatFilter; label: string }[] = [
 
 <template>
   <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-    <div class="grid grid-cols-4 gap-1 rounded-full bg-[#F3EEFA] p-1 sm:inline-flex" role="tablist" aria-label="Saring status">
+    <div class="grid grid-cols-4 gap-1 rounded-full border border-[#D5ECE8] bg-[#EBF8F6] p-1 sm:inline-flex" role="tablist" aria-label="Saring status">
       <button
         v-for="o in options"
         :key="o.key"
         type="button"
         role="tab"
         :aria-selected="filter === o.key"
-        class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-2 text-[14px] sm:px-5 font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-2 text-[14px] sm:px-5 font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         :class="filter === o.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B] hover:text-[#14111C]'"
         @click="$emit('update:filter', o.key)"
       >{{ o.label }}</button>
@@ -32,7 +32,7 @@ const options: { key: RiwayatFilter; label: string }[] = [
         :value="query"
         type="search"
         autocomplete="off"
-        class="block h-11 w-full border-0 border-b-2 border-[#14111C]/10 bg-transparent text-[16px] text-[#14111C] outline-none transition-colors focus:border-[#8A3FE0]"
+        class="block h-11 w-full border-0 border-b-2 border-[#14111C]/10 bg-transparent text-[16px] text-[#14111C] outline-none transition-colors focus:border-[#0F766E]"
         @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
       />
     </label>

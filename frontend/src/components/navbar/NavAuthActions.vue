@@ -29,12 +29,12 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
       <div ref="root" class="relative">
         <button
           type="button"
-          class="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-[#14111C]/[0.04] p-1 pr-3 transition-colors hover:bg-[#14111C]/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          class="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-[#14111C]/[0.04] p-1 pr-3 transition-colors hover:bg-[#14111C]/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
           aria-haspopup="menu"
           :aria-expanded="open"
           @click="open = !open"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#8A3FE0] to-[#D26BE6] text-[12.5px] font-semibold text-white shadow-sm">
+          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#0F766E] to-[#0D9488] text-[12.5px] font-semibold text-white shadow-sm">
             {{ name.charAt(0).toUpperCase() }}
           </span>
           <span class="max-w-[100px] truncate text-[13px] font-medium text-[#14111C]">{{ name.split(' ')[0] }}</span>
@@ -43,23 +43,23 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
           </svg>
         </button>
         <div v-if="open" role="menu" class="absolute right-0 top-full mt-2 w-56 rounded-[22px] bg-white p-2 shadow-float border border-[#14111C]/[0.04]">
-          <div class="px-3 py-2 mb-1 rounded-[14px] bg-[#F3EEFA]/70">
+          <div class="px-3 py-2 mb-1 rounded-[14px] bg-[#EBF8F6]">
             <div class="text-[13px] font-semibold text-[#14111C] truncate">{{ name }}</div>
-            <div v-if="!isAdmin" class="mt-0.5 text-[11.5px] font-semibold text-[#6D28D9] tabular-nums">{{ balance }} Token aktif</div>
+            <div v-if="!isAdmin" class="mt-0.5 text-[11.5px] font-semibold text-[#0F766E] tabular-nums">{{ balance }} Token aktif</div>
           </div>
           <router-link
             v-for="l in menuLinks"
             :key="l.to"
             :to="l.to"
             role="menuitem"
-            class="flex h-9 cursor-pointer items-center rounded-[12px] px-3 text-[13.5px] font-medium text-[#14111C] transition-colors hover:bg-[#F3EEFA] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            class="flex h-9 cursor-pointer items-center rounded-[12px] px-3 text-[13.5px] font-medium text-[#14111C] transition-colors hover:bg-[#EBF8F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             @click="open = false"
           >{{ l.name }}</router-link>
           <div class="my-1 border-t border-[#14111C]/[0.06]"></div>
           <button
             type="button"
             role="menuitem"
-            class="flex h-9 w-full cursor-pointer items-center rounded-[12px] px-3 text-[13.5px] font-medium text-[#EF4444] transition-colors hover:bg-[#FEE2E2] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+            class="flex h-9 w-full cursor-pointer items-center rounded-[12px] px-3 text-[13.5px] font-medium text-[#EF4444] transition-colors hover:bg-[#FEE2E2] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             @click="open = false; $emit('logout')"
           >Keluar</button>
         </div>

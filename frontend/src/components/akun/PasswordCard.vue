@@ -39,13 +39,15 @@ async function submit() {
     <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Setelah diganti, semua perangkat akan keluar dan Anda perlu masuk lagi.</p>
     <form class="mt-7 space-y-7" @submit.prevent="submit">
       <AuthField id="sandi-lama" v-model="oldPassword" type="password" label="Kata sandi saat ini" autocomplete="current-password" revealable />
-      <AuthField id="sandi-baru" v-model="newPassword" type="password" label="Kata sandi baru (minimal 8 karakter)" autocomplete="new-password" :invalid="tooShort" revealable />
-      <AuthField id="sandi-ulang" v-model="confirm" type="password" label="Ulangi kata sandi baru" autocomplete="new-password" :invalid="mismatch" />
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <AuthField id="sandi-baru" v-model="newPassword" type="password" label="Kata sandi baru (minimal 8 karakter)" autocomplete="new-password" :invalid="tooShort" revealable />
+        <AuthField id="sandi-ulang" v-model="confirm" type="password" label="Ulangi kata sandi baru" autocomplete="new-password" :invalid="mismatch" />
+      </div>
       <p v-if="mismatch" class="-mt-3 text-[14px] text-[#B91C1C]">Kata sandi belum sama.</p>
       <button
         type="submit"
         :disabled="!ready || saving"
-        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >{{ saving ? "Menyimpan..." : "Ganti kata sandi" }}</button>
     </form>
   </section>

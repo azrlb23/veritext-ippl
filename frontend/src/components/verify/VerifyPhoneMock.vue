@@ -12,7 +12,7 @@ const bars = [
     class="w-[228px] rotate-2 rounded-[40px] bg-[#14111C] p-[7px] shadow-float lg:[transform:perspective(1200px)_rotateY(-14deg)_rotateZ(3deg)] transition-all duration-500 ease-out hover:rotate-0 hover:scale-105 hover:shadow-2xl animate-card-right cursor-pointer"
     aria-hidden="true"
   >
-    <div class="rounded-[34px] bg-[#F7F4FB] px-4 pb-5 pt-3">
+    <div class="rounded-[34px] bg-[#EBF8F6] px-4 pb-5 pt-3">
       <div class="mx-auto h-[5px] w-[52px] rounded-full bg-[#14111C]"></div>
 
       <div class="mt-5 flex items-center gap-1.5 text-[11.5px] font-semibold text-[#15803D]">
@@ -28,8 +28,8 @@ const bars = [
           <div class="mt-1 text-[11px] text-[#5E5A6B]">Skor orisinalitas</div>
         </div>
         <svg class="h-[54px] w-[54px] -rotate-90" viewBox="0 0 36 36">
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EFEAF6" stroke-width="3.6" />
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#8A3FE0" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="88 100" />
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#E6ECEB" stroke-width="3.6" />
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="#0F766E" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="88 100" />
         </svg>
       </div>
 
@@ -39,7 +39,7 @@ const bars = [
             <span class="text-[#4B4757]">{{ b.label }}</span>
             <span class="font-semibold text-[#14111C]">{{ b.value }}</span>
           </div>
-          <div class="mt-1 h-1 w-full rounded-full bg-[#EFEAF6]"><div class="h-1 rounded-full" :class="b.bar" :style="{ width: b.width }"></div></div>
+          <div class="mt-1 h-1 w-full rounded-full bg-[#E6ECEB]"><div class="h-1 rounded-full" :class="b.bar" :style="{ width: b.width }"></div></div>
         </div>
       </div>
 

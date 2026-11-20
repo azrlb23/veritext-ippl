@@ -37,12 +37,12 @@ function download() {
 </script>
 
 <template>
-  <header class="rounded-[36px] bg-white p-6 shadow-float sm:p-9">
+  <header class="rounded-[36px] border border-[#E8ECEB] bg-white p-6 shadow-float sm:p-9">
     <router-link
       to="/riwayat"
       aria-label="Kembali ke Riwayat"
       title="Kembali ke Riwayat"
-      class="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] text-[#14111C] transition-all duration-200 hover:-translate-x-0.5 hover:bg-[#E7DDF7] active:scale-[0.96] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+      class="vt-btn-light inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full hover:-translate-x-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
     >
       <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
     </router-link>
@@ -56,7 +56,7 @@ function download() {
         <p class="text-[14px] text-[#5E5A6B]">kemiripan keseluruhan</p>
       </div>
       <div class="flex flex-col gap-4 lg:items-end">
-        <dl class="grid grid-cols-3 gap-5 rounded-[24px] bg-[#F3EEFA] p-5 sm:gap-8">
+        <dl class="grid grid-cols-3 gap-5 rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5 sm:gap-8">
           <div v-for="p in parts" :key="p.label">
             <dd class="text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ p.value }}</dd>
             <dt class="mt-2 text-[13px] text-[#5E5A6B]">{{ p.label }}</dt>
@@ -65,7 +65,7 @@ function download() {
         <button
           type="button"
           :disabled="exporting"
-          class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:opacity-40 lg:w-auto"
+          class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40 lg:w-auto"
           @click="download"
         >{{ exporting ? "Menyiapkan..." : isFree ? "Unduh PDF (Premium)" : "Unduh sertifikat PDF" }}</button>
       </div>

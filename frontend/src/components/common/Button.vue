@@ -31,11 +31,11 @@ const variantClasses = computed(() => {
     case "secondary":
       return "vt-btn-light border-[#ECECEF]";
     case "outline":
-      return "bg-white hover:bg-[#F8FAFC] text-[#0B0F19] border-[#E4E8F0] hover:border-[#1560BD] shadow-2xs active:scale-[0.98]";
+      return "bg-white hover:bg-[#EBF8F6] text-[#14111C] border-[#E8ECEB] hover:border-[#0F766E] shadow-2xs active:scale-[0.98]";
     case "danger":
       return "bg-[#B91C1C] hover:bg-[#DC2626] text-white border-transparent shadow-sm active:scale-[0.98]";
     case "ghost":
-      return "bg-transparent hover:bg-[#F3F6FC] text-[#5B6475] hover:text-[#0B0F19] border-transparent shadow-none active:scale-[0.98]";
+      return "bg-transparent hover:bg-[#EBF8F6] text-[#5E5A6B] hover:text-[#14111C] border-transparent shadow-none active:scale-[0.98]";
     case "primary":
     default:
       return "vt-btn-dark border-transparent";
@@ -67,7 +67,7 @@ function handleClick(event: MouseEvent) {
   <button
     :type="type"
     :disabled="disabled || loading"
-    class="inline-flex items-center justify-center font-semibold tracking-tight border transition-all duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1560BD]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2 font-sans cursor-pointer"
+    class="inline-flex items-center justify-center font-semibold tracking-tight border transition-all duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#0F766E]/20 disabled:cursor-not-allowed disabled:opacity-50 select-none space-x-2 font-sans cursor-pointer"
     :class="[
       variantClasses,
       sizeClasses,

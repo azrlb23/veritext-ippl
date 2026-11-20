@@ -3,10 +3,10 @@
 </script>
 
 <template>
-  <svg class="h-[104px] w-[104px] rotate-[10deg] drop-shadow-[0_14px_20px_rgba(122,47,214,0.35)]" viewBox="0 0 120 120" role="img" aria-label="Stempel sertifikat terverifikasi">
+  <svg class="h-[104px] w-[104px] rotate-[10deg] drop-shadow-[0_14px_20px_rgba(15,118,110,0.35)]" viewBox="0 0 120 120" role="img" aria-label="Stempel sertifikat terverifikasi">
     <defs>
       <linearGradient id="sealFill" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#9B4FE6" /><stop offset="1" stop-color="#6D28D9" />
+        <stop offset="0" stop-color="#0D9488" /><stop offset="1" stop-color="#0F766E" />
       </linearGradient>
       <path id="sealArc" d="M60 60 m-43 0 a43 43 0 1 1 86 0 a43 43 0 1 1 -86 0" />
     </defs>

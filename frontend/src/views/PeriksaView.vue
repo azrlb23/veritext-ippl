@@ -37,7 +37,7 @@ async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ON
   <div ref="sectionRef" class="vt-section mx-auto max-w-[1180px] px-4 pb-16 pt-5 font-sans sm:px-6 sm:pt-7" :class="{ 'is-visible': isVisible }">
     <div class="vt-reveal mb-5 max-w-4xl">
       <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
-        Unggah naskah, <span class="vt-accent">kami periksa.</span>
+        Unggah naskah, kami periksa.
       </h1>
       <p class="mt-1.5 max-w-[540px] text-[14.5px] leading-[1.6] text-[#4B4757]">
         Hasilnya berupa laporan per kalimat yang bisa Anda telusuri dan perbaiki langsung.

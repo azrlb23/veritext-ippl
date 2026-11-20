@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
             >Daftar</router-link>
             <button
               type="button"
-              class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#14111C]/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+              class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-[#14111C]/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
               :aria-expanded="isMenuOpen"
               aria-controls="menu-navigasi"
               aria-label="Buka menu navigasi"

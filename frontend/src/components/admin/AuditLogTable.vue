@@ -30,7 +30,7 @@ const humanize = (a: string) => a.toLowerCase().replace(/_/g, " ").replace(/^./,
 const actionLabel = (a: string) => LABELS[a] || humanize(a);
 const date = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-");
 const failed = (r: string) => r.toUpperCase() !== "SUCCESS";
-const nav = "inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-5 text-[14px] font-semibold text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-40";
+const nav = "vt-btn-light inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-semibold transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40";
 </script>
 
 <template>
@@ -38,7 +38,7 @@ const nav = "inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EE
     <h2 id="log-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Catatan aktivitas</h2>
     <p class="mt-1 text-[14px] text-[#5E5A6B]">{{ total.toLocaleString("id-ID") }} catatan</p>
     <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Saring aktivitas">
-      <button v-for="f in FILTERS" :key="f.key" type="button" :aria-pressed="(selectedAction || '') === f.key" class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]" :class="(selectedAction || '') === f.key ? 'vt-btn-dark' : 'bg-[#F3EEFA] text-[#14111C]'" @click="emit('update:selectedAction', f.key)">{{ f.label }}</button>
+      <button v-for="f in FILTERS" :key="f.key" type="button" :aria-pressed="(selectedAction || '') === f.key" class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="(selectedAction || '') === f.key ? 'vt-btn-dark' : 'vt-btn-light'" @click="emit('update:selectedAction', f.key)">{{ f.label }}</button>
     </div>
     <p v-if="!loading && logs.length === 0" class="py-12 text-center text-[15px] text-[#5E5A6B]">Belum ada catatan.</p>
     <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">

@@ -8,7 +8,7 @@ defineProps<{ invoices: InvoiceRow[] }>();
 const { showNotification } = useNotification();
 const downloading = ref<string | null>(null);
 const label = (s: string) => ({ PAID: "Lunas", PENDING: "Menunggu pembayaran", EXPIRED: "Kedaluwarsa", FAILED: "Gagal", CANCEL: "Dibatalkan" } as Record<string, string>)[s] || s;
-const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#6D28D9]" : "text-[#B91C1C]");
+const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#0F766E]" : "text-[#B91C1C]");
 
 async function downloadReceipt(orderId: string) {
   if (!orderId || orderId === "-") return;
@@ -24,7 +24,7 @@ async function downloadReceipt(orderId: string) {
 </script>
 
 <template>
-  <section class="rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="tagihan-judul">
+  <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-7 shadow-float sm:p-9" aria-labelledby="tagihan-judul">
     <h3 id="tagihan-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Riwayat pembelian</h3>
     <p v-if="invoices.length === 0" class="py-10 text-center text-[15px] text-[#5E5A6B]">Belum ada pembelian token.</p>
     <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">
@@ -39,7 +39,7 @@ async function downloadReceipt(orderId: string) {
           <button
             type="button"
             :disabled="downloading === i.orderId"
-            class="inline-flex h-10 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-4 text-[13.5px] font-semibold text-[#14111C] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-50"
+            class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13.5px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-50"
             @click="downloadReceipt(i.orderId)"
           >{{ downloading === i.orderId ? "Mengunduh..." : "Unduh kuitansi" }}</button>
         </div>

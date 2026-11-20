@@ -23,7 +23,7 @@ const rupiah = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
       <p class="mt-3 text-[14px] text-[#5E5A6B]">pengguna aktif</p>
     </div>
     <div>
-      <p class="vt-accent text-[28px] font-semibold leading-[1.15] tracking-[-0.04em] tabular-nums sm:text-[34px]">{{ loading ? "-" : rupiah(data.total_revenue) }}</p>
+      <p class="text-[28px] font-semibold leading-[1.15] tracking-[-0.04em] tabular-nums text-[#0F766E] sm:text-[34px]">{{ loading ? "-" : rupiah(data.total_revenue) }}</p>
       <p class="mt-3 text-[14px] text-[#5E5A6B]">pendapatan</p>
     </div>
   </section>

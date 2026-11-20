@@ -89,7 +89,7 @@ watch(() => route.params.id, (id) => {
 <template>
   <div class="mx-auto max-w-[1280px] px-4 pb-24 pt-6 font-sans sm:px-6 sm:pt-10">
     <p v-if="loading" class="py-24 text-center text-[16px] text-[#5E5A6B]">Memuat hasil pemeriksaan...</p>
-    <div v-else-if="errorMessage || !report" class="mx-auto max-w-md rounded-[32px] bg-white p-8 text-center shadow-float">
+    <div v-else-if="errorMessage || !report" class="mx-auto max-w-md rounded-[32px] border border-[#E8ECEB] bg-white p-8 text-center shadow-float">
       <h1 class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Laporan tidak ditemukan</h1>
       <p class="mt-2 text-[15px] text-[#4B4757]">{{ errorMessage || "Naskah tidak ada atau sudah dihapus." }}</p>
       <router-link to="/riwayat" class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold">Kembali ke Riwayat</router-link>
@@ -98,9 +98,9 @@ watch(() => route.params.id, (id) => {
       <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" @download="download" />
       <div class="grid items-start gap-6 lg:grid-cols-[1.35fr_1fr]">
         <DocumentHighlights :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => (selected = a)" />
-        <aside class="rounded-[32px] bg-white p-5 shadow-float sm:p-7 lg:sticky lg:top-24">
-          <div class="mb-5 grid grid-cols-3 gap-1 rounded-full bg-[#F3EEFA] p-1" role="tablist">
-            <button v-for="t in TABS" :key="t.key" type="button" role="tab" :aria-selected="tab === t.key" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]" :class="tab === t.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B]'" @click="tab = t.key">{{ t.label }}</button>
+        <aside class="rounded-[32px] border border-[#E8ECEB] bg-white p-5 shadow-float sm:p-7 lg:sticky lg:top-24">
+          <div class="mb-5 grid grid-cols-3 gap-1 rounded-full border border-[#D5ECE8] bg-[#EBF8F6] p-1" role="tablist">
+            <button v-for="t in TABS" :key="t.key" type="button" role="tab" :aria-selected="tab === t.key" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="tab === t.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B] hover:text-[#14111C]'" @click="tab = t.key">{{ t.label }}</button>
           </div>
           <SourcesPanel v-show="tab === 'sources'" :selected="selected" :sources="sources" @rewrite="(a) => { selected = a; tab = 'rewrite'; }" />
           <ParaphrasePanel v-show="tab === 'rewrite'" :selected="selected" @applied="onApplied" />

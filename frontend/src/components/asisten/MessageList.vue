@@ -12,11 +12,11 @@ watch(() => [props.messages.length, props.sending], () => nextTick(() => box.val
     <div v-for="m in messages" :key="m.id" class="flex" :class="m.role === 'USER' ? 'justify-end' : 'justify-start'">
       <p
         class="max-w-[88%] whitespace-pre-wrap rounded-[24px] px-5 py-3.5 text-[15.5px] leading-[1.6] sm:max-w-[75%]"
-        :class="m.role === 'USER' ? 'bg-[#14111C] text-white' : 'bg-[#F3EEFA] text-[#14111C]'"
+        :class="m.role === 'USER' ? 'bg-[#14111C] text-white' : 'border border-[#D5ECE8] bg-[#EBF8F6] text-[#14111C]'"
       >{{ m.content }}</p>
     </div>
     <div v-if="sending" class="flex justify-start">
-      <p class="rounded-[24px] bg-[#F3EEFA] px-5 py-3.5 text-[15px] text-[#5E5A6B]">Asisten sedang menulis...</p>
+      <p class="rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] px-5 py-3.5 text-[15px] text-[#5E5A6B]">Asisten sedang menulis...</p>
     </div>
   </div>
 </template>

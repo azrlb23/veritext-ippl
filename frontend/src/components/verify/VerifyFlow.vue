@@ -11,7 +11,7 @@ import VerifyPhoneMock from "./VerifyPhoneMock.vue";
       <svg class="h-[100px] w-[70px] lg:hidden" viewBox="0 0 70 100" fill="none">
         <defs>
           <linearGradient id="flowV" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#8A3FE0" /><stop offset="1" stop-color="#D26BE6" />
+            <stop offset="0" stop-color="#0F766E" /><stop offset="1" stop-color="#0D9488" />
           </linearGradient>
         </defs>
         <path d="M35 4 C 8 34, 8 64, 35 92" stroke="url(#flowV)" stroke-width="3.5" stroke-linecap="round" />
@@ -20,7 +20,7 @@ import VerifyPhoneMock from "./VerifyPhoneMock.vue";
       <svg class="hidden h-[80px] w-[150px] lg:block" viewBox="0 0 150 80" fill="none">
         <defs>
           <linearGradient id="flowH" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#8A3FE0" /><stop offset="1" stop-color="#D26BE6" />
+            <stop offset="0" stop-color="#0F766E" /><stop offset="1" stop-color="#0D9488" />
           </linearGradient>
         </defs>
         <path d="M4 58 C 40 8, 104 8, 144 44" stroke="url(#flowH)" stroke-width="3.5" stroke-linecap="round" />

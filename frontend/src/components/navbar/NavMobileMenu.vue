@@ -12,8 +12,8 @@ defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
         :key="item.to"
         :to="item.to"
         :aria-current="isActive(item.to) ? 'page' : undefined"
-        class="flex h-12 cursor-pointer items-center rounded-[18px] px-4 text-[16px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
-        :class="isActive(item.to) ? 'bg-[#F3EEFA] text-[#14111C]' : 'text-[#4B4757] hover:bg-[#14111C]/[0.04]'"
+        class="flex h-12 cursor-pointer items-center rounded-[18px] px-4 text-[16px] font-medium transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+        :class="isActive(item.to) ? 'bg-[#EBF8F6] text-[#14111C]' : 'text-[#4B4757] hover:bg-[#14111C]/[0.04]'"
         @click="$emit('close')"
       >
         {{ item.name }}
@@ -24,7 +24,7 @@ defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
       <template v-if="isGuest">
         <router-link
           to="/login"
-          class="inline-flex h-12 w-full cursor-pointer sm:flex-1 items-center justify-center rounded-full bg-[#14111C]/[0.05] text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#14111C]/[0.08]"
+          class="vt-btn-light inline-flex h-12 w-full cursor-pointer sm:flex-1 items-center justify-center rounded-full text-[15px] font-semibold"
           @click="$emit('close')"
         >Masuk</router-link>
         <router-link
@@ -35,17 +35,17 @@ defineEmits<{ (e: "close"): void; (e: "logout"): void }>();
       </template>
       <template v-else>
         <div class="flex items-center gap-3 px-2 sm:flex-1">
-          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#8A3FE0] to-[#D26BE6] text-[15px] font-semibold text-white">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#0F766E] to-[#0D9488] text-[15px] font-semibold text-white">
             {{ name.charAt(0).toUpperCase() }}
           </span>
           <div class="min-w-0">
             <div class="truncate text-[15px] font-semibold text-[#14111C]">{{ name }}</div>
-            <div v-if="!isAdmin" class="text-[13px] font-medium tabular-nums text-[#6D28D9]">{{ balance }} token</div>
+            <div v-if="!isAdmin" class="text-[13px] font-medium tabular-nums text-[#0F766E]">{{ balance }} token</div>
           </div>
         </div>
         <button
           type="button"
-          class="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full bg-[#14111C]/[0.05] px-6 sm:w-auto text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#14111C]/[0.08]"
+          class="vt-btn-light inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 sm:w-auto text-[15px] font-semibold"
           @click="$emit('logout')"
         >Keluar</button>
       </template>

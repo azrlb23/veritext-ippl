@@ -11,7 +11,7 @@ const filter = ref<RiwayatFilter>("ALL");
 const query = ref("");
 const pendingCancel = ref<string | null>(null);
 const pendingDelete = ref<string | null>(null);
-const navBtn = "inline-flex h-11 cursor-pointer items-center rounded-full bg-[#F3EEFA] px-5 text-[14px] font-semibold text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-40";
+const navBtn = "vt-btn-light inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40";
 
 const shown = computed(() => {
   const q = query.value.trim().toLowerCase();
@@ -42,18 +42,18 @@ async function confirmDelete() {
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="max-w-4xl">
         <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
-          Semua pemeriksaan, <span class="vt-accent">satu tempat.</span>
+          Semua pemeriksaan, satu tempat.
         </h1>
       </div>
       <button
         type="button"
         :disabled="tasks.length === 0"
-        class="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[14px] font-semibold text-[#14111C] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:cursor-not-allowed disabled:opacity-40"
+        class="vt-btn-light inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-full px-6 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40"
         @click="exportCsv"
       >Unduh CSV</button>
     </div>
 
-    <section class="rounded-[32px] bg-white p-5 shadow-float sm:p-8" aria-label="Daftar pemeriksaan">
+    <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-5 shadow-float sm:p-8" aria-label="Daftar pemeriksaan">
       <RiwayatFilters v-model:filter="filter" v-model:query="query" />
 
       <p v-if="loading" class="py-16 text-center text-[15px] text-[#5E5A6B]">Memuat riwayat...</p>
@@ -65,7 +65,7 @@ async function confirmDelete() {
         <router-link
           v-if="tasks.length === 0"
           to="/periksa"
-          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
         >Periksa naskah</router-link>
       </div>
       <ul v-else class="mt-4 divide-y divide-[#14111C]/[0.06]">
@@ -84,7 +84,7 @@ async function confirmDelete() {
         <h2 id="batal-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Batalkan pemeriksaan?</h2>
         <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Pemeriksaan dihentikan dan token Anda dikembalikan.</p>
         <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="pendingCancel = null">Kembali</button>
+          <button type="button" class="vt-btn-light inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="pendingCancel = null">Kembali</button>
           <button type="button" class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold" @click="confirmCancel">Ya, batalkan</button>
         </div>
       </div>
@@ -95,7 +95,7 @@ async function confirmDelete() {
         <h2 id="hapus-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Hapus naskah permanen?</h2>
         <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Berkas naskah, laporan audit, dan riwayat percakapan terkait akan dihapus permanen dan tidak dapat dipulihkan.</p>
         <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="pendingDelete = null">Kembali</button>
+          <button type="button" class="vt-btn-light inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="pendingDelete = null">Kembali</button>
           <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#B91C1C] px-6 text-[15px] font-semibold text-white" @click="confirmDelete">Ya, hapus permanen</button>
         </div>
       </div>

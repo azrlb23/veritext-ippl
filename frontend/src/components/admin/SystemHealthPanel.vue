@@ -28,7 +28,7 @@ const rows = computed(() => [
   <section class="rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="sehat-judul" :aria-busy="loading">
     <h2 id="sehat-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Kondisi sistem</h2>
     <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div v-for="r in rows" :key="r.label" class="rounded-[24px] bg-[#F3EEFA] p-5">
+      <div v-for="r in rows" :key="r.label" class="rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5">
         <dt class="text-[13px] font-medium text-[#5E5A6B]">{{ r.label }}</dt>
         <dd class="mt-2 text-[24px] font-semibold tracking-[-0.03em] tabular-nums" :class="r.good ? 'text-[#14111C]' : 'text-[#B91C1C]'">{{ loading ? "-" : r.value }}</dd>
         <p v-if="r.hint" class="mt-1 text-[13px] text-[#5E5A6B]">{{ r.hint }}</p>

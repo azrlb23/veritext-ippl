@@ -69,7 +69,7 @@ const isPasswordMismatch = computed(() => {
         <span class="text-[#5E5A6B]">Kekuatan kata sandi</span>
         <span :class="['font-semibold', passwordStrength.textColor]">{{ passwordStrength.label }}</span>
       </div>
-      <div class="grid h-1.5 w-full grid-cols-3 gap-1.5 overflow-hidden rounded-full bg-[#E6E0EF]">
+      <div class="grid h-1.5 w-full grid-cols-3 gap-1.5 overflow-hidden rounded-full bg-[#E8ECEB]">
         <div :class="['rounded-full transition-all duration-300', passwordStrength.score >= 1 ? passwordStrength.color : 'bg-transparent']"></div>
         <div :class="['rounded-full transition-all duration-300', passwordStrength.score >= 2 ? passwordStrength.color : 'bg-transparent']"></div>
         <div :class="['rounded-full transition-all duration-300', passwordStrength.score >= 3 ? passwordStrength.color : 'bg-transparent']"></div>

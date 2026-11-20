@@ -21,15 +21,15 @@ async function open(id: string | null) {
   <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
     <div class="mb-6 max-w-4xl">
       <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
-        Teman menulis yang <span class="vt-accent">membaca naskah Anda.</span>
+        Teman menulis yang membaca naskah Anda.
       </h1>
     </div>
 
-    <section class="grid overflow-hidden rounded-[36px] bg-white shadow-float lg:grid-cols-[300px_1fr]" aria-label="Asisten AI">
-      <aside class="bg-[#F3EEFA] p-4 lg:p-5">
+    <section class="grid overflow-hidden rounded-[36px] border border-[#E8ECEB] bg-white shadow-float lg:grid-cols-[300px_1fr]" aria-label="Asisten AI">
+      <aside class="bg-[#F4F8F7] border-r border-[#E6ECEB] p-4 lg:p-5">
         <button
           type="button"
-          class="mb-3 inline-flex h-11 w-full cursor-pointer items-center justify-between rounded-full bg-white px-5 text-[14px] font-semibold text-[#14111C] shadow-lift lg:hidden"
+          class="vt-btn-light mb-3 inline-flex h-11 w-full cursor-pointer items-center justify-between rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] lg:hidden"
           :aria-expanded="showList"
           @click="showList = !showList"
         >Percakapan ({{ a.sessions.value.length }})<span aria-hidden="true">{{ showList ? "Tutup" : "Buka" }}</span></button>

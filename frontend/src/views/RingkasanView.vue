@@ -25,7 +25,7 @@ const average = computed(() => {
   <div ref="sectionRef" class="vt-section mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7" :class="{ 'is-visible': isVisible }">
     <div class="vt-reveal mb-5 max-w-4xl">
       <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
-        Halo {{ firstName }}, <span class="vt-accent">siap menulis lebih orisinal?</span>
+        Halo {{ firstName }}, siap menulis lebih orisinal?
       </h1>
     </div>
 
@@ -36,7 +36,7 @@ const average = computed(() => {
       <section class="vt-reveal vt-d-2 rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="terakhir-judul">
         <div class="flex items-center justify-between gap-4">
           <h2 id="terakhir-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Terakhir diperiksa</h2>
-          <router-link to="/riwayat" class="inline-flex h-11 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold text-[#6D28D9] transition-colors hover:bg-[#F3EEFA] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]">Lihat semua</router-link>
+          <router-link to="/riwayat" class="inline-flex h-11 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold text-[#0F766E] transition-colors hover:bg-[#EBF8F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Lihat semua</router-link>
         </div>
         <p v-if="!loading && recent.length === 0" class="py-10 text-center text-[15px] text-[#5E5A6B]">Belum ada hasil. Mulai dengan mengunggah naskah pertama Anda.</p>
         <ul v-else class="mt-2 divide-y divide-[#14111C]/[0.06]">

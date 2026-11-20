@@ -77,10 +77,10 @@ onMounted(() => {
     <div id="overview" class="mb-6 flex scroll-mt-28 flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div class="max-w-4xl">
         <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
-          Kondisi sistem, <span class="vt-accent">hanya dibaca.</span>
+          Kondisi sistem, hanya dibaca.
         </h1>
       </div>
-      <button type="button" :disabled="isLoading" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-white px-8 text-[15px] font-semibold text-[#14111C] shadow-lift transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] disabled:opacity-50" @click="fetchData">{{ isLoading ? "Memuat..." : "Muat ulang" }}</button>
+      <button type="button" :disabled="isLoading" class="vt-btn-light inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:opacity-50" @click="fetchData">{{ isLoading ? "Memuat..." : "Muat ulang" }}</button>
     </div>
 
     <div v-if="hasError && !isLoading" class="mb-6 flex flex-col gap-3 rounded-[28px] bg-white p-6 shadow-float sm:flex-row sm:items-center sm:justify-between" role="alert">

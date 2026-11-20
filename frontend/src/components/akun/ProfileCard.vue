@@ -30,7 +30,7 @@ async function save() {
 <template>
   <section class="rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="profil-judul">
     <h2 id="profil-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Profil</h2>
-    <dl class="mt-6 grid grid-cols-2 gap-4 rounded-[24px] bg-[#F3EEFA] p-5">
+    <dl class="mt-6 grid grid-cols-2 gap-4 rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5">
       <div class="min-w-0">
         <dt class="text-[13px] font-medium text-[#5E5A6B]">Email</dt>
         <dd class="mt-1 truncate text-[15px] font-semibold text-[#14111C]">{{ authStore.user?.email }}</dd>
@@ -45,7 +45,7 @@ async function save() {
       <button
         type="submit"
         :disabled="!dirty || saving"
-        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >{{ saving ? "Menyimpan..." : "Simpan nama" }}</button>
     </form>
   </section>

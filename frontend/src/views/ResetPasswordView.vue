@@ -62,8 +62,8 @@ async function handleSubmit() {
   <AuthCard eyebrow="Kata sandi baru" :title="isTokenInvalid ? 'Tautan tidak berlaku' : 'Setel ulang sandi'" :subtitle="isTokenInvalid ? 'Minta tautan baru untuk melanjutkan.' : 'Minimal 8 karakter.'">
     <div v-if="isCheckingToken" class="flex items-center gap-4 py-6" role="status">
       <svg class="h-8 w-8 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
-        <circle cx="18" cy="18" r="15" stroke="#EFEAF6" stroke-width="4" />
-        <path d="M18 3 a15 15 0 0 1 15 15" stroke="#8A3FE0" stroke-width="4" stroke-linecap="round" />
+        <circle cx="18" cy="18" r="15" stroke="#D5ECE8" stroke-width="4" />
+        <path d="M18 3 a15 15 0 0 1 15 15" stroke="#0F766E" stroke-width="4" stroke-linecap="round" />
       </svg>
       <p class="text-[14.5px] text-[#4B4757]">Memverifikasi tautan pemulihan...</p>
     </div>
@@ -74,7 +74,7 @@ async function handleSubmit() {
     </div>
 
     <div v-else-if="isSuccess" class="space-y-5">
-      <div class="rounded-[22px] bg-[#F3EEFA] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
+      <div class="rounded-[22px] border border-[#D5ECE8] bg-[#EBF8F6] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
         <div class="text-[17px] font-semibold text-[#15803D]">Kata sandi berhasil diperbarui</div>
         <p class="mt-1.5">Silakan masuk menggunakan kata sandi baru Anda.</p>
       </div>

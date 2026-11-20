@@ -39,12 +39,12 @@ async function handleSubmit() {
 <template>
   <AuthCard eyebrow="Pemulihan akun" title="Lupa kata sandi" :subtitle="['Masukkan alamat email terdaftar. Kami kirim tautan', 'pemulihan yang berlaku 1 jam.']">
     <div v-if="isSuccess" class="space-y-5">
-      <div class="rounded-[22px] bg-[#F3EEFA] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
+      <div class="rounded-[22px] border border-[#D5ECE8] bg-[#EBF8F6] p-5 text-[14.5px] leading-[1.65] text-[#4B4757]">
         <div class="text-[17px] font-semibold text-[#15803D]">Tautan pemulihan dikirim</div>
         <p class="mt-1.5">Kami mengirim tautan pemulihan ke <strong class="font-semibold text-[#14111C]">{{ email }}</strong>. Periksa kotak masuk atau spam.</p>
       </div>
 
-      <router-link to="/login" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#EBE3F6]">Kembali ke halaman masuk</router-link>
+      <router-link to="/login" class="vt-btn-light inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold">Kembali ke halaman masuk</router-link>
     </div>
 
     <form v-else class="space-y-6" @submit.prevent="handleSubmit">
@@ -55,7 +55,7 @@ async function handleSubmit() {
       <AuthField id="forgot-email" v-model="email" label="Alamat email" type="email" autocomplete="email" placeholder="nama@email.com" :disabled="isLoading" />
 
       <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <button type="button" class="inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C] transition-colors duration-200 hover:bg-[#EBE3F6] sm:flex-1" @click="router.push('/login')">Kembali</button>
+        <button type="button" class="vt-btn-light inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold sm:flex-1" @click="router.push('/login')">Kembali</button>
         <button type="submit" :disabled="isLoading" class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1">{{ isLoading ? 'Mengirim...' : 'Kirim tautan' }}</button>
       </div>
     </form>

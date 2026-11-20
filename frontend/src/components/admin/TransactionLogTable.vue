@@ -13,7 +13,7 @@ defineProps<{ transactions: TransactionItem[]; loading?: boolean }>();
 const rupiah = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const date = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-");
 const label = (s: string) => ({ PAID: "Lunas", PENDING: "Menunggu", EXPIRED: "Kedaluwarsa", FAILED: "Gagal", CANCEL: "Dibatalkan", CHALLENGE: "Ditinjau" } as Record<string, string>)[s] || s;
-const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#6D28D9]" : "text-[#B91C1C]");
+const tone = (s: string) => (s === "PAID" ? "text-[#047857]" : s === "PENDING" ? "text-[#0F766E]" : "text-[#B91C1C]");
 </script>
 
 <template>

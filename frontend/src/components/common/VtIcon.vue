@@ -5,9 +5,9 @@ import { VT_ICON_PATHS, type VtIconName } from "./vtIconPaths";
 const props = withDefaults(
   defineProps<{
     name: VtIconName;
-    tone?: "violet" | "current";
+    tone?: "teal" | "current";
   }>(),
-  { tone: "violet" },
+  { tone: "teal" },
 );
 
 const icon = computed(() => VT_ICON_PATHS[props.name]);
@@ -17,7 +17,7 @@ const icon = computed(() => VT_ICON_PATHS[props.name]);
   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
     <path
       :d="icon.back"
-      :fill="tone === 'current' ? 'currentColor' : '#8A3FE0'"
+      :fill="tone === 'current' ? 'currentColor' : '#0F766E'"
       :fill-opacity="tone === 'current' ? 0.28 : 0.22"
     />
     <path

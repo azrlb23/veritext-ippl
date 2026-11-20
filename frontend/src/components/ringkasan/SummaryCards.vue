@@ -19,16 +19,16 @@ defineProps<{
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
         <router-link
           to="/periksa"
-          class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+          class="vt-btn-dark inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
         >Periksa naskah</router-link>
         <router-link
           to="/billing"
-          class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-8 text-[15px] font-semibold text-[#14111C] transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          class="vt-btn-light inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         >Tambah token</router-link>
       </div>
     </section>
 
-    <section class="vt-reveal vt-d-1 flex flex-col justify-between rounded-[36px] bg-[#F3EEFA] p-7 shadow-float sm:p-9" aria-label="Ringkasan angka">
+    <section class="vt-reveal vt-d-1 flex flex-col justify-between rounded-[36px] border border-[#D5ECE8] bg-[#EBF8F6] p-7 shadow-float sm:p-9" aria-label="Ringkasan angka">
       <div class="grid grid-cols-3 gap-3">
         <div>
           <p class="text-[44px] font-semibold leading-none tracking-[-0.05em] tabular-nums text-[#14111C]">{{ total }}</p>
@@ -45,12 +45,12 @@ defineProps<{
       </div>
 
       <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#14111C]/[0.07] pt-5">
-        <span class="rounded-full bg-white px-3.5 py-1.5 text-[12.5px] font-semibold text-[#6D28D9]">
+        <span class="text-[12.5px] font-semibold text-[#0F766E]">
           Paket {{ (role || "FREE").toUpperCase() === "PREMIUM" ? "Premium" : "Gratis" }}
         </span>
         <router-link
           :to="asistenTo || '/asisten'"
-          class="inline-flex h-10 cursor-pointer items-center rounded-full bg-white px-5 text-[13.5px] font-semibold text-[#14111C] shadow-lift transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-5 text-[13.5px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         >Buka Asisten AI &rarr;</router-link>
       </div>
     </section>

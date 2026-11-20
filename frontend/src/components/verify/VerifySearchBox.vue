@@ -15,7 +15,7 @@ function handleVerify() {
 
 <template>
   <div class="mx-auto max-w-[760px] font-sans">
-    <div class="flex flex-col items-stretch gap-2 rounded-[32px] bg-white p-2 pl-6 shadow-float transition-all duration-300 focus-within:ring-4 focus-within:ring-[#8A3FE0]/20 focus-within:shadow-2xl sm:flex-row sm:items-center sm:rounded-full">
+    <div class="flex flex-col items-stretch gap-2 rounded-[32px] bg-white p-2 pl-6 shadow-float transition-all duration-300 focus-within:ring-4 focus-within:ring-[#0F766E]/20 focus-within:shadow-2xl sm:flex-row sm:items-center sm:rounded-full">
       <div class="flex min-w-0 flex-grow items-center">
         <VtIcon name="search" tone="current" class="mr-3 h-[18px] w-[18px] shrink-0 text-[#5E5A6B]" />
         <input
@@ -41,7 +41,7 @@ function handleVerify() {
         type="button"
         :disabled="!inputUuid.trim() || loading"
         @click="handleVerify"
-        class="vt-btn-dark inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full px-8 text-[14px] font-semibold disabled:cursor-not-allowed disabled:bg-none disabled:bg-[#D9D3E4] disabled:text-[#5E5A6B] disabled:shadow-none"
+        class="vt-btn-dark inline-flex h-[52px] cursor-pointer items-center justify-center whitespace-nowrap rounded-full px-8 text-[14px] font-semibold disabled:cursor-not-allowed disabled:bg-none disabled:bg-[#E6ECEB] disabled:text-[#5E5A6B] disabled:shadow-none"
       >
         {{ loading ? "Memvalidasi..." : "Verifikasi sertifikat" }}
       </button>

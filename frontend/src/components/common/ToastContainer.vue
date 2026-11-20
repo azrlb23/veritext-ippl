@@ -36,7 +36,7 @@ const { notifications, dismissNotification } = useNotification();
             <svg v-else-if="notif.type === 'error'" class="w-4 h-4 text-[#dc2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
-            <svg v-else class="w-4 h-4 text-[#8A3FE0]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg v-else class="w-4 h-4 text-[#0F766E]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </span>
@@ -49,7 +49,7 @@ const { notifications, dismissNotification } = useNotification();
           <button
             type="button"
             @click="dismissNotification(notif.id)"
-            class="cursor-pointer rounded-full p-1 text-[#5E5A6B] transition-all hover:bg-[#F3EEFA] hover:text-[#14111C]"
+            class="cursor-pointer rounded-full p-1 text-[#5E5A6B] transition-all hover:bg-[#EBF8F6] hover:text-[#14111C]"
             aria-label="Tutup notifikasi"
           >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

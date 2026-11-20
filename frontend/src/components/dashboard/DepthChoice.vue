@@ -18,9 +18,9 @@ const options: { key: Depth; title: string; desc: string; note: string }[] = [
       type="button"
       role="radio"
       :aria-checked="modelValue === o.key"
-      class="flex min-h-[132px] cursor-pointer flex-col justify-between rounded-[24px] p-5 text-left transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0] focus-visible:ring-offset-2"
+      class="flex min-h-[132px] cursor-pointer flex-col justify-between rounded-[24px] p-5 text-left transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
       :class="modelValue === o.key
-        ? 'bg-gradient-to-br from-[#7A2FD6] to-[#9B4FE6] text-white shadow-[0_24px_44px_-18px_rgba(122,47,214,0.55)]'
+        ? 'bg-gradient-to-br from-[#0F766E] to-[#0D9488] text-white shadow-[0_24px_44px_-18px_rgba(15,118,110,0.45)]'
         : 'bg-white text-[#14111C] shadow-lift hover:-translate-y-0.5'"
       @click="$emit('update:modelValue', o.key)"
     >

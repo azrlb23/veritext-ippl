@@ -39,7 +39,7 @@ async function removeAccount() {
       </div>
       <button
         type="button"
-        class="inline-flex h-12 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#FEE2E2] px-7 text-[15px] font-semibold text-[#B91C1C] transition-colors hover:bg-[#FECACA] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+        class="inline-flex h-12 flex-shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#FEE2E2] px-7 text-[15px] font-semibold text-[#B91C1C] transition-colors hover:bg-[#FECACA] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         @click="open = true"
       >Hapus akun saya</button>
     </div>
@@ -50,7 +50,7 @@ async function removeAccount() {
         <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Tindakan ini tidak bisa dibatalkan. Ketik HAPUS untuk melanjutkan.</p>
         <div class="mt-6"><AuthField id="hapus-ketik" v-model="typed" label="Ketik HAPUS" /></div>
         <div class="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <button type="button" class="inline-flex h-12 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] px-6 text-[15px] font-semibold text-[#14111C]" @click="open = false">Batal</button>
+          <button type="button" class="vt-btn-light inline-flex h-12 cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold" @click="open = false">Batal</button>
           <button
             type="button"
             :disabled="!confirmed || busy"
