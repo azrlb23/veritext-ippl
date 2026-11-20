@@ -85,7 +85,7 @@ function handleOAuthGoogle() {
     <div class="space-y-4">
       <div class="text-[15px] font-normal text-[#4B4757] -mt-2">
         <span>Belum punya akun? </span>
-        <router-link to="/register" class="inline-flex min-h-[44px] items-center font-medium text-[#6D28D9] hover:underline">
+        <router-link to="/register" class="inline-flex min-h-[44px] items-center font-medium text-[#0F766E] hover:underline">
           Daftar
         </router-link>
       </div>

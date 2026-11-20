@@ -68,15 +68,15 @@ function handleSubmit() {
 
       <div class="flex w-full items-center justify-between text-[14px]">
         <label class="flex min-h-[44px] cursor-pointer select-none items-center space-x-2 text-[#4B4757]">
-          <input v-model="rememberMe" type="checkbox" class="h-[18px] w-[18px] rounded accent-[#8A3FE0]" />
+          <input v-model="rememberMe" type="checkbox" class="h-[18px] w-[18px] rounded accent-[#0F766E]" />
           <span>Ingat sesi saya</span>
         </label>
-        <router-link to="/forgot-password" class="inline-flex min-h-[44px] items-center font-medium text-[#6D28D9] hover:underline">Lupa sandi?</router-link>
+        <router-link to="/forgot-password" class="inline-flex min-h-[44px] items-center font-medium text-[#0F766E] hover:underline">Lupa sandi?</router-link>
       </div>
 
-      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <GoogleAuthButton text="Masuk dengan Google" :disabled="loading || isLockedOut" @click="emit('oauth-google')" />
-        <AuthSubmitButton :loading="loading" :disabled="loading || isLockedOut" label="Masuk" loading-label="Memverifikasi..." />
+      <div class="flex items-center gap-3">
+        <GoogleAuthButton text="Masuk dengan Google" icon-only :disabled="loading || isLockedOut" @click="emit('oauth-google')" />
+        <AuthSubmitButton :loading="loading" :disabled="loading || isLockedOut" label="Masuk" loading-label="Memverifikasi..." icon-only />
       </div>
     </form>
   </div>
