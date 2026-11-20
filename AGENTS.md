@@ -67,7 +67,7 @@ Baca berkas ini terlebih dahulu pada setiap sesi baru. Berkas ini adalah rujukan
 ## 4. Engineering Boundaries
 
 ### Always (Wajib Dilakukan)
-- Baca `docs/BLUEPRINT.md`, `docs/API_CONTRACT.md`, `docs/DATABASE_SCHEMA.md`, dan `docs/ATOMIC_CODING_STANDARDS.md` sebelum menulis atau mengubah kode.
+- Baca `docs/BLUEPRINT.md`, `docs/API_CONTRACT.md`, `docs/DATABASE_SCHEMA.md`, `docs/ATOMIC_CODING_STANDARDS.md`, dan `docs/UI_DESIGN_STANDARDS.md` sebelum menulis atau mengubah kode (khususnya `docs/UI_DESIGN_STANDARDS.md` untuk seluruh pekerjaan frontend/UI).
 - Gunakan **Pola Orkestrasi Brain (Argon / Sonnet, Fallback: Flash High) + Worker (`Model="flash"`)**:
   - **Brain (Primary: Gemini Argon / Claude Sonnet; Fallback: Gemini Flash High jika Argon/Sonnet tidak tersedia atau limit)**: Bertindak sebagai *Lead Architect, Orchestrator, & Reviewer* yang merancang spesifikasi per irisan tugas atomik (*S/M Task Slice* 1–4 berkas), mendefinisikan subagen pekerja (`define_subagent` dengan `EnableWriteTools=True`), mendelegasikan penulisan kode ke subagen melalui `invoke_subagent(..., Model="flash")`, serta mengaudit hasil kerja.
   - **Worker (`Model="flash"`)**: Mengeksekusi penulisan/refactoring kode atomik sesuai instruksi Brain, menjalankan pengujian (`pytest` / `ruff` / `npm run build`), dan melaporkan metrik jumlah baris (LOC) setiap berkas kembali ke Brain.
