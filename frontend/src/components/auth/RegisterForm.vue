@@ -62,23 +62,25 @@ function handleSubmit() {
 </script>
 
 <template>
-  <div class="w-full space-y-5">
+  <div class="w-full space-y-4">
     <AuthAlertBanner :error-message="errorMessage" :validation-error="validationError" @dismiss="handleDismiss" />
 
-    <form class="space-y-6" @submit.prevent="handleSubmit">
-      <AuthField id="reg-name" v-model="fullName" label="Nama lengkap" autocomplete="name" placeholder="Nama lengkap resmi" :disabled="loading" />
-      <AuthField id="reg-email" v-model="email" label="Alamat email" type="email" autocomplete="email" placeholder="nama@email.com" :disabled="loading" />
+    <form class="space-y-4" @submit.prevent="handleSubmit">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <AuthField id="reg-name" v-model="fullName" label="Nama lengkap" autocomplete="name" placeholder="Nama lengkap resmi" :disabled="loading" />
+        <AuthField id="reg-email" v-model="email" label="Alamat email" type="email" autocomplete="email" placeholder="nama@email.com" :disabled="loading" />
+      </div>
 
       <RegisterPasswordFields v-model:password="password" v-model:confirm-password="confirmPassword" :disabled="loading" />
 
       <label class="flex min-h-[44px] w-full cursor-pointer select-none items-center space-x-2.5 text-[13.5px] leading-tight text-[#4B4757]">
-        <input id="reg-pdp" v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#8A3FE0]" />
+        <input id="reg-pdp" v-model="agreePDP" type="checkbox" class="h-[18px] w-[18px] shrink-0 rounded accent-[#0F766E]" />
         <span>Saya menyetujui naskah saya diproses untuk pengujian.</span>
       </label>
 
-      <div class="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center">
-        <GoogleAuthButton text="Daftar dengan Google" :disabled="loading" @click="emit('oauth-google')" />
-        <AuthSubmitButton :loading="loading" :disabled="loading" label="Daftar" loading-label="Daftar..." />
+      <div class="flex items-center gap-3 pt-1">
+        <GoogleAuthButton icon-only text="Daftar dengan Google" :disabled="loading" @click="emit('oauth-google')" />
+        <AuthSubmitButton icon-only :loading="loading" :disabled="loading" label="Daftar" loading-label="Daftar..." />
       </div>
     </form>
   </div>

@@ -77,11 +77,7 @@ function handleOAuthGoogle() {
 </script>
 
 <template>
-  <AuthCard
-    eyebrow="Selamat datang kembali"
-    title="Masuk ke"
-    title-accent="akun Anda"
-  >
+  <AuthCard title="Masuk">
     <div class="space-y-4">
       <div class="text-[15px] font-normal text-[#4B4757] -mt-2">
         <span>Belum punya akun? </span>

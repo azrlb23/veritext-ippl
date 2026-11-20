@@ -21,20 +21,20 @@ withDefaults(defineProps<Props>(), {
       <header class="mx-auto flex w-full max-w-[460px] items-center justify-start gap-6 lg:mx-0">
         <router-link
           to="/"
-          class="group inline-flex h-11 items-center gap-2 rounded-full bg-white px-4 text-[14px] font-medium text-[#4B4757] shadow-lift transition-all duration-200 hover:text-[#14111C] hover:shadow-float focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+          aria-label="Kembali ke beranda"
+          title="Kembali ke beranda"
+          class="group inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#4B4757] shadow-lift transition-all duration-200 hover:text-[#14111C] hover:shadow-float focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
         >
           <svg class="h-4 w-4 text-[#5E5A6B] transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:text-[#14111C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
           </svg>
-          <span>Kembali ke beranda</span>
         </router-link>
       </header>
 
-      <div class="mx-auto my-6 w-full max-w-[460px] rounded-[36px] bg-white p-6 shadow-float sm:p-10 lg:mx-0">
-        <p v-if="eyebrow" class="mb-3 text-[14px] font-medium text-[#5E5A6B]">{{ eyebrow }}</p>
-        <h1 class="text-[36px] font-semibold leading-[1.08] tracking-[-0.045em] text-[#14111C] sm:text-[44px]">
+      <div class="mx-auto my-6 w-full max-w-[460px] rounded-[36px] bg-white p-6 shadow-float sm:p-9 lg:mx-0">
+        <h1 class="text-[26px] font-semibold leading-[1.15] tracking-[-0.03em] text-[#14111C]">
           {{ title }}
-          <span v-if="titleAccent" class="vt-accent block pb-1">{{ titleAccent }}</span>
+          <span v-if="titleAccent" class="vt-accent">{{ titleAccent }}</span>
         </h1>
 
         <div v-if="subtitle" class="mt-4 text-[15px] leading-[1.65] text-[#4B4757]">
