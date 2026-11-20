@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { VtIcon } from "../common";
 
 const hoverIdx = ref(0);
 const isUserHovering = ref(false);
@@ -37,8 +36,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative" aria-hidden="true" @mouseleave="onLeavePanel">
-    <div class="absolute -top-6 left-1/2 z-10 -translate-x-1/2 w-[calc(100%-1rem)] rounded-[18px] bg-white px-4 py-2.5 sm:w-auto sm:whitespace-nowrap text-[12.5px] text-[#14111C] shadow-lift flex items-center gap-2.5 transition-all duration-300">
-      <VtIcon name="alert-anomaly" tone="current" class="h-4 w-4 shrink-0 transition-colors duration-300" :class="rows[hoverIdx].color" />
+    <div class="absolute -top-6 left-1/2 z-10 -translate-x-1/2 w-[calc(100%-1rem)] rounded-[18px] bg-white px-4 py-2.5 sm:w-auto sm:whitespace-nowrap text-[12.5px] text-[#14111C] shadow-lift flex items-center transition-all duration-300">
       <span class="transition-all duration-200">
         <strong class="font-semibold">{{ rows[hoverIdx].tag }}</strong> {{ rows[hoverIdx].detail }}
       </span>

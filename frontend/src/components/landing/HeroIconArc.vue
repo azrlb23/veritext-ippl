@@ -18,7 +18,7 @@ const tiles: Array<{ icon: VtIconName; color: string; offset: string }> = [
       class="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white shadow-lift transition-transform duration-300 hover:-translate-y-1"
       :class="t.offset"
     >
-      <VtIcon :name="t.icon" class="h-5 w-5" :class="t.color" />
+      <VtIcon :name="t.icon" tone="current" class="h-5 w-5" :class="t.color" />
     </div>
   </div>
 </template>
