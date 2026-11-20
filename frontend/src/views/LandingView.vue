@@ -3,6 +3,7 @@ import {
   HeroSection,
   DashboardShowcaseWindow,
   PipelineTiersGrid,
+  FaqSection,
   CallToActionSection,
 } from "../components/landing";
 </script>
@@ -18,7 +19,10 @@ import {
     <!-- 3. Tiga Lapis Pemeriksaan Sesuai build_landing.py:seg_how() -->
     <PipelineTiersGrid />
 
-    <!-- 4. Call To Action Sesuai build_landing.py:seg_cta_short() -->
+    <!-- 4. Pertanyaan Yang Sering Ditanyakan -->
+    <FaqSection />
+
+    <!-- 5. Call To Action Sesuai build_landing.py:seg_cta_short() -->
     <CallToActionSection />
   </div>
 </template>
