@@ -16,27 +16,27 @@ function blobStyle(colorRgb: string, opacity: number) {
 }
 
 const homeBlobs = [
-  { pos: "right-[-258px] top-[calc(1%_-_130px)] h-[720px] w-[820px]", rgb: "143, 168, 245", opacity: 0.6 },
-  { pos: "left-[-290px] top-[calc(13%_-_130px)] h-[900px] w-[1160px]", rgb: "138, 63, 224", opacity: 0.55 },
-  { pos: "right-[calc(8%_-_130px)] top-[calc(17%_-_130px)] h-[620px] w-[800px]", rgb: "210, 107, 230", opacity: 0.4 },
-  { pos: "right-[-290px] top-[calc(34%_-_130px)] h-[780px] w-[880px]", rgb: "143, 168, 245", opacity: 0.4 },
-  { pos: "left-[-354px] top-[calc(50%_-_130px)] h-[900px] w-[1120px]", rgb: "138, 63, 224", opacity: 0.25 },
-  { pos: "left-[calc(10%_-_130px)] top-[calc(72%_-_130px)] h-[780px] w-[1360px]", rgb: "201, 160, 240", opacity: 0.45 },
-  { pos: "right-[-258px] top-[calc(86%_-_130px)] h-[680px] w-[820px]", rgb: "143, 168, 245", opacity: 0.35 },
+  { pos: "right-[-258px] top-[calc(1%_-_130px)] h-[720px] w-[820px]", rgb: "143, 168, 245", opacity: 0.55 },
+  { pos: "left-[-290px] top-[calc(13%_-_130px)] h-[900px] w-[1160px]", rgb: "253, 186, 116", opacity: 0.52 },
+  { pos: "right-[calc(8%_-_130px)] top-[calc(17%_-_130px)] h-[620px] w-[800px]", rgb: "138, 63, 224", opacity: 0.48 },
+  { pos: "right-[-290px] top-[calc(34%_-_130px)] h-[780px] w-[880px]", rgb: "251, 146, 60", opacity: 0.28 },
+  { pos: "left-[-354px] top-[calc(50%_-_130px)] h-[900px] w-[1120px]", rgb: "138, 63, 224", opacity: 0.3 },
+  { pos: "left-[calc(10%_-_130px)] top-[calc(72%_-_130px)] h-[780px] w-[1360px]", rgb: "201, 160, 240", opacity: 0.42 },
+  { pos: "right-[-258px] top-[calc(86%_-_130px)] h-[680px] w-[820px]", rgb: "253, 186, 116", opacity: 0.36 },
 ];
 
 const pageBlobs = [
-  { pos: "right-[-258px] top-[calc(1%_-_130px)] h-[680px] w-[780px]", rgb: "143, 168, 245", opacity: 0.5 },
-  { pos: "left-[-322px] top-[calc(16%_-_130px)] h-[740px] w-[940px]", rgb: "138, 63, 224", opacity: 0.3 },
-  { pos: "right-[calc(8%_-_130px)] top-[calc(34%_-_130px)] h-[580px] w-[740px]", rgb: "210, 107, 230", opacity: 0.2 },
-  { pos: "left-[calc(12%_-_130px)] top-[calc(72%_-_130px)] h-[680px] w-[1160px]", rgb: "201, 160, 240", opacity: 0.4 },
+  { pos: "right-[-258px] top-[calc(1%_-_130px)] h-[680px] w-[780px]", rgb: "143, 168, 245", opacity: 0.42 },
+  { pos: "left-[-322px] top-[calc(16%_-_130px)] h-[740px] w-[940px]", rgb: "253, 186, 116", opacity: 0.34 },
+  { pos: "right-[calc(8%_-_130px)] top-[calc(34%_-_130px)] h-[580px] w-[740px]", rgb: "138, 63, 224", opacity: 0.24 },
+  { pos: "left-[calc(12%_-_130px)] top-[calc(72%_-_130px)] h-[680px] w-[1160px]", rgb: "201, 160, 240", opacity: 0.36 },
 ];
 
 const authBlobs = [
-  { pos: "right-[-226px] top-[-226px] h-[740px] w-[820px]", rgb: "143, 168, 245", opacity: 0.55 },
-  { pos: "right-[-290px] top-[calc(18%_-_130px)] h-[980px] w-[1080px]", rgb: "138, 63, 224", opacity: 0.55 },
-  { pos: "right-[calc(4%_-_130px)] bottom-[calc(-8%_-_130px)] h-[720px] w-[880px]", rgb: "210, 107, 230", opacity: 0.4 },
-  { pos: "left-[-290px] bottom-[calc(-10%_-_130px)] h-[680px] w-[960px]", rgb: "201, 160, 240", opacity: 0.35 },
+  { pos: "right-[-226px] top-[-226px] h-[740px] w-[820px]", rgb: "143, 168, 245", opacity: 0.52 },
+  { pos: "right-[-290px] top-[calc(18%_-_130px)] h-[980px] w-[1080px]", rgb: "138, 63, 224", opacity: 0.48 },
+  { pos: "right-[calc(4%_-_130px)] bottom-[calc(-8%_-_130px)] h-[720px] w-[880px]", rgb: "251, 146, 60", opacity: 0.26 },
+  { pos: "left-[-290px] bottom-[calc(-10%_-_130px)] h-[680px] w-[960px]", rgb: "253, 186, 116", opacity: 0.42 },
 ];
 
 const homeFields = [
