@@ -52,7 +52,6 @@ function scrollToReport() {
             Lihat contoh laporan
           </button>
         </div>
-        <p class="vt-reveal vt-d-3 mt-4 text-[13px] text-[#5E5A6B]">5 token gratis saat daftar. Tanpa kartu kredit.</p>
       </div>
 
       <div class="relative mx-auto mt-16 h-[300px] max-w-[1180px] px-5 sm:h-[372px]">

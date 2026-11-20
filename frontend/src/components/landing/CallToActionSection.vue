@@ -35,7 +35,7 @@ const { sectionRef, isVisible } = useSectionReveal({ threshold: 0.15 });
           </router-link>
         </div>
         <p class="vt-reveal vt-d-3 mt-4 text-[13px] text-[#5E5A6B]">
-          5 token gratis saat daftar. Tanpa kartu kredit.
+          5 token gratis saat daftar.
         </p>
       </div>
     </div>
