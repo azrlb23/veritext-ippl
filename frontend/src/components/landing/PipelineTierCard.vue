@@ -38,12 +38,8 @@ const stepNumber = computed(() => `${String(props.tier.id + 1).padStart(2, "0")}
 
     <div v-if="isActive" class="mt-6">
       <div class="flex items-center gap-2.5">
-        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F2FA] text-[#7A2FD6]">
-          <VtIcon :name="tier.icon" tone="violet" class="h-4 w-4" />
-        </span>
-        <span class="rounded-full bg-[#F5F2FA] px-2.5 py-1 text-[11px] font-semibold tracking-wide text-[#7A2FD6]">
-          {{ tier.weight }}
-        </span>
+        <VtIcon :name="tier.icon" tone="violet" class="h-5 w-5 shrink-0 text-[#7A2FD6]" />
+        <span class="text-[12px] font-semibold tracking-wide text-[#7A2FD6]">{{ tier.weight }}</span>
       </div>
       <h3 class="mt-4 text-[24px] font-medium leading-[1.15] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         {{ tier.title }}
@@ -54,9 +50,7 @@ const stepNumber = computed(() => `${String(props.tier.id + 1).padStart(2, "0")}
     </div>
 
     <div v-else class="mt-8">
-      <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F5F2FA] text-[#7A2FD6]">
-        <VtIcon :name="tier.icon" tone="violet" class="h-4 w-4" />
-      </span>
+      <VtIcon :name="tier.icon" tone="violet" class="h-5 w-5 text-[#7A2FD6]" />
       <h3 class="mt-4 text-[15px] font-medium leading-[1.3] text-[#14111C]">
         {{ tier.shortTitle }}
       </h3>
