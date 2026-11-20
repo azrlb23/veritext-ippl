@@ -19,7 +19,7 @@ const findings = [
         <span class="text-[64px] font-semibold leading-none tracking-[-0.055em] text-[#14111C] md:text-[56px] lg:text-[76px] transition-transform duration-300 group-hover:scale-105 origin-left tabular-nums">
           {{ f.value }}
         </span>
-        <span class="vt-accent text-[20px] leading-none">{{ f.unit }}</span>
+        <span class="text-[20px] leading-none text-[#14111C]">{{ f.unit }}</span>
       </div>
       <p class="mt-3 max-w-[300px] text-[15px] leading-[1.65] text-[#4B4757] transition-colors group-hover:text-[#14111C]">
         {{ f.text }}

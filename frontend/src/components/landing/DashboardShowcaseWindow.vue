@@ -29,7 +29,7 @@ function handleMetricSelect(key: string) {
     <div class="mx-auto mb-14 max-w-2xl text-center">
       <p class="vt-reveal text-[14px] font-medium text-[#5E5A6B]">Laporan diagnostik</p>
       <h2 class="vt-reveal vt-d-1 mt-3 text-[34px] font-semibold leading-[1.1] tracking-[-0.04em] text-[#14111C] sm:text-[52px]">
-        Satu laporan untuk <span class="vt-accent">seluruh analisis.</span>
+        Satu laporan untuk seluruh analisis.
       </h2>
       <p class="vt-reveal vt-d-2 mt-5 text-[16px] leading-[1.65] text-[#4B4757]">
         Pemeriksaan kata, makna, dan pola tulisan dirangkum dalam satu laporan yang bisa ditelusuri sampai ke kalimat dan sumbernya.

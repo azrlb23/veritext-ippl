@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
       <div class="vt-reveal">
         <h2 class="text-[34px] font-semibold leading-[1.08] tracking-[-0.04em] text-[#14111C] sm:text-[48px]">
           Tiga lapis pemeriksaan,
-          <span class="vt-accent block">satu skor.</span>
+          <span class="block">satu skor.</span>
         </h2>
       </div>
 

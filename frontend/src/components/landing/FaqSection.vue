@@ -44,7 +44,7 @@ function toggle(idx: number) {
       <div class="vt-reveal lg:col-span-5">
         <h2 class="text-[32px] font-semibold leading-[1.1] tracking-[-0.04em] text-[#14111C] sm:text-[42px]">
           Pertanyaan yang
-          <span class="vt-accent block">sering diajukan</span>
+          <span class="block">sering diajukan</span>
         </h2>
         <p class="mt-4 max-w-sm text-[15px] leading-[1.65] text-[#5E5A6B]">
           Temukan jawaban cepat seputar pemeriksaan naskah, privasi dokumen, dan penggunaan token di VeriText AI.
@@ -55,7 +55,11 @@ function toggle(idx: number) {
         <div
           v-for="(item, idx) in faqs"
           :key="item.q"
-          class="rounded-2xl bg-[#F6F7F8] transition-colors duration-200 hover:bg-[#EFF5F4]"
+          class="rounded-[20px] border bg-white transition-[border-color,box-shadow] duration-300 ease-out"
+          :class="openIndex === idx
+            ? 'border-[#D5ECE8] shadow-[0_20px_48px_-18px_rgba(15,118,110,0.16)]'
+            : 'border-[#E8ECEB] shadow-[0_10px_28px_-16px_rgba(20,17,28,0.08)] hover:border-[#CBE6E1]'"
+          @mouseenter="openIndex = idx"
         >
           <button
             type="button"
@@ -65,7 +69,7 @@ function toggle(idx: number) {
           >
             <span class="text-[15px] font-medium text-[#14111C]">{{ item.q }}</span>
             <svg
-              class="h-4 w-4 shrink-0 text-[#0F766E] transition-transform duration-200"
+              class="h-4 w-4 shrink-0 text-[#0F766E] transition-transform duration-300 ease-out"
               :class="openIndex === idx ? 'rotate-45' : ''"
               viewBox="0 0 24 24"
               fill="none"
@@ -76,8 +80,15 @@ function toggle(idx: number) {
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
             </svg>
           </button>
-          <div v-if="openIndex === idx" class="px-5 pb-4 text-[14px] leading-[1.6] text-[#4B4757]">
-            {{ item.a }}
+          <div
+            class="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+            :class="openIndex === idx ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
+          >
+            <div class="overflow-hidden">
+              <div class="px-5 pb-4 text-[14px] leading-[1.6] text-[#4B4757]">
+                {{ item.a }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
