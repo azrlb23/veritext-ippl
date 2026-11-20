@@ -92,8 +92,7 @@ watch(() => route.params.uuid, (n) => {
 <template>
   <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-6 font-sans sm:px-6 sm:pt-9">
     <div class="mx-auto mb-7 max-w-2xl text-center animate-fade-up">
-      <p class="text-[13px] font-medium text-[#5E5A6B]">Verifikasi sertifikat</p>
-      <h1 class="mt-2 text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">
+      <h1 class="text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">
         Pastikan sertifikat itu <span class="vt-accent">benar-benar asli.</span>
       </h1>
       <p class="mx-auto mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#4B4757]">

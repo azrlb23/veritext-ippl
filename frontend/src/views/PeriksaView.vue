@@ -36,8 +36,7 @@ async function handleStartAudit(payload: { file: File; depth: "FULL" | "TIER1_ON
 <template>
   <div ref="sectionRef" class="vt-section mx-auto max-w-[1180px] px-4 pb-16 pt-5 font-sans sm:px-6 sm:pt-7" :class="{ 'is-visible': isVisible }">
     <div class="vt-reveal mb-5 max-w-4xl">
-      <p class="text-[13px] font-medium text-[#5E5A6B]">Periksa naskah</p>
-      <h1 class="mt-1.5 text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
+      <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Unggah naskah, <span class="vt-accent">kami periksa.</span>
       </h1>
       <p class="mt-1.5 max-w-[540px] text-[14.5px] leading-[1.6] text-[#4B4757]">

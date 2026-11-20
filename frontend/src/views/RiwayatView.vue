@@ -41,8 +41,7 @@ async function confirmDelete() {
   <div class="mx-auto max-w-[1040px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div class="max-w-4xl">
-        <p class="text-[13px] font-medium text-[#5E5A6B]">Riwayat</p>
-        <h1 class="mt-1.5 text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
+        <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
           Semua pemeriksaan, <span class="vt-accent">satu tempat.</span>
         </h1>
       </div>

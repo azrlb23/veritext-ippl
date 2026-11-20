@@ -38,7 +38,14 @@ function download() {
 
 <template>
   <header class="rounded-[36px] bg-white p-6 shadow-float sm:p-9">
-    <router-link to="/riwayat" class="inline-flex h-11 cursor-pointer items-center text-[14px] font-medium text-[#5E5A6B] transition-colors hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]">&larr; Riwayat</router-link>
+    <router-link
+      to="/riwayat"
+      aria-label="Kembali ke Riwayat"
+      title="Kembali ke Riwayat"
+      class="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-[#F3EEFA] text-[#14111C] transition-all duration-200 hover:-translate-x-0.5 hover:bg-[#E7DDF7] active:scale-[0.96] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8A3FE0]"
+    >
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+    </router-link>
     <div class="mt-2 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
       <div class="min-w-0">
         <h1 class="truncate text-[22px] font-semibold tracking-[-0.03em] text-[#14111C] sm:text-[28px]">{{ title || "Naskah" }}</h1>

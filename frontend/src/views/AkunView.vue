@@ -7,8 +7,7 @@ import DeleteAccountCard from "../components/akun/DeleteAccountCard.vue";
 <template>
   <div class="mx-auto max-w-[1040px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
     <div class="mb-6 max-w-4xl">
-      <p class="text-[13px] font-medium text-[#5E5A6B]">Akun</p>
-      <h1 class="mt-1.5 text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
+      <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Data Anda, <span class="vt-accent">Anda yang atur.</span>
       </h1>
     </div>

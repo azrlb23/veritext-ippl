@@ -24,8 +24,7 @@ const average = computed(() => {
 <template>
   <div ref="sectionRef" class="vt-section mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7" :class="{ 'is-visible': isVisible }">
     <div class="vt-reveal mb-5 max-w-4xl">
-      <p class="text-[13px] font-medium text-[#5E5A6B]">Ringkasan</p>
-      <h1 class="mt-1.5 text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
+      <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Halo {{ firstName }}, <span class="vt-accent">siap menulis lebih orisinal?</span>
       </h1>
     </div>
