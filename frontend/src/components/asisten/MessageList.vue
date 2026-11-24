@@ -8,7 +8,7 @@ watch(() => [props.messages.length, props.sending], () => nextTick(() => box.val
 </script>
 
 <template>
-  <div ref="box" class="flex-1 space-y-4 overflow-y-auto px-1 py-2" aria-live="polite">
+  <div ref="box" class="flex-1 space-y-4 overflow-y-auto no-scrollbar px-1 py-2" aria-live="polite">
     <div v-for="m in messages" :key="m.id" class="flex" :class="m.role === 'USER' ? 'justify-end' : 'justify-start'">
       <p
         class="max-w-[88%] whitespace-pre-wrap rounded-[24px] px-5 py-3.5 text-[15.5px] leading-[1.6] sm:max-w-[75%]"

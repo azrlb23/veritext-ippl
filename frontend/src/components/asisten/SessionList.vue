@@ -43,7 +43,7 @@ onUnmounted(() => {
     >Percakapan baru</button>
 
     <p v-if="sessions.length === 0" class="mt-6 px-1 text-[14px] leading-relaxed text-[#5E5A6B]">Percakapan Anda akan tersimpan di sini.</p>
-    <ul v-else class="mt-4 flex-1 space-y-1 overflow-y-auto">
+    <ul v-else class="mt-4 flex-1 space-y-1 overflow-y-auto no-scrollbar">
       <li v-for="s in sessions" :key="s.id">
         <button
           type="button"

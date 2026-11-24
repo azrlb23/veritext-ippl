@@ -127,3 +127,13 @@
   .vt-accent { animation: none !important; }
   .page-enter-active, .page-leave-active { transition: none !important; }
 }
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
