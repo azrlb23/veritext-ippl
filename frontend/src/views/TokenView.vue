@@ -13,7 +13,7 @@ const p = useTokenPurchase();
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
+  <div class="mx-auto max-w-[1360px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
     <div class="mb-6 max-w-4xl">
       <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Bayar yang Anda pakai, tanpa langganan.

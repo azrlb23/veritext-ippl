@@ -96,7 +96,7 @@ watch(() => route.params.id, (id) => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-6 font-sans sm:px-6 sm:pt-10">
+  <div class="mx-auto max-w-[1360px] px-4 pb-24 pt-6 font-sans sm:px-6 sm:pt-10">
     <p v-if="loading" class="py-24 text-center text-[16px] text-[#5E5A6B]">Memuat hasil pemeriksaan...</p>
     <div v-else-if="errorMessage || !report" class="mx-auto max-w-md rounded-[32px] border border-[#E8ECEB] bg-white p-8 text-center shadow-float">
       <h1 class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Laporan tidak ditemukan</h1>
