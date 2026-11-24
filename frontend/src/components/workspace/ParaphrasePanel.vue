@@ -27,11 +27,6 @@ const variations = ref<ParaphraseVariation[]>([]);
 const copiedId = ref<string | number | null>(null);
 let copyTimer: ReturnType<typeof setTimeout> | null = null;
 
-const quotaLabel = computed(() => {
-  if (isFree.value) return "Khusus akun Premium";
-  return mode.value === "FULL_PAGE" ? "1 token per 2 halaman penuh" : "1 token = 10x tulis ulang";
-});
-
 async function copyVariation(id: string | number, text: string) {
   try {
     await navigator.clipboard.writeText(text);
@@ -89,7 +84,6 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer); });
         <p class="mt-1 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet }}</p>
       </div>
       <button type="button" :disabled="isFree ? false : busy || !selected.sentence_id" class="vt-btn-dark mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ isFree ? "Aktifkan Premium untuk Tulis Ulang" : busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
-      <p class="mt-2 text-center text-[12.5px] text-[#5E5A6B]">{{ quotaLabel }}</p>
     </template>
     <p v-if="error" class="mt-3 text-[14px] font-medium text-[#B91C1C]" role="alert">{{ error }}</p>
 

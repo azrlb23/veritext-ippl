@@ -115,33 +115,35 @@ watch(() => route.params.id, (id) => {
       <SourcesPanel :sources="sources" />
     </div>
 
-    <div v-if="drawerOpen && selected" class="fixed inset-0 z-[100] flex bg-[#14111C]/25 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Detail dan Tulis ulang" @click.self="drawerOpen = false" @keydown.esc="drawerOpen = false">
-      <div class="ml-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white p-6 shadow-float sm:p-8">
-        <div class="flex items-center justify-between gap-4 border-b border-[#E8ECEB] pb-4">
-          <h2 class="text-[20px] font-semibold tracking-[-0.02em] text-[#14111C]">Detail &amp; Tulis ulang</h2>
-          <button type="button" aria-label="Tutup" title="Tutup" class="vt-btn-light inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="drawerOpen = false">
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
-          </button>
-        </div>
-        <div class="mt-5 space-y-4 border-b border-[#E8ECEB] pb-5">
-          <div>
-            <p class="text-[13px] font-medium text-[#5E5A6B]">Kalimat terpilih</p>
-            <p class="mt-1 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet || "Kalimat terpilih" }}</p>
+    <Teleport to="body">
+      <div v-if="drawerOpen && selected" class="fixed inset-0 z-[100] flex bg-[#14111C]/25 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Detail dan Tulis ulang" @click.self="drawerOpen = false" @keydown.esc="drawerOpen = false">
+        <div class="ml-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white p-6 shadow-float sm:p-8">
+          <div class="flex items-center justify-between gap-4 border-b border-[#E8ECEB] pb-4">
+            <h2 class="text-[20px] font-semibold tracking-[-0.02em] text-[#14111C]">Detail &amp; Tulis ulang</h2>
+            <button type="button" aria-label="Tutup" title="Tutup" class="vt-btn-light inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="drawerOpen = false">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
           </div>
-          <div class="flex items-baseline justify-between gap-4">
-            <div class="min-w-0">
-              <p class="text-[13px] font-medium text-[#5E5A6B]">Sumber mirip</p>
-              <p class="mt-0.5 text-[14px] font-semibold text-[#14111C]">{{ selected.source_title || "Sumber pembanding" }}</p>
-              <p v-if="selected.reason" class="mt-0.5 text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.reason }}</p>
+          <div class="mt-5 space-y-4 border-b border-[#E8ECEB] pb-5">
+            <div>
+              <p class="text-[13px] font-medium text-[#5E5A6B]">Kalimat terpilih</p>
+              <p class="mt-1 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet || "Kalimat terpilih" }}</p>
             </div>
-            <p class="flex-shrink-0 text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ pct(selected.similarity ?? 0) }}%</p>
+            <div class="flex items-baseline justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-[13px] font-medium text-[#5E5A6B]">Sumber mirip</p>
+                <p class="mt-0.5 text-[14px] font-semibold text-[#14111C]">{{ selected.source_title || "Sumber pembanding" }}</p>
+                <p v-if="selected.reason" class="mt-0.5 text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.reason }}</p>
+              </div>
+              <p class="flex-shrink-0 text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ pct(selected.similarity ?? 0) }}%</p>
+            </div>
           </div>
-        </div>
-        <div class="mt-5 flex-1"><ParaphrasePanel :selected="selected" @applied="onApplied" /></div>
-        <div class="mt-6 border-t border-[#E8ECEB] pt-5">
-          <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>
+          <div class="mt-5 flex-1"><ParaphrasePanel :selected="selected" @applied="onApplied" /></div>
+          <div class="mt-6 border-t border-[#E8ECEB] pt-5">
+            <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
