@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
-defineProps<{ disabled: boolean; error: string }>();
-const emit = defineEmits<{ (e: "send", text: string): void }>();
+const props = defineProps<{ disabled: boolean; error: string; modelValue?: string }>();
+const emit = defineEmits<{ (e: "send", text: string): void; (e: "update:modelValue", v: string): void }>();
 
-const text = ref("");
+const localText = ref("");
+const text = computed({
+  get: () => props.modelValue ?? localText.value,
+  set: (v: string) => { localText.value = v; emit("update:modelValue", v); },
+});
 
 function submit() {
   const value = text.value.trim();
-  if (!value) return;
+  if (props.disabled || !value) return;
   emit("send", value);
   text.value = "";
 }

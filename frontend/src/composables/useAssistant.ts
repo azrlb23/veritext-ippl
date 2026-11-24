@@ -17,20 +17,35 @@ export function friendlyChatError(err: any): string {
   return detail.replace(/^[A-Z]+_\d+:\s*/, "") || "Asisten belum bisa menjawab. Coba lagi sebentar lagi.";
 }
 
+const NEW_KEY = "__new__";
+const keyOf = (id: string | null) => id || NEW_KEY;
+
 export function useAssistant() {
   const authStore = useAuthStore();
   const sessions = ref<ChatSessionItem[]>([]);
   const documents = ref<DocumentItem[]>([]);
   const auditTasks = ref<AuditTaskWithReport[]>([]);
   const activeId = ref<string | null>(null);
-  const messages = ref<ChatHistoryItem[]>([]);
+  const messagesBySession = ref<Record<string, ChatHistoryItem[]>>({});
+  const sendingBySession = ref<Record<string, boolean>>({});
+  const errorBySession = ref<Record<string, string>>({});
+  const drafts = ref<Record<string, string>>({});
   const selectedDocs = ref<string[]>([]);
-  const sending = ref(false);
-  const error = ref("");
   const trialLeft = ref<number | null>(null);
   const preferredEngine = ref<"auto" | "ollama" | "gemini">("auto");
   const taskMode = ref<"QA_DOCUMENT" | "PARAPHRASE_TASK" | "STYLE_REVIEW">("QA_DOCUMENT");
   const lastEngine = ref("");
+
+  const messages = computed(() => messagesBySession.value[keyOf(activeId.value)] || []);
+  const sending = computed(() => Boolean(sendingBySession.value[keyOf(activeId.value)]));
+  const error = computed({
+    get: () => errorBySession.value[keyOf(activeId.value)] || "",
+    set: (val: string) => { errorBySession.value = { ...errorBySession.value, [keyOf(activeId.value)]: val }; },
+  });
+  const draft = computed({
+    get: () => drafts.value[keyOf(activeId.value)] || "",
+    set: (val: string) => { drafts.value = { ...drafts.value, [keyOf(activeId.value)]: val }; },
+  });
 
   const activeSession = computed(() => sessions.value.find((s) => s.id === activeId.value) || null);
   const linkedAudit = computed(() => {
@@ -47,32 +62,42 @@ export function useAssistant() {
 
   async function openSession(id: string | null) {
     activeId.value = id;
-    error.value = "";
-    messages.value = id ? await chatService.getMessages(id).catch(() => []) : [];
+    if (id && !sendingBySession.value[id] && !messagesBySession.value[id]) {
+      const msgs = await chatService.getMessages(id).catch(() => []);
+      if (!sendingBySession.value[id]) {
+        messagesBySession.value = { ...messagesBySession.value, [id]: msgs };
+      }
+    }
   }
 
   async function send(prompt: string) {
-    error.value = "";
-    sending.value = true;
+    const originId = activeId.value;
+    const originKey = keyOf(originId);
+    drafts.value = { ...drafts.value, [originKey]: "" };
+    errorBySession.value = { ...errorBySession.value, [originKey]: "" };
+    sendingBySession.value = { ...sendingBySession.value, [originKey]: true };
     const local: ChatHistoryItem = { id: `local-${Date.now()}`, role: "USER", content: prompt, created_at: new Date().toISOString() };
-    messages.value.push(local);
+    messagesBySession.value = { ...messagesBySession.value, [originKey]: [...(messagesBySession.value[originKey] || []), local] };
     try {
       const res = await chatService.sendMessage(prompt, {
-        documentIds: activeId.value ? [] : selectedDocs.value,
-        sessionId: activeId.value || undefined,
+        documentIds: originId ? [] : selectedDocs.value,
+        sessionId: originId || undefined,
         preferredEngine: preferredEngine.value,
         taskMode: taskMode.value,
       });
-      messages.value.push({ id: res.message_id, role: "ASSISTANT", content: res.content, created_at: new Date().toISOString() });
-      activeId.value = res.session_id;
+      const replyMsg: ChatHistoryItem = { id: res.message_id, role: "ASSISTANT", content: res.content, created_at: new Date().toISOString() };
+      const nextMessages = { ...messagesBySession.value, [res.session_id]: [...(messagesBySession.value[originKey] || []), replyMsg] };
+      if (originKey === NEW_KEY) nextMessages[NEW_KEY] = [];
+      messagesBySession.value = nextMessages;
+      if (activeId.value === originId) activeId.value = res.session_id;
       trialLeft.value = res.ai_trial_remaining;
       lastEngine.value = res.active_engine || "";
       await Promise.all([loadSessions(), authStore.fetchProfile()]);
     } catch (err: any) {
-      messages.value = messages.value.filter((m) => m.id !== local.id);
-      error.value = friendlyChatError(err);
+      messagesBySession.value = { ...messagesBySession.value, [originKey]: (messagesBySession.value[originKey] || []).filter((m) => m.id !== local.id) };
+      errorBySession.value = { ...errorBySession.value, [originKey]: friendlyChatError(err) };
     } finally {
-      sending.value = false;
+      sendingBySession.value = { ...sendingBySession.value, [originKey]: false };
     }
   }
 
@@ -94,7 +119,7 @@ export function useAssistant() {
 
   return {
     sessions, documents, activeId, activeSession, linkedAudit, messages, selectedDocs,
-    sending, error, trialLeft, preferredEngine, taskMode, lastEngine,
+    sending, error, draft, trialLeft, preferredEngine, taskMode, lastEngine,
     openSession, send, removeSession,
   };
 }

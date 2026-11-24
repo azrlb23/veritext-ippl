@@ -86,7 +86,7 @@ async function downloadDoc(format: "docx" | "pdf") {
         <MessageList v-else :messages="a.messages.value" :sending="a.sending.value" />
 
         <p v-if="a.trialLeft.value !== null && authStore.role === 'FREE'" class="mt-3 text-[13px] text-[#5E5A6B]">Sisa percobaan gratis: {{ a.trialLeft.value }}</p>
-        <ChatComposer :disabled="a.sending.value" :error="a.error.value" @send="a.send" />
+        <ChatComposer v-model="a.draft.value" :disabled="a.sending.value" :error="a.error.value" @send="a.send" />
       </div>
     </section>
 
