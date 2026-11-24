@@ -16,6 +16,7 @@ from app.engine.tier2_semantic import SemanticEngine, SemanticAnalysisResult
 from app.engine.tier3_stylometric import StylometricEngine, StylometricAnalysisResult
 from app.engine.tier4_aggregator import HybridAggregator, HybridAuditResult
 from app.engine.reference_corpus import ReferenceCorpusBank, BUILTIN_REFERENCE_PAPERS
+from app.engine.ai_detector import GeminiAIDetector
 from app.engine.web_scanner import GeminiWebScanner
 
 
@@ -320,7 +321,9 @@ class TestHybridAggregator(unittest.TestCase):
             "Ini adalah kalimat kesimpulan orisinal yang ditulis secara mandiri oleh mahasiswa."
         )
 
-        with patch.object(GeminiWebScanner, "scan", return_value=[]):
+        with patch.object(GeminiWebScanner, "scan", return_value=[]), patch.object(
+            GeminiAIDetector, "_detect_with_client", return_value=None
+        ):
             result = self.aggregator.run_pipeline(original_text=doc_text, audit_depth="FULL")
 
         self.assertIsInstance(result, HybridAuditResult)
@@ -447,8 +450,10 @@ class TestDatabaseExecutionIntegration(unittest.TestCase):
         mock_db.add(doc)
         mock_db.add(task)
 
-        # Execute with mocked web scanner to ensure fast, offline, deterministic unit test
-        with patch.object(GeminiWebScanner, "scan", return_value=[]):
+        # Execute with mocked web scanner and AI detector to ensure fast, offline, deterministic unit test
+        with patch.object(GeminiWebScanner, "scan", return_value=[]), patch.object(
+            GeminiAIDetector, "_detect_with_client", return_value=None
+        ):
             result = execute_audit_pipeline(mock_db, str(test_task_id), str(test_doc_id))
 
         self.assertEqual(result["status"], "SUCCESS")

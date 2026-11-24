@@ -208,15 +208,15 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
     # 2. TEST SUITE: Google OAuth 2.0 Endpoints
     # =========================================================================
 
-    async def test_google_login_redirect_and_sets_cookie(self):
-        """GET /auth/google/login mengarahkan ke Google OAuth dan memasang cookie CSRF state."""
+    async def test_google_login_redirect_and_sets_signed_state(self):
+        """GET /auth/google/login mengarahkan ke Google OAuth dengan signed JWT state."""
         resp = await auth_router.google_login()
         self.assertEqual(resp.status_code, status.HTTP_307_TEMPORARY_REDIRECT)
         self.assertIn("Location", resp.headers)
         location = resp.headers["Location"]
         self.assertIn("accounts.google.com", location)
-        self.assertIn("set-cookie", resp.headers)
-        self.assertIn("g_oauth_state=", resp.headers["set-cookie"])
+        self.assertIn("state=", location)
+        self.assertNotIn("g_oauth_state=", resp.headers.get("set-cookie", ""))
 
     async def test_google_login_503_when_client_id_empty(self):
         """GET /auth/google/login mengembalikan 503 jika GOOGLE_CLIENT_ID kosong."""
@@ -326,7 +326,8 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp.status_code, status.HTTP_307_TEMPORARY_REDIRECT)
         location = resp.headers.get("Location", "")
         self.assertIn("/auth/callback", location)
-        self.assertIn("token=", location)
+        self.assertIn("code=", location)
+        self.assertNotIn("token=", location)
         self.assertNotIn("is_new_user", location)
         added_sessions = [s for s in mock_db.added if isinstance(s, Session)]
         self.assertEqual(len(added_sessions), 1)

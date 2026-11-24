@@ -2,6 +2,25 @@ import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axio
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
+let onAuthExpired: (() => void) | null = null;
+export function registerAuthExpiredHandler(handler: () => void) {
+  onAuthExpired = handler;
+}
+
+function clearClientSession() {
+  localStorage.removeItem("veritext_access_token");
+  localStorage.removeItem("veritext_refresh_token");
+  localStorage.removeItem("veritext_user");
+  try {
+    onAuthExpired?.();
+  } catch {
+    // Safe fallback if invoked outside active pinia context
+  }
+  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+    window.location.href = "/login";
+  }
+}
+
 export const apiClient: AxiosInstance = axios.create({
   baseURL,
   headers: {
@@ -26,87 +45,52 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
 
-    // Check if 401 Unauthorized and not already retried and not auth routes
     if (
       error.response &&
       error.response.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
       !originalRequest.url?.includes("/auth/login") &&
+      !originalRequest.url?.includes("/auth/logout") &&
       !originalRequest.url?.includes("/auth/refresh")
     ) {
       originalRequest._retry = true;
 
       try {
-        const storedRefreshToken = localStorage.getItem("veritext_refresh_token");
-        // Call /auth/refresh silently via standalone axios to avoid interceptor recursion
+        // Mengandalkan HttpOnly cookie refresh_token sepenuhnya
         const refreshResponse = await axios.post(
           `${baseURL}/auth/refresh`,
-          { refresh_token: storedRefreshToken },
+          {},
           {
             withCredentials: true,
-            headers: {
-              "Content-Type": "application/json",
-              ...(storedRefreshToken ? { "X-Refresh-Token": storedRefreshToken } : {}),
-            },
+            headers: { "Content-Type": "application/json" },
           }
         );
 
         const newAccessToken =
           refreshResponse.data?.data?.access_token ||
           refreshResponse.data?.access_token;
-        const newRefreshToken =
-          refreshResponse.data?.data?.refresh_token ||
-          refreshResponse.data?.refresh_token;
 
         if (newAccessToken) {
           localStorage.setItem("veritext_access_token", newAccessToken);
-          if (newRefreshToken) {
-            localStorage.setItem("veritext_refresh_token", newRefreshToken);
-          }
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }
-          // Replay failed request with new access token
           return apiClient(originalRequest);
         }
       } catch {
         // Silent refresh failed - proceed to clean up and logout
       }
 
-      // Logout and redirect when refresh fails
-      localStorage.removeItem("veritext_access_token");
-      localStorage.removeItem("veritext_refresh_token");
-      localStorage.removeItem("veritext_user");
-      try {
-        const { useAuthStore } = await import("../stores/auth");
-        const authStore = useAuthStore();
-        authStore.logout();
-      } catch {
-        // Safe fallback if invoked outside active pinia context
-      }
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
+      clearClientSession();
     } else if (
       error.response &&
       error.response.status === 401 &&
       (originalRequest?._retry || originalRequest?.url?.includes("/auth/refresh"))
     ) {
-      localStorage.removeItem("veritext_access_token");
-      localStorage.removeItem("veritext_refresh_token");
-      localStorage.removeItem("veritext_user");
-      try {
-        const { useAuthStore } = await import("../stores/auth");
-        const authStore = useAuthStore();
-        authStore.logout();
-      } catch {}
-      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
+      clearClientSession();
     }
 
-    // Normalisasi error boundary untuk gateway 502/503/504 & network offline
     if (!error.response) {
       error.message = error.message || "Network error: Layanan server tidak dapat dihubungi atau sedang offline.";
     } else if (error.response.status === 502 || error.response.status === 503 || error.response.status === 504) {

@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
       <div class="mx-auto my-6 w-full max-w-[460px] rounded-[36px] bg-white p-6 shadow-float sm:p-9 lg:mx-0">
         <h1 class="text-[26px] font-semibold leading-[1.15] tracking-[-0.03em] text-[#14111C]">
           {{ title }}
-          <span v-if="titleAccent" class="vt-accent">{{ titleAccent }}</span>
+          <span v-if="titleAccent" class="text-[#0F766E]">{{ titleAccent }}</span>
         </h1>
 
         <div v-if="subtitle" class="mt-4 text-[15px] leading-[1.65] text-[#4B4757]">

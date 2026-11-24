@@ -15,7 +15,7 @@ const isProcessing = ref(true);
 const errorMessage = ref("");
 
 onMounted(async () => {
-  const token = route.query.token as string;
+  const code = route.query.code as string;
   const oauthError = route.query.oauth_error as string;
 
   if (oauthError) {
@@ -24,20 +24,17 @@ onMounted(async () => {
     return;
   }
 
-  if (!token) {
+  if (!code) {
     isProcessing.value = false;
-    errorMessage.value = "Token otentikasi Google tidak ditemukan.";
+    errorMessage.value = "Kode otentikasi Google tidak ditemukan.";
     return;
   }
 
   try {
-    localStorage.setItem("veritext_access_token", token);
-    (authStore as any).token = token;
-
-    await authStore.fetchProfile();
+    await authStore.exchangeGoogleCode(code);
 
     if (!authStore.user) {
-      await authStore.logout();
+      authStore.clearLocalSession();
       isProcessing.value = false;
       errorMessage.value = "Gagal memuat profil pengguna. Silakan coba masuk kembali.";
       return;
@@ -47,7 +44,7 @@ onMounted(async () => {
     showNotification("Selamat datang kembali! Berhasil masuk dengan akun Google.", "success", "Login Berhasil");
     router.replace(getHomeRouteForRole(authStore.role));
   } catch (err: any) {
-    await authStore.logout();
+    authStore.clearLocalSession();
     isProcessing.value = false;
     errorMessage.value = err?.response?.data?.detail || err?.message || "Gagal memproses sesi login Google.";
   }

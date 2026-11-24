@@ -554,7 +554,7 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
         }
 
         resp = client.post("/api/v1/auth/register", json=invalid_payload)
-        self.assertEqual(resp.status_code, getattr(status, "HTTP_422_UNPROCESSABLE_CONTENT", status.HTTP_422_UNPROCESSABLE_ENTITY))
+        self.assertEqual(resp.status_code, status.HTTP_422_UNPROCESSABLE_CONTENT)
 
         data = resp.json()
         self.assertEqual(data.get("status"), "error")

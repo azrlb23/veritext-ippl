@@ -23,14 +23,14 @@ def extract_text_limited(path: str, mime_type: str | None = None) -> str:
         )
     except subprocess.TimeoutExpired:
         raise _reject(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             f"Pemrosesan naskah melebihi {settings.EXTRACTION_TIMEOUT_SECONDS} detik dan dihentikan. Sederhanakan berkas lalu coba lagi.",
         ) from None
     if proc.returncode == 3:
         raise _reject(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             f"PDF melebihi batas {settings.MAX_PDF_PAGES} halaman. Pecah naskah menjadi beberapa berkas.",
         )
     if proc.returncode != 0:
-        raise _reject(status.HTTP_422_UNPROCESSABLE_ENTITY, "Teks naskah tidak dapat dibaca dari berkas ini.")
+        raise _reject(status.HTTP_422_UNPROCESSABLE_CONTENT, "Teks naskah tidak dapat dibaca dari berkas ini.")
     return proc.stdout.decode("utf-8", errors="replace")

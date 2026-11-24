@@ -26,7 +26,7 @@ async def get_current_user(
 
     token_str = credentials.credentials
     payload = decode_access_token(token_str)
-    if not payload or "sub" not in payload:
+    if not payload or "sub" not in payload or payload.get("type") != "access":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired access token",
@@ -65,7 +65,7 @@ async def get_current_user(
 def require_role(*roles: str):
     """Dependency factory ensuring user has at least one of the specified roles."""
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in roles and current_user.role != "ADMIN":
+        if current_user.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Access forbidden: requires role in {roles}",

@@ -6,6 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import get_password_hash, verify_password
 from app.models.session import Session
@@ -48,8 +49,14 @@ def format_user_profile(user: User, balance: int = 0) -> UserProfileResponse:
 
 
 def set_refresh_cookie(response: Response, refresh_token: str, days: int = 7) -> None:
+    is_prod = getattr(settings, "ENVIRONMENT", "").lower() == "production"
     response.set_cookie(
-        key="refresh_token", value=refresh_token, httponly=True, samesite="lax", secure=False, max_age=days * 24 * 3600
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        samesite="lax",
+        secure=is_prod,
+        max_age=days * 24 * 3600,
     )
 
 
@@ -83,6 +90,7 @@ async def change_password(
 ):
     if not verify_password(req.old_password, current_user.password_hash):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+    validate_strong_password(req.new_password)
     current_user.password_hash = get_password_hash(req.new_password)
     await db.execute(delete(Session).where(Session.user_id == current_user.id))
     await db.commit()

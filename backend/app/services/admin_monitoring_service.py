@@ -12,6 +12,11 @@ from app.models.invoice import Invoice
 from app.models.user import User
 from app.schemas.admin import AuditLogResponse, SystemHealthMetricsResponse
 from app.schemas.common import PaginatedData
+from app.services.system_telemetry import (
+    collect_celery_workers_count,
+    collect_host_cpu_memory,
+    collect_redis_telemetry,
+)
 
 
 async def get_analytics(db: AsyncSession) -> dict[str, Any]:
@@ -65,17 +70,8 @@ async def get_transactions(db: AsyncSession, limit: int = 50) -> dict[str, Any]:
 
 
 async def _check_redis_status() -> str:
-    try:
-        import redis.asyncio as aioredis
-        from app.core.config import settings
-
-        client = aioredis.from_url(settings.REDIS_URL, socket_connect_timeout=0.5, socket_timeout=0.5)
-        try:
-            return "HEALTHY" if await client.ping() else "DEGRADED"
-        finally:
-            await client.aclose()
-    except Exception:  # noqa: BLE001
-        return "DOWN"
+    status_str, _ = await collect_redis_telemetry()
+    return status_str
 
 
 async def get_system_health_metrics(db: AsyncSession) -> SystemHealthMetricsResponse:
@@ -105,15 +101,17 @@ async def get_system_health_metrics(db: AsyncSession) -> SystemHealthMetricsResp
     except Exception:  # noqa: BLE001
         audits_count, corpus_count, chunks_count = 0, 0, 0
 
-    redis_status = await _check_redis_status()
+    redis_status, redis_mem_mb = await collect_redis_telemetry()
+    cpu_percent, memory_percent = collect_host_cpu_memory()
+    celery_workers = await collect_celery_workers_count()
 
     return SystemHealthMetricsResponse(
-        cpu_percent=18.5, memory_percent=42.1, database_status=db_status,
+        cpu_percent=cpu_percent, memory_percent=memory_percent, database_status=db_status,
         redis_status=redis_status, celery_active_tasks=active_tasks,
         db_latency_ms=round(latency, 2), timestamp=datetime.now(timezone.utc),  # noqa: UP017
         total_audits=audits_count, total_corpus_docs=corpus_count,
-        total_vector_chunks=chunks_count, celery_workers=1,
-        queue_depth=queue_depth, redis_mem_mb=12.5, pgvector_latency_ms=round(latency, 2),
+        total_vector_chunks=chunks_count, celery_workers=celery_workers,
+        queue_depth=queue_depth, redis_mem_mb=redis_mem_mb, pgvector_latency_ms=round(latency, 2),
     )
 
 

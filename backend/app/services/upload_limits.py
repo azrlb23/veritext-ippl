@@ -14,9 +14,14 @@ logger = logging.getLogger(__name__)
 ACTIVE_STATUSES = ("QUEUED", "PROCESSING")
 
 
-async def enforce_rate_limit(user_id, scope: str) -> None:
+async def enforce_rate_limit(
+    user_id,
+    scope: str,
+    limit: int | None = None,
+    detail: str | None = None,
+) -> None:
     """Jendela tetap per menit di Redis. Jika Redis tidak tersedia, pembatas dilewati (fail-open) dan dicatat."""
-    limit = settings.UPLOAD_RATE_LIMIT_PER_MINUTE
+    effective_limit = limit if limit is not None else settings.UPLOAD_RATE_LIMIT_PER_MINUTE
     key = f"rl:{scope}:{user_id}:{int(time.time() // 60)}"
     try:
         import redis.asyncio as aioredis
@@ -31,10 +36,11 @@ async def enforce_rate_limit(user_id, scope: str) -> None:
     except Exception as err:  # noqa: BLE001
         logger.warning("Pembatas laju dilewati karena Redis tidak tersedia: %s", err)
         return
-    if count > limit:
+    if count > effective_limit:
+        msg = detail or f"Terlalu banyak unggahan. Batas {effective_limit} per menit, coba lagi sebentar lagi."
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Terlalu banyak unggahan. Batas {limit} per menit, coba lagi sebentar lagi.",
+            detail=msg,
             headers={"Retry-After": "60"},
         )
 

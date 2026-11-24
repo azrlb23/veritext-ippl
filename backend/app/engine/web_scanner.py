@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.engine.preprocessor import SentenceSpan
 from app.engine.tier1_lexical import WinnowingLexicalEngine
 from app.engine.tier2_semantic import SemanticEngine
+from app.engine.web_cache import BoundedTTLCache
 from app.engine.web_search_providers import call_ddg_search_api, call_gemini_search_api
 from app.engine.web_snippet_verifier import (
     WebMatchResult,
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 class GeminiWebScanner:
     """Pemindai plagiarisme web publik menggunakan Gemini REST API + Google Search Grounding."""
 
-    _cache: ClassVar[dict[str, WebMatchResult | None]] = {}
+    _cache: ClassVar[BoundedTTLCache[WebMatchResult | None]] = BoundedTTLCache(max_size=2048, ttl_s=3600)
 
     def __init__(
         self, api_key: str | None = None, model: str | None = None, timeout_s: int | None = None,
@@ -68,7 +69,7 @@ class GeminiWebScanner:
             return []
 
         use_ddg_only = not (self.api_key and self.api_key.strip())
-        meaningful = [s for s in sentences if self._is_meaningful_sentence(s)]
+        meaningful = [s for s in sentences if is_meaningful_sentence(s)]
         if not meaningful:
             return []
 
@@ -83,8 +84,8 @@ class GeminiWebScanner:
         verified_results: list[WebMatchResult] = []
         uncached: list[SentenceSpan] = []
         for h, spans in hash_to_spans.items():
-            if h in self._cache:
-                c = self._cache[h]
+            hit, c = self._cache.get(h)
+            if hit:
                 if c is not None:
                     for s in spans:
                         verified_results.append(WebMatchResult(s.index, c.similarity, c.source_url, c.source_title, c.matched_snippet, c.tier))
@@ -94,10 +95,9 @@ class GeminiWebScanner:
         if not uncached:
             return verified_results
 
-        batch_size = 10
         has_failure, all_failed = False, True
-        for i in range(0, len(uncached), batch_size):
-            batch = uncached[i : i + batch_size]
+        for i in range(0, len(uncached), 10):
+            batch = uncached[i : i + 10]
             raw = self._call_gemini_search(batch) if not use_ddg_only else None
             if raw is None:
                 raw = self._call_ddg_search(batch)
@@ -105,8 +105,7 @@ class GeminiWebScanner:
                 has_failure = True
                 continue
             all_failed = False
-            matched_hashes = set()
-            b_by_idx = {s.index: s for s in batch}
+            matched_hashes, b_by_idx = set(), {s.index: s for s in batch}
             for it in raw:
                 try:
                     s_idx = int(it.get("sentence_index"))
@@ -121,7 +120,7 @@ class GeminiWebScanner:
                     h = self._sentence_hash(s_rep.text)
                     if ok:
                         sim = round(max(lex_s, sem_s), 2)
-                        self._cache[h] = WebMatchResult(s_rep.index, sim, url, title, snip, tier)
+                        self._cache.set(h, WebMatchResult(s_rep.index, sim, url, title, snip, tier))
                         matched_hashes.add(h)
                         for st in hash_to_spans.get(h, [s_rep]):
                             verified_results.append(WebMatchResult(st.index, sim, url, title, snip, tier))
@@ -130,7 +129,7 @@ class GeminiWebScanner:
             for s_item in batch:
                 h = self._sentence_hash(s_item.text)
                 if h not in matched_hashes and h not in self._cache:
-                    self._cache[h] = None
+                    self._cache.set(h, None)
 
         if all_failed and uncached:
             self.last_scan_available = False

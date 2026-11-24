@@ -14,7 +14,7 @@ MIME_KINDS = {
 
 
 def _reject(detail: str) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
+    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=detail)
 
 
 def docx_is_safe(path: str, max_bytes: int, max_ratio: int) -> bool:

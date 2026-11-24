@@ -50,9 +50,12 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timed
 
 
 def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
-    """Decodes and validates a JWT token."""
+    """Decodes and validates a JWT access token."""
     try:
-        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            return None
+        return payload
     except jwt.PyJWTError:
         return None
 

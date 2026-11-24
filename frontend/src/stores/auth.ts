@@ -32,11 +32,10 @@ export const useAuthStore = defineStore("auth", () => {
     return val;
   }
 
-  function applySession(data: { access_token: string; user: User; refresh_token?: string }) {
+  function applySession(data: { access_token: string; user: User }) {
     token.value = data.access_token;
     user.value = data.user;
     localStorage.setItem("veritext_access_token", data.access_token);
-    if (data.refresh_token) localStorage.setItem("veritext_refresh_token", data.refresh_token);
     localStorage.setItem("veritext_user", JSON.stringify(data.user));
   }
 
@@ -81,14 +80,18 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  async function logout() {
-    try { await authService.logout(); } catch { /* Ignore network failure */ }
+  function clearLocalSession() {
     user.value = null;
     token.value = null;
     welcomeName.value = null;
     sessionStorage.removeItem("veritext_welcome");
-    ["veritext_access_token", "veritext_refresh_token", "veritext_user"].forEach((k) => localStorage.removeItem(k));
+    ["veritext_access_token", "veritext_user"].forEach((k) => localStorage.removeItem(k));
     try { useAuditStore().reset(); } catch { /* Fallback */ }
+  }
+
+  async function logout() {
+    try { await authService.logout(); } catch { /* Ignore network failure */ }
+    clearLocalSession();
   }
 
   async function fetchProfile() {
@@ -122,24 +125,23 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  async function exchangeGoogleCode(code: string) {
+    isLoading.value = true;
+    try {
+      const sessionData = await authService.exchangeGoogleCode(code);
+      if (sessionData?.access_token && sessionData?.user) {
+        applySession(sessionData);
+        markWelcome();
+      }
+      return sessionData;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   return {
-    user,
-    token,
-    welcomeName,
-    isLoading,
-    isAuthenticated,
-    role,
-    tokenBalance,
-    isAdmin,
-    decrementTokenBalance,
-    setTokenBalance,
-    login,
-    register,
-    logout,
-    deleteAccount,
-    fetchProfile,
-    completeGoogleSignup,
-    markWelcome,
-    consumeWelcome,
+    user, token, welcomeName, isLoading, isAuthenticated, role, tokenBalance, isAdmin,
+    decrementTokenBalance, setTokenBalance, login, register, logout, clearLocalSession, deleteAccount,
+    fetchProfile, completeGoogleSignup, exchangeGoogleCode, markWelcome, consumeWelcome,
   };
 });

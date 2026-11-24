@@ -68,6 +68,7 @@ async def test_send_message_puts_document_context_into_llm_prompt():
     payload = ChatMessageRequest(document_ids=[uuid.uuid4()], prompt="Perbaiki metode saya")
     with patch.object(chat_module, "_resolve_session", AsyncMock(return_value=(session, [object()], []))), \
          patch.object(chat_module, "build_document_context_async", AsyncMock(return_value="Naskah \"a.txt\":\n- KUTIPAN-RELEVAN")), \
+         patch.object(chat_module, "_read_wallet", AsyncMock(return_value=wallet)), \
          patch.object(chat_module, "_lock_wallet", AsyncMock(return_value=wallet)), \
          patch.object(chat_module, "DualEngineLLMGateway", return_value=gateway):
         res = await chat_module.send_chat_message(payload, user, db)
@@ -100,6 +101,7 @@ async def test_send_message_returns_503_and_rolls_back_when_no_ai_engine_answers
     gateway.generate_text_with_failover.return_value = (None, "")
     with patch.object(chat_module, "_resolve_session", AsyncMock(return_value=(session, [], []))), \
          patch.object(chat_module, "build_document_context_async", AsyncMock(return_value="")), \
+         patch.object(chat_module, "_read_wallet", AsyncMock(return_value=wallet)), \
          patch.object(chat_module, "_lock_wallet", AsyncMock(return_value=wallet)), \
          patch.object(chat_module, "DualEngineLLMGateway", return_value=gateway):
         with pytest.raises(HTTPException) as exc:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +27,10 @@ from app.services.chat_sessions import create_session, get_owned_session, recent
 router = APIRouter(prefix="/chat", tags=["AI Assistant & Paraphrase"])
 
 
+async def _read_wallet(db: AsyncSession, user_id) -> TokenWallet | None:
+    return (await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id))).scalar_one_or_none()
+
+
 async def _lock_wallet(db: AsyncSession, user_id) -> TokenWallet:
     res = await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update())
     wallet = res.scalar_one_or_none()
@@ -33,6 +39,18 @@ async def _lock_wallet(db: AsyncSession, user_id) -> TokenWallet:
         db.add(wallet)
         await db.flush()
     return wallet
+
+
+async def _charge_ai_usage(db: AsyncSession, user: User, mode: str, ref_type: str, ref_id, note: str):
+    wallet = await _lock_wallet(db, user.id)
+    trial_rem, bal, allow_rem, token_ded = AssistantService.consume_ai_quota(user, wallet, mode=mode)
+    if token_ded:
+        db.add(TokenTransaction(
+            wallet_id=wallet.id, transaction_type="DEBIT_CHAT_PARAPHRASE", amount=-1,
+            balance_after=wallet.balance, reference_id=ref_id, note=note,
+        ))
+        record_token_debit(db, user.id, ref_type, ref_id, 1, note)
+    return trial_rem, bal, allow_rem
 
 
 async def _resolve_session(db: AsyncSession, user_id, payload: ChatMessageRequest):
@@ -54,26 +72,20 @@ async def send_chat_message(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     AssistantService.check_academic_guardrail(payload.prompt)
+    AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode="CHAT")
     session, docs, history = await _resolve_session(db, current_user.id, payload)
     context = await build_document_context_async(docs, payload.prompt)
-    wallet = await _lock_wallet(db, current_user.id)
-    trial_rem, bal, allow_rem, token_ded = AssistantService.consume_ai_quota(current_user, wallet, mode="CHAT")
-    if token_ded:
-        db.add(TokenTransaction(
-            wallet_id=wallet.id, transaction_type="DEBIT_CHAT_PARAPHRASE", amount=-1,
-            balance_after=wallet.balance, reference_id=session.id, note="AI Chatbot token debit",
-        ))
-        record_token_debit(db, current_user.id, "CHAT_SESSION", session.id, 1, "AI Chatbot token debit")
 
-    ai_text, engine = DualEngineLLMGateway().generate_text_with_failover(build_prompt(payload.prompt, context, history))
+    prompt_text = build_prompt(payload.prompt, context, history)
+    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text)
     if not ai_text:
         await db.rollback()
         raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
+
+    trial_rem, bal, allow_rem = await _charge_ai_usage(db, current_user, "CHAT", "CHAT_SESSION", session.id, "AI Chatbot token debit")
     db.add(ChatMessage(session_id=session.id, role="USER", content=payload.prompt, target_sentence_id=payload.sentence_id))
     assistant_msg = ChatMessage(
-        session_id=session.id, role="ASSISTANT",
-        content=ai_text,
-        mode="CONSULTATION", target_sentence_id=payload.sentence_id,
+        session_id=session.id, role="ASSISTANT", content=ai_text, mode="CONSULTATION", target_sentence_id=payload.sentence_id,
     )
     db.add(assistant_msg)
     session.updated_at = func.now()
@@ -106,23 +118,14 @@ async def paraphrase_sentence(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
+    AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode=payload.mode)
 
-    wallet = await _lock_wallet(db, current_user.id)
-    _, _, _, token_ded = AssistantService.consume_ai_quota(current_user, wallet, mode=payload.mode)
-    if token_ded:
-        db.add(TokenTransaction(
-            wallet_id=wallet.id, transaction_type="DEBIT_CHAT_PARAPHRASE", amount=-1,
-            balance_after=wallet.balance, reference_id=sentence.id, note=f"Paraphrase {payload.mode} token debit",
-        ))
-        record_token_debit(db, current_user.id, "AUDIT_SENTENCE", sentence.id, 1, f"Paraphrase {payload.mode} token debit")
-
-    try:
-        variations, active_engine = AssistantService.generate_paraphrase_variations(
-            sentence.current_text or sentence.sentence_text, mode=payload.mode
-        )
-    except HTTPException:
-        await db.rollback()
-        raise
+    variations, active_engine = await asyncio.to_thread(
+        AssistantService.generate_paraphrase_variations,
+        sentence.current_text or sentence.sentence_text,
+        mode=payload.mode,
+    )
+    await _charge_ai_usage(db, current_user, payload.mode, "AUDIT_SENTENCE", sentence.id, f"Paraphrase {payload.mode} token debit")
     await db.commit()
     return APIResponse(data=ParaphraseResponse(
         sentence_id=payload.sentence_id, mode=payload.mode,
@@ -137,7 +140,6 @@ async def apply_paraphrase(
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
-
     all_s = (await db.execute(select(AuditSentence).where(AuditSentence.audit_task_id == sentence.audit_task_id))).scalars().all()
     report = (await db.execute(select(AuditReport).where(AuditReport.audit_task_id == sentence.audit_task_id))).scalar_one_or_none()
     result = AssistantService.apply_paraphrase_in_place(sentence, payload.selected_text, list(all_s), report)

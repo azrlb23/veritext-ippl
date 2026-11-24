@@ -43,6 +43,28 @@ class AssistantService:
             )
 
     @classmethod
+    def check_ai_quota_available(
+        cls, user: User, wallet: TokenWallet | None, mode: str = "CHAT"
+    ) -> None:
+        trial = (wallet.ai_trial_remaining or 0) if wallet else 0
+        if trial > 0:
+            return
+        role = str(getattr(user, "role", "FREE") or "FREE").upper()
+        if role == "FREE":
+            raise HTTPException(
+                status_code=402,
+                detail="CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis.",
+            )
+        balance = (wallet.balance or 0) if wallet else 0
+        allowance = (wallet.ai_chat_allowance_remaining or 0) if wallet else 0
+        if (mode or "CHAT").upper() == "FULL_PAGE":
+            if balance < 1:
+                raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
+            return
+        if allowance <= 0 and balance < 1:
+            raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
+
+    @classmethod
     def consume_ai_quota(
         cls, user: User, wallet: TokenWallet, mode: str = "CHAT"
     ) -> tuple[int, int, int, bool]:

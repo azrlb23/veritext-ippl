@@ -510,8 +510,11 @@ class TestRemediationPhase2TDD(unittest.IsolatedAsyncioTestCase):
             "Kucing hitam melompati pagar bambu di belakang rumah nenek pada hari selasa siang yang cerah."
         )
 
-        # Tanpa korpus dan tanpa pemindaian web (jaringan membuat hasil tidak deterministik)
-        with patch.object(settings, "WEB_SCAN_ENABLED", False):
+        # Tanpa korpus dan tanpa pemindaian web/LLM eksternal (jaringan membuat hasil tidak deterministik)
+        from app.engine.ai_detector import GeminiAIDetector
+        with patch.object(settings, "WEB_SCAN_ENABLED", False), patch.object(
+            GeminiAIDetector, "_detect_with_client", return_value=None
+        ):
             result = aggregator.run_pipeline(
                 original_text=completely_original_text,
                 audit_depth="FULL",

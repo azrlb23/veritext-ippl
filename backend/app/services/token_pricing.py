@@ -44,6 +44,6 @@ def ensure_minimum_words(word_count: int | None) -> None:
     minimum = settings.MIN_DOCUMENT_WORDS
     if int(word_count or 0) < minimum:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"Naskah terlalu pendek: {int(word_count or 0)} kata. Minimal {minimum} kata agar dapat dianalisis.",
         )

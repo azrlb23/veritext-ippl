@@ -13,7 +13,7 @@ const chips: Array<{ title: string; pos: string; icon: VtIconName }> = [
   <div class="pointer-events-none relative flex h-full w-full items-center justify-center overflow-hidden" aria-hidden="true">
     <div class="text-center">
       <div class="text-[clamp(44px,5vw,72px)] font-semibold leading-none tracking-[-0.05em] text-[#14111C]">
-        VeriText <span class="vt-accent drop-shadow-[0_2px_14px_rgba(255,255,255,0.75)]">AI</span>
+        VeriText <span class="text-[#0F766E] drop-shadow-[0_2px_14px_rgba(255,255,255,0.75)]">AI</span>
       </div>
       <p class="pointer-events-auto select-text mx-auto mt-5 max-w-[330px] text-[14.5px] font-medium leading-[1.6] text-[#14111C]">
         Periksa orisinalitas naskah, <span class="font-semibold text-[#0F766E]">kalimat demi kalimat.</span>

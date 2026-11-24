@@ -21,6 +21,7 @@ from app.models.user import User
 from app.schemas.auth import TokenResponse, UserLoginRequest, UserProfileResponse, UserRegisterRequest
 from app.schemas.common import APIResponse
 from app.services.auth_service import AuthService
+from app.services.upload_limits import enforce_rate_limit
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -53,6 +54,12 @@ async def register(req: UserRegisterRequest, request: Request, response: Respons
 @router.post("/login", response_model=APIResponse[TokenResponse])
 async def login(req: UserLoginRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     ip_addr = request.client.host if request.client else None
+    await enforce_rate_limit(
+        f"{req.email.lower().strip()}:{ip_addr or 'unknown'}",
+        "auth_login",
+        limit=10,
+        detail="Terlalu banyak percobaan masuk. Silakan coba lagi dalam 1 menit.",
+    )
     user, access_token, refresh_token = await AuthService.authenticate_user(db, req, user_agent=request.headers.get("user-agent"), ip_address=ip_addr)
     set_refresh_cookie(response, refresh_token, 7)
     balance = await get_user_wallet_balance(db, user.id)
@@ -118,7 +125,7 @@ async def refresh_token_endpoint(
 
     if response is not None:
         set_refresh_cookie(response, new_refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    return APIResponse(message="Token refreshed successfully", data={"access_token": new_access_token, "refresh_token": new_refresh_token})
+    return APIResponse(message="Token refreshed successfully", data={"access_token": new_access_token})
 
 
 @router.get("/me", response_model=APIResponse[UserProfileResponse])

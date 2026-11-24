@@ -57,6 +57,10 @@ class GoogleVerifyRequest(BaseModel):
     credential: str = Field(..., min_length=10)
 
 
+class GoogleExchangeRequest(BaseModel):
+    code: str = Field(..., min_length=10)
+
+
 class GoogleCompleteRequest(BaseModel):
     ticket: str = Field(..., min_length=1)
     full_name: str = Field(..., min_length=2, max_length=255)

@@ -116,7 +116,7 @@ async def delete_document(
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
 
-    # Soft delete document and purge physical stored file from disk
+    # Hard-delete document cascade and purge physical stored file from disk
     await DocumentService.delete_document(db, doc)
 
     return APIResponse(message="Document deleted permanently", data={})

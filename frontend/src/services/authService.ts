@@ -15,7 +15,6 @@ export interface LoginDTO {
 export interface LoginResponse {
   access_token: string;
   user: User;
-  refresh_token?: string;
 }
 
 export interface CompleteGoogleSignupDTO {
@@ -86,6 +85,11 @@ export const authService = {
 
   async completeGoogleSignup(data: CompleteGoogleSignupDTO) {
     const res = await apiClient.post<{ data: LoginResponse }>("/auth/google/complete", data);
+    return res.data.data;
+  },
+
+  async exchangeGoogleCode(code: string) {
+    const res = await apiClient.post<{ data: LoginResponse }>("/auth/google/exchange", { code });
     return res.data.data;
   },
 };
