@@ -27,14 +27,14 @@ async function open(id: string | null) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
+  <div class="mx-auto max-w-[1360px] px-4 pb-24 pt-5 font-sans sm:px-6 sm:pt-7">
     <div class="mb-6 max-w-4xl">
       <h1 class="text-[24px] font-semibold leading-[1.18] tracking-[-0.03em] text-[#14111C] sm:text-[28px]">
         Teman menulis yang membaca naskah Anda.
       </h1>
     </div>
 
-    <section class="grid overflow-hidden rounded-[36px] border border-[#E8ECEB] bg-white shadow-float lg:grid-cols-[300px_1fr]" aria-label="Asisten AI">
+    <section class="grid overflow-hidden rounded-[36px] border border-[#E8ECEB] bg-white shadow-float lg:grid-cols-[310px_1fr]" aria-label="Asisten AI">
       <aside class="bg-[#F4F8F7] border-r border-[#E6ECEB] p-4 lg:p-5">
         <button
           type="button"
@@ -42,12 +42,12 @@ async function open(id: string | null) {
           :aria-expanded="showList"
           @click="showList = !showList"
         >Percakapan ({{ a.sessions.value.length }})<span aria-hidden="true">{{ showList ? "Tutup" : "Buka" }}</span></button>
-        <div :class="showList ? 'block' : 'hidden lg:block'" class="max-h-[50vh] lg:max-h-none lg:h-[640px]">
+        <div :class="showList ? 'block' : 'hidden lg:block'" class="max-h-[50vh] lg:max-h-none lg:h-[676px]">
           <SessionList :sessions="a.sessions.value" :active-id="a.activeId.value" @open="open" @remove="a.removeSession" />
         </div>
       </aside>
 
-      <div class="flex min-h-[520px] flex-col p-5 sm:p-8 lg:h-[704px]">
+      <div class="flex min-h-[520px] flex-col p-5 sm:p-8 lg:h-[740px]">
         <template v-if="a.messages.value.length === 0 && !a.sending.value">
           <div class="flex-1">
             <h2 class="text-[24px] font-semibold tracking-[-0.03em] text-[#14111C]">Apa yang ingin Anda perbaiki?</h2>
