@@ -11,6 +11,7 @@ from app.models.audit import AuditReport, AuditTask
 from app.models.user import User
 from app.schemas.audit import AuditReportResponse, AuditVerificationResponse
 from app.schemas.common import APIResponse
+from app.services.report_text_builder import build_structured_report_view
 from app.services.report_view_helper import (
     build_report_pdf_response,
     check_report_authorization,
@@ -44,6 +45,9 @@ async def get_report(
     data = AuditReportResponse.model_validate(report)
     sentences = report.audit_task.sentences if report.audit_task else []
     data.heatmap_annotations = attach_sentence_ids(data.heatmap_annotations, sentences)
+    structured_text, aligned_annos = build_structured_report_view(report, data.heatmap_annotations, sentences)
+    data.document_text = structured_text or data.document_text
+    data.heatmap_annotations = aligned_annos
     return APIResponse(message="Audit report retrieved", data=data)
 
 

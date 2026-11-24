@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
 import ChatComposer from "../components/asisten/ChatComposer.vue";
 import DocumentPicker from "../components/asisten/DocumentPicker.vue";
 import MessageList from "../components/asisten/MessageList.vue";
@@ -7,9 +8,17 @@ import SessionList from "../components/asisten/SessionList.vue";
 import { useAssistant } from "../composables/useAssistant";
 import { useAuthStore } from "../stores/auth";
 
+const route = useRoute();
 const authStore = useAuthStore();
 const a = useAssistant();
 const showList = ref(false);
+
+onMounted(() => {
+  const doc = route.query.doc;
+  if (typeof doc === "string" && doc && !a.selectedDocs.value.includes(doc) && a.selectedDocs.value.length < 3) {
+    a.selectedDocs.value = [...a.selectedDocs.value, doc];
+  }
+});
 
 async function open(id: string | null) {
   await a.openSession(id);

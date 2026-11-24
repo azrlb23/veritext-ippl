@@ -41,25 +41,31 @@ const slices = computed(() => {
 
 <template>
   <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-5 shadow-float sm:p-8" aria-label="Naskah dengan sorotan">
-    <div class="flex flex-wrap gap-2" role="group" aria-label="Saring sorotan">
-      <button
-        v-for="k in KINDS"
-        :key="k.key"
-        type="button"
-        :aria-pressed="layers[k.key]"
-        class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
-        :class="[k.bg, layers[k.key] ? '' : 'opacity-40']"
-        @click="layers[k.key] = !layers[k.key]"
-      >{{ k.label }}</button>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap gap-2" role="group" aria-label="Saring sorotan">
+        <button
+          v-for="k in KINDS"
+          :key="k.key"
+          type="button"
+          :aria-pressed="layers[k.key]"
+          class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium text-[#14111C] transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+          :class="[k.bg, layers[k.key] ? '' : 'opacity-40']"
+          @click="layers[k.key] = !layers[k.key]"
+        >{{ k.label }}</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-[#5E5A6B]">
+        <span class="font-medium tabular-nums">{{ annotations.length }} sorotan</span>
+        <span>Klik kalimat tersorot untuk tulis ulang</span>
+      </div>
     </div>
-    <div class="mt-6 max-h-[640px] overflow-y-auto whitespace-pre-wrap text-[16px] leading-[2] text-[#14111C]">
+    <div class="mt-6 whitespace-pre-wrap text-[16px] leading-[1.9] tracking-[-0.01em] text-[#14111C]">
       <template v-if="text">
         <template v-for="(s, i) in slices" :key="i">
           <span
             v-if="s.anno"
             role="button"
             tabindex="0"
-            class="cursor-pointer rounded-md px-0.5 transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+            class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             :class="[layers[kindOf(s.anno)] ? bgOf(s.anno) : '', isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']"
             @click="emit('select', s.anno)"
             @keydown.enter.prevent="emit('select', s.anno)"
