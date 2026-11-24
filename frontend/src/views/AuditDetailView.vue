@@ -13,6 +13,7 @@ const route = useRoute();
 const { showNotification } = useNotification();
 const loading = ref(true);
 const exporting = ref(false);
+const exportingDoc = ref(false);
 const errorMessage = ref("");
 const report = ref<AuditReport | null>(null);
 const documentId = ref("");
@@ -72,6 +73,19 @@ async function download() {
   }
 }
 
+async function downloadDoc(fmt: "docx" | "pdf") {
+  if (!report.value) return;
+  exportingDoc.value = true;
+  try {
+    await auditService.downloadRevisedDocument(report.value.id, fmt, report.value.document_title || "Naskah");
+    showNotification(`Naskah revisi ${fmt.toUpperCase()} diunduh.`, "success");
+  } catch {
+    showNotification("Naskah revisi belum bisa diunduh.", "error");
+  } finally {
+    exportingDoc.value = false;
+  }
+}
+
 onMounted(() => load(route.params.id as string));
 onUnmounted(() => { if (timer) clearTimeout(timer); });
 watch(() => route.params.id, (id) => {
@@ -90,7 +104,7 @@ watch(() => route.params.id, (id) => {
       <router-link to="/riwayat" class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold">Kembali ke Riwayat</router-link>
     </div>
     <div v-else class="space-y-6">
-      <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" @download="download" />
+      <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" :exporting-doc="exportingDoc" @download="download" @download-doc="downloadDoc" />
       <div class="flex flex-wrap items-center justify-end gap-3">
         <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 cursor-pointer items-center gap-2 rounded-full px-6 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
           <svg class="h-4 w-4 text-[#0F766E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>

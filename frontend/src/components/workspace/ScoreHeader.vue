@@ -10,8 +10,12 @@ const props = defineProps<{
   semantic?: number | null;
   stylometric?: number | null;
   exporting?: boolean;
+  exportingDoc?: boolean;
 }>();
-const emit = defineEmits<{ (e: "download"): void }>();
+const emit = defineEmits<{
+  (e: "download"): void;
+  (e: "downloadDoc", format: "docx" | "pdf"): void;
+}>();
 const router = useRouter();
 const authStore = useAuthStore();
 
@@ -55,8 +59,8 @@ function download() {
         </p>
         <p class="text-[14px] text-[#5E5A6B]">kemiripan keseluruhan</p>
       </div>
-      <div class="flex flex-col gap-4 lg:items-end">
-        <dl class="grid grid-cols-3 gap-5 border-t border-[#E8ECEB] pt-5 sm:gap-8 lg:border-t-0 lg:pt-0">
+      <div class="flex flex-col gap-3 lg:items-end">
+        <dl class="grid grid-cols-3 gap-5 border-t border-[#E8ECEB] pb-1 pt-5 sm:gap-8 lg:border-t-0 lg:pt-0">
           <div v-for="p in parts" :key="p.label">
             <dd class="text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ p.value }}</dd>
             <dt class="mt-2 text-[13px] text-[#5E5A6B]">{{ p.label }}</dt>
@@ -68,6 +72,26 @@ function download() {
           class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40 lg:w-auto"
           @click="download"
         >{{ exporting ? "Menyiapkan..." : isFree ? "Unduh PDF (Premium)" : "Unduh sertifikat PDF" }}</button>
+        <button
+          v-if="isFree"
+          type="button"
+          class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] lg:w-auto"
+          @click="router.push('/billing')"
+        >Unduh Naskah Revisi (Premium)</button>
+        <div v-else class="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            :disabled="exportingDoc"
+            class="vt-btn-light inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:opacity-40"
+            @click="emit('downloadDoc', 'docx')"
+          >{{ exportingDoc ? "Menyiapkan..." : "Unduh Revisi DOCX" }}</button>
+          <button
+            type="button"
+            :disabled="exportingDoc"
+            class="vt-btn-light inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:opacity-40"
+            @click="emit('downloadDoc', 'pdf')"
+          >{{ exportingDoc ? "Menyiapkan..." : "Unduh Revisi PDF" }}</button>
+        </div>
       </div>
     </div>
   </header>

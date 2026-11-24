@@ -89,6 +89,11 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: str = ""
     OPENROUTER_MODEL: str = "nvidia/nemotron-3.5-lightning:free"
 
+    # Local Ollama & Offline Paraphrase Fallback
+    OLLAMA_BASE_URL: str = "http://localhost:11434/v1"
+    OLLAMA_MODEL: str = "qwen2.5:7b"
+    LOCAL_PARAPHRASE_MODEL: str = "Wikidepia/IndoT5-base-paraphrase"
+
     # Payment Gateway (Midtrans)
     MIDTRANS_SERVER_KEY: str = "SB-Mid-server-DemoServerKey1234567890"
     MIDTRANS_SIGNATURE_KEY: str = ""

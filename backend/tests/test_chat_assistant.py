@@ -1,6 +1,6 @@
 import json
 import uuid
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -61,7 +61,10 @@ def test_consume_quota_premium_allowance_and_full_page():
 def test_paraphrase_without_ai_engine_returns_503_not_fake_variations():
     mock_gw = MagicMock()
     mock_gw.generate_text_with_failover.return_value = (None, "")
-    with pytest.raises(HTTPException) as exc:
+    with (
+        patch("app.llm.local_paraphraser.generate_local_paraphrases", return_value=[]),
+        pytest.raises(HTTPException) as exc,
+    ):
         AssistantService.generate_paraphrase_variations("Model ini meningkatkan akurasi.", gateway=mock_gw)
     assert exc.value.status_code == 503
     assert "AI_001" in exc.value.detail

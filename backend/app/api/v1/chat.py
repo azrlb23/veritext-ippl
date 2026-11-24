@@ -139,6 +139,9 @@ async def apply_paraphrase(
     current_user: User = Depends(get_current_user),  # noqa: B008
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
+    role = str(getattr(current_user, "role", "FREE") or "FREE").upper()
+    if role == "FREE":
+        raise HTTPException(status_code=403, detail="PREMIUM_REQUIRED: Fitur parafrase hanya tersedia untuk akun Premium.")
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     all_s = (await db.execute(select(AuditSentence).where(AuditSentence.audit_task_id == sentence.audit_task_id))).scalars().all()
     report = (await db.execute(select(AuditReport).where(AuditReport.audit_task_id == sentence.audit_task_id))).scalar_one_or_none()

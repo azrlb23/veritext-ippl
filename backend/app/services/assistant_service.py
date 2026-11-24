@@ -13,90 +13,66 @@ from app.models.wallet import TokenWallet
 from app.services.paraphrase_helper import apply_paraphrase_update
 
 logger = logging.getLogger(__name__)
-
-
+_PARAPHRASE_MODES = ("SENTENCE", "PARAGRAPH", "FULL_PAGE")
+_PREMIUM_DETAIL = "PREMIUM_REQUIRED: Fitur parafrase hanya tersedia untuk akun Premium."
+_GUARDRAIL_DETAIL = "CHAT_001: Pelanggaran Guardrail - Permintaan ini tidak dapat diproses."
+_TRIAL_DETAIL = "CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis."
+_TOKEN_DETAIL = "AUDIT_001: Saldo token tidak mencukupi."
 AI_UNAVAILABLE = "AI_001: Layanan AI sedang tidak tersedia. Kuota Anda tidak dipotong, coba lagi beberapa saat lagi."
 
 
 class AssistantService:
     FORBIDDEN_PATTERNS: tuple[str, ...] = (
-        "tuliskan skripsi penuh",
-        "buatkan skripsi penuh",
-        "buatkan bab 1 sampai",
-        "palsukan data",
-        "manipulasi data penelitian",
-        "bikin daftar pustaka palsu",
+        "tuliskan skripsi penuh", "buatkan skripsi penuh", "buatkan bab 1 sampai",
+        "palsukan data", "manipulasi data penelitian", "bikin daftar pustaka palsu",
     )
 
     @classmethod
     def check_academic_guardrail(cls, prompt: str) -> None:
         if not prompt or not prompt.strip():
-            raise HTTPException(
-                status_code=400,
-                detail="CHAT_001: Pelanggaran Guardrail - Permintaan ini tidak dapat diproses.",
-            )
+            raise HTTPException(status_code=400, detail=_GUARDRAIL_DETAIL)
         p_lower = prompt.lower()
         if any(pat in p_lower for pat in cls.FORBIDDEN_PATTERNS):
-            raise HTTPException(
-                status_code=400,
-                detail="CHAT_001: Pelanggaran Guardrail - Permintaan ini tidak dapat diproses.",
-            )
+            raise HTTPException(status_code=400, detail=_GUARDRAIL_DETAIL)
 
     @classmethod
-    def check_ai_quota_available(
-        cls, user: User, wallet: TokenWallet | None, mode: str = "CHAT"
-    ) -> None:
-        trial = (wallet.ai_trial_remaining or 0) if wallet else 0
-        if trial > 0:
-            return
+    def check_ai_quota_available(cls, user: User, wallet: TokenWallet | None, mode: str = "CHAT") -> None:
+        mode_upper = (mode or "CHAT").upper()
         role = str(getattr(user, "role", "FREE") or "FREE").upper()
+        if mode_upper in _PARAPHRASE_MODES and role == "FREE":
+            raise HTTPException(status_code=403, detail=_PREMIUM_DETAIL)
+        if ((wallet.ai_trial_remaining or 0) if wallet else 0) > 0:
+            return
         if role == "FREE":
-            raise HTTPException(
-                status_code=402,
-                detail="CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis.",
-            )
+            raise HTTPException(status_code=402, detail=_TRIAL_DETAIL)
         balance = (wallet.balance or 0) if wallet else 0
         allowance = (wallet.ai_chat_allowance_remaining or 0) if wallet else 0
-        if (mode or "CHAT").upper() == "FULL_PAGE":
-            if balance < 1:
-                raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
-            return
-        if allowance <= 0 and balance < 1:
-            raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
+        if (mode_upper == "FULL_PAGE" and balance < 1) or (allowance <= 0 and balance < 1):
+            raise HTTPException(status_code=402, detail=_TOKEN_DETAIL)
 
     @classmethod
-    def consume_ai_quota(
-        cls, user: User, wallet: TokenWallet, mode: str = "CHAT"
-    ) -> tuple[int, int, int, bool]:
-        trial = wallet.ai_trial_remaining or 0
-        balance = wallet.balance or 0
-        allowance = wallet.ai_chat_allowance_remaining or 0
-
+    def consume_ai_quota(cls, user: User, wallet: TokenWallet, mode: str = "CHAT") -> tuple[int, int, int, bool]:
+        mode_upper = (mode or "CHAT").upper()
+        role = str(getattr(user, "role", "FREE") or "FREE").upper()
+        if mode_upper in _PARAPHRASE_MODES and role == "FREE":
+            raise HTTPException(status_code=403, detail=_PREMIUM_DETAIL)
+        trial, balance, allowance = wallet.ai_trial_remaining or 0, wallet.balance or 0, wallet.ai_chat_allowance_remaining or 0
         if trial > 0:
             wallet.ai_trial_remaining = trial - 1
             return (wallet.ai_trial_remaining, balance, allowance, False)
-
-        role = str(getattr(user, "role", "FREE") or "FREE").upper()
         if role == "FREE":
-            raise HTTPException(
-                status_code=402,
-                detail="CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis.",
-            )
-
-        mode_upper = (mode or "CHAT").upper()
+            raise HTTPException(status_code=402, detail=_TRIAL_DETAIL)
         if mode_upper == "FULL_PAGE":
             if balance < 1:
-                raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
+                raise HTTPException(status_code=402, detail=_TOKEN_DETAIL)
             wallet.balance = balance - 1
             return (0, wallet.balance, allowance, True)
-
         if allowance > 0:
             wallet.ai_chat_allowance_remaining = allowance - 1
             return (0, wallet.balance, wallet.ai_chat_allowance_remaining, False)
         if balance < 1:
-            raise HTTPException(status_code=402, detail="AUDIT_001: Saldo token tidak mencukupi.")
-        wallet.balance = balance - 1
-        wallet.ai_chat_allowance_remaining = 9
+            raise HTTPException(status_code=402, detail=_TOKEN_DETAIL)
+        wallet.balance, wallet.ai_chat_allowance_remaining = balance - 1, 9
         return (0, wallet.balance, 9, True)
 
     @classmethod
@@ -110,8 +86,8 @@ class AssistantService:
             "(jika teks berbahasa Indonesia, seluruh variasi WAJIB berbahasa Indonesia akademik baku; "
             "jangan diterjemahkan ke bahasa lain).\n"
             f"Teks asli:\n{original_text}\n"
-            "Format JSON: [{\"option_id\": 1, \"style\": \"Formal\", "
-            "\"text\": \"...\", \"predicted_score\": 8.2}, ...]"
+            "KEMBALIKAN HANYA JSON ARRAY MURNI (diawali `[` dan diakhiri `]`) tanpa teks pengantar atau markdown:\n"
+            '[{"option_id": 1, "style": "Formal", "text": "...", "predicted_score": 8.2}, ...]'
         )
         variations: list[dict[str, Any]] = []
         active_engine = "Synthesis Engine"
@@ -122,11 +98,25 @@ class AssistantService:
                 cleaned = raw_text.strip()
                 if cleaned.startswith("```"):
                     cleaned = cleaned.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+                start_i, end_i = cleaned.find("["), cleaned.rfind("]")
+                if start_i != -1 and end_i > start_i:
+                    cleaned = cleaned[start_i : end_i + 1]
                 parsed = json.loads(cleaned)
                 if isinstance(parsed, list) and len(parsed) >= 3:
                     variations = parsed[:3]
         except (json.JSONDecodeError, KeyError, TypeError, ValueError, RuntimeError, OSError, TimeoutError, ConnectionError) as err:
             logger.debug("Gateway paraphrase parsing fallback: %s", err)
+
+        if not variations:
+            try:
+                from app.llm.local_paraphraser import generate_local_paraphrases
+
+                local_vars = generate_local_paraphrases(original_text, count=3)
+                if isinstance(local_vars, list) and local_vars:
+                    variations = local_vars[:3]
+                    active_engine = "Transformers (Local)"
+            except (ImportError, RuntimeError, OSError, ValueError, TypeError) as err:
+                logger.debug("Local paraphraser fallback unavailable: %s", err)
 
         if not variations:
             raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)

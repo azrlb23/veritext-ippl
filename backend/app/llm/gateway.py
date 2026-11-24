@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from app.core.config import settings
 from app.llm.deepseek_client import DeepSeekRouterClient
 from app.llm.gemini_client import GeminiFlashClient
+from app.llm.ollama_client import OllamaLocalClient
 
 if TYPE_CHECKING:
     from app.engine.preprocessor import SentenceSpan
@@ -32,11 +33,21 @@ class DualEngineLLMGateway:
         self,
         gemini_client: GeminiFlashClient | None = None,
         deepseek_client: DeepSeekRouterClient | None = None,
+        ollama_client: OllamaLocalClient | None = None,
         strategy: str | None = None,
     ) -> None:
         self.gemini = gemini_client or GeminiFlashClient()
         self.deepseek = deepseek_client or DeepSeekRouterClient()
+        self.ollama = ollama_client or OllamaLocalClient()
         self.strategy = strategy or settings.LLM_FAILOVER_STRATEGY
+
+    def _client_order(self) -> list[tuple[Any, str]]:
+        gemini_entry = (self.gemini, f"Gemini ({self.gemini.model})")
+        deepseek_entry = (self.deepseek, f"DeepSeek ({self.deepseek.model})")
+        ollama_entry = (self.ollama, f"Ollama ({self.ollama.model})")
+        if self.strategy == "gemini_first":
+            return [gemini_entry, deepseek_entry, ollama_entry]
+        return [deepseek_entry, gemini_entry, ollama_entry]
 
     def build_judge_prompt(self, sentences: list[SentenceSpan]) -> str:
         lines = []
@@ -80,13 +91,7 @@ class DualEngineLLMGateway:
         sample = meaningful[: settings.WEB_SCAN_MAX_SENTENCES]
         prompt = self.build_judge_prompt(sample)
 
-        order = (
-            [(self.gemini, f"Gemini ({self.gemini.model})"), (self.deepseek, f"DeepSeek ({self.deepseek.model})")]
-            if self.strategy == "gemini_first"
-            else [(self.deepseek, f"DeepSeek ({self.deepseek.model})"), (self.gemini, f"Gemini ({self.gemini.model})")]
-        )
-
-        for client, name in order:
+        for client, name in self._client_order():
             raw = client.generate_json(prompt)
             normalized = _normalize_result(raw)
             if normalized is not None:
@@ -95,13 +100,7 @@ class DualEngineLLMGateway:
         return None, ""
 
     def generate_text_with_failover(self, prompt: str) -> tuple[str | None, str]:
-        order = (
-            [(self.gemini, f"Gemini ({self.gemini.model})"), (self.deepseek, f"DeepSeek ({self.deepseek.model})")]
-            if self.strategy == "gemini_first"
-            else [(self.deepseek, f"DeepSeek ({self.deepseek.model})"), (self.gemini, f"Gemini ({self.gemini.model})")]
-        )
-
-        for client, name in order:
+        for client, name in self._client_order():
             text = client.generate_text(prompt)
             if text:
                 return text, name
