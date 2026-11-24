@@ -10,12 +10,12 @@ from app.llm.gateway import DualEngineLLMGateway
 from app.models.audit import AuditReport, AuditSentence
 from app.models.user import User
 from app.models.wallet import TokenWallet
+from app.services.chat_guardrail import enforce_academic_guardrail
 from app.services.paraphrase_helper import apply_paraphrase_update
 
 logger = logging.getLogger(__name__)
 _PARAPHRASE_MODES = ("SENTENCE", "PARAGRAPH", "FULL_PAGE")
 _PREMIUM_DETAIL = "PREMIUM_REQUIRED: Fitur parafrase hanya tersedia untuk akun Premium."
-_GUARDRAIL_DETAIL = "CHAT_001: Pelanggaran Guardrail - Permintaan ini tidak dapat diproses."
 _TRIAL_DETAIL = "CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis."
 _TOKEN_DETAIL = "AUDIT_001: Saldo token tidak mencukupi."
 AI_UNAVAILABLE = "AI_001: Layanan AI sedang tidak tersedia. Kuota Anda tidak dipotong, coba lagi beberapa saat lagi."
@@ -34,19 +34,9 @@ def _try_local_paraphrase(original_text: str) -> tuple[list[dict[str, Any]], str
 
 
 class AssistantService:
-    FORBIDDEN_PATTERNS: tuple[str, ...] = (
-        "tuliskan skripsi penuh", "buatkan skripsi penuh", "buatkan bab 1 sampai",
-        "palsukan data", "manipulasi data penelitian", "bikin daftar pustaka palsu",
-        "buatkan makalah", "buatkan laporan lengkap", "kerjakan tugas", "jawabkan soal",
-    )
-
     @classmethod
     def check_academic_guardrail(cls, prompt: str) -> None:
-        if not prompt or not prompt.strip():
-            raise HTTPException(status_code=400, detail=_GUARDRAIL_DETAIL)
-        p_lower = prompt.lower()
-        if any(pat in p_lower for pat in cls.FORBIDDEN_PATTERNS):
-            raise HTTPException(status_code=400, detail=_GUARDRAIL_DETAIL)
+        enforce_academic_guardrail(prompt)
 
     @classmethod
     def check_ai_quota_available(cls, user: User, wallet: TokenWallet | None, mode: str = "CHAT") -> None:
