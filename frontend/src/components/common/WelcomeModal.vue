@@ -25,21 +25,16 @@ watch(() => props.isOpen, (open) => {
   if (typeof window === "undefined") return;
   if (open) {
     window.addEventListener("keydown", onKeydown);
-    document.body.style.overflow = "hidden";
-    timer = setTimeout(handleClose, 4000);
+    timer = setTimeout(handleClose, 3500);
     nextTick(() => continueBtn.value?.focus());
   } else {
     window.removeEventListener("keydown", onKeydown);
-    document.body.style.overflow = "";
   }
 }, { immediate: true });
 
 onUnmounted(() => {
   clearTimer();
-  if (typeof window !== "undefined") {
-    window.removeEventListener("keydown", onKeydown);
-    document.body.style.overflow = "";
-  }
+  if (typeof window !== "undefined") window.removeEventListener("keydown", onKeydown);
 });
 </script>
 
@@ -47,27 +42,27 @@ onUnmounted(() => {
   <Teleport to="body">
     <Transition
       enter-active-class="transition duration-200 ease-out motion-reduce:transition-none"
-      enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100"
+      enter-from-class="opacity-0 -translate-y-3" enter-to-class="opacity-100 translate-y-0"
       leave-active-class="transition duration-150 ease-in motion-reduce:transition-none"
-      leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95"
+      leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-3"
     >
-      <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-        <div class="fixed inset-0 bg-[#14111C]/30 backdrop-blur-sm" @click="handleClose" />
-        <div class="relative z-10 w-full max-w-[400px] rounded-[36px] bg-white p-8 text-center font-sans shadow-float sm:p-10">
-          <h3 id="welcome-title" class="text-[30px] font-semibold leading-[1.1] tracking-[-0.04em] text-[#14111C]">
-            Selamat datang,
-            <span class="block truncate pb-1 text-[#14111C]">{{ name }}</span>
-          </h3>
-          <p class="mx-auto mt-4 max-w-[280px] text-[15px] leading-[1.65] text-[#4B4757]">
-            {{ role === "ADMIN" ? "Panel pemantauan sistem VeriText AI siap digunakan." : "Sistem siap memeriksa orisinalitas naskah Anda." }}
-          </p>
+      <div v-if="isOpen" class="pointer-events-none fixed inset-x-0 top-20 z-50 flex justify-center px-4" role="status" aria-live="polite">
+        <div class="pointer-events-auto flex w-full max-w-[440px] items-center gap-3.5 rounded-full border border-[#E8ECEB] bg-white/95 py-2.5 pl-4 pr-2.5 font-sans shadow-float backdrop-blur-md">
+          <span class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#EBF8F6] text-[#0F766E]" aria-hidden="true">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[14.5px] font-semibold tracking-[-0.01em] text-[#14111C]">Selamat datang, {{ name }}</p>
+            <p class="truncate text-[12.5px] text-[#5E5A6B]">{{ role === "ADMIN" ? "Panel pemantauan siap digunakan" : "Siap memeriksa naskah Anda" }}</p>
+          </div>
           <button
             ref="continueBtn"
             type="button"
-            class="vt-btn-dark mt-7 inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
+            aria-label="Tutup sambutan"
+            class="vt-btn-light inline-flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-[#5E5A6B] hover:text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
             @click="handleClose"
           >
-            Lanjutkan
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
       </div>
