@@ -26,9 +26,9 @@ const words = () => (props.estimate ? props.estimate.word_count.toLocaleString("
     <div class="text-[14px] font-medium text-[#5E5A6B]">Ringkasan</div>
     <p class="mt-1 truncate text-[16px] font-semibold text-[#14111C]">{{ fileName || "Belum ada naskah dipilih" }}</p>
 
-    <div v-if="!fileName" class="mt-5 rounded-[22px] border border-[#D5ECE8] bg-[#EBF8F6] px-5 py-6 text-[14px] leading-[1.6] text-[#4B4757]">
+    <div v-if="!fileName" class="mt-5 border-t border-[#E8ECEB] pt-5 text-[14px] leading-[1.6] text-[#4B4757]">
       <p>Pilih atau tarik naskah di sebelah kiri untuk melihat estimasi kata dan biaya token.</p>
-      <p class="mt-3 text-[13px] font-medium text-[#5E5A6B]">Saldo Anda saat ini: {{ balance }} token.</p>
+      <p class="mt-3 text-[13px] font-medium text-[#0F766E]">Saldo Anda saat ini: {{ balance }} token.</p>
     </div>
 
     <template v-else>
@@ -47,7 +47,7 @@ const words = () => (props.estimate ? props.estimate.word_count.toLocaleString("
         </div>
       </dl>
 
-      <div class="mt-5 rounded-[20px] border border-[#D5ECE8] bg-[#EBF8F6] px-5 py-4">
+      <div class="mt-5 border-t border-[#E8ECEB] pt-5">
         <div class="text-[12.5px] text-[#5E5A6B]">Saldo setelah pemeriksaan</div>
         <div class="mt-1 text-[34px] font-semibold leading-none tracking-[-0.04em] tabular-nums" :class="insufficient() ? 'text-[#B91C1C]' : 'text-[#14111C]'">
           {{ remaining() === null ? "-" : remaining() }} <span class="text-[15px] font-medium tracking-normal text-[#5E5A6B]">token</span>

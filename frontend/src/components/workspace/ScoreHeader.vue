@@ -56,7 +56,7 @@ function download() {
         <p class="text-[14px] text-[#5E5A6B]">kemiripan keseluruhan</p>
       </div>
       <div class="flex flex-col gap-4 lg:items-end">
-        <dl class="grid grid-cols-3 gap-5 rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5 sm:gap-8">
+        <dl class="grid grid-cols-3 gap-5 border-t border-[#E8ECEB] pt-5 sm:gap-8 lg:border-t-0 lg:pt-0">
           <div v-for="p in parts" :key="p.label">
             <dd class="text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ p.value }}</dd>
             <dt class="mt-2 text-[13px] text-[#5E5A6B]">{{ p.label }}</dt>
