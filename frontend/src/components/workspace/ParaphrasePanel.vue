@@ -79,11 +79,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer); });
 
     <p v-if="!selected" class="py-10 text-center text-[15px] text-[#5E5A6B]">Pilih kalimat yang tersorot di naskah, lalu minta asisten menulis ulang.</p>
     <template v-else>
-      <div class="mt-5 border-b border-[#E8ECEB] pb-4">
-        <p class="text-[13px] font-medium text-[#5E5A6B]">Kalimat terpilih</p>
-        <p class="mt-1 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet }}</p>
-      </div>
-      <button type="button" :disabled="isFree ? false : busy || !selected.sentence_id" class="vt-btn-dark mt-4 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ isFree ? "Aktifkan Premium untuk Tulis Ulang" : busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
+      <button type="button" :disabled="isFree ? false : busy || !selected.sentence_id" class="vt-btn-dark mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ isFree ? "Aktifkan Premium untuk Tulis Ulang" : busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
     </template>
     <p v-if="error" class="mt-3 text-[14px] font-medium text-[#B91C1C]" role="alert">{{ error }}</p>
 
