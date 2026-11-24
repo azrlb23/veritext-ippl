@@ -14,6 +14,8 @@ class ChatMessageRequest(BaseModel):
     session_id: Optional[uuid.UUID] = None
     sentence_id: Optional[uuid.UUID] = None
     prompt: str = Field(min_length=1, max_length=4000)
+    preferred_engine: str = "auto"
+    task_mode: str = "QA_DOCUMENT"
 
     def all_document_ids(self) -> list[uuid.UUID]:
         merged = list(self.document_ids)
@@ -47,6 +49,7 @@ class ParaphraseVariation(BaseModel):
 class ParaphraseRequest(BaseModel):
     sentence_id: uuid.UUID
     mode: str = "SENTENCE"
+    preferred_engine: str = "auto"
 
 
 class ParaphraseResponse(BaseModel):

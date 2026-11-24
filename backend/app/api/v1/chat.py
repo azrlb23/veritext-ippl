@@ -76,8 +76,8 @@ async def send_chat_message(
     session, docs, history = await _resolve_session(db, current_user.id, payload)
     context = await build_document_context_async(docs, payload.prompt)
 
-    prompt_text = build_prompt(payload.prompt, context, history)
-    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text)
+    prompt_text = build_prompt(payload.prompt, context, history, task_mode=payload.task_mode)
+    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, payload.preferred_engine)
     if not ai_text:
         await db.rollback()
         raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
@@ -123,7 +123,7 @@ async def paraphrase_sentence(
     variations, active_engine = await asyncio.to_thread(
         AssistantService.generate_paraphrase_variations,
         sentence.current_text or sentence.sentence_text,
-        mode=payload.mode,
+        mode=payload.mode, preferred_engine=payload.preferred_engine,
     )
     await _charge_ai_usage(db, current_user, payload.mode, "AUDIT_SENTENCE", sentence.id, f"Paraphrase {payload.mode} token debit")
     await db.commit()

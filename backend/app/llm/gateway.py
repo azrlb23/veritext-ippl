@@ -41,10 +41,18 @@ class DualEngineLLMGateway:
         self.ollama = ollama_client or OllamaLocalClient()
         self.strategy = strategy or settings.LLM_FAILOVER_STRATEGY
 
-    def _client_order(self) -> list[tuple[Any, str]]:
+    def _client_order(self, preferred_engine: str | None = None) -> list[tuple[Any, str]]:
         gemini_entry = (self.gemini, f"Gemini ({self.gemini.model})")
         deepseek_entry = (self.deepseek, f"DeepSeek ({self.deepseek.model})")
         ollama_entry = (self.ollama, f"Ollama ({self.ollama.model})")
+        overrides = {
+            "ollama": [ollama_entry, gemini_entry, deepseek_entry],
+            "gemini": [gemini_entry, deepseek_entry, ollama_entry],
+            "deepseek": [deepseek_entry, gemini_entry, ollama_entry],
+        }
+        pref = (preferred_engine or "").strip().lower()
+        if pref in overrides:
+            return overrides[pref]
         if self.strategy == "gemini_first":
             return [gemini_entry, deepseek_entry, ollama_entry]
         return [deepseek_entry, gemini_entry, ollama_entry]
@@ -99,8 +107,10 @@ class DualEngineLLMGateway:
 
         return None, ""
 
-    def generate_text_with_failover(self, prompt: str) -> tuple[str | None, str]:
-        for client, name in self._client_order():
+    def generate_text_with_failover(
+        self, prompt: str, preferred_engine: str | None = None
+    ) -> tuple[str | None, str]:
+        for client, name in self._client_order(preferred_engine):
             text = client.generate_text(prompt)
             if text:
                 return text, name

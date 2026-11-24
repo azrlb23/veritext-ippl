@@ -52,7 +52,7 @@ async function open(id: string | null) {
           <div class="flex-1">
             <h2 class="text-[24px] font-semibold tracking-[-0.03em] text-[#14111C]">Apa yang ingin Anda perbaiki?</h2>
             <p class="mt-2 max-w-lg text-[15px] leading-relaxed text-[#4B4757]">
-              Minta saran gaya, struktur, atau cara menulis ulang bagian yang mirip. Asisten membaca kutipan paling relevan dari naskah yang Anda pilih.
+              Pilih tugas tanya jawab isi naskah, parafrase teks, atau tinjau gaya bahasa dan pola AI. Anda dapat memilih mesin AI cloud atau lokal sebelum mengirim pesan.
             </p>
             <div v-if="!a.activeId.value" class="mt-7"><DocumentPicker v-model="a.selectedDocs.value" :documents="a.documents.value" /></div>
           </div>
@@ -60,7 +60,14 @@ async function open(id: string | null) {
         <MessageList v-else :messages="a.messages.value" :sending="a.sending.value" />
 
         <p v-if="a.trialLeft.value !== null && authStore.role === 'FREE'" class="mt-3 text-[13px] text-[#5E5A6B]">Sisa percobaan gratis: {{ a.trialLeft.value }}</p>
-        <ChatComposer :disabled="a.sending.value" :error="a.error.value" @send="a.send" />
+        <ChatComposer
+          v-model:task-mode="a.taskMode.value"
+          v-model:preferred-engine="a.preferredEngine.value"
+          :disabled="a.sending.value"
+          :error="a.error.value"
+          :last-engine="a.lastEngine.value"
+          @send="a.send"
+        />
       </div>
     </section>
   </div>

@@ -5,10 +5,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
+from app.llm.gateway import DualEngineLLMGateway
 from app.models.audit import AuditReport, AuditSentence
 from app.models.user import User
 from app.models.wallet import TokenWallet
 from app.services.assistant_service import AssistantService
+from app.services.chat_prompt import build_prompt
 
 
 def test_academic_guardrail():
@@ -98,3 +100,26 @@ def test_apply_paraphrase_in_place():
     assert res["new_similarity"] == 6.0
     assert res["new_composite_score"] == 40.5
     assert report.score_composite == 40.5
+
+
+def test_build_prompt_paraphrase_task():
+    prompt = build_prompt("Parafrasekan kalimat ini.", "Kutipan uji", [], task_mode="PARAPHRASE_TASK")
+    assert "spesialis parafrase akademik Bahasa Indonesia" in prompt
+    assert "Kutipan uji" in prompt
+    assert "Parafrasekan kalimat ini." in prompt
+
+
+def test_gateway_preferred_engine_ollama_before_gemini():
+    call_order: list[str] = []
+    gemini = MagicMock(model="gemini-mock")
+    gemini.generate_text.side_effect = lambda _p: call_order.append("gemini") or "Jawaban Gemini"
+    deepseek = MagicMock(model="deepseek-mock")
+    deepseek.generate_text.side_effect = lambda _p: call_order.append("deepseek") or None
+    ollama = MagicMock(model="qwen2.5:7b")
+    ollama.generate_text.side_effect = lambda _p: call_order.append("ollama") or None
+
+    gw = DualEngineLLMGateway(gemini_client=gemini, deepseek_client=deepseek, ollama_client=ollama, strategy="gemini_first")
+    text, engine = gw.generate_text_with_failover("Uji urutan engine", preferred_engine="ollama")
+    assert text == "Jawaban Gemini"
+    assert engine == "Gemini (gemini-mock)"
+    assert call_order == ["ollama", "gemini"]

@@ -24,6 +24,9 @@ export function useAssistant() {
   const sending = ref(false);
   const error = ref("");
   const trialLeft = ref<number | null>(null);
+  const preferredEngine = ref<"auto" | "ollama" | "gemini">("auto");
+  const taskMode = ref<"QA_DOCUMENT" | "PARAPHRASE_TASK" | "STYLE_REVIEW">("QA_DOCUMENT");
+  const lastEngine = ref("");
 
   const activeSession = computed(() => sessions.value.find((s) => s.id === activeId.value) || null);
 
@@ -43,10 +46,16 @@ export function useAssistant() {
     const local: ChatHistoryItem = { id: `local-${Date.now()}`, role: "USER", content: prompt, created_at: new Date().toISOString() };
     messages.value.push(local);
     try {
-      const res = await chatService.sendMessage(prompt, { documentIds: activeId.value ? [] : selectedDocs.value, sessionId: activeId.value || undefined });
+      const res = await chatService.sendMessage(prompt, {
+        documentIds: activeId.value ? [] : selectedDocs.value,
+        sessionId: activeId.value || undefined,
+        preferredEngine: preferredEngine.value,
+        taskMode: taskMode.value,
+      });
       messages.value.push({ id: res.message_id, role: "ASSISTANT", content: res.content, created_at: new Date().toISOString() });
       activeId.value = res.session_id;
       trialLeft.value = res.ai_trial_remaining;
+      lastEngine.value = res.active_engine || "";
       await Promise.all([loadSessions(), authStore.fetchProfile()]);
     } catch (err: any) {
       messages.value = messages.value.filter((m) => m.id !== local.id);
@@ -67,5 +76,9 @@ export function useAssistant() {
     documents.value = (await documentService.list(1, 50).catch(() => ({ items: [] as DocumentItem[] }))).items;
   });
 
-  return { sessions, documents, activeId, activeSession, messages, selectedDocs, sending, error, trialLeft, openSession, send, removeSession };
+  return {
+    sessions, documents, activeId, activeSession, messages, selectedDocs,
+    sending, error, trialLeft, preferredEngine, taskMode, lastEngine,
+    openSession, send, removeSession,
+  };
 }

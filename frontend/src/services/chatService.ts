@@ -51,10 +51,15 @@ export interface ChatHistoryItem {
 }
 
 export const chatService = {
-  async paraphrase(sentenceId: string, mode: "SENTENCE" | "PARAGRAPH" | "FULL_PAGE" = "SENTENCE") {
+  async paraphrase(
+    sentenceId: string,
+    mode: "SENTENCE" | "PARAGRAPH" | "FULL_PAGE" = "SENTENCE",
+    preferredEngine: string = "auto"
+  ) {
     const res = await apiClient.post<{ data: ParaphraseResponseData }>("/chat/paraphrase", {
       sentence_id: sentenceId,
       mode,
+      preferred_engine: preferredEngine,
     });
     return res.data.data;
   },
@@ -67,12 +72,17 @@ export const chatService = {
     return res.data.data;
   },
 
-  async sendMessage(prompt: string, opts: { documentIds?: string[]; sessionId?: string; sentenceId?: string } = {}) {
+  async sendMessage(
+    prompt: string,
+    opts: { documentIds?: string[]; sessionId?: string; sentenceId?: string; preferredEngine?: string; taskMode?: string } = {}
+  ) {
     const res = await apiClient.post<{ data: ChatMessageResponseData }>("/chat/message", {
       prompt,
       document_ids: opts.documentIds ?? [],
       session_id: opts.sessionId || undefined,
       sentence_id: opts.sentenceId || undefined,
+      preferred_engine: opts.preferredEngine || "auto",
+      task_mode: opts.taskMode || "QA_DOCUMENT",
     });
     return res.data.data;
   },

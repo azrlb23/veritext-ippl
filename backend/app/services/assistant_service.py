@@ -21,6 +21,18 @@ _TOKEN_DETAIL = "AUDIT_001: Saldo token tidak mencukupi."
 AI_UNAVAILABLE = "AI_001: Layanan AI sedang tidak tersedia. Kuota Anda tidak dipotong, coba lagi beberapa saat lagi."
 
 
+def _try_local_paraphrase(original_text: str) -> tuple[list[dict[str, Any]], str]:
+    try:
+        from app.llm.local_paraphraser import generate_local_paraphrases
+
+        local_vars = generate_local_paraphrases(original_text, count=3)
+        if isinstance(local_vars, list) and local_vars:
+            return local_vars[:3], "Transformers (Local)"
+    except (ImportError, RuntimeError, OSError, ValueError, TypeError) as err:
+        logger.debug("Local paraphraser fallback unavailable: %s", err)
+    return [], ""
+
+
 class AssistantService:
     FORBIDDEN_PATTERNS: tuple[str, ...] = (
         "tuliskan skripsi penuh", "buatkan skripsi penuh", "buatkan bab 1 sampai",
@@ -77,8 +89,14 @@ class AssistantService:
 
     @classmethod
     def generate_paraphrase_variations(
-        cls, original_text: str, mode: str = "SENTENCE", gateway: DualEngineLLMGateway | None = None
+        cls, original_text: str, mode: str = "SENTENCE",
+        gateway: DualEngineLLMGateway | None = None, preferred_engine: str = "auto",
     ) -> tuple[list[dict[str, Any]], str]:
+        if (preferred_engine or "").strip().lower() == "transformers":
+            variations, active_engine = _try_local_paraphrase(original_text)
+            if not variations:
+                raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
+            return variations, active_engine
         gw = gateway or DualEngineLLMGateway()
         prompt = (
             f"Parafrasekan teks berikut ({mode}) menjadi 3 variasi gaya akademik.\n"
@@ -92,7 +110,7 @@ class AssistantService:
         variations: list[dict[str, Any]] = []
         active_engine = "Synthesis Engine"
         try:
-            raw_text, engine_name = gw.generate_text_with_failover(prompt)
+            raw_text, engine_name = gw.generate_text_with_failover(prompt, preferred_engine=preferred_engine)
             if raw_text and engine_name:
                 active_engine = engine_name
                 cleaned = raw_text.strip()
@@ -108,15 +126,9 @@ class AssistantService:
             logger.debug("Gateway paraphrase parsing fallback: %s", err)
 
         if not variations:
-            try:
-                from app.llm.local_paraphraser import generate_local_paraphrases
-
-                local_vars = generate_local_paraphrases(original_text, count=3)
-                if isinstance(local_vars, list) and local_vars:
-                    variations = local_vars[:3]
-                    active_engine = "Transformers (Local)"
-            except (ImportError, RuntimeError, OSError, ValueError, TypeError) as err:
-                logger.debug("Local paraphraser fallback unavailable: %s", err)
+            variations, local_engine = _try_local_paraphrase(original_text)
+            if local_engine:
+                active_engine = local_engine
 
         if not variations:
             raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
@@ -124,10 +136,7 @@ class AssistantService:
 
     @classmethod
     def apply_paraphrase_in_place(
-        cls,
-        sentence: AuditSentence,
-        selected_text: str,
-        all_sentences: list[AuditSentence],
-        report: AuditReport | None = None,
+        cls, sentence: AuditSentence, selected_text: str,
+        all_sentences: list[AuditSentence], report: AuditReport | None = None,
     ) -> dict[str, Any]:
         return apply_paraphrase_update(sentence, selected_text, all_sentences, report)
