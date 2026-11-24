@@ -15,6 +15,8 @@ export interface HeatmapAnnotation {
   text_snippet?: string;
   source_url?: string;
   reason?: string;
+  ai_flag?: boolean;
+  ai_reason?: string;
   is_modified?: boolean;
 }
 

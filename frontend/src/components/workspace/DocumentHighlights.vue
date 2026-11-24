@@ -28,6 +28,9 @@ function kindOf(a: HeatmapAnnotation): Kind {
   return "YELLOW";
 }
 const bgOf = (a: HeatmapAnnotation) => KINDS.find((k) => k.key === kindOf(a))!.bg;
+const hasAiFlag = (a: HeatmapAnnotation) => kindOf(a) === "YELLOW" || Boolean((a as any).ai_flag);
+const isAnnoVisible = (a: HeatmapAnnotation) => layers[kindOf(a)] || (layers.YELLOW && hasAiFlag(a));
+const activeBgOf = (a: HeatmapAnnotation) => (layers[kindOf(a)] ? bgOf(a) : layers.YELLOW && hasAiFlag(a) ? "bg-[#FEF9C3]" : "");
 const isSelected = (a: HeatmapAnnotation) => !!props.selected && props.selected.start === a.start && props.selected.end === a.end;
 
 const paragraphs = computed(() => {
@@ -46,7 +49,7 @@ const paragraphs = computed(() => {
       if (a.end <= pStart || a.start >= pEnd) continue;
       const s = Math.max(pos, Math.max(pStart, a.start)), e = Math.min(pEnd, Math.max(s, a.end));
       if (s > pos) slices.push({ text: raw.slice(pos, s) });
-      if (e > s) { slices.push({ text: raw.slice(s, e), anno: a }); if (layers[kindOf(a)]) hasActive = true; }
+      if (e > s) { slices.push({ text: raw.slice(s, e), anno: a }); if (isAnnoVisible(a)) hasActive = true; }
       pos = Math.max(pos, e);
     }
     if (pos < pEnd) slices.push({ text: raw.slice(pos, pEnd) });
@@ -116,7 +119,7 @@ onUnmounted(revokePdf);
         <p v-else-if="!currentParas.length" class="py-16 text-center text-[15px] text-[#4B4757]">Tidak ada bagian tersorot pada saringan aktif.</p>
         <p v-else v-for="(p, pi) in currentParas" :key="`${safePage}-${pi}`" class="whitespace-pre-wrap">
           <template v-for="(s, si) in p.slices" :key="si">
-            <span v-if="s.anno" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[layers[kindOf(s.anno)] ? bgOf(s.anno) : '', isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="emit('select', s.anno)" @keydown.enter.prevent="emit('select', s.anno)" @keydown.space.prevent="emit('select', s.anno)">{{ s.text }}</span>
+            <span v-if="s.anno" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[activeBgOf(s.anno), isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="emit('select', s.anno)" @keydown.enter.prevent="emit('select', s.anno)" @keydown.space.prevent="emit('select', s.anno)">{{ s.text }}</span>
             <span v-else>{{ s.text }}</span>
           </template>
         </p>
