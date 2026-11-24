@@ -74,7 +74,6 @@ def apply_paraphrase_update(
     delta = len(selected_text) - len(old_text)
 
     sentence.current_text = selected_text
-    sentence.sentence_text = selected_text
     sentence.match_type = "RESOLVED_GREEN"
     sentence.is_modified = True
     sentence.similarity_score = 6.0

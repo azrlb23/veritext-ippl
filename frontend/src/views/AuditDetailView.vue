@@ -115,7 +115,7 @@ watch(() => route.params.id, (id) => {
       <SourcesPanel :sources="sources" />
     </div>
 
-    <div v-if="drawerOpen && selected" class="fixed inset-0 z-50 flex bg-[#14111C]/25 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Detail dan Tulis ulang" @click.self="drawerOpen = false" @keydown.esc="drawerOpen = false">
+    <div v-if="drawerOpen && selected" class="fixed inset-0 z-[100] flex bg-[#14111C]/25 backdrop-blur-[2px]" role="dialog" aria-modal="true" aria-label="Detail dan Tulis ulang" @click.self="drawerOpen = false" @keydown.esc="drawerOpen = false">
       <div class="ml-auto flex h-full w-full max-w-md flex-col overflow-y-auto bg-white p-6 shadow-float sm:p-8">
         <div class="flex items-center justify-between gap-4 border-b border-[#E8ECEB] pb-4">
           <h2 class="text-[20px] font-semibold tracking-[-0.02em] text-[#14111C]">Detail &amp; Tulis ulang</h2>

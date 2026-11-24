@@ -73,3 +73,31 @@ def test_reads_original_file_from_disk_when_available(tmp_path):
         text, aligned = build_structured_report_view(_report("sample.txt"), annos, [s0, s1, s2])
     assert text == disk_text
     assert text[aligned[0]["start"]:aligned[0]["end"]] == "Kalimat kedua yang diperiksa."
+
+
+def test_replaces_paraphrased_sentence_across_pdf_line_breaks(tmp_path):
+    pdf_file = tmp_path / "draft.pdf"
+    pdf_file.write_bytes(b"%PDF-1.4")
+    disk_text = "Kalimat pertama\nyang terpotong baris\ndi PDF asli.\n\nKalimat kedua\ntetap utuh."
+    s0 = _sent(
+        0,
+        "Kalimat pertama yang terpotong baris di PDF asli.",
+        0,
+        49,
+        current_text="Kalimat pertama yang sudah direvisi rapi.",
+        is_modified=True,
+    )
+    s1 = _sent(1, "Kalimat kedua tetap utuh.", 51, 76)
+    annos = [
+        {"start": 0, "end": 49, "tier": "T1", "color": "RESOLVED_GREEN", "sentence_id": str(s0.id), "text_snippet": "Kalimat pertama yang sudah direvisi rapi."},
+        {"start": 51, "end": 76, "tier": "T2", "color": "ORANGE", "sentence_id": str(s1.id), "text_snippet": "Kalimat kedua tetap utuh."},
+    ]
+    with patch("app.services.report_text_builder.settings.UPLOAD_DIR", str(tmp_path)), patch(
+        "app.services.report_text_builder.extract_text_limited", return_value=disk_text
+    ):
+        text, aligned = build_structured_report_view(_report("draft.pdf", "application/pdf"), annos, [s0, s1])
+    assert text is not None
+    assert "Kalimat pertama yang sudah direvisi rapi." in text
+    assert "terpotong baris" not in text
+    assert text[aligned[0]["start"]:aligned[0]["end"]] == "Kalimat pertama yang sudah direvisi rapi."
+    assert text[aligned[1]["start"]:aligned[1]["end"]] == "Kalimat kedua\ntetap utuh."

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Any
 
 from app.core.config import settings
@@ -47,24 +48,43 @@ def _reconstruct_from_sentences(ordered: list[Any]) -> str | None:
     return joined or None
 
 
+def _ws_pattern(text: str) -> str | None:
+    words = text.split()
+    return r"\s+".join(re.escape(w) for w in words) if words else None
+
+
 def _apply_modified_sentences(document_text: str, ordered: list[Any]) -> str:
     updated = document_text
     for s in ordered:
         orig_text = getattr(s, "sentence_text", None) or ""
         new_text = getattr(s, "current_text", None)
         is_mod = bool(getattr(s, "is_modified", False))
-        if (is_mod or (new_text and new_text != orig_text)) and new_text and orig_text and new_text != orig_text:
+        if (is_mod or new_text != orig_text) and new_text and orig_text and new_text != orig_text:
             if orig_text in updated:
                 updated = updated.replace(orig_text, new_text, 1)
+            else:
+                pattern = _ws_pattern(orig_text)
+                m = re.search(pattern, updated) if pattern else None
+                if m:
+                    updated = updated[:m.start()] + new_text + updated[m.end():]
     return updated
 
 
-def _find_snippet(document_text: str, snippet: str, orig_start: int) -> int:
+def _find_snippet(document_text: str, snippet: str, orig_start: int) -> tuple[int, int]:
     search_from = max(0, orig_start - 40)
     idx = document_text.find(snippet, search_from)
     if idx == -1 and search_from > 0:
         idx = document_text.find(snippet)
-    return idx
+    if idx != -1:
+        return idx, len(snippet)
+    pattern = _ws_pattern(snippet)
+    if not pattern:
+        return -1, 0
+    compiled = re.compile(pattern)
+    m = compiled.search(document_text, search_from)
+    if m is None and search_from > 0:
+        m = compiled.search(document_text)
+    return (m.start(), m.end() - m.start()) if m else (-1, 0)
 
 
 def _align_annotations(document_text: str, annotations: list[Any], ordered: list[Any]) -> list[Any]:
@@ -80,12 +100,9 @@ def _align_annotations(document_text: str, annotations: list[Any], ordered: list
         sent_text = (getattr(sent, "current_text", None) or getattr(sent, "sentence_text", None)) if sent is not None else None
         snippet = item.get("text_snippet") or sent_text
         if snippet:
-            idx = _find_snippet(document_text, snippet, orig_start)
-            matched_len = len(snippet)
+            idx, matched_len = _find_snippet(document_text, snippet, orig_start)
             if idx == -1 and sent_text and sent_text != snippet:
-                idx = _find_snippet(document_text, sent_text, orig_start)
-                if idx != -1:
-                    matched_len = len(sent_text)
+                idx, matched_len = _find_snippet(document_text, sent_text, orig_start)
             if idx != -1:
                 s, e = idx, idx + matched_len
                 while s > 0 and document_text[s - 1].isalnum():
