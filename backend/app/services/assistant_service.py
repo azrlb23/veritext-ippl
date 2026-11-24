@@ -37,6 +37,7 @@ class AssistantService:
     FORBIDDEN_PATTERNS: tuple[str, ...] = (
         "tuliskan skripsi penuh", "buatkan skripsi penuh", "buatkan bab 1 sampai",
         "palsukan data", "manipulasi data penelitian", "bikin daftar pustaka palsu",
+        "buatkan makalah", "buatkan laporan lengkap", "kerjakan tugas", "jawabkan soal",
     )
 
     @classmethod

@@ -98,7 +98,7 @@ def build_heatmap_annotations(
         elif t3_match is not None and (score_t3 >= 20.0 or t3_match.anomaly_score >= 0.50):
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T3", color="YELLOW",
-                similarity=t3_match.anomaly_score, source_title="Evaluator AI - Gemini Flash",
+                similarity=t3_match.anomaly_score, source_title="Analisis Pola Tulisan AI",
                 text_snippet=s.text, reason=t3_match.reason, ai_flag=True, ai_reason=t3_match.reason,
             ).to_dict())
 

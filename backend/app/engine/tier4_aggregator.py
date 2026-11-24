@@ -123,7 +123,7 @@ class HybridAggregator:
             )
 
             if on_progress:
-                on_progress(75, "Tahap 3 - Evaluasi indikasi tulisan AI (Gemini Flash) & kompilasi laporan")
+                on_progress(75, "Tahap 3 - Evaluasi gaya penulisan & penyusunan laporan")
             t3_res = self.ai_detector.analyze_document(original_text=original_text, sentences=sentences)
             score_t3, t3_idx = t3_res.score_t3, {a.sentence_index: a for a in t3_res.sentence_anomalies}
             score_comp = self.calculate_composite_score(score_t1, score_t2, score_t3)

@@ -10,7 +10,7 @@ from app.models.audit import AuditReport, AuditSentence
 from app.models.user import User
 from app.models.wallet import TokenWallet
 from app.services.assistant_service import AssistantService
-from app.services.chat_prompt import build_prompt
+from app.services.chat_prompt import build_prompt, classify_task_and_engine
 
 
 def test_academic_guardrail():
@@ -24,6 +24,11 @@ def test_academic_guardrail():
         AssistantService.check_academic_guardrail("Tolong buatkan skripsi penuh bab 1 sampai 5.")
     assert exc_pat.value.status_code == 400
     assert "CHAT_001" in exc_pat.value.detail
+
+    with pytest.raises(HTTPException) as exc_joki:
+        AssistantService.check_academic_guardrail("Tolong buatkan makalah tentang AI untuk besok.")
+    assert exc_joki.value.status_code == 400
+    assert "CHAT_001" in exc_joki.value.detail
 
 
 def test_consume_quota_free_trial():
@@ -123,3 +128,9 @@ def test_gateway_preferred_engine_ollama_before_gemini():
     assert text == "Jawaban Gemini"
     assert engine == "Gemini (gemini-mock)"
     assert call_order == ["ollama", "gemini"]
+
+
+def test_classify_task_and_engine_routing():
+    assert classify_task_and_engine("Tolong parafrase kalimat ini agar lebih baku.", True) == ("PARAPHRASE_TASK", "ollama")
+    assert classify_task_and_engine("Cek pola AI dan burstiness pada paragraf kedua.", True) == ("STYLE_REVIEW", "ollama")
+    assert classify_task_and_engine("Apa kesimpulan utama dari naskah ini?", True) == ("QA_DOCUMENT", "auto")

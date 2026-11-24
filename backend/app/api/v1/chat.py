@@ -21,7 +21,7 @@ from app.schemas.common import APIResponse
 from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
 from app.services.audit_log_helper import record_token_debit
 from app.services.chat_context import build_document_context_async, load_owned_documents
-from app.services.chat_prompt import build_prompt
+from app.services.chat_prompt import build_prompt, classify_task_and_engine
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
 
 router = APIRouter(prefix="/chat", tags=["AI Assistant & Paraphrase"])
@@ -75,9 +75,11 @@ async def send_chat_message(
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode="CHAT")
     session, docs, history = await _resolve_session(db, current_user.id, payload)
     context = await build_document_context_async(docs, payload.prompt)
-
-    prompt_text = build_prompt(payload.prompt, context, history, task_mode=payload.task_mode)
-    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, payload.preferred_engine)
+    task_mode, engine_pref = payload.task_mode, payload.preferred_engine
+    if engine_pref == "auto" and task_mode == "QA_DOCUMENT":
+        task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs))
+    prompt_text = build_prompt(payload.prompt, context, history, task_mode=task_mode)
+    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, engine_pref)
     if not ai_text:
         await db.rollback()
         raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
@@ -91,7 +93,6 @@ async def send_chat_message(
     session.updated_at = func.now()
     await db.commit()
     await db.refresh(assistant_msg)
-
     return APIResponse(data=ChatMessageResponse(
         message_id=assistant_msg.id, session_id=session.id, role="ASSISTANT",
         content=assistant_msg.content, active_engine=engine,
@@ -139,8 +140,7 @@ async def apply_paraphrase(
     current_user: User = Depends(get_current_user),  # noqa: B008
     db: AsyncSession = Depends(get_db),  # noqa: B008
 ):
-    role = str(getattr(current_user, "role", "FREE") or "FREE").upper()
-    if role == "FREE":
+    if str(getattr(current_user, "role", "FREE") or "FREE").upper() == "FREE":
         raise HTTPException(status_code=403, detail="PREMIUM_REQUIRED: Fitur parafrase hanya tersedia untuk akun Premium.")
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     all_s = (await db.execute(select(AuditSentence).where(AuditSentence.audit_task_id == sentence.audit_task_id))).scalars().all()
