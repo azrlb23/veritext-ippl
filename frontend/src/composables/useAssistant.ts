@@ -1,8 +1,11 @@
 import { computed, onMounted, ref } from "vue";
+import { auditService } from "../services/auditService";
 import { chatService, type ChatHistoryItem, type ChatSessionItem } from "../services/chatService";
 import { documentService } from "../services/documentService";
 import { useAuthStore } from "../stores/auth";
-import type { DocumentItem } from "../types";
+import type { AuditTask, DocumentItem } from "../types";
+
+type AuditTaskWithReport = AuditTask & { report_id?: string | null };
 
 const GUARDRAIL = "Permintaan ini tidak bisa diproses karena di luar batas etika penulisan.";
 const QUOTA = "Kuota coba gratis habis. Beli token atau upgrade ke Premium untuk melanjutkan.";
@@ -18,6 +21,7 @@ export function useAssistant() {
   const authStore = useAuthStore();
   const sessions = ref<ChatSessionItem[]>([]);
   const documents = ref<DocumentItem[]>([]);
+  const auditTasks = ref<AuditTaskWithReport[]>([]);
   const activeId = ref<string | null>(null);
   const messages = ref<ChatHistoryItem[]>([]);
   const selectedDocs = ref<string[]>([]);
@@ -29,6 +33,13 @@ export function useAssistant() {
   const lastEngine = ref("");
 
   const activeSession = computed(() => sessions.value.find((s) => s.id === activeId.value) || null);
+  const linkedAudit = computed(() => {
+    const docId = activeSession.value?.document_ids?.[0] || selectedDocs.value[0];
+    if (!docId) return null;
+    const match = auditTasks.value.find((t) => t.document_id === docId && t.status === "SUCCESS" && Boolean(t.report_id));
+    if (!match?.report_id) return null;
+    return { documentId: docId, reportId: match.report_id, taskId: match.task_id || match.id || "" };
+  });
 
   async function loadSessions() {
     sessions.value = await chatService.listSessions().catch(() => []);
@@ -72,12 +83,17 @@ export function useAssistant() {
   }
 
   onMounted(async () => {
-    await loadSessions();
-    documents.value = (await documentService.list(1, 50).catch(() => ({ items: [] as DocumentItem[] }))).items;
+    const [, docsRes, historyRes] = await Promise.all([
+      loadSessions(),
+      documentService.list(1, 50).catch(() => ({ items: [] as DocumentItem[] })),
+      auditService.getHistory(1, 50).catch(() => ({ items: [] as AuditTask[] })),
+    ]);
+    documents.value = docsRes.items;
+    auditTasks.value = historyRes.items as AuditTaskWithReport[];
   });
 
   return {
-    sessions, documents, activeId, activeSession, messages, selectedDocs,
+    sessions, documents, activeId, activeSession, linkedAudit, messages, selectedDocs,
     sending, error, trialLeft, preferredEngine, taskMode, lastEngine,
     openSession, send, removeSession,
   };

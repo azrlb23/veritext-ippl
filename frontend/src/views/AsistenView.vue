@@ -4,14 +4,18 @@ import { useRoute } from "vue-router";
 import ChatComposer from "../components/asisten/ChatComposer.vue";
 import DocumentPicker from "../components/asisten/DocumentPicker.vue";
 import MessageList from "../components/asisten/MessageList.vue";
+import PriorityFixModal from "../components/asisten/PriorityFixModal.vue";
 import SessionList from "../components/asisten/SessionList.vue";
 import { useAssistant } from "../composables/useAssistant";
+import { auditService } from "../services/auditService";
 import { useAuthStore } from "../stores/auth";
 
 const route = useRoute();
 const authStore = useAuthStore();
 const a = useAssistant();
 const showList = ref(false);
+const priorityOpen = ref(false);
+const downloading = ref<"docx" | "pdf" | null>(null);
 
 onMounted(() => {
   const doc = route.query.doc;
@@ -23,6 +27,19 @@ onMounted(() => {
 async function open(id: string | null) {
   await a.openSession(id);
   showList.value = false;
+}
+
+async function downloadDoc(format: "docx" | "pdf") {
+  const reportId = a.linkedAudit.value?.reportId;
+  if (!reportId) return;
+  downloading.value = format;
+  try {
+    await auditService.downloadRevisedDocument(reportId, format);
+  } catch {
+    a.error.value = "Gagal mengunduh naskah revisi. Silakan coba lagi.";
+  } finally {
+    downloading.value = null;
+  }
 }
 </script>
 
@@ -48,6 +65,15 @@ async function open(id: string | null) {
       </aside>
 
       <div class="flex min-h-[520px] flex-col p-5 sm:p-8 lg:h-[740px]">
+        <div v-if="a.linkedAudit.value" class="mb-4 flex flex-wrap items-center gap-2 border-b border-[#E8ECEB] pb-3">
+          <button type="button" class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2" @click="priorityOpen = true">Perbaiki 5 kalimat prioritas</button>
+          <router-link :to="`/audits/${a.linkedAudit.value.taskId}`" class="inline-flex h-10 items-center rounded-full px-3.5 text-[13px] font-semibold text-[#0F766E] transition-colors hover:bg-[#EBF8F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Lihat hasil audit</router-link>
+          <template v-if="authStore.role !== 'FREE'">
+            <button type="button" :disabled="Boolean(downloading)" class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:opacity-40" @click="downloadDoc('docx')">{{ downloading === "docx" ? "Menyiapkan..." : "Revisi DOCX" }}</button>
+            <button type="button" :disabled="Boolean(downloading)" class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:opacity-40" @click="downloadDoc('pdf')">{{ downloading === "pdf" ? "Menyiapkan..." : "Revisi PDF" }}</button>
+          </template>
+        </div>
+
         <template v-if="a.messages.value.length === 0 && !a.sending.value">
           <div class="flex-1">
             <h2 class="text-[24px] font-semibold tracking-[-0.03em] text-[#14111C]">Apa yang ingin Anda perbaiki?</h2>
@@ -63,5 +89,13 @@ async function open(id: string | null) {
         <ChatComposer :disabled="a.sending.value" :error="a.error.value" @send="a.send" />
       </div>
     </section>
+
+    <PriorityFixModal
+      v-if="a.linkedAudit.value"
+      :open="priorityOpen"
+      :document-id="a.linkedAudit.value.documentId"
+      :is-free="authStore.role === 'FREE'"
+      @close="priorityOpen = false"
+    />
   </div>
 </template>

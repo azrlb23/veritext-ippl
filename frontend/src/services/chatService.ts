@@ -50,6 +50,16 @@ export interface ChatHistoryItem {
   created_at: string;
 }
 
+export interface PrioritySentenceItem {
+  sentence_id: string;
+  text: string;
+  match_type: string;
+  similarity_score: number;
+}
+
+export interface PrioritySentencesData { audit_task_id: string; report_id?: string | null; items: PrioritySentenceItem[]; }
+export interface CheckSimilarityResult { lexical_overlap_pct: number; word_overlap_pct: number; is_improved: boolean; }
+
 export const chatService = {
   async paraphrase(
     sentenceId: string,
@@ -99,5 +109,20 @@ export const chatService = {
 
   async deleteSession(sessionId: string) {
     await apiClient.delete(`/chat/sessions/${sessionId}`);
+  },
+
+  async getPrioritySentences(documentId: string, limit: number = 5) {
+    const res = await apiClient.get<{ data: PrioritySentencesData }>("/chat/priority-sentences", {
+      params: { document_id: documentId, limit },
+    });
+    return res.data.data;
+  },
+
+  async checkSimilarity(originalText: string, rewrittenText: string) {
+    const res = await apiClient.post<{ data: CheckSimilarityResult }>("/chat/check-similarity", {
+      original_text: originalText,
+      rewritten_text: rewrittenText,
+    });
+    return res.data.data;
   },
 };
