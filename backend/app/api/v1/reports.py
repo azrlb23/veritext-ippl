@@ -11,6 +11,7 @@ from app.models.audit import AuditReport, AuditSentence, AuditTask
 from app.models.user import User
 from app.schemas.audit import AuditReportResponse, AuditVerificationResponse
 from app.schemas.common import APIResponse
+from app.services.annotated_pdf_service import build_annotated_pdf_response
 from app.services.document_export_service import build_revised_document_response
 from app.services.report_text_builder import build_structured_report_view
 from app.services.report_view_helper import (
@@ -102,6 +103,31 @@ async def export_document(
         )
     ).scalars().all()
     return build_revised_document_response(report, list(sentences), format)
+
+
+@router.get("/reports/{report_id}/preview-pdf")
+async def preview_pdf(
+    report_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    stmt = (
+        select(AuditReport)
+        .options(
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.document),
+            selectinload(AuditReport.audit_task).selectinload(AuditTask.user),
+        )
+        .where((AuditReport.id == report_id) | (AuditReport.audit_task_id == report_id))
+    )
+    report = (await db.execute(stmt)).scalar_one_or_none()
+    if not report:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit report not found")
+
+    check_report_authorization(report, current_user, allow_free=True)
+    sentences = (await db.execute(
+        select(AuditSentence).where(AuditSentence.audit_task_id == report.audit_task_id).order_by(AuditSentence.sentence_index.asc())
+    )).scalars().all()
+    return build_annotated_pdf_response(report, list(sentences))
 
 
 @router.get("/verify/{verification_uuid}", response_model=APIResponse[AuditVerificationResponse])

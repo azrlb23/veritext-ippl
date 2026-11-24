@@ -111,7 +111,7 @@ watch(() => route.params.id, (id) => {
           Tanya Asisten AI tentang naskah ini
         </router-link>
       </div>
-      <DocumentHighlights :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => { selected = a; drawerOpen = true; }" />
+      <DocumentHighlights :report-id="report.id" :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => { selected = a; drawerOpen = true; }" />
       <SourcesPanel :sources="sources" />
     </div>
 

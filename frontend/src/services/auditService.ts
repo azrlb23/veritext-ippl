@@ -86,6 +86,13 @@ export const auditService = {
     return filename;
   },
 
+  async fetchAnnotatedPdfPreviewUrl(reportId: string): Promise<string> {
+    const res = await apiClient.get(`/reports/${reportId}/preview-pdf`, {
+      responseType: "blob",
+    });
+    return window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
+  },
+
   async downloadRevisedDocument(reportId: string, format: "docx" | "pdf", documentTitle: string = "Naskah") {
     const res = await apiClient.get(`/reports/${reportId}/export-document`, {
       params: { format },

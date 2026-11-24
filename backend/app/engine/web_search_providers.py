@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import time
 from collections.abc import Callable
@@ -71,7 +72,7 @@ def call_gemini_search_api(
 def call_ddg_search_api(
     timeout_s: int, batch_sentences: list[SentenceSpan]
 ) -> list[dict[str, Any]] | None:
-    """Fallback pencarian web menggunakan DuckDuckGo Search."""
+    """Fallback pencarian web paralel menggunakan DuckDuckGo Search."""
     try:
         from ddgs import DDGS
     except ImportError:
@@ -81,31 +82,54 @@ def call_ddg_search_api(
             logger.warning("Package ddgs tidak terpasang.")
             return None
 
+    req_timeout = max(1, min(timeout_s, 6))
+    future_timeout = max(8, min(timeout_s, 15))
+    queries = [
+        (s, " ".join([w for w in TextPreprocessor.tokenize_words(s.text) if len(w) > 3][:8]))
+        for s in batch_sentences
+    ]
+    queries = [(s, q) for s, q in queries if q]
+    if not queries:
+        return []
+
+    def _query_one(span: SentenceSpan, query: str) -> list[dict[str, Any]]:
+        try:
+            client = DDGS(timeout=req_timeout)
+        except TypeError:
+            client = DDGS()
+        items: list[dict[str, Any]] = []
+        for r in list(client.text(query, max_results=3)):
+            snippet = r.get("body", "") or r.get("snippet", "")
+            url = r.get("href", "") or r.get("link", "")
+            if snippet and url:
+                items.append({
+                    "sentence_index": span.index,
+                    "source_url": url,
+                    "source_title": r.get("title", ""),
+                    "snippet": snippet,
+                })
+        return items
+
     results_list: list[dict[str, Any]] = []
+    executor = concurrent.futures.ThreadPoolExecutor(
+        max_workers=min(6, max(1, len(batch_sentences)))
+    )
     try:
-        ddgs = DDGS()
-        for s in batch_sentences:
-            words = [w for w in TextPreprocessor.tokenize_words(s.text) if len(w) > 3][:8]
-            if not words:
-                continue
-            query = " ".join(words)
-            try:
-                search_results = list(ddgs.text(query, max_results=3))
-            except Exception as ddg_err:  # noqa: BLE001
-                logger.debug("DDG search query error: %s", ddg_err)
-                continue
-            for r in search_results:
-                snippet = r.get("body", "") or r.get("snippet", "")
-                url = r.get("href", "") or r.get("link", "")
-                title = r.get("title", "")
-                if snippet and url:
-                    results_list.append({
-                        "sentence_index": s.index,
-                        "source_url": url,
-                        "source_title": title,
-                        "snippet": snippet,
-                    })
+        futures = [executor.submit(_query_one, s, q) for s, q in queries]
+        try:
+            for fut in concurrent.futures.as_completed(futures, timeout=future_timeout):
+                try:
+                    results_list.extend(fut.result())
+                except Exception as ddg_err:  # noqa: BLE001
+                    logger.debug("DDG search query error: %s", ddg_err)
+        except concurrent.futures.TimeoutError:
+            logger.debug("DDG batch search timeout after %ss", future_timeout)
+            for fut in futures:
+                if not fut.done():
+                    fut.cancel()
         return results_list
     except Exception as exc:  # noqa: BLE001
         logger.warning("DuckDuckGo search fallback gagal: %s", exc)
         return None
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
