@@ -32,6 +32,12 @@ const hasAiFlag = (a: HeatmapAnnotation) => kindOf(a) === "YELLOW" || Boolean((a
 const isAnnoVisible = (a: HeatmapAnnotation) => layers[kindOf(a)] || (layers.YELLOW && hasAiFlag(a));
 const activeBgOf = (a: HeatmapAnnotation) => (layers[kindOf(a)] ? bgOf(a) : layers.YELLOW && hasAiFlag(a) ? "bg-[#FEF9C3]" : "");
 const isSelected = (a: HeatmapAnnotation) => !!props.selected && props.selected.start === a.start && props.selected.end === a.end;
+function viewOf(a: HeatmapAnnotation): HeatmapAnnotation["active_view"] {
+  const k = kindOf(a);
+  if ((!layers[k] && layers.YELLOW && hasAiFlag(a)) || k === "YELLOW") return "AI";
+  return k === "RED" ? "LEXICAL" : k === "ORANGE" ? "SEMANTIC" : "RESOLVED";
+}
+const pick = (a: HeatmapAnnotation) => emit("select", { ...a, active_view: viewOf(a) });
 
 const paragraphs = computed(() => {
   const raw = props.text || "";
@@ -119,7 +125,7 @@ onUnmounted(revokePdf);
         <p v-else-if="!currentParas.length" class="py-16 text-center text-[15px] text-[#4B4757]">Tidak ada bagian tersorot pada saringan aktif.</p>
         <p v-else v-for="(p, pi) in currentParas" :key="`${safePage}-${pi}`" class="whitespace-pre-wrap">
           <template v-for="(s, si) in p.slices" :key="si">
-            <span v-if="s.anno" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[activeBgOf(s.anno), isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="emit('select', s.anno)" @keydown.enter.prevent="emit('select', s.anno)" @keydown.space.prevent="emit('select', s.anno)">{{ s.text }}</span>
+            <span v-if="s.anno" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[activeBgOf(s.anno), isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="pick(s.anno)" @keydown.enter.prevent="pick(s.anno)" @keydown.space.prevent="pick(s.anno)">{{ s.text }}</span>
             <span v-else>{{ s.text }}</span>
           </template>
         </p>

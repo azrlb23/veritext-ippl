@@ -8,6 +8,7 @@ import ScoreHeader from "../components/workspace/ScoreHeader.vue";
 import DocumentHighlights from "../components/workspace/DocumentHighlights.vue";
 import SourcesPanel from "../components/workspace/SourcesPanel.vue";
 import ParaphrasePanel from "../components/workspace/ParaphrasePanel.vue";
+import DrawerDetails from "../components/workspace/DrawerDetails.vue";
 
 const route = useRoute();
 const { showNotification } = useNotification();
@@ -23,7 +24,6 @@ const sources = ref<MatchedSource[]>([]);
 const selected = ref<HeatmapAnnotation | null>(null);
 const drawerOpen = ref(false);
 let timer: ReturnType<typeof setTimeout> | null = null;
-const pct = (v: number) => (v > 1 ? v : v * 100).toFixed(1).replace(".", ",");
 
 async function load(id: string) {
   if (!id) return;
@@ -124,20 +124,7 @@ watch(() => route.params.id, (id) => {
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           </div>
-          <div class="mt-5 space-y-4 border-b border-[#E8ECEB] pb-5">
-            <div>
-              <p class="text-[13px] font-medium text-[#5E5A6B]">Kalimat terpilih</p>
-              <p class="mt-1 text-[15px] leading-relaxed text-[#14111C]">{{ selected.text_snippet || "Kalimat terpilih" }}</p>
-            </div>
-            <div class="flex items-baseline justify-between gap-4">
-              <div class="min-w-0">
-                <p class="text-[13px] font-medium text-[#5E5A6B]">Sumber mirip</p>
-                <p class="mt-0.5 text-[14px] font-semibold text-[#14111C]">{{ selected.source_title || "Sumber pembanding" }}</p>
-                <p v-if="selected.reason" class="mt-0.5 text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.reason }}</p>
-              </div>
-              <p class="flex-shrink-0 text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ pct(selected.similarity ?? 0) }}%</p>
-            </div>
-          </div>
+          <DrawerDetails :selected="selected" />
           <div class="mt-5 flex-1"><ParaphrasePanel :selected="selected" @applied="onApplied" /></div>
           <div class="mt-6 border-t border-[#E8ECEB] pt-5">
             <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>

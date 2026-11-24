@@ -17,6 +17,8 @@ export interface HeatmapAnnotation {
   reason?: string;
   ai_flag?: boolean;
   ai_reason?: string;
+  ai_score?: number;
+  active_view?: "LEXICAL" | "SEMANTIC" | "AI" | "RESOLVED";
   is_modified?: boolean;
 }
 
