@@ -49,11 +49,18 @@ async def get_health_metrics(db: AsyncSession = Depends(get_db)):
 @router.get("/audit-logs", response_model=APIResponse[PaginatedData[AuditLogResponse]])
 async def list_audit_logs(
     action_type: Optional[str] = Query(None),
+    result: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    data = await list_audit_logs_data(db, action_type=action_type, page=page, limit=limit)
+    data = await list_audit_logs_data(
+        db,
+        action_type=action_type,
+        result=result,
+        page=page,
+        limit=limit,
+    )
     return APIResponse(message="Audit logs retrieved", data=data)
 
 

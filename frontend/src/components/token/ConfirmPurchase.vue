@@ -9,7 +9,7 @@ defineEmits<{ (e: "close"): void; (e: "confirm"): void }>();
   <div v-if="target" class="fixed inset-0 z-[60] flex items-end justify-center bg-[#14111C]/20 p-4 backdrop-blur-[2px] sm:items-center" @click.self="$emit('close')" @keydown.esc="$emit('close')">
     <div class="w-full max-w-md rounded-[32px] border border-[#E8ECEB] bg-white p-7 shadow-float" role="dialog" aria-modal="true" aria-labelledby="beli-judul">
       <h2 id="beli-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Konfirmasi pembelian</h2>
-      <dl class="mt-5 space-y-3 rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5 text-[15px]">
+      <dl class="mt-5 space-y-3 border-y border-[#E8ECEB] py-4 text-[15px]">
         <div class="flex justify-between gap-4"><dt class="text-[#5E5A6B]">Pilihan</dt><dd class="text-right font-semibold text-[#14111C]">{{ target.name }}</dd></div>
         <div class="flex justify-between gap-4"><dt class="text-[#5E5A6B]">Token</dt><dd class="font-semibold tabular-nums text-[#14111C]">{{ target.tokens }}</dd></div>
         <div class="flex justify-between gap-4"><dt class="text-[#5E5A6B]">Total</dt><dd class="text-[18px] font-semibold tabular-nums text-[#14111C]">{{ rupiah(target.price) }}</dd></div>

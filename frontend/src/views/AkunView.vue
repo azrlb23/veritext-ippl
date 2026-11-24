@@ -11,7 +11,7 @@ import DeleteAccountCard from "../components/akun/DeleteAccountCard.vue";
         Data Anda, Anda yang atur.
       </h1>
     </div>
-    <div class="grid gap-6 lg:grid-cols-2 lg:items-start">
+    <div class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
       <ProfileCard />
       <PasswordCard />
     </div>

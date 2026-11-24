@@ -1,36 +1,53 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import type { SystemHealthMetrics } from "../../types/admin";
 
-const props = defineProps<{
-  health: {
-    database_status: string;
-    db_latency_ms: number;
-    total_vector_chunks: number;
-    redis_status: string;
-    celery_active_tasks: number;
-    total_audits: number;
-    total_corpus_docs: number;
-  };
-  loading?: boolean;
-}>();
+const props = defineProps<{ health: SystemHealthMetrics; loading?: boolean }>();
 
 const ok = (s?: string) => ["HEALTHY", "OPERATIONAL", "RUNNING"].includes((s || "").toUpperCase());
 const num = (n: number) => (n || 0).toLocaleString("id-ID");
-const rows = computed(() => [
-  { label: "Basis data", value: ok(props.health.database_status) ? "Normal" : "Terganggu", good: ok(props.health.database_status), hint: `${(props.health.db_latency_ms || 0).toFixed(1).replace(".", ",")} ms` },
-  { label: "Antrean pemeriksaan", value: ok(props.health.redis_status) ? "Normal" : "Terganggu", good: ok(props.health.redis_status), hint: `${num(props.health.celery_active_tasks)} tugas berjalan` },
-  { label: "Pemeriksaan tercatat", value: num(props.health.total_audits), good: true, hint: "" },
-  { label: "Dokumen pembanding", value: num(props.health.total_corpus_docs), good: true, hint: `${num(props.health.total_vector_chunks)} potongan makna` },
-]);
+
+const rows = computed(() => {
+  const dbOk = ok(props.health.database_status);
+  const redisOk = ok(props.health.redis_status);
+  return [
+    {
+      label: "Basis data",
+      value: dbOk ? "Normal" : "Terganggu",
+      tone: dbOk ? "text-[#0F766E]" : "text-[#B91C1C]",
+      hint: `${(props.health.db_latency_ms || 0).toFixed(1).replace(".", ",")} ms`,
+    },
+    {
+      label: "Antrean pemeriksaan",
+      value: redisOk ? "Normal" : "Terganggu",
+      tone: redisOk ? "text-[#0F766E]" : "text-[#B91C1C]",
+      hint: `${num(props.health.celery_active_tasks)} berjalan, ${num(props.health.queue_depth || 0)} mengantre`,
+    },
+    {
+      label: "Pemeriksaan tercatat",
+      value: num(props.health.total_audits),
+      tone: "text-[#14111C]",
+      hint: "",
+    },
+    {
+      label: "Dokumen pembanding",
+      value: num(props.health.total_corpus_docs),
+      tone: "text-[#14111C]",
+      hint: `${num(props.health.total_vector_chunks)} potongan makna`,
+    },
+  ];
+});
 </script>
 
 <template>
   <section class="rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="sehat-judul" :aria-busy="loading">
     <h2 id="sehat-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Kondisi sistem</h2>
-    <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <div v-for="r in rows" :key="r.label" class="rounded-[24px] border border-[#D5ECE8] bg-[#EBF8F6] p-5">
+    <dl class="mt-5 grid grid-cols-1 divide-y divide-[#E8ECEB] sm:grid-cols-2 sm:gap-x-6 sm:divide-y-0 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-[#E8ECEB]">
+      <div v-for="r in rows" :key="r.label" class="py-4 first:pt-0 last:pb-0 sm:py-3 lg:px-6 lg:py-1 lg:first:pl-0 lg:last:pr-0">
         <dt class="text-[13px] font-medium text-[#5E5A6B]">{{ r.label }}</dt>
-        <dd class="mt-2 text-[24px] font-semibold tracking-[-0.03em] tabular-nums" :class="r.good ? 'text-[#14111C]' : 'text-[#B91C1C]'">{{ loading ? "-" : r.value }}</dd>
+        <dd class="mt-2 text-[24px] font-semibold tracking-[-0.03em] tabular-nums" :class="loading ? 'text-[#14111C]' : r.tone">
+          {{ loading ? "-" : r.value }}
+        </dd>
         <p v-if="r.hint" class="mt-1 text-[13px] text-[#5E5A6B]">{{ r.hint }}</p>
       </div>
     </dl>

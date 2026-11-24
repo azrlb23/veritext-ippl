@@ -35,35 +35,16 @@ def generate_secure_token(nbytes: int = 32) -> str:
 
 
 def create_access_token(
-    subject: Union[str, Any],
-    role: str = "FREE",
-    expires_delta: Optional[timedelta] = None,
+    subject: Union[str, Any], role: str = "FREE", expires_delta: Optional[timedelta] = None,
 ) -> str:
     """Creates a signed JWT access token."""
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    
-    to_encode: Dict[str, Any] = {
-        "sub": str(subject),
-        "role": role,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
-        "type": "access",
-    }
-    encoded_jwt = jwt.encode(
-        to_encode,
-        settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
-    return encoded_jwt
+    now = datetime.now(timezone.utc)
+    expire = now + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode: Dict[str, Any] = {"sub": str(subject), "role": role, "exp": expire, "iat": now, "type": "access"}
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
-def create_refresh_token(
-    subject: Union[str, Any],
-    expires_delta: Optional[timedelta] = None,
-) -> str:
+def create_refresh_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Creates a random refresh token."""
     return generate_secure_token(48)
 
@@ -71,44 +52,43 @@ def create_refresh_token(
 def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     """Decodes and validates a JWT token."""
     try:
-        payload = jwt.decode(
-            token,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM],
-        )
-        return payload
+        return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except jwt.PyJWTError:
         return None
 
 
 def create_signup_ticket(email: str, name: str) -> str:
     """Creates a short-lived 10-minute JWT ticket for Google signup."""
-    expire = datetime.now(timezone.utc) + timedelta(minutes=10)
+    now = datetime.now(timezone.utc)
     to_encode: Dict[str, Any] = {
-        "purpose": "google_signup",
-        "email": email.lower().strip(),
-        "name": name,
-        "exp": expire,
-        "iat": datetime.now(timezone.utc),
+        "purpose": "google_signup", "email": email.lower().strip(), "name": name,
+        "exp": now + timedelta(minutes=10), "iat": now,
     }
-    return jwt.encode(
-        to_encode,
-        settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM,
-    )
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def decode_signup_ticket(ticket: str) -> Optional[Dict[str, Any]]:
     """Decodes and validates a Google signup ticket."""
     try:
-        payload = jwt.decode(
-            ticket,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM],
-        )
-        if payload.get("purpose") != "google_signup":
-            return None
-        return payload
+        payload = jwt.decode(ticket, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return payload if payload.get("purpose") == "google_signup" else None
+    except jwt.PyJWTError:
+        return None
+
+
+def create_oauth_state(intent: str = "login") -> str:
+    """Creates a short-lived 10-minute signed JWT for stateless OAuth state."""
+    payload = {"intent": intent, "nonce": secrets.token_urlsafe(8), "exp": datetime.now(timezone.utc) + timedelta(minutes=10)}
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+
+def verify_oauth_state(state: str) -> Optional[Dict[str, Any]]:
+    """Decodes and validates a stateless OAuth state JWT."""
+    if not state:
+        return None
+    try:
+        payload = jwt.decode(state, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return payload if isinstance(payload, dict) and "intent" in payload else None
     except jwt.PyJWTError:
         return None
 

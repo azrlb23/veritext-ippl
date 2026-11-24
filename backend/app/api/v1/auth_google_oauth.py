@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import secrets
 import sys
 from typing import Optional
@@ -12,7 +13,8 @@ from app.api.v1.auth_google_signup import create_google_session, exchange_google
 from app.api.v1.auth_helpers import format_user_profile, get_user_wallet_balance, set_refresh_cookie
 from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import create_signup_ticket
+from app.core.security import create_oauth_state, create_signup_ticket, hash_token, verify_oauth_state
+from app.models.password_reset import PasswordReset
 from app.models.user import User
 from app.schemas.auth import GoogleVerifyRequest, TokenResponse
 from app.schemas.common import APIResponse
@@ -32,10 +34,11 @@ def _redirect_err(msg: str) -> Response:
 
 
 @google_router.get("/google/login")
-async def google_login():
+async def google_login(intent: str = "login"):
     if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_ID.strip():
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Google OAuth belum dikonfigurasi di server.")
-    state = secrets.token_urlsafe(16)
+    safe_intent = intent if intent in ("login", "reset") else "login"
+    state = create_oauth_state(safe_intent)
     url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?client_id={settings.GOOGLE_CLIENT_ID}&"
         f"redirect_uri={quote(settings.GOOGLE_REDIRECT_URI, safe='')}&response_type=code&"
@@ -52,11 +55,11 @@ async def google_callback(
     code: Optional[str] = None, state: Optional[str] = None, error: Optional[str] = None,
     request: Request = None, db: AsyncSession = Depends(get_db),
 ):
-    cookie_state = request.cookies.get("g_oauth_state") if request and hasattr(request, "cookies") else None
     if error or not code:
         return _redirect_err(error or "Otorisasi Google dibatalkan oleh pengguna.")
-    if not state or not cookie_state or state != cookie_state:
-        return _redirect_err("Validasi state CSRF gagal")
+    state_data = verify_oauth_state(state or "")
+    if not state_data:
+        return _redirect_err("Sesi autentikasi Google kedaluwarsa. Silakan coba lagi.")
 
     try:
         async with _get_httpx().AsyncClient(timeout=10.0) as client:
@@ -74,6 +77,17 @@ async def google_callback(
         return _redirect_err("Email tidak ditemukan")
 
     user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
+    if state_data.get("intent") == "reset":
+        if not user or not user.is_active:
+            return _redirect_err("Akun dengan email Google ini tidak ditemukan atau nonaktif.")
+        raw_token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+        db.add(PasswordReset(user_id=user.id, token_hash=hash_token(raw_token), expires_at=expires_at))
+        await db.commit()
+        resp = Response(status_code=status.HTTP_307_TEMPORARY_REDIRECT, headers={"Location": f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"})
+        resp.delete_cookie(key="g_oauth_state")
+        return resp
+
     if user:
         if not user.is_active:
             return _redirect_err("Akun Anda telah dinonaktifkan")

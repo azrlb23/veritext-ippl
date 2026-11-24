@@ -3,6 +3,7 @@ import BalanceHero from "../components/token/BalanceHero.vue";
 import ConfirmPurchase from "../components/token/ConfirmPurchase.vue";
 import InvoiceList from "../components/token/InvoiceList.vue";
 import PackageCards from "../components/token/PackageCards.vue";
+import TokenGuide from "../components/token/TokenGuide.vue";
 import UnitPurchase from "../components/token/UnitPurchase.vue";
 import { useTokenPurchase } from "../composables/useTokenPurchase";
 import { useAuthStore } from "../stores/auth";
@@ -20,6 +21,7 @@ const p = useTokenPurchase();
     </div>
     <div class="space-y-6">
       <BalanceHero :balance="authStore.tokenBalance" :role="authStore.role" />
+      <TokenGuide />
       <PackageCards @choose="(t) => (p.target.value = t)" />
       <UnitPurchase @choose="(t) => (p.target.value = t)" />
       <InvoiceList :invoices="p.invoices.value" />

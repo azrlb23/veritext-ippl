@@ -46,7 +46,63 @@ class AuditLogResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
+class AdminUserItem(BaseModel):
+    id: uuid.UUID
+    full_name: str
+    email: str
+    role: str
+    is_active: bool
+    balance: int
+    ai_trial_remaining: int
+    audit_count: int
+    is_locked: bool
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TrendPoint(BaseModel):
+    date: str
+    audits: int
+    revenue: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OverviewExtras(BaseModel):
+    new_users_7d: int
+    audits_today: int
+    tokens_spent_30d: int
+    role_distribution: Dict[str, int]
+    trends: list[TrendPoint]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class InvoiceSummary(BaseModel):
+    total_revenue: int
+    paid: int
+    pending: int
+    failed: int
+    top_package: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SystemExtras(BaseModel):
+    failed_audits_24h: int
+    queued_audits: int
+    processing_audits: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 __all__ = [
+    "AdminUserItem",
     "AuditLogResponse",
+    "InvoiceSummary",
+    "OverviewExtras",
+    "SystemExtras",
     "SystemHealthMetricsResponse",
+    "TrendPoint",
 ]

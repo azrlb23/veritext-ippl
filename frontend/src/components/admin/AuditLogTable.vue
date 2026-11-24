@@ -1,14 +1,20 @@
 <script setup lang="ts">
-interface AuditLogItem {
-  id: string;
-  action_type: string;
-  actor_ip?: string | null;
-  action_result: string;
-  created_at: string;
-}
+import type { AuditLogItem } from "../../types/admin";
 
-defineProps<{ logs: AuditLogItem[]; loading?: boolean; page: number; pages: number; total: number; selectedAction?: string }>();
-const emit = defineEmits<{ (e: "update:selectedAction", v: string): void; (e: "changePage", v: number): void }>();
+defineProps<{
+  logs: AuditLogItem[];
+  loading?: boolean;
+  page: number;
+  pages: number;
+  total: number;
+  selectedAction?: string;
+  selectedResult?: "" | "FAILED";
+}>();
+const emit = defineEmits<{
+  (e: "update:selectedAction", v: string): void;
+  (e: "update:selectedResult", v: "" | "FAILED"): void;
+  (e: "changePage", v: number): void;
+}>();
 
 const FILTERS = [
   { key: "", label: "Semua" },
@@ -30,22 +36,35 @@ const humanize = (a: string) => a.toLowerCase().replace(/_/g, " ").replace(/^./,
 const actionLabel = (a: string) => LABELS[a] || humanize(a);
 const date = (d?: string | null) => (d ? new Date(d).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }) : "-");
 const failed = (r: string) => r.toUpperCase() !== "SUCCESS";
+const detail = (l: AuditLogItem): string => {
+  const m = l.metadata;
+  if (!m) return "";
+  const parts: string[] = [];
+  if (typeof m.email === "string" && m.email) parts.push(m.email);
+  if (typeof m.filename === "string" && m.filename) parts.push(m.filename);
+  if (typeof m.reason === "string" && m.reason) parts.push(m.reason);
+  if (typeof m.token_cost === "number") parts.push(`${m.token_cost} token`);
+  return parts.join(" - ");
+};
 const nav = "vt-btn-light inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-semibold transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40";
 </script>
 
 <template>
-  <section class="h-full rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="log-judul" :aria-busy="loading">
+  <section class="h-full rounded-[28px] border border-[#E8ECEB] bg-white p-6 sm:p-8" aria-labelledby="log-judul" :aria-busy="loading">
     <h2 id="log-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Catatan aktivitas</h2>
-    <p class="mt-1 text-[14px] text-[#5E5A6B]">{{ total.toLocaleString("id-ID") }} catatan</p>
-    <div class="mt-4 flex flex-wrap gap-2" role="group" aria-label="Saring aktivitas">
-      <button v-for="f in FILTERS" :key="f.key" type="button" :aria-pressed="(selectedAction || '') === f.key" class="inline-flex h-11 cursor-pointer items-center rounded-full px-5 text-[14px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="(selectedAction || '') === f.key ? 'vt-btn-dark' : 'vt-btn-light'" @click="emit('update:selectedAction', f.key)">{{ f.label }}</button>
+    <p class="mt-1 text-[14px] tabular-nums text-[#5E5A6B]">{{ total.toLocaleString("id-ID") }} catatan</p>
+    <div class="mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Saring aktivitas">
+      <button v-for="f in FILTERS" :key="f.key" type="button" :aria-pressed="(selectedAction || '') === f.key" class="inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="(selectedAction || '') === f.key ? 'vt-btn-dark' : 'vt-btn-light'" @click="emit('update:selectedAction', f.key)">{{ f.label }}</button>
+      <button type="button" :aria-pressed="selectedResult === 'FAILED'" class="inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="selectedResult === 'FAILED' ? 'vt-btn-dark' : 'vt-btn-light'" @click="emit('update:selectedResult', selectedResult === 'FAILED' ? '' : 'FAILED')">Gagal saja</button>
     </div>
     <p v-if="!loading && logs.length === 0" class="py-12 text-center text-[15px] text-[#5E5A6B]">Belum ada catatan.</p>
-    <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">
+    <ul v-else class="mt-3 divide-y divide-[#E8ECEB]">
       <li v-for="l in logs" :key="l.id" class="flex items-center justify-between gap-4 py-4">
         <div class="min-w-0">
           <p class="truncate text-[15px] font-semibold text-[#14111C]">{{ actionLabel(l.action_type) }}</p>
-          <p class="text-[13px] text-[#5E5A6B]">{{ date(l.created_at) }}<span v-if="l.actor_ip"> ({{ l.actor_ip }})</span></p>
+          <p class="truncate text-[13px] text-[#5E5A6B]">
+            {{ date(l.created_at) }}<span v-if="l.actor_ip"> ({{ l.actor_ip }})</span><span v-if="detail(l)"> - {{ detail(l) }}</span>
+          </p>
         </div>
         <p class="flex-shrink-0 text-[14px] font-medium" :class="failed(l.action_result) ? 'text-[#B91C1C]' : 'text-[#5E5A6B]'">{{ failed(l.action_result) ? "Gagal" : "Berhasil" }}</p>
       </li>

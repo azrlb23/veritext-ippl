@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { AuthCard } from "../components/auth";
 import { useAuthStore } from "../stores/auth";
 import { useNotification } from "../composables";
 import { getHomeRouteForRole } from "../utils/navigation";
@@ -43,62 +44,39 @@ onMounted(async () => {
     }
 
     authStore.markWelcome();
-
-    showNotification(
-      "Selamat datang kembali! Berhasil masuk dengan akun Google.",
-      "success",
-      "Login Berhasil"
-    );
-
+    showNotification("Selamat datang kembali! Berhasil masuk dengan akun Google.", "success", "Login Berhasil");
     router.replace(getHomeRouteForRole(authStore.role));
   } catch (err: any) {
     await authStore.logout();
     isProcessing.value = false;
-    errorMessage.value =
-      err?.response?.data?.detail ||
-      err?.message ||
-      "Gagal memproses sesi login Google.";
+    errorMessage.value = err?.response?.data?.detail || err?.message || "Gagal memproses sesi login Google.";
   }
 });
 </script>
 
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-[#FFFFFF] via-[#EBF8F6] to-[#E6F7F5] flex items-center justify-center p-4 font-sans select-none overflow-hidden">
-    <div class="absolute inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
-      <div class="absolute -top-32 right-10 w-96 h-96 rounded-full bg-[#0F766E]/15 blur-[100px]"></div>
-      <div class="absolute top-[400px] -left-20 w-[450px] h-[450px] rounded-full bg-[#0D9488]/15 blur-[120px]"></div>
+  <AuthCard
+    title="Menghubungkan akun"
+    :subtitle="isProcessing ? 'Menyiapkan sesi aman dan kredensial akun Google Anda.' : 'Autentikasi Google belum berhasil diproses.'"
+  >
+    <div v-if="isProcessing" class="flex items-center gap-4 py-4" role="status">
+      <svg class="h-9 w-9 shrink-0 animate-spin motion-reduce:animate-none" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <circle cx="18" cy="18" r="15" stroke="#D5ECE8" stroke-width="4" />
+        <path d="M18 3 a15 15 0 0 1 15 15" stroke="#0F766E" stroke-width="4" stroke-linecap="round" />
+      </svg>
+      <p class="text-[14.5px] leading-[1.6] text-[#4B4757]">Memverifikasi sesi Google...</p>
     </div>
 
-    <div class="w-full max-w-md bg-white rounded-[32px] border border-[#E8ECEB] shadow-float p-8 text-center space-y-6">
-      <div v-if="isProcessing" class="space-y-4 py-4">
-        <div class="w-12 h-12 rounded-full border-3 border-[#0F766E] border-t-transparent animate-spin mx-auto"></div>
-        <div class="space-y-1">
-          <h3 class="text-base font-bold text-[#14111C]">Menghubungkan Akun Google...</h3>
-          <p class="text-xs text-[#5E5A6B]">Menyiapkan sesi aman dan kredensial akun Anda.</p>
-        </div>
-      </div>
-
-      <div v-else class="space-y-4 py-2">
-        <div class="w-12 h-12 rounded-full bg-[#FEF2F2] border border-[#FECACA] flex items-center justify-center mx-auto text-[#B91C1C]">
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
-        <div class="space-y-1">
-          <h3 class="text-base font-bold text-[#14111C]">Autentikasi Google Gagal</h3>
-          <p class="text-xs text-[#5E5A6B] leading-relaxed max-w-xs mx-auto">
-            {{ errorMessage || "Terjadi kesalahan saat memproses login Google." }}
-          </p>
-        </div>
-        <div class="pt-2">
-          <router-link
-            to="/login"
-            class="vt-btn-dark inline-flex items-center px-6 py-2.5 text-xs font-semibold rounded-full transition-all"
-          >
-            Kembali ke Halaman Masuk
-          </router-link>
-        </div>
-      </div>
+    <div v-else class="space-y-5">
+      <p role="alert" class="text-[14.5px] leading-[1.65] text-[#B91C1C]">
+        {{ errorMessage || "Terjadi kesalahan saat memproses login Google." }}
+      </p>
+      <router-link
+        to="/login"
+        class="vt-btn-dark inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold"
+      >
+        Kembali ke halaman masuk
+      </router-link>
     </div>
-  </div>
+  </AuthCard>
 </template>

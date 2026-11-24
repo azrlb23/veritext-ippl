@@ -52,10 +52,11 @@ export function getSegmentedNavLinks(isAuthenticated: boolean, role: string): Na
   const normalizedRole = String(role || "").toUpperCase();
   if (normalizedRole === "ADMIN") {
     return [
-      { name: "Analitik Global", to: "/admin" },
-      { name: "Kesehatan Sistem", to: "/admin#health" },
-      { name: "Log Transaksi", to: "/admin#transactions" },
-      { name: "Log Audit", to: "/admin#logs" },
+      { name: "Ringkasan", to: "/admin" },
+      { name: "Pengguna", to: "/admin/pengguna" },
+      { name: "Transaksi", to: "/admin/transaksi" },
+      { name: "Aktivitas", to: "/admin/aktivitas" },
+      { name: "Sistem", to: "/admin/sistem" },
     ];
   }
 
@@ -91,6 +92,7 @@ export function evaluateNavigationGuard(
   const userRole = String(rawRole).toUpperCase();
   const isAdminRoute =
     cleanPath === "/admin" ||
+    cleanPath.startsWith("/admin/") ||
     to.name === "admin" ||
     (hasRoleRestriction && to.meta.roles?.includes("ADMIN"));
 

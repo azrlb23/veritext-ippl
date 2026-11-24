@@ -120,12 +120,18 @@ async def get_system_health_metrics(db: AsyncSession) -> SystemHealthMetricsResp
 async def list_audit_logs_data(
     db: AsyncSession,
     action_type: Optional[str] = None,  # noqa: UP045
+    result: Optional[str] = None,  # noqa: UP045
     page: int = 1,
     limit: int = 20,
 ) -> PaginatedData[AuditLogResponse]:
     query = select(AuditLog)
     if action_type:
         query = query.where(AuditLog.action_type == action_type)
+    normalized_result = result.strip().upper() if isinstance(result, str) else ""
+    if normalized_result == "FAILED":
+        query = query.where(AuditLog.action_result != "SUCCESS")
+    elif normalized_result == "SUCCESS":
+        query = query.where(AuditLog.action_result == "SUCCESS")
 
     count_stmt = select(func.count()).select_from(query.subquery())
     total = (await db.execute(count_stmt)).scalar() or 0

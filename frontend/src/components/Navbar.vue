@@ -28,8 +28,8 @@ function isItemActive(to: string): boolean {
     const [p, h] = to.split("#");
     return route.path === p && route.hash === `#${h}`;
   }
-  if (to === "/admin") return route.path === "/admin" && (!route.hash || route.hash === "#overview");
-  return to === "/" ? route.path === "/" : route.path.startsWith(to);
+  if (to === "/" || to === "/admin") return route.path === to;
+  return route.path.startsWith(to);
 }
 
 function closeMenu() {

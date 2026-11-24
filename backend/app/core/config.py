@@ -91,6 +91,7 @@ class Settings(BaseSettings):
 
     # Payment Gateway (Midtrans)
     MIDTRANS_SERVER_KEY: str = "SB-Mid-server-DemoServerKey1234567890"
+    MIDTRANS_SIGNATURE_KEY: str = ""
     MIDTRANS_CLIENT_KEY: str = "SB-Mid-client-DemoClientKey1234567890"
     MIDTRANS_IS_PRODUCTION: bool = False
     MIDTRANS_MERCHANT_ID: str = "G123456789"

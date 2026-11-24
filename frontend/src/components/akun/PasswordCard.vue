@@ -13,6 +13,7 @@ const oldPassword = ref("");
 const newPassword = ref("");
 const confirm = ref("");
 const saving = ref(false);
+const loggingOutAll = ref(false);
 
 const tooShort = computed(() => newPassword.value.length > 0 && newPassword.value.length < 8);
 const mismatch = computed(() => confirm.value.length > 0 && confirm.value !== newPassword.value);
@@ -31,24 +32,53 @@ async function submit() {
     saving.value = false;
   }
 }
+
+async function handleLogoutAll() {
+  loggingOutAll.value = true;
+  try {
+    await authService.logoutAll();
+    await authStore.logout();
+    showNotification("Semua sesi perangkat telah dikeluarkan.", "success");
+    router.push("/login");
+  } catch (err: any) {
+    showNotification(err?.response?.data?.detail || "Gagal mengeluarkan semua perangkat.", "error");
+  } finally {
+    loggingOutAll.value = false;
+  }
+}
 </script>
 
 <template>
-  <section class="rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="sandi-judul">
-    <h2 id="sandi-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Kata sandi</h2>
-    <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Setelah diganti, semua perangkat akan keluar dan Anda perlu masuk lagi.</p>
-    <form class="mt-7 space-y-7" @submit.prevent="submit">
+  <section class="flex h-full flex-col justify-between rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="sandi-judul">
+    <div>
+      <h2 id="sandi-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Kata sandi</h2>
+      <p class="mt-2 text-[15px] leading-relaxed text-[#4B4757]">Setelah diganti, semua perangkat akan keluar dan Anda perlu masuk lagi.</p>
+    </div>
+    <form class="mt-7 space-y-6" @submit.prevent="submit">
       <AuthField id="sandi-lama" v-model="oldPassword" type="password" label="Kata sandi saat ini" autocomplete="current-password" revealable />
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <AuthField id="sandi-baru" v-model="newPassword" type="password" label="Kata sandi baru (minimal 8 karakter)" autocomplete="new-password" :invalid="tooShort" revealable />
+      <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <AuthField id="sandi-baru" v-model="newPassword" type="password" label="Kata sandi baru" placeholder="Min. 8 karakter" autocomplete="new-password" :invalid="tooShort" revealable />
         <AuthField id="sandi-ulang" v-model="confirm" type="password" label="Ulangi kata sandi baru" autocomplete="new-password" :invalid="mismatch" />
       </div>
       <p v-if="mismatch" class="-mt-3 text-[14px] text-[#B91C1C]">Kata sandi belum sama.</p>
-      <button
-        type="submit"
-        :disabled="!ready || saving"
-        class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
-      >{{ saving ? "Menyimpan..." : "Ganti kata sandi" }}</button>
+      <div class="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          :disabled="!ready || saving || loggingOutAll"
+          class="vt-btn-dark inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-8 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+        >{{ saving ? "Menyimpan..." : "Ganti kata sandi" }}</button>
+        <button
+          type="button"
+          :disabled="saving || loggingOutAll"
+          class="vt-btn-light inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[14.5px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+          @click="handleLogoutAll"
+        >{{ loggingOutAll ? "Mengeluarkan..." : "Keluar semua perangkat" }}</button>
+      </div>
+      <div class="text-[13.5px] text-[#5E5A6B]">
+        <router-link to="/forgot-password" class="font-medium text-[#0F766E] hover:underline">
+          Lupa sandi saat ini? Atur ulang via OTP / Google
+        </router-link>
+      </div>
     </form>
   </section>
 </template>

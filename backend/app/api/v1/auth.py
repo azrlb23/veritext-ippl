@@ -36,6 +36,7 @@ get_user_wallet_balance = _helpers_mod.get_user_wallet_balance
 set_refresh_cookie = _helpers_mod.set_refresh_cookie
 forgot_password = _reset_mod.forgot_password
 reset_password = _reset_mod.reset_password
+logout_all = _reset_mod.logout_all
 google_login = _google_mod.google_login
 google_callback = _google_mod.google_callback
 google_verify_token = _google_mod.google_verify_token
@@ -135,7 +136,7 @@ router.include_router(_google_signup_mod.google_signup_router)
 
 __all__ = [
     "router", "register", "login", "logout", "refresh_token_endpoint", "get_current_profile", "get_me",
-    "validate_strong_password", "send_password_reset_email", "forgot_password", "reset_password",
+    "validate_strong_password", "send_password_reset_email", "forgot_password", "reset_password", "logout_all",
     "google_login", "google_callback", "google_verify_token", "google_complete", "update_profile", "change_password",
     "delete_own_account", "delete_my_account", "httpx",
 ]

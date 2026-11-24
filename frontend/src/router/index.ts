@@ -17,7 +17,11 @@ import RiwayatView from "../views/RiwayatView.vue";
 import AkunView from "../views/AkunView.vue";
 import AsistenView from "../views/AsistenView.vue";
 import VerifyView from "../views/VerifyView.vue";
-import AdminView from "../views/AdminView.vue";
+import AdminOverviewView from "../views/AdminOverviewView.vue";
+import AdminUsersView from "../views/AdminUsersView.vue";
+import AdminTransactionsView from "../views/AdminTransactionsView.vue";
+import AdminActivityView from "../views/AdminActivityView.vue";
+import AdminSystemView from "../views/AdminSystemView.vue";
 
 declare module "vue-router" {
   interface RouteMeta {
@@ -40,20 +44,27 @@ const routes: RouteRecordRaw[] = [
   { path: "/audits/:id", name: "audit-detail", component: AuditDetailView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Hasil Pemeriksaan - VeriText AI" } },
   { path: "/login", name: "login", component: LoginView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Masuk Akun - VeriText AI" } },
   { path: "/register", name: "register", component: RegisterView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Daftar Akun Baru - VeriText AI" } },
-  { path: "/forgot-password", name: "forgot-password", component: ForgotPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lupa Kata Sandi - VeriText AI" } },
-  { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Setel Ulang Sandi - VeriText AI" } },
+  { path: "/forgot-password", name: "forgot-password", component: ForgotPasswordView, meta: { isStandalone: true, backdrop: "auth", title: "Lupa Kata Sandi - VeriText AI" } },
+  { path: "/reset-password", name: "reset-password", component: ResetPasswordView, meta: { isStandalone: true, backdrop: "auth", title: "Setel Ulang Sandi - VeriText AI" } },
   { path: "/auth/callback", name: "oauth-callback", component: OAuthCallbackView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Autentikasi Akun - VeriText AI" } },
   { path: "/onboarding", name: "onboarding", component: OnboardingView, meta: { guestOnly: true, isStandalone: true, backdrop: "auth", title: "Lengkapi Profil Akun - VeriText AI" } },
   { path: "/billing", name: "billing", component: TokenView, meta: { requiresAuth: true, roles: ["FREE", "PREMIUM"], backdrop: "page", title: "Token - VeriText AI" } },
   { path: "/verify/:uuid?", name: "verify", component: VerifyView, meta: { title: "Verifikasi Sertifikat QR - VeriText AI", backdrop: "page" } },
-  { path: "/admin", name: "admin", component: AdminView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Pemantauan - VeriText AI" } },
+  { path: "/admin", name: "admin", component: AdminOverviewView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Ringkasan Pemantauan - VeriText AI" } },
+  { path: "/admin/pengguna", name: "admin-users", component: AdminUsersView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Pengguna - VeriText AI" } },
+  { path: "/admin/transaksi", name: "admin-transactions", component: AdminTransactionsView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Transaksi - VeriText AI" } },
+  { path: "/admin/aktivitas", name: "admin-activity", component: AdminActivityView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Aktivitas - VeriText AI" } },
+  { path: "/admin/sistem", name: "admin-system", component: AdminSystemView, meta: { requiresAuth: true, roles: ["ADMIN"], backdrop: "page", title: "Kesehatan Sistem - VeriText AI" } },
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, behavior: "smooth", top: 96 };
+    }
     return { top: 0 };
   },
 });

@@ -12,10 +12,10 @@ defineProps<{ balance: number; role: string }>();
         </p>
         <p class="mt-3 text-[15px] text-[#5E5A6B]">Paket {{ role === "PREMIUM" ? "Premium" : "Gratis" }}</p>
       </div>
-      <ul class="grid gap-3 rounded-[28px] border border-[#D5ECE8] bg-[#EBF8F6] p-6 text-[15px] leading-relaxed text-[#4B4757] lg:max-w-sm">
-        <li><span class="font-semibold text-[#14111C]">1 token</span> memeriksa naskah hingga 2.500 kata.</li>
-        <li><span class="font-semibold text-[#14111C]">Naskah panjang</span> dikenai satu token tambahan tiap 2.500 kata, maksimal 5 token.</li>
-        <li><span class="font-semibold text-[#14111C]">Asisten AI:</span> 1 token untuk 10 pesan.</li>
+      <ul class="grid gap-3 border-t border-[#E8ECEB] pt-6 text-[15px] leading-relaxed text-[#4B4757] lg:max-w-sm lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+        <li><span class="font-semibold text-[#0F766E]">1 token</span> memeriksa naskah hingga <span class="font-semibold text-[#14111C]">2.500 kata</span>.</li>
+        <li><span class="font-semibold text-[#14111C]">Naskah panjang</span> dikenai satu token tambahan tiap 2.500 kata, <span class="font-semibold text-[#0F766E]">maksimal 5 token</span>.</li>
+        <li><span class="font-semibold text-[#14111C]">Asisten AI:</span> <span class="font-semibold text-[#0F766E]">1 token untuk 10 pesan</span>.</li>
       </ul>
     </div>
   </section>

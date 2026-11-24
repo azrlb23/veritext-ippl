@@ -12,6 +12,7 @@ from pydantic import ValidationError
 from app.api.v1 import auth as auth_router
 from app.core.config import settings
 from app.core.security import (
+    create_oauth_state,
     create_signup_ticket,
     decode_signup_ticket,
     get_password_hash,
@@ -239,10 +240,10 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp.status_code, status.HTTP_307_TEMPORARY_REDIRECT)
         location = resp.headers.get("Location", "")
         self.assertIn("/login?oauth_error=", location)
-        self.assertIn("state", location.lower())
+        self.assertIn("kedaluwarsa", location.lower())
 
     async def test_google_callback_missing_state_cookie_rejected(self):
-        """GET /auth/google/callback menolak jika cookie g_oauth_state tidak ada."""
+        """GET /auth/google/callback menolak jika state tidak valid."""
         mock_req = MagicMock()
         mock_req.cookies = {}
         mock_db = MockAsyncSession()
@@ -258,8 +259,9 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
 
     async def test_google_callback_unverified_email_rejected(self):
         """GET /auth/google/callback menolak email yang verified_email=False dari Google."""
+        valid_state = create_oauth_state("login")
         mock_req = MagicMock()
-        mock_req.cookies = {"g_oauth_state": "matching_state"}
+        mock_req.cookies = {}
         mock_db = MockAsyncSession()
 
         token_resp = MagicMock(status_code=200)
@@ -277,7 +279,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         ):
             resp = await auth_router.google_callback(
                 code="valid_code",
-                state="matching_state",
+                state=valid_state,
                 request=mock_req,
                 db=mock_db,
             )
@@ -296,9 +298,10 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
             password_hash="hashed",
             created_at=datetime.now(timezone.utc),
         )
+        valid_state = create_oauth_state("login")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult(scalar_val=existing_user))
         mock_req = MagicMock()
-        mock_req.cookies = {"g_oauth_state": "matching_state"}
+        mock_req.cookies = {}
         mock_req.client.host = "127.0.0.1"
 
         token_resp = MagicMock(status_code=200)
@@ -315,7 +318,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         ):
             resp = await auth_router.google_callback(
                 code="google_code",
-                state="matching_state",
+                state=valid_state,
                 request=mock_req,
                 db=mock_db,
             )
@@ -330,9 +333,10 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
 
     async def test_google_callback_new_user_redirects_onboarding_without_db_creation(self):
         """GET /auth/google/callback untuk user baru membuat ticket signup dan TIDAK membuat user di DB."""
+        valid_state = create_oauth_state("login")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
         mock_req = MagicMock()
-        mock_req.cookies = {"g_oauth_state": "matching_state"}
+        mock_req.cookies = {}
         mock_req.client.host = "127.0.0.1"
 
         token_resp = MagicMock(status_code=200)
@@ -349,7 +353,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         ):
             resp = await auth_router.google_callback(
                 code="google_code",
-                state="matching_state",
+                state=valid_state,
                 request=mock_req,
                 db=mock_db,
             )

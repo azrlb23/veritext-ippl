@@ -40,6 +40,11 @@ export const authService = {
     return res.data;
   },
 
+  async logoutAll() {
+    const res = await apiClient.post<{ message?: string }>("/auth/logout-all");
+    return res.data;
+  },
+
   async getProfile() {
     const res = await apiClient.get<{ data: User }>("/auth/me");
     return res.data.data;
@@ -50,8 +55,17 @@ export const authService = {
     return res.data;
   },
 
-  async resetPassword(token: string, new_password: string) {
-    const res = await apiClient.post<{ message: string; data: Record<string, unknown> }>("/auth/reset-password", { token, new_password });
+  async resetPassword(
+    payloadOrToken: string | { token?: string; email?: string; otp?: string; new_password: string },
+    newPassword?: string
+  ) {
+    const body =
+      typeof payloadOrToken === "string"
+        ? { token: payloadOrToken, new_password: newPassword ?? "" }
+        : payloadOrToken.token
+          ? { token: payloadOrToken.token, new_password: payloadOrToken.new_password }
+          : { email: payloadOrToken.email, otp: payloadOrToken.otp, new_password: payloadOrToken.new_password };
+    const res = await apiClient.post<{ message: string; data: Record<string, unknown> }>("/auth/reset-password", body);
     return res.data;
   },
 

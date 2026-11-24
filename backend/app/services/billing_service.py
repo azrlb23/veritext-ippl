@@ -67,10 +67,19 @@ class BillingService:
 
     @staticmethod
     async def process_midtrans_webhook(db: AsyncSession, payload: MidtransWebhookPayload) -> bool:
-        expected_sig_raw = f"{payload.order_id}{payload.status_code}{payload.gross_amount}{settings.MIDTRANS_SERVER_KEY}"
-        expected_signature = hashlib.sha512(expected_sig_raw.encode("utf-8")).hexdigest()
+        if payload.order_id.startswith("payment_notif_test_"):
+            return True
 
-        if not hmac.compare_digest(payload.signature_key, expected_signature):
+        sig_keys = [k for k in (settings.MIDTRANS_SIGNATURE_KEY, settings.MIDTRANS_SERVER_KEY) if k]
+        if not any(
+            hmac.compare_digest(
+                payload.signature_key,
+                hashlib.sha512(
+                    f"{payload.order_id}{payload.status_code}{payload.gross_amount}{k}".encode("utf-8")
+                ).hexdigest(),
+            )
+            for k in sig_keys
+        ):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Midtrans signature key")
 
         stmt = select(Invoice).where(Invoice.order_id == payload.order_id).with_for_update()

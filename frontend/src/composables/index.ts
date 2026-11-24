@@ -5,3 +5,4 @@ export * from "./useAuditTasks";
 export * from "./useAssistant";
 export * from "./useTokenPurchase";
 export * from "./useSectionReveal";
+export * from "./useAdminData";
