@@ -35,27 +35,39 @@ class DualEngineLLMGateway:
         deepseek_client: DeepSeekRouterClient | None = None,
         ollama_client: OllamaLocalClient | None = None,
         strategy: str | None = None,
+        nemotron_client: DeepSeekRouterClient | None = None,
     ) -> None:
         self.gemini = gemini_client or GeminiFlashClient()
         self.deepseek = deepseek_client or DeepSeekRouterClient()
+        self.nemotron = nemotron_client or (
+            DeepSeekRouterClient(
+                api_key=settings.OPENROUTER_API_KEY,
+                model=settings.OPENROUTER_MODEL,
+                base_url="https://openrouter.ai/api/v1",
+            )
+            if settings.ROUTER9_API_KEY and settings.OPENROUTER_API_KEY
+            else None
+        )
         self.ollama = ollama_client or OllamaLocalClient()
         self.strategy = strategy or settings.LLM_FAILOVER_STRATEGY
 
     def _client_order(self, preferred_engine: str | None = None) -> list[tuple[Any, str]]:
         gemini_entry = (self.gemini, f"Gemini ({self.gemini.model})")
         deepseek_entry = (self.deepseek, f"DeepSeek ({self.deepseek.model})")
+        nemotron_entries = [(self.nemotron, f"Nemotron ({self.nemotron.model})")] if self.nemotron else []
         ollama_entry = (self.ollama, f"Ollama ({self.ollama.model})")
         overrides = {
-            "ollama": [ollama_entry, gemini_entry, deepseek_entry],
-            "gemini": [gemini_entry, deepseek_entry, ollama_entry],
-            "deepseek": [deepseek_entry, gemini_entry, ollama_entry],
+            "ollama": [ollama_entry, gemini_entry, deepseek_entry, *nemotron_entries],
+            "gemini": [gemini_entry, deepseek_entry, *nemotron_entries, ollama_entry],
+            "deepseek": [deepseek_entry, *nemotron_entries, gemini_entry, ollama_entry],
+            "nemotron": [*nemotron_entries, deepseek_entry, gemini_entry, ollama_entry],
         }
         pref = (preferred_engine or "").strip().lower()
         if pref in overrides:
             return overrides[pref]
         if self.strategy == "gemini_first":
-            return [gemini_entry, deepseek_entry, ollama_entry]
-        return [deepseek_entry, gemini_entry, ollama_entry]
+            return [gemini_entry, deepseek_entry, *nemotron_entries, ollama_entry]
+        return [deepseek_entry, *nemotron_entries, gemini_entry, ollama_entry]
 
     def build_judge_prompt(self, sentences: list[SentenceSpan]) -> str:
         lines = []
