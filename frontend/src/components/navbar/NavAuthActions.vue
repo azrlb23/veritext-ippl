@@ -23,29 +23,21 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
       <div ref="root" class="relative">
         <button
           type="button"
-          class="flex h-10 cursor-pointer items-center gap-2 rounded-full bg-[#14111C]/[0.04] p-1 pr-3 transition-colors hover:bg-[#14111C]/[0.08] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+          class="flex h-9 cursor-pointer items-center gap-2 rounded-full bg-[#14111C]/[0.05] px-3.5 transition-colors hover:bg-[#14111C]/[0.09] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
           aria-haspopup="menu"
           :aria-expanded="open"
           @click="open = !open"
         >
-          <span class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-[#0F766E] to-[#0D9488] text-[12.5px] font-semibold text-white shadow-sm">
-            {{ name.charAt(0).toUpperCase() }}
-          </span>
-          <span class="max-w-[100px] truncate text-[13px] font-medium text-[#14111C]">{{ name.split(' ')[0] }}</span>
+          <span class="max-w-[110px] truncate text-[13.5px] font-medium text-[#14111C]">{{ name.split(' ')[0] }}</span>
           <svg class="h-3.5 w-3.5 text-[#5E5A6B] transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
           </svg>
         </button>
 
         <div v-if="open" role="menu" class="absolute right-0 top-full mt-2 w-72 rounded-[22px] border border-[#E6ECEB] bg-white/95 p-1.5 shadow-[0_20px_48px_-14px_rgba(20,17,28,0.16)] backdrop-blur-md">
-          <div class="flex items-center justify-between gap-3 border-b border-[#E6ECEB] px-3 py-2.5">
-            <div class="min-w-0">
-              <div class="truncate text-[14px] font-semibold text-[#14111C]">{{ name }}</div>
-              <div v-if="email" class="truncate text-[12px] text-[#5E5A6B]">{{ email }}</div>
-            </div>
-            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0F766E] to-[#0D9488] text-[13px] font-semibold text-white">
-              {{ name.charAt(0).toUpperCase() }}
-            </span>
+          <div class="border-b border-[#E6ECEB] px-3 py-2.5">
+            <div class="truncate text-[14px] font-semibold text-[#14111C]">{{ name }}</div>
+            <div v-if="email" class="truncate text-[12px] text-[#5E5A6B]">{{ email }}</div>
           </div>
 
           <div class="py-1">
