@@ -48,7 +48,7 @@ async def register(req: UserRegisterRequest, request: Request, response: Respons
     ip_addr = request.client.host if request.client else None
     user, access_token, refresh_token = await AuthService.register_user(db, req, user_agent=request.headers.get("user-agent"), ip_address=ip_addr)
     set_refresh_cookie(response, refresh_token, 7)
-    return APIResponse(message="User account registered successfully. 5 trial tokens granted.", data=TokenResponse(access_token=access_token, user=format_user_profile(user, 5)))
+    return APIResponse(message="User account registered successfully. 5 trial tokens granted.", data=TokenResponse(access_token=access_token, user=format_user_profile(user, 5, 3, 0)))
 
 
 @router.post("/login", response_model=APIResponse[TokenResponse])
@@ -62,8 +62,8 @@ async def login(req: UserLoginRequest, request: Request, response: Response, db:
     )
     user, access_token, refresh_token = await AuthService.authenticate_user(db, req, user_agent=request.headers.get("user-agent"), ip_address=ip_addr)
     set_refresh_cookie(response, refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS if req.remember_me else None)
-    balance = await get_user_wallet_balance(db, user.id)
-    return APIResponse(message="Login successful", data=TokenResponse(access_token=access_token, user=format_user_profile(user, balance)))
+    bal, trial, chat = await _helpers_mod.get_user_wallet_info(db, user.id)
+    return APIResponse(message="Login successful", data=TokenResponse(access_token=access_token, user=format_user_profile(user, bal, trial, chat)))
 
 
 @router.post("/logout", response_model=APIResponse[dict])
@@ -130,8 +130,8 @@ async def refresh_token_endpoint(
 
 @router.get("/me", response_model=APIResponse[UserProfileResponse])
 async def get_current_profile(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    balance = await get_user_wallet_balance(db, current_user.id)
-    return APIResponse(message="Profile retrieved", data=format_user_profile(current_user, balance))
+    bal, trial, chat = await _helpers_mod.get_user_wallet_info(db, current_user.id)
+    return APIResponse(message="Profile retrieved", data=format_user_profile(current_user, bal, trial, chat))
 
 
 get_me = get_current_profile

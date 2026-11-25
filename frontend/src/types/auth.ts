@@ -9,6 +9,7 @@ export interface User {
   created_at: string;
   token_balance?: number;
   ai_trial_remaining?: number;
+  ai_chat_allowance_remaining?: number;
 }
 
 export interface AuthState {

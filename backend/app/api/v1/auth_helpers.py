@@ -36,7 +36,12 @@ def validate_strong_password(password: str) -> None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Kata sandi harus mengandung minimal 1 karakter khusus / simbol.")
 
 
-def format_user_profile(user: User, balance: int = 0) -> UserProfileResponse:
+def format_user_profile(
+    user: User,
+    balance: int = 0,
+    ai_trial: int = 0,
+    ai_chat: int = 0,
+) -> UserProfileResponse:
     return UserProfileResponse(
         id=user.id,
         full_name=user.full_name,
@@ -45,6 +50,8 @@ def format_user_profile(user: User, balance: int = 0) -> UserProfileResponse:
         is_active=user.is_active,
         created_at=user.created_at or datetime.now(timezone.utc),  # noqa: UP017
         token_balance=balance,
+        ai_trial_remaining=ai_trial,
+        ai_chat_allowance_remaining=ai_chat,
     )
 
 
@@ -67,6 +74,15 @@ async def get_user_wallet_balance(db: AsyncSession, user_id) -> int:
     res = await db.execute(stmt)
     wallet = res.scalar_one_or_none()
     return wallet.balance if wallet else 0
+
+
+async def get_user_wallet_info(db: AsyncSession, user_id) -> tuple[int, int, int]:
+    stmt = select(TokenWallet).where(TokenWallet.user_id == user_id)
+    res = await db.execute(stmt)
+    wallet = res.scalar_one_or_none()
+    if not wallet:
+        return 0, 0, 0
+    return wallet.balance, wallet.ai_trial_remaining, wallet.ai_chat_allowance_remaining
 
 
 @helpers_router.patch("/profile", response_model=APIResponse[UserProfileResponse])

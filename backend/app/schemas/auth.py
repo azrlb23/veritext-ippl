@@ -24,6 +24,8 @@ class UserProfileResponse(BaseModel):
     is_active: bool
     created_at: datetime
     token_balance: int = 0
+    ai_trial_remaining: int = 0
+    ai_chat_allowance_remaining: int = 0
 
     model_config = ConfigDict(from_attributes=True)
 

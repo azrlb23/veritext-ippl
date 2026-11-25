@@ -1,7 +1,13 @@
 <script setup lang="ts">
+import { onMounted } from "vue";
 import ProfileCard from "../components/akun/ProfileCard.vue";
 import PasswordCard from "../components/akun/PasswordCard.vue";
+import PlanStatusCard from "../components/akun/PlanStatusCard.vue";
 import DeleteAccountCard from "../components/akun/DeleteAccountCard.vue";
+import { useAuthStore } from "../stores/auth";
+
+const authStore = useAuthStore();
+onMounted(() => { void authStore.fetchProfile(); });
 </script>
 
 <template>
@@ -15,6 +21,7 @@ import DeleteAccountCard from "../components/akun/DeleteAccountCard.vue";
       <ProfileCard />
       <PasswordCard />
     </div>
+    <div v-if="!authStore.isAdmin" class="mt-6"><PlanStatusCard /></div>
     <div class="mt-6"><DeleteAccountCard /></div>
   </div>
 </template>
