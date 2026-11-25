@@ -35,44 +35,61 @@ defineExpose({ clear, pick });
     <input ref="input" type="file" accept=".pdf,.docx,.txt" class="hidden" aria-label="Pilih berkas naskah" @change="onChange" />
 
     <div
-      class="flex min-h-[220px] flex-col items-center justify-center rounded-[32px] p-8 text-center transition-colors duration-200 sm:min-h-[240px]"
-      :class="isDragging ? 'border-2 border-dashed border-[#0F766E] bg-[#D5ECE8]' : file ? 'bg-[#EBF8F6]' : 'border-2 border-dashed border-[#0F766E]/25 bg-[#EBF8F6]/75'"
+      v-if="!file"
+      class="flex min-h-[200px] flex-col items-center justify-center rounded-2xl border border-dashed px-6 py-10 text-center transition-colors duration-200"
+      :class="isDragging ? 'border-[#0F766E] bg-[#D5ECE8]/45' : 'border-[#0F766E]/30 bg-white/35 hover:border-[#0F766E]/50'"
       @dragover.prevent="emit('dragover', $event)"
       @dragleave="emit('dragleave', $event)"
       @drop.prevent="emit('drop', $event)"
     >
-      <template v-if="!file">
-        <VtIcon name="upload" tone="current" class="h-10 w-10 text-[#0F766E]" />
-        <p class="mt-5 text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">Tarik dan lepas naskah di sini</p>
-        <p class="mt-1.5 text-[14px] text-[#5E5A6B]">PDF, DOCX, atau TXT, maksimal 15 MB</p>
-        <button
-          type="button"
-          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[14px] font-semibold"
-          @click="pick"
-        >
-          Pilih berkas
-        </button>
-      </template>
-
-      <template v-else>
-        <VtIcon name="document" tone="current" class="h-10 w-10 text-[#0F766E]" />
-        <p class="mt-5 max-w-full truncate text-[19px] font-semibold tracking-[-0.02em] text-[#14111C]">{{ file.name }}</p>
-        <p class="mt-1.5 text-[14px] tabular-nums text-[#5E5A6B]">{{ (file.size / (1024 * 1024)).toFixed(2) }} MB</p>
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <button
-            type="button"
-            class="vt-btn-light inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[14px] font-semibold"
-            @click="pick"
-          >
-            Ganti naskah
-          </button>
-          <button type="button" class="inline-flex h-11 cursor-pointer items-center rounded-full px-4 text-[14px] font-medium text-[#5E5A6B] transition-colors hover:text-[#B91C1C]" @click="clear">
-            Hapus
-          </button>
-        </div>
-      </template>
+      <VtIcon name="upload" tone="current" class="h-8 w-8 text-[#0F766E]" />
+      <p class="mt-4 text-[17px] font-semibold tracking-[-0.02em] text-[#14111C]">Tarik dan lepas naskah di sini</p>
+      <p class="mt-1 text-[13.5px] text-[#5E5A6B]">PDF, DOCX, atau TXT, maksimal 15 MB</p>
+      <button
+        type="button"
+        class="vt-btn-dark mt-5 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold"
+        @click="pick"
+      >
+        Pilih berkas
+      </button>
     </div>
 
-    <p v-if="error" role="alert" class="mt-3 text-[14px] font-medium text-[#B91C1C]">{{ error }}</p>
+    <div
+      v-else
+      class="flex flex-col gap-4 border-y border-[#E6ECEB] py-5 transition-colors duration-200 sm:flex-row sm:items-center sm:justify-between"
+      :class="isDragging ? 'border-[#0F766E] bg-[#EBF8F6]/50 px-3' : ''"
+      @dragover.prevent="emit('dragover', $event)"
+      @dragleave="emit('dragleave', $event)"
+      @drop.prevent="emit('drop', $event)"
+    >
+      <div class="flex min-w-0 items-center gap-3.5">
+        <VtIcon name="document" tone="current" class="h-7 w-7 shrink-0 text-[#0F766E]" />
+        <div class="min-w-0">
+          <p class="truncate text-[16.5px] font-semibold tracking-[-0.015em] text-[#14111C]">{{ file.name }}</p>
+          <p class="mt-0.5 text-[13px] tabular-nums text-[#5E5A6B]">
+            {{ (file.size / (1024 * 1024)).toFixed(2) }} MB · Siap diperiksa
+          </p>
+        </div>
+      </div>
+
+      <div class="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          class="vt-btn-light inline-flex h-9 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold"
+          @click="pick"
+        >
+          Ganti naskah
+        </button>
+        <button
+          type="button"
+          class="inline-flex h-9 cursor-pointer items-center rounded-full px-3 text-[13px] font-medium text-[#5E5A6B] transition-colors hover:text-[#B91C1C]"
+          @click="clear"
+        >
+          Hapus
+        </button>
+      </div>
+    </div>
+
+    <p v-if="error" role="alert" class="mt-3 text-[13.5px] font-medium text-[#B91C1C]">{{ error }}</p>
   </div>
 </template>

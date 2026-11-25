@@ -50,25 +50,23 @@ defineExpose({ reset: handleFileReset, triggerFilePicker: () => dropArea.value?.
 </script>
 
 <template>
-  <div class="grid items-start gap-6 font-sans lg:grid-cols-12 lg:gap-8">
-    <div class="space-y-6 lg:col-span-7">
-      <div class="rounded-[32px] bg-white shadow-float">
-        <DropArea
-          ref="dropArea"
-          :file="selectedFile"
-          :is-dragging="isDragging"
-          :error="uploadError || ''"
-          @select="handleFileSelect"
-          @reset="reset"
-          @dragover="handleDragOver"
-          @dragleave="handleDragLeave"
-          @drop="handleDrop"
-        />
-      </div>
+  <div class="grid items-start gap-10 font-sans lg:grid-cols-12 lg:gap-12">
+    <div class="space-y-8 lg:col-span-7">
+      <DropArea
+        ref="dropArea"
+        :file="selectedFile"
+        :is-dragging="isDragging"
+        :error="uploadError || ''"
+        @select="handleFileSelect"
+        @reset="reset"
+        @dragover="handleDragOver"
+        @dragleave="handleDragLeave"
+        @drop="handleDrop"
+      />
       <DepthChoice v-model="auditDepth" />
     </div>
 
-    <div class="lg:col-span-5">
+    <div class="border-t border-[#E6ECEB] pt-8 lg:col-span-5 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
       <AuditSummary
         v-model:consent="consentChecked"
         :balance="tokenBalance"
