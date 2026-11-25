@@ -21,6 +21,7 @@ const isAdmin = computed(() => authStore.isAuthenticated && (authStore.role === 
 const navLinks = computed(() => getSegmentedNavLinks(authStore.isAuthenticated, authStore.role));
 const menuLinks = computed(() => getAccountMenuLinks(authStore.role));
 const displayName = computed(() => authStore.user?.full_name || "Pengguna");
+const userEmail = computed(() => authStore.user?.email || "");
 const balance = computed(() => Number(authStore.tokenBalance) || 0);
 
 function isItemActive(to: string): boolean {
@@ -84,7 +85,7 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="flex items-center justify-end gap-2">
-          <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :balance="balance" :menu-links="menuLinks" @logout="handleLogout" />
+          <NavAuthActions class="hidden lg:flex" :is-guest="isGuest" :is-admin="isAdmin" :name="displayName" :email="userEmail" :role="authStore.role" :balance="balance" :menu-links="menuLinks" @logout="handleLogout" />
 
           <div class="flex items-center gap-2 lg:hidden">
             <router-link
