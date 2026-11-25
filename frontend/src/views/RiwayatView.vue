@@ -53,7 +53,7 @@ async function confirmDelete() {
       >Unduh CSV</button>
     </div>
 
-    <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-5 shadow-float sm:p-8" aria-label="Daftar pemeriksaan">
+    <section class="pt-1" aria-label="Daftar pemeriksaan">
       <RiwayatFilters v-model:filter="filter" v-model:query="query" />
 
       <p v-if="loading" class="py-16 text-center text-[15px] text-[#5E5A6B]">Memuat riwayat...</p>
@@ -65,14 +65,14 @@ async function confirmDelete() {
         <router-link
           v-if="tasks.length === 0"
           to="/periksa"
-          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
+          class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold shadow-[0_10px_24px_-8px_rgba(17,14,24,0.38)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2"
         >Periksa naskah</router-link>
       </div>
-      <ul v-else class="mt-4 divide-y divide-[#14111C]/[0.06]">
+      <ul v-else class="mt-2 divide-y divide-[#E6ECEB]">
         <RiwayatRow v-for="t in shown" :key="t.id" :task="t" @open="(id) => router.push(`/audits/${id}`)" @cancel="(id) => (pendingCancel = id)" @delete="(docId) => (pendingDelete = docId)" />
       </ul>
 
-      <div v-if="pages > 1" class="mt-6 flex items-center justify-between gap-3 border-t border-[#14111C]/[0.06] pt-5">
+      <div v-if="pages > 1" class="mt-6 flex items-center justify-between gap-3 border-t border-[#E6ECEB] pt-5">
         <button type="button" :class="navBtn" :disabled="page <= 1" @click="changePage(page - 1)">Sebelumnya</button>
         <span class="text-[14px] tabular-nums text-[#5E5A6B]">Halaman {{ page }} dari {{ pages }} ({{ total }} total)</span>
         <button type="button" :class="navBtn" :disabled="page >= pages" @click="changePage(page + 1)">Berikutnya</button>

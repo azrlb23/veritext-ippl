@@ -13,26 +13,27 @@ const options: { key: RiwayatFilter; label: string }[] = [
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-    <div class="grid grid-cols-4 gap-1 rounded-full border border-[#D5ECE8] bg-[#EBF8F6] p-1 sm:inline-flex" role="tablist" aria-label="Saring status">
+  <div class="flex flex-col gap-4 border-b border-[#E6ECEB] pb-0 lg:flex-row lg:items-end lg:justify-between">
+    <div class="flex gap-6 overflow-x-auto" role="tablist" aria-label="Saring status">
       <button
         v-for="o in options"
         :key="o.key"
         type="button"
         role="tab"
         :aria-selected="filter === o.key"
-        class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full px-2 text-[14px] sm:px-5 font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
-        :class="filter === o.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B] hover:text-[#14111C]'"
+        class="-mb-px shrink-0 cursor-pointer border-b-2 pb-3 text-[14px] font-semibold transition-colors focus:outline-none"
+        :class="filter === o.key ? 'border-[#0F766E] text-[#14111C]' : 'border-transparent text-[#5E5A6B] hover:text-[#14111C]'"
         @click="$emit('update:filter', o.key)"
       >{{ o.label }}</button>
     </div>
-    <label class="relative block lg:w-72">
-      <span class="text-[13px] font-medium text-[#5E5A6B]">Cari judul naskah</span>
+    <label class="relative block pb-2 lg:w-72">
+      <span class="sr-only">Cari judul naskah</span>
       <input
         :value="query"
         type="search"
+        placeholder="Cari judul naskah..."
         autocomplete="off"
-        class="block h-11 w-full border-0 border-b-2 border-[#14111C]/10 bg-transparent text-[16px] text-[#14111C] outline-none transition-colors focus:border-[#0F766E]"
+        class="block h-10 w-full border-0 bg-transparent text-[15px] text-[#14111C] placeholder:text-[#5E5A6B]/70 outline-none"
         @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
       />
     </label>

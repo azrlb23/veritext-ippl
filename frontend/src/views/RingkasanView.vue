@@ -29,17 +29,17 @@ const average = computed(() => {
       </h1>
     </div>
 
-    <div class="space-y-6">
+    <div class="space-y-8">
       <SummaryCards :balance="authStore.tokenBalance" :total="tasks.length" :done="doneTasks.length" :average="average" :role="authStore.role" />
       <ActiveAudits :tasks="activeTasks" />
 
-      <section class="vt-reveal vt-d-2 rounded-[32px] bg-white p-7 shadow-float sm:p-9" aria-labelledby="terakhir-judul">
+      <section class="vt-reveal vt-d-2 pt-1" aria-labelledby="terakhir-judul">
         <div class="flex items-center justify-between gap-4">
-          <h2 id="terakhir-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Terakhir diperiksa</h2>
-          <router-link to="/riwayat" class="inline-flex h-11 cursor-pointer items-center rounded-full px-4 text-[14px] font-semibold text-[#0F766E] transition-colors hover:bg-[#EBF8F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Lihat semua</router-link>
+          <h2 id="terakhir-judul" class="text-[19px] font-semibold tracking-[-0.025em] text-[#14111C]">Terakhir diperiksa</h2>
+          <router-link to="/riwayat" class="inline-flex h-9 cursor-pointer items-center rounded-full px-3 text-[13.5px] font-semibold text-[#0F766E] transition-colors hover:bg-[#EBF8F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Lihat semua</router-link>
         </div>
-        <p v-if="!loading && recent.length === 0" class="py-10 text-center text-[15px] text-[#5E5A6B]">Belum ada hasil. Mulai dengan mengunggah naskah pertama Anda.</p>
-        <ul v-else class="mt-2 divide-y divide-[#14111C]/[0.06]">
+        <p v-if="!loading && recent.length === 0" class="py-10 text-center text-[14.5px] text-[#5E5A6B]">Belum ada hasil. Mulai dengan mengunggah naskah pertama Anda.</p>
+        <ul v-else class="mt-2 divide-y divide-[#E6ECEB]">
           <RiwayatRow v-for="t in recent" :key="t.id" :task="t" :allow-delete="false" @open="(id) => router.push(`/audits/${id}`)" @cancel="cancel" />
         </ul>
       </section>
