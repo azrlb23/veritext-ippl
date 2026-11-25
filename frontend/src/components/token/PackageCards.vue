@@ -10,10 +10,10 @@ const perToken = (p: { price: number; tokens: number }) => rupiah(Math.round(p.p
     <article
       v-for="p in PACKAGES"
       :key="p.id"
-      class="flex flex-col rounded-[28px] border p-6 backdrop-blur-sm transition-all duration-200 sm:p-7"
+      class="flex flex-col rounded-[28px] border border-white/80 bg-white/85 p-6 backdrop-blur-sm transition-all duration-200 hover:bg-white sm:p-7"
       :class="p.featured
-        ? 'border-[#CBE6E1] bg-[#EBF8F6]/90 shadow-[0_16px_36px_-12px_rgba(15,118,110,0.16)]'
-        : 'border-white/80 bg-white/85 shadow-[0_12px_32px_-12px_rgba(20,17,28,0.08)] hover:bg-white'"
+        ? 'shadow-[0_16px_36px_-12px_rgba(20,17,28,0.12)]'
+        : 'shadow-[0_12px_32px_-12px_rgba(20,17,28,0.08)]'"
     >
       <div class="flex items-center justify-between gap-2">
         <h3 class="text-[17px] font-semibold tracking-[-0.02em]" :class="p.featured ? 'text-[#0F766E]' : 'text-[#14111C]'">
