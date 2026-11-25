@@ -23,7 +23,7 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
       <div ref="root" class="relative">
         <button
           type="button"
-          class="vt-btn-light flex h-9 cursor-pointer items-center gap-2 rounded-full px-4 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+          class="flex h-9 cursor-pointer items-center gap-1.5 px-2 text-[#14111C] transition-colors hover:text-[#0F766E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
           aria-haspopup="menu"
           :aria-expanded="open"
           @click="open = !open"
@@ -65,9 +65,8 @@ onBeforeUnmount(() => { document.removeEventListener("click", onDoc); document.r
                 <svg class="h-4 w-4 shrink-0 text-[#5E5A6B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" /></svg>
                 <span>Paket &amp; Token</span>
               </span>
-              <span class="inline-flex items-center gap-1 text-[11.5px] font-semibold tabular-nums" :class="(role || '').toUpperCase() === 'PREMIUM' ? 'text-[#0F766E]' : 'text-[#5E5A6B]'">
-                <svg v-if="(role || '').toUpperCase() === 'PREMIUM'" class="h-3 w-3" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10.5H13l0-8.5Z" /></svg>
-                {{ (role || '').toUpperCase() === 'PREMIUM' ? `PREMIUM · ${balance}` : `GRATIS · ${balance}` }}
+              <span class="text-[12px] font-semibold" :class="(role || '').toUpperCase() === 'PREMIUM' ? 'text-[#0F766E]' : 'text-[#5E5A6B]'">
+                {{ (role || '').toUpperCase() === 'PREMIUM' ? "Premium" : "Gratis" }}
               </span>
             </router-link>
           </div>
