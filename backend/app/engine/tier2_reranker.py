@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 
 from app.core.config import settings
+from app.engine.language_detector import detect_language
+from app.engine.tier2_en_reranker import EnglishReranker
 from app.engine.tier2_indobert import IndoBertScorer
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,18 @@ class SemanticReranker:
     def accept_mask(cls, pairs: list[tuple[str, str]]) -> list[bool]:
         scores = cls.score_pairs(pairs)
         cross = [True] * len(pairs) if scores is None else [s >= settings.RERANKER_THRESHOLD for s in scores]
-        survivors = [pair for pair, ok in zip(pairs, cross) if ok]
-        floor = iter(IndoBertScorer.accept_mask(survivors))
-        return [ok and next(floor) for ok in cross]
+        survivor_indices = [i for i, ok in enumerate(cross) if ok]
+        if not survivor_indices:
+            return cross
+
+        id_idx = [i for i in survivor_indices if detect_language(pairs[i][0]) == "id"]
+        en_idx = [i for i in survivor_indices if detect_language(pairs[i][0]) == "en"]
+        id_mask = IndoBertScorer.accept_mask([pairs[i] for i in id_idx]) if id_idx else []
+        en_mask = EnglishReranker.accept_mask([pairs[i] for i in en_idx]) if en_idx else []
+
+        final = list(cross)
+        for idx, ok in zip(id_idx, id_mask):
+            final[idx] = ok
+        for idx, ok in zip(en_idx, en_mask):
+            final[idx] = ok
+        return final

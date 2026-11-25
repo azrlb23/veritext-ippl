@@ -60,3 +60,22 @@ def test_real_reranker_separates_antonym_from_paraphrase():
         return
     assert scores[0] > scores[1]
     assert SemanticReranker.accept_mask(pairs) == [True, False]
+
+
+def test_language_detector_routes_english_and_indonesian():
+    from app.engine.language_detector import detect_language
+    from app.engine.tier2_en_reranker import EnglishReranker
+
+    assert detect_language("The proposed system uses hybrid semantic search.") == "en"
+    assert detect_language("Sistem ini menggunakan pencarian semantik hibrida.") == "id"
+
+    with (
+        patch.object(SemanticReranker, "score_pairs", return_value=[0.9, 0.85]),
+        patch.object(EnglishReranker, "accept_mask", return_value=[True]) as en_mock,
+    ):
+        mask = SemanticReranker.accept_mask([
+            ("The system detects plagiarism effectively.", "This tool identifies copied text."),
+            ("Sistem ini mendeteksi plagiarisme secara efektif.", "Alat ini mengenali teks salinan."),
+        ])
+    assert en_mock.called
+    assert len(mask) == 2
