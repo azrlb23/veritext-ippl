@@ -3,12 +3,12 @@ from __future__ import annotations
 import logging
 
 logger = logging.getLogger(__name__)
-EN_RERANKER_MODEL = "cross-encoder/stsb-distilroberta-base"
+EN_RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 EN_RERANKER_MIN_SIM = 0.45
 
 
 class EnglishReranker:
-    """Re-ranker STS-B khusus bahasa Inggris dari Hugging Face (fail-open jika tidak tersedia)."""
+    """Re-ranker ringan khusus bahasa Inggris dari Hugging Face (fail-open jika tidak tersedia)."""
 
     _model = None
     _attempted = False
@@ -18,9 +18,14 @@ class EnglishReranker:
         if not cls._attempted:
             cls._attempted = True
             try:
+                import torch
                 from sentence_transformers import CrossEncoder
 
-                cls._model = CrossEncoder(EN_RERANKER_MODEL, max_length=512)
+                cls._model = CrossEncoder(
+                    EN_RERANKER_MODEL,
+                    max_length=512,
+                    activation_fn=torch.nn.Sigmoid(),
+                )
             except Exception as err:  # noqa: BLE001
                 logger.warning("English reranker tidak dapat dimuat, memakai skor BGE-M3 saja: %s", err)
                 cls._model = None

@@ -1,30 +1,45 @@
 from __future__ import annotations
 
-import re
+import logging
 from typing import Literal
 
-_WORD_RE = re.compile(r"[a-zA-Z]+")
+logger = logging.getLogger(__name__)
 
-_ID_MARKERS = frozenset({
-    "yang", "dan", "di", "ke", "dari", "untuk", "dengan", "pada", "ini", "itu",
-    "adalah", "sebagai", "dalam", "atau", "tidak", "oleh", "secara", "bahwa",
-    "dapat", "akan", "telah", "tersebut", "karena", "sehingga", "merupakan",
-})
+_DETECTOR = None
+_ATTEMPTED = False
 
-_EN_MARKERS = frozenset({
-    "the", "and", "is", "are", "of", "to", "in", "for", "with", "that", "this",
-    "as", "by", "from", "on", "was", "were", "which", "has", "have", "been",
-    "can", "will", "not", "or", "an", "be", "their", "these", "using",
-})
+
+def _get_detector():
+    global _DETECTOR, _ATTEMPTED
+    if not _ATTEMPTED:
+        _ATTEMPTED = True
+        try:
+            from lingua import Language, LanguageDetectorBuilder
+
+            _DETECTOR = LanguageDetectorBuilder.from_languages(
+                Language.INDONESIAN,
+                Language.ENGLISH,
+            ).build()
+        except Exception as err:  # noqa: BLE001
+            logger.warning("Lingua language detector gagal dimuat: %s", err)
+            _DETECTOR = None
+    return _DETECTOR
 
 
 def detect_language(text: str) -> Literal["id", "en"]:
-    """Deteksi cepat bahasa Indonesia ('id') vs Inggris/Asing ('en') berbasis kata fungsi."""
-    words = [w.lower() for w in _WORD_RE.findall(text or "")]
-    if not words:
+    """Deteksi bahasa Indonesia ('id') vs Inggris ('en') menggunakan library lingua-language-detector."""
+    cleaned = (text or "").strip()
+    if len(cleaned) < 8:
         return "id"
-    id_hits = sum(1 for w in words if w in _ID_MARKERS)
-    en_hits = sum(1 for w in words if w in _EN_MARKERS)
-    if en_hits > id_hits and en_hits >= 1:
-        return "en"
+    detector = _get_detector()
+    if detector is None:
+        return "id"
+    try:
+        from lingua import Language
+
+        detected = detector.detect_language_of(cleaned)
+        if detected == Language.ENGLISH:
+            return "en"
+    except Exception as err:  # noqa: BLE001
+        logger.warning("Deteksi bahasa gagal, fallback ke 'id': %s", err)
     return "id"
