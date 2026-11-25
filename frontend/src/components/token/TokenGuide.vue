@@ -5,16 +5,16 @@ const isExpanded = ref(false);
 const activeTab = ref<"benefits" | "usages">("benefits");
 
 const benefits = [
-  { title: "Upgrade otomatis ke Premium", desc: "Pembelian token pertama langsung mengaktifkan status Premium tanpa biaya langganan bulanan." },
-  { title: "Naskah panjang hingga 15 MB", desc: "Unggah skripsi, tesis, atau jurnal penuh tanpa batasan 2.500 kata per dokumen." },
-  { title: "Laporan PDF resmi ber-QR", desc: "Unduh sertifikat audit orisinalitas naskah dengan kode verifikasi QR publik." },
-  { title: "Akses penuh Asisten AI", desc: "Konsultasi sitasi dan parafrase 3-mode tanpa batas kuota trial." },
+  { title: "Auto-Upgrade Premium", desc: "Aktif permanen sejak pembelian token pertama." },
+  { title: "Naskah hingga 15 MB", desc: "Periksa skripsi penuh tanpa batas 2.500 kata." },
+  { title: "Sertifikat PDF ber-QR", desc: "Unduh laporan resmi dengan verifikasi QR publik." },
+  { title: "Asisten AI Penuh", desc: "Konsultasi sitasi & parafrase tanpa batas trial." },
 ];
 
 const usages = [
-  { badge: "1 token / 2.500 kata", title: "Pemeriksaan naskah", desc: "Naskah panjang dikenai 1 token per kelipatan 2.500 kata, maksimal 5 token per dokumen." },
-  { badge: "1 token / 10 pesan", title: "Asisten AI & parafrase", desc: "Berlaku untuk konsultasi kalimat/paragraf. Mode halaman penuh memakai 1 token per 2 halaman." },
-  { badge: "Aktif selamanya", title: "Tanpa masa kedaluwarsa", desc: "Token yang sudah dibeli tetap tersimpan di akun Anda dan hanya terpotong saat digunakan." },
+  { badge: "1 token / 2.500 kata", title: "Pemeriksaan naskah", desc: "Maksimal 5 token per dokumen panjang." },
+  { badge: "1 token / 10 pesan", title: "Asisten AI & parafrase", desc: "Halaman penuh memakai 1 token per 2 halaman." },
+  { badge: "Aktif selamanya", title: "Tanpa kedaluwarsa", desc: "Saldo tersimpan dan terpotong saat dipakai." },
 ];
 
 const toggle = () => (isExpanded.value = !isExpanded.value);
@@ -58,14 +58,14 @@ const toggle = () => (isExpanded.value = !isExpanded.value);
       :class="isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
     >
       <div class="overflow-hidden">
-        <div class="pt-4">
-          <div class="inline-flex rounded-full bg-white/75 p-1 shadow-[0_2px_10px_-3px_rgba(20,17,28,0.08)]" role="tablist" aria-label="Kategori informasi token">
+        <div class="pt-3">
+          <div class="flex gap-6 border-b border-[#E6ECEB]" role="tablist" aria-label="Kategori informasi token">
             <button
               type="button"
               role="tab"
               :aria-selected="activeTab === 'benefits'"
-              class="cursor-pointer rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all"
-              :class="activeTab === 'benefits' ? 'bg-[#0F766E] text-white' : 'text-[#5E5A6B] hover:text-[#14111C]'"
+              class="-mb-px cursor-pointer border-b-2 pb-2.5 text-[13.5px] font-semibold transition-colors focus:outline-none"
+              :class="activeTab === 'benefits' ? 'border-[#0F766E] text-[#14111C]' : 'border-transparent text-[#5E5A6B] hover:text-[#14111C]'"
               @click.stop="activeTab = 'benefits'"
             >
               Keuntungan Premium
@@ -74,8 +74,8 @@ const toggle = () => (isExpanded.value = !isExpanded.value);
               type="button"
               role="tab"
               :aria-selected="activeTab === 'usages'"
-              class="cursor-pointer rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all"
-              :class="activeTab === 'usages' ? 'bg-[#0F766E] text-white' : 'text-[#5E5A6B] hover:text-[#14111C]'"
+              class="-mb-px cursor-pointer border-b-2 pb-2.5 text-[13.5px] font-semibold transition-colors focus:outline-none"
+              :class="activeTab === 'usages' ? 'border-[#0F766E] text-[#14111C]' : 'border-transparent text-[#5E5A6B] hover:text-[#14111C]'"
               @click.stop="activeTab = 'usages'"
             >
               Cara Hitung Token
