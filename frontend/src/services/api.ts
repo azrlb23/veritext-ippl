@@ -4,8 +4,26 @@ import { clearStoredSession, getStoredToken, updateStoredToken } from "../utils/
 const baseURL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
 let onAuthExpired: (() => void) | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 export function registerAuthExpiredHandler(handler: () => void) {
   onAuthExpired = handler;
+}
+
+async function performSilentRefresh(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(
+        `${baseURL}/auth/refresh`,
+        {},
+        { withCredentials: true, headers: { "Content-Type": "application/json" } }
+      )
+      .then((res) => res.data?.data?.access_token || res.data?.access_token || null)
+      .catch(() => null)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
 }
 
 function clearClientSession() {
@@ -56,20 +74,8 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Mengandalkan HttpOnly cookie refresh_token sepenuhnya
-        const refreshResponse = await axios.post(
-          `${baseURL}/auth/refresh`,
-          {},
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        const newAccessToken =
-          refreshResponse.data?.data?.access_token ||
-          refreshResponse.data?.access_token;
-
+        // Mengandalkan HttpOnly cookie refresh_token dengan deduplikasi request paralel
+        const newAccessToken = await performSilentRefresh();
         if (newAccessToken) {
           updateStoredToken(newAccessToken);
           if (originalRequest.headers) {
