@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import uuid
 from typing import Any
 
@@ -11,6 +12,17 @@ from sqlalchemy.orm import selectinload
 from app.models.audit import AuditSentence, AuditTask
 
 _PRIORITY_ORDER: dict[str, int] = {"RED": 0, "ORANGE": 1, "YELLOW": 2}
+_TEMPLATE_RE = re.compile(
+    r"^(bab\s+[ivx\d]+|daftar\s+(isi|pustaka|gambar|tabel)|abstrak|kata\s+pengantar|pendahuluan|penutup|kesimpulan|lampiran|informatika)\b",
+    re.IGNORECASE,
+)
+
+
+def _is_substantive_sentence(text: str) -> bool:
+    cleaned = " ".join((text or "").split())
+    if len(cleaned) < 28 or len(cleaned.split()) < 5:
+        return False
+    return not bool(_TEMPLATE_RE.match(cleaned) and len(cleaned.split()) <= 6)
 
 
 async def fetch_priority_sentences(
@@ -56,7 +68,7 @@ async def fetch_priority_sentences(
             AuditSentence.similarity_score.desc(),
             AuditSentence.sentence_index.asc(),
         )
-        .limit(capped_limit)
+        .limit(capped_limit * 10)
     )
     rows = list((await db.execute(sent_stmt)).scalars().all())
     eligible = [
@@ -64,7 +76,13 @@ async def fetch_priority_sentences(
         for s in rows
         if not bool(getattr(s, "is_modified", False))
         and getattr(s, "match_type", None) in _PRIORITY_ORDER
+        and _is_substantive_sentence(s.current_text or s.sentence_text or "")
     ]
+    if not eligible:
+        eligible = [
+            s for s in rows
+            if not bool(getattr(s, "is_modified", False)) and getattr(s, "match_type", None) in _PRIORITY_ORDER
+        ]
     eligible.sort(
         key=lambda s: (
             _PRIORITY_ORDER[s.match_type],

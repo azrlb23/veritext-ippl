@@ -8,7 +8,7 @@ const page = ref(1);
 watch(() => props.sources, () => { page.value = 1; });
 const totalPages = computed(() => Math.max(1, Math.ceil(props.sources.length / PER_PAGE)));
 const pagedSources = computed(() => props.sources.slice((page.value - 1) * PER_PAGE, page.value * PER_PAGE));
-const pct = (v: number) => (v > 1 ? v : v * 100).toFixed(1).replace(".", ",");
+const pct = (v: number) => (v > 0 && v < 0.1 ? "< 0,1" : Number(v || 0).toFixed(1).replace(".", ","));
 </script>
 
 <template>

@@ -117,7 +117,7 @@ def aggregate_matched_sources(
             total_weight = 1.0
         for item in source_weights.values():
             ratio = item["raw_weight"] / total_weight
-            contrib = round(ratio * score_composite, 1)
+            contrib = max(0.1, round(ratio * score_composite, 1)) if ratio > 0 else 0.0
             matched_list.append(MatchedSourceData(
                 corpus_doc_id=item["corpus_doc_id"], title=item["title"],
                 category=item["category"], contribution_pct=contrib,
