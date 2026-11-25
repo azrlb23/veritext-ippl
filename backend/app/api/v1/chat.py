@@ -23,6 +23,7 @@ from app.services.audit_log_helper import record_token_debit
 from app.services.chat_context import build_document_context_async, load_owned_documents
 from app.services.chat_prompt import build_prompt, classify_task_and_engine
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
+from app.services.paraphrase_scope import resolve_paraphrase_scope_text
 
 router = APIRouter(prefix="/chat", tags=["AI Assistant & Paraphrase"])
 
@@ -121,17 +122,13 @@ async def paraphrase_sentence(
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode=payload.mode)
 
+    scope_text = await resolve_paraphrase_scope_text(db, sentence, payload.mode)
     variations, active_engine = await asyncio.to_thread(
-        AssistantService.generate_paraphrase_variations,
-        sentence.current_text or sentence.sentence_text,
-        mode=payload.mode, preferred_engine=payload.preferred_engine,
+        AssistantService.generate_paraphrase_variations, scope_text, mode=payload.mode, preferred_engine=payload.preferred_engine,
     )
     await _charge_ai_usage(db, current_user, payload.mode, "AUDIT_SENTENCE", sentence.id, f"Paraphrase {payload.mode} token debit")
     await db.commit()
-    return APIResponse(data=ParaphraseResponse(
-        sentence_id=payload.sentence_id, mode=payload.mode,
-        variations=[ParaphraseVariation(**v) for v in variations], active_engine=active_engine,
-    ))
+    return APIResponse(data=ParaphraseResponse(sentence_id=payload.sentence_id, mode=payload.mode, variations=[ParaphraseVariation(**v) for v in variations], active_engine=active_engine))
 
 
 @router.post("/apply-paraphrase", response_model=APIResponse[ApplyParaphraseResponse])

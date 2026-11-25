@@ -14,12 +14,17 @@ const props = defineProps<{ selected?: HeatmapAnnotation | null }>();
 const emit = defineEmits<{ (e: "applied", d: { appliedText: string; newCompositeScore?: number }): void }>();
 
 type Mode = "SENTENCE" | "PARAGRAPH" | "FULL_PAGE";
-const MODES: { key: Mode; label: string }[] = [
-  { key: "SENTENCE", label: "Kalimat" },
-  { key: "PARAGRAPH", label: "Paragraf" },
-  { key: "FULL_PAGE", label: "Halaman" },
+const MODES: { key: Mode; label: string; cta: string }[] = [
+  { key: "SENTENCE", label: "Kalimat", cta: "Buat 3 pilihan kalimat" },
+  { key: "PARAGRAPH", label: "Paragraf", cta: "Buat 3 pilihan paragraf" },
+  { key: "FULL_PAGE", label: "Halaman", cta: "Buat 3 pilihan halaman" },
 ];
 const mode = ref<Mode>("SENTENCE");
+const activeCta = computed(() => MODES.find((m) => m.key === mode.value)?.cta || "Buat 3 pilihan kalimat");
+function selectMode(m: Mode) {
+  mode.value = m;
+  variations.value = [];
+}
 const busy = ref(false);
 const applying = ref(false);
 const error = ref("");
@@ -74,12 +79,12 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer); });
 <template>
   <div>
     <div class="grid grid-cols-3 gap-1 rounded-full bg-[#F4F5F6] p-1" role="tablist" aria-label="Cakupan tulis ulang">
-      <button v-for="m in MODES" :key="m.key" type="button" role="tab" :aria-selected="mode === m.key" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="mode === m.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B] hover:text-[#14111C]'" @click="mode = m.key">{{ m.label }}</button>
+      <button v-for="m in MODES" :key="m.key" type="button" role="tab" :aria-selected="mode === m.key" class="inline-flex h-11 cursor-pointer items-center justify-center rounded-full text-[14px] font-medium transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="mode === m.key ? 'bg-white text-[#14111C] shadow-lift' : 'text-[#5E5A6B] hover:text-[#14111C]'" @click="selectMode(m.key)">{{ m.label }}</button>
     </div>
 
     <p v-if="!selected" class="py-10 text-center text-[15px] text-[#5E5A6B]">Pilih kalimat yang tersorot di naskah, lalu minta asisten menulis ulang.</p>
     <template v-else>
-      <button type="button" :disabled="isFree ? false : busy || !selected.sentence_id" class="vt-btn-dark mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ isFree ? "Aktifkan Premium untuk Tulis Ulang" : busy ? "Menulis ulang..." : "Buat 3 pilihan kalimat" }}</button>
+      <button type="button" :disabled="isFree ? false : busy || !selected.sentence_id" class="vt-btn-dark mt-5 inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-full px-6 text-[15px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 disabled:opacity-40" @click="generate">{{ isFree ? "Aktifkan Premium untuk Tulis Ulang" : busy ? "Menulis ulang..." : activeCta }}</button>
     </template>
     <p v-if="error" class="mt-3 text-[14px] font-medium text-[#B91C1C]" role="alert">{{ error }}</p>
 
