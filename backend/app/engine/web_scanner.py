@@ -11,6 +11,7 @@ from app.engine.preprocessor import SentenceSpan
 from app.engine.tier1_lexical import WinnowingLexicalEngine
 from app.engine.tier2_semantic import SemanticEngine
 from app.engine.web_cache import BoundedTTLCache
+from app.engine.academic_search_providers import call_academic_search_api
 from app.engine.web_search_providers import call_ddg_search_api, call_gemini_search_api
 from app.engine.web_snippet_verifier import WebMatchResult, extract_matches_from_response, is_meaningful_sentence, verify_snippet_cross_check
 
@@ -54,7 +55,8 @@ class GeminiWebScanner:
         matches, _ = call_gemini_search_api(self.api_key, self.model, self.timeout_s, batch_sentences, self._extract_matches_from_response)
         return matches
     def _call_ddg_search(self, batch_sentences: list[SentenceSpan]) -> list[dict[str, Any]] | None:
-        return call_ddg_search_api(self.timeout_s, batch_sentences)
+        ddg, acad = call_ddg_search_api(self.timeout_s, batch_sentences), call_academic_search_api(self.timeout_s, batch_sentences)
+        return ddg if not acad else (ddg or []) + acad
 
     def _apply_batch_results(
         self, batch: list[SentenceSpan], raw: list[dict[str, Any]],
