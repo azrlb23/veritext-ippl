@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import uuid
 from typing import Any
 
@@ -12,17 +11,27 @@ from sqlalchemy.orm import selectinload
 from app.models.audit import AuditSentence, AuditTask
 
 _PRIORITY_ORDER: dict[str, int] = {"RED": 0, "ORANGE": 1, "YELLOW": 2}
-_TEMPLATE_RE = re.compile(
-    r"^(bab\s+[ivx\d]+|daftar\s+(isi|pustaka|gambar|tabel)|abstrak|kata\s+pengantar|pendahuluan|penutup|kesimpulan|lampiran|informatika)\b",
-    re.IGNORECASE,
-)
+_MIN_PROSE_WORDS = 7
 
 
-def _is_substantive_sentence(text: str) -> bool:
+def is_substantive_prose(text: str) -> bool:
+    """Membedakan kalimat prosa akademik dari heading/label/frasa pendek secara struktural (tanpa daftar kata)."""
     cleaned = " ".join((text or "").split())
-    if len(cleaned) < 28 or len(cleaned.split()) < 5:
+    words = [w.strip(".,;:!?\"'()[]") for w in cleaned.split() if w.strip(".,;:!?\"'()[]")]
+    if len(words) < _MIN_PROSE_WORDS:
         return False
-    return not bool(_TEMPLATE_RE.match(cleaned) and len(cleaned.split()) <= 6)
+
+    alpha_words = [w for w in words if any(ch.isalpha() for ch in w)]
+    if len(alpha_words) < _MIN_PROSE_WORDS:
+        return False
+
+    cap_ratio = sum(1 for w in alpha_words if w[0].isupper()) / len(alpha_words)
+    if len(words) < 12 and cap_ratio >= 0.65:
+        return False
+
+    if len(words) < 10 and cleaned[-1] not in ".?!":
+        return False
+    return True
 
 
 async def fetch_priority_sentences(
@@ -76,7 +85,7 @@ async def fetch_priority_sentences(
         for s in rows
         if not bool(getattr(s, "is_modified", False))
         and getattr(s, "match_type", None) in _PRIORITY_ORDER
-        and _is_substantive_sentence(s.current_text or s.sentence_text or "")
+        and is_substantive_prose(s.current_text or s.sentence_text or "")
     ]
     if not eligible:
         eligible = [
