@@ -26,14 +26,18 @@ const options: { key: RiwayatFilter; label: string }[] = [
         @click="$emit('update:filter', o.key)"
       >{{ o.label }}</button>
     </div>
-    <label class="relative block pb-2 lg:w-72">
+    <label class="relative mb-2 flex h-10 items-center gap-2.5 rounded-full border border-[#E6ECEB] bg-white/85 px-3.5 shadow-[0_2px_10px_-4px_rgba(20,17,28,0.06)] transition-colors focus-within:border-[#0F766E] focus-within:bg-white lg:w-72">
       <span class="sr-only">Cari judul naskah</span>
+      <svg class="h-4 w-4 shrink-0 text-[#5E5A6B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
       <input
         :value="query"
         type="search"
         placeholder="Cari judul naskah..."
         autocomplete="off"
-        class="block h-10 w-full border-0 bg-transparent text-[15px] text-[#14111C] placeholder:text-[#5E5A6B]/70 outline-none"
+        class="block h-full w-full border-0 bg-transparent text-[14px] text-[#14111C] placeholder:text-[#5E5A6B]/80 outline-none"
         @input="$emit('update:query', ($event.target as HTMLInputElement).value)"
       />
     </label>
