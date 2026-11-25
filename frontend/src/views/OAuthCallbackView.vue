@@ -3,13 +3,11 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { AuthCard } from "../components/auth";
 import { useAuthStore } from "../stores/auth";
-import { useNotification } from "../composables";
 import { getHomeRouteForRole } from "../utils/navigation";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const { showNotification } = useNotification();
 
 const isProcessing = ref(true);
 const errorMessage = ref("");
@@ -41,7 +39,6 @@ onMounted(async () => {
     }
 
     authStore.markWelcome();
-    showNotification("Selamat datang kembali! Berhasil masuk dengan akun Google.", "success", "Login Berhasil");
     router.replace(getHomeRouteForRole(authStore.role));
   } catch (err: any) {
     authStore.clearLocalSession();

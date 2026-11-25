@@ -50,7 +50,6 @@ async function handleLogin(creds: { email: string; password: string; remember: b
       email: creds.email,
       password: creds.password,
     });
-    showNotification("Selamat datang kembali di VeriText AI!", "success");
     router.push(getRedirectTarget(authStore.role));
   } catch (err: any) {
     if (err?.response?.status === 429) {
