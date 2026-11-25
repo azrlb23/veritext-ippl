@@ -12,7 +12,7 @@ const benefits = [
 ];
 
 const usages = [
-  { badge: "1 token / 2.500 kata", title: "Pemeriksaan naskah", desc: "Maksimal 5 token per dokumen panjang." },
+  { badge: "1 token / 2.500 kata", title: "Pemeriksaan naskah", desc: "Tambahan 1 token tiap 2.500 kata, maksimal 5 token per dokumen." },
   { badge: "1 token / 10 pesan", title: "Asisten AI & parafrase", desc: "Halaman penuh memakai 1 token per 2 halaman." },
   { badge: "Aktif selamanya", title: "Tanpa kedaluwarsa", desc: "Saldo tersimpan dan terpotong saat dipakai." },
 ];
