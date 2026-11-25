@@ -35,7 +35,7 @@ defineProps<{
       </div>
     </section>
 
-    <section class="vt-reveal vt-d-1 flex flex-col justify-between rounded-[28px] border border-[#CBE6E1] bg-[#EBF8F6]/90 p-7 shadow-[0_12px_32px_-12px_rgba(15,118,110,0.12)] backdrop-blur-sm sm:p-8" aria-label="Ringkasan angka">
+    <section class="vt-reveal vt-d-1 flex flex-col justify-between rounded-[28px] border border-white/80 bg-white/85 p-7 shadow-[0_12px_32px_-12px_rgba(20,17,28,0.08)] backdrop-blur-sm sm:p-8" aria-label="Ringkasan angka">
       <div class="grid grid-cols-3 gap-4">
         <div>
           <p class="text-[36px] font-semibold leading-none tracking-[-0.05em] tabular-nums text-[#14111C] sm:text-[42px]">{{ total }}</p>
