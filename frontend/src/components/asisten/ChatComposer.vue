@@ -65,7 +65,7 @@ function onKey(e: KeyboardEvent) {
       </button>
     </div>
 
-    <div class="flex items-end gap-2.5">
+    <div class="flex items-center gap-2.5">
       <DocumentPicker
         :documents="documents"
         :model-value="selectedDocs"
@@ -76,10 +76,10 @@ function onKey(e: KeyboardEvent) {
         <span class="sr-only">Pesan untuk asisten</span>
         <textarea
           v-model="text"
-          rows="2"
+          rows="1"
           maxlength="4000"
           placeholder="Tulis pertanyaan naskah atau tempel kalimat untuk diparafrase"
-          class="block min-h-[48px] w-full resize-none border-0 border-b-2 border-[#14111C]/20 bg-transparent py-2 text-[15.5px] text-[#14111C] outline-none transition-colors placeholder:text-[#5E5A6B] focus:border-[#0F766E]"
+          class="block h-11 w-full resize-none border-0 border-b-2 border-[#14111C]/20 bg-transparent py-2.5 text-[15.5px] leading-6 text-[#14111C] outline-none transition-colors placeholder:text-[#5E5A6B] focus:border-[#0F766E]"
           @keydown="onKey"
         ></textarea>
       </label>

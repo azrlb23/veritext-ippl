@@ -53,12 +53,9 @@ onUnmounted(() => {
       :class="count > 0 ? 'border-[#0F766E]/40 bg-[#EBF8F6] text-[#0F766E]' : 'border-[#E6ECEB] bg-white text-[#5E5A6B] hover:border-[#CBD5E1] hover:text-[#14111C]'"
       @click="open = !open"
     >
-      <!-- Simbol laporan / dokumen audit -->
+      <!-- Simbol lampiran paperclip -->
       <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="8" y1="13" x2="16" y2="13" />
-        <line x1="8" y1="17" x2="13" y2="17" />
+        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
       </svg>
       <span
         v-if="count > 0"
