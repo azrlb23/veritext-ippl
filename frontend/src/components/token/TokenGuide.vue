@@ -49,24 +49,21 @@ function toggle() {
 
 <template>
   <section
-    class="rounded-[28px] border bg-white px-6 py-5 transition-[border-color,box-shadow] duration-300 ease-out sm:px-8"
-    :class="isExpanded
-      ? 'border-[#D5ECE8] shadow-[0_20px_48px_-18px_rgba(15,118,110,0.14)]'
-      : 'border-[#E8ECEB] shadow-float hover:border-[#CBE6E1]'"
+    class="border-b border-[#E6ECEB] pb-4"
     aria-labelledby="token-guide-title"
     @mouseenter="isExpanded = true"
     @mouseleave="isExpanded = false"
   >
     <button
       type="button"
-      class="flex w-full cursor-pointer items-center justify-between gap-4 text-left"
+      class="flex w-full cursor-pointer items-center justify-between gap-4 py-1 text-left focus:outline-none"
       :aria-expanded="isExpanded"
       aria-controls="token-guide-panel"
       @click="toggle"
     >
       <h2
         id="token-guide-title"
-        class="text-[18px] font-semibold tracking-[-0.025em] text-[#14111C] sm:text-[20px]"
+        class="text-[16px] font-semibold tracking-[-0.02em] text-[#14111C] sm:text-[17px]"
       >
         Cara pakai dan keuntungan token
       </h2>

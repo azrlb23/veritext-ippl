@@ -24,22 +24,22 @@ async function downloadReceipt(orderId: string) {
 </script>
 
 <template>
-  <section class="rounded-[32px] border border-[#E8ECEB] bg-white p-7 shadow-float sm:p-9" aria-labelledby="tagihan-judul">
-    <h3 id="tagihan-judul" class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Riwayat pembelian</h3>
-    <p v-if="invoices.length === 0" class="py-10 text-center text-[15px] text-[#5E5A6B]">Belum ada pembelian token.</p>
-    <ul v-else class="mt-3 divide-y divide-[#14111C]/[0.06]">
+  <section class="pt-2" aria-labelledby="tagihan-judul">
+    <h3 id="tagihan-judul" class="text-[19px] font-semibold tracking-[-0.025em] text-[#14111C]">Riwayat pembelian</h3>
+    <p v-if="invoices.length === 0" class="py-10 text-center text-[14.5px] text-[#5E5A6B]">Belum ada pembelian token.</p>
+    <ul v-else class="mt-3 divide-y divide-[#E6ECEB]">
       <li v-for="i in invoices" :key="i.orderId" class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <div class="min-w-0">
-          <p class="truncate text-[16px] font-semibold text-[#14111C]">{{ i.name }}</p>
-          <p class="text-[14px] text-[#5E5A6B]">{{ i.date }} ({{ i.orderId }})</p>
+          <p class="truncate text-[15.5px] font-semibold text-[#14111C]">{{ i.name }}</p>
+          <p class="text-[13.5px] text-[#5E5A6B]">{{ i.date }} ({{ i.orderId }})</p>
         </div>
         <div class="flex flex-wrap items-center justify-between gap-4 sm:justify-end">
-          <p class="text-[16px] font-semibold tabular-nums text-[#14111C]">{{ rupiah(i.amount) }}</p>
-          <p class="min-w-[130px] text-[14px] font-medium sm:text-right" :class="tone(i.status)">{{ label(i.status) }}</p>
+          <p class="text-[15.5px] font-semibold tabular-nums text-[#14111C]">{{ rupiah(i.amount) }}</p>
+          <p class="min-w-[130px] text-[13.5px] font-medium sm:text-right" :class="tone(i.status)">{{ label(i.status) }}</p>
           <button
             type="button"
             :disabled="downloading === i.orderId"
-            class="vt-btn-light inline-flex h-10 cursor-pointer items-center rounded-full px-4 text-[13.5px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-50"
+            class="vt-btn-light inline-flex h-9 cursor-pointer items-center rounded-full px-4 text-[13px] font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-50"
             @click="downloadReceipt(i.orderId)"
           >{{ downloading === i.orderId ? "Mengunduh..." : "Unduh kuitansi" }}</button>
         </div>

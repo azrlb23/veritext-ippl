@@ -19,7 +19,7 @@ const p = useTokenPurchase();
         Bayar yang Anda pakai, tanpa langganan.
       </h1>
     </div>
-    <div class="space-y-6">
+    <div class="space-y-8">
       <BalanceHero :balance="authStore.tokenBalance" :role="authStore.role" />
       <TokenGuide />
       <PackageCards @choose="(t) => (p.target.value = t)" />
