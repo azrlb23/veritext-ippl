@@ -1,4 +1,4 @@
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { auditService } from "../services/auditService";
 import { chatService, type ChatHistoryItem, type ChatSessionItem } from "../services/chatService";
 import { documentService } from "../services/documentService";
@@ -25,6 +25,7 @@ export function useAssistant() {
   const sessions = ref<ChatSessionItem[]>([]);
   const documents = ref<DocumentItem[]>([]);
   const auditTasks = ref<AuditTaskWithReport[]>([]);
+  const reportIdsByTask = ref<Record<string, string>>({});
   const activeId = ref<string | null>(null);
   const messagesBySession = ref<Record<string, ChatHistoryItem[]>>({});
   const sendingBySession = ref<Record<string, boolean>>({});
@@ -51,10 +52,19 @@ export function useAssistant() {
   const linkedAudit = computed(() => {
     const docId = activeSession.value?.document_ids?.[0] || selectedDocs.value[0];
     if (!docId) return null;
-    const match = auditTasks.value.find((t) => t.document_id === docId && t.status === "SUCCESS" && Boolean(t.report_id));
-    if (!match?.report_id) return null;
-    return { documentId: docId, reportId: match.report_id, taskId: match.task_id || match.id || "" };
+    const match = auditTasks.value.find((t) => t.document_id === docId && t.status === "SUCCESS");
+    if (!match) return null;
+    const taskId = match.task_id || match.id || "";
+    const reportId = match.report_id || reportIdsByTask.value[taskId] || "";
+    return { documentId: docId, reportId, taskId };
   });
+
+  watch(linkedAudit, async (val) => {
+    if (val?.taskId && !val.reportId) {
+      const rep = await auditService.getReport(val.taskId).catch(() => null);
+      if (rep?.id) reportIdsByTask.value = { ...reportIdsByTask.value, [val.taskId]: rep.id };
+    }
+  }, { immediate: true });
 
   async function loadSessions() {
     sessions.value = await chatService.listSessions().catch(() => []);
