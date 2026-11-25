@@ -2,16 +2,25 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 import type { DocumentItem } from "../../types";
 
-const props = defineProps<{ documents: DocumentItem[]; modelValue: string[] }>();
+const props = withDefaults(defineProps<{ documents: DocumentItem[]; modelValue: string[]; disabled?: boolean }>(), {
+  disabled: false,
+});
 const emit = defineEmits<{ (e: "update:modelValue", v: string[]): void }>();
 const MAX = 3;
 const open = ref(false);
 const pickerRef = ref<HTMLElement | null>(null);
 
-const selectedDocs = computed(() => props.documents.filter((d) => props.modelValue.includes(d.id)));
-const triggerLabel = computed(() => (props.modelValue.length > 0 ? `${props.modelValue.length} naskah dipilih` : "Pilih naskah (opsional, maks 3)"));
+const count = computed(() => props.modelValue.length);
+const titleText = computed(() =>
+  props.disabled
+    ? "Mulai percakapan baru untuk mengubah lampiran naskah"
+    : count.value > 0
+      ? `${count.value} naskah terlampir (maks ${MAX})`
+      : "Lampirkan laporan/naskah (maks 3)"
+);
 
 function toggle(id: string) {
+  if (props.disabled) return;
   if (props.modelValue.includes(id)) return emit("update:modelValue", props.modelValue.filter((x) => x !== id));
   if (props.modelValue.length < MAX) emit("update:modelValue", [...props.modelValue, id]);
 }
@@ -32,62 +41,57 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div>
-    <p v-if="documents.length === 0" class="text-[14px] text-[#5E5A6B]">
-      Belum ada naskah. Unggah di halaman Periksa naskah agar asisten bisa membacanya.
-    </p>
-    <div v-else ref="pickerRef" class="relative">
+  <div ref="pickerRef" class="relative shrink-0">
+    <button
+      type="button"
+      :disabled="disabled || documents.length === 0"
+      :aria-expanded="open"
+      aria-haspopup="listbox"
+      :title="documents.length === 0 ? 'Belum ada naskah diunggah' : titleText"
+      :aria-label="titleText"
+      class="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-40"
+      :class="count > 0 ? 'border-[#0F766E]/40 bg-[#EBF8F6] text-[#0F766E]' : 'border-[#E6ECEB] bg-white text-[#5E5A6B] hover:border-[#CBD5E1] hover:text-[#14111C]'"
+      @click="open = !open"
+    >
+      <!-- Simbol laporan / dokumen audit -->
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="8" y1="13" x2="16" y2="13" />
+        <line x1="8" y1="17" x2="13" y2="17" />
+      </svg>
+      <span
+        v-if="count > 0"
+        class="absolute -right-1 -top-1 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#0F766E] px-1 text-[10px] font-bold text-white"
+      >{{ count }}</span>
+    </button>
+
+    <div
+      v-if="open && !disabled"
+      role="listbox"
+      aria-multiselectable="true"
+      class="absolute bottom-full left-0 z-30 mb-2 max-h-64 w-72 overflow-y-auto rounded-[20px] border border-[#E8ECEB] bg-white p-2 shadow-float sm:w-80"
+    >
+      <div class="px-3 py-1.5 text-[12px] font-semibold text-[#5E5A6B]">Lampirkan laporan naskah (maks 3)</div>
       <button
+        v-for="d in documents"
+        :key="d.id"
         type="button"
-        :aria-expanded="open"
-        aria-haspopup="listbox"
-        class="vt-btn-light inline-flex h-11 cursor-pointer items-center justify-between gap-3 rounded-full px-5 text-[14px] font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
-        @click="open = !open"
+        role="option"
+        :aria-selected="modelValue.includes(d.id)"
+        :disabled="!modelValue.includes(d.id) && modelValue.length >= MAX"
+        class="flex min-h-[42px] w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left text-[13.5px] text-[#14111C] transition-colors hover:bg-[#F4F5F6] focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        @click="toggle(d.id)"
       >
-        <span>{{ triggerLabel }}</span>
-        <svg viewBox="0 0 20 20" class="h-4 w-4 text-[#4B4757] transition-transform duration-150" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7.5L10 12.5L15 7.5" /></svg>
+        <span
+          class="flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors"
+          :class="modelValue.includes(d.id) ? 'border-[#0F766E] bg-[#0F766E] text-white' : 'border-[#CBD5E1] bg-white'"
+          aria-hidden="true"
+        >
+          <svg v-if="modelValue.includes(d.id)" viewBox="0 0 16 16" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5L6.5 11.5L12.5 5" /></svg>
+        </span>
+        <span class="truncate">{{ d.original_filename }}</span>
       </button>
-
-      <div
-        v-if="open"
-        role="listbox"
-        aria-multiselectable="true"
-        class="mt-2 z-30 max-h-60 w-full max-w-md overflow-y-auto rounded-[20px] border border-[#E8ECEB] bg-white p-2 shadow-float"
-      >
-        <button
-          v-for="d in documents"
-          :key="d.id"
-          type="button"
-          role="option"
-          :aria-selected="modelValue.includes(d.id)"
-          :disabled="!modelValue.includes(d.id) && modelValue.length >= MAX"
-          class="flex min-h-[44px] w-full cursor-pointer items-center gap-3 rounded-xl px-3.5 py-2 text-left text-[14px] text-[#14111C] transition-colors hover:bg-[#F4F5F6] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] disabled:cursor-not-allowed disabled:opacity-50"
-          @click="toggle(d.id)"
-        >
-          <span
-            class="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors"
-            :class="modelValue.includes(d.id) ? 'border-[#0F766E] bg-[#0F766E] text-white' : 'border-[#CBD5E1] bg-white'"
-            aria-hidden="true"
-          >
-            <svg v-if="modelValue.includes(d.id)" viewBox="0 0 16 16" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5L6.5 11.5L12.5 5" /></svg>
-          </span>
-          <span class="truncate">{{ d.original_filename }}</span>
-        </button>
-      </div>
-
-      <div v-if="selectedDocs.length > 0" class="mt-3 flex flex-wrap gap-2">
-        <button
-          v-for="d in selectedDocs"
-          :key="d.id"
-          type="button"
-          :aria-label="`Batal pilih ${d.original_filename}`"
-          class="inline-flex min-h-[44px] max-w-full cursor-pointer items-center gap-2 rounded-full border border-[#D5ECE8] bg-[#EBF8F6] px-4 text-[13px] font-medium text-[#0F766E] transition-colors hover:bg-[#D5ECE8]/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
-          @click="toggle(d.id)"
-        >
-          <span class="truncate">{{ d.original_filename }}</span>
-          <svg viewBox="0 0 16 16" class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
-        </button>
-      </div>
     </div>
   </div>
 </template>

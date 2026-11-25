@@ -2,7 +2,6 @@
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import ChatComposer from "../components/asisten/ChatComposer.vue";
-import DocumentPicker from "../components/asisten/DocumentPicker.vue";
 import MessageList from "../components/asisten/MessageList.vue";
 import PriorityFixModal from "../components/asisten/PriorityFixModal.vue";
 import SessionList from "../components/asisten/SessionList.vue";
@@ -80,13 +79,20 @@ async function downloadDoc(format: "docx" | "pdf") {
             <p class="mt-2 max-w-lg text-[15px] leading-relaxed text-[#4B4757]">
               Tanyakan isi naskah, minta saran perbaikan gaya penulisan, atau tempel kalimat untuk diparafrase.
             </p>
-            <div v-if="!a.activeId.value" class="mt-7"><DocumentPicker v-model="a.selectedDocs.value" :documents="a.documents.value" /></div>
           </div>
         </template>
         <MessageList v-else :messages="a.messages.value" :sending="a.sending.value" />
 
         <p v-if="a.trialLeft.value !== null && authStore.role === 'FREE'" class="mt-3 text-[13px] text-[#5E5A6B]">Sisa percobaan gratis: {{ a.trialLeft.value }}</p>
-        <ChatComposer v-model="a.draft.value" :disabled="a.sending.value" :error="a.error.value" @send="a.send" />
+        <ChatComposer
+          v-model="a.draft.value"
+          v-model:selected-docs="a.selectedDocs.value"
+          :documents="a.documents.value"
+          :can-attach="!a.activeId.value"
+          :disabled="a.sending.value"
+          :error="a.error.value"
+          @send="a.send"
+        />
       </div>
     </section>
 
