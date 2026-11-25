@@ -10,6 +10,7 @@ export interface RegisterDTO {
 export interface LoginDTO {
   email: string;
   password: string;
+  remember_me?: boolean;
 }
 
 export interface LoginResponse {

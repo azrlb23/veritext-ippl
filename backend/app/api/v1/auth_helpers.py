@@ -48,16 +48,18 @@ def format_user_profile(user: User, balance: int = 0) -> UserProfileResponse:
     )
 
 
-def set_refresh_cookie(response: Response, refresh_token: str, days: int = 7) -> None:
+def set_refresh_cookie(response: Response, refresh_token: str, days: int | None = 7) -> None:
     is_prod = getattr(settings, "ENVIRONMENT", "").lower() == "production"
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,
-        samesite="lax",
-        secure=is_prod,
-        max_age=days * 24 * 3600,
-    )
+    cookie_kwargs: dict = {
+        "key": "refresh_token",
+        "value": refresh_token,
+        "httponly": True,
+        "samesite": "lax",
+        "secure": is_prod,
+    }
+    if days is not None:
+        cookie_kwargs["max_age"] = days * 24 * 3600
+    response.set_cookie(**cookie_kwargs)
 
 
 async def get_user_wallet_balance(db: AsyncSession, user_id) -> int:

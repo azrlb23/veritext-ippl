@@ -49,6 +49,7 @@ async function handleLogin(creds: { email: string; password: string; remember: b
     await authStore.login({
       email: creds.email,
       password: creds.password,
+      remember_me: creds.remember,
     });
     router.push(getRedirectTarget(authStore.role));
   } catch (err: any) {

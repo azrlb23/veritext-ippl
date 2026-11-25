@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
+import { clearStoredSession, getStoredToken, updateStoredToken } from "../utils/sessionStorage";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
@@ -8,9 +9,7 @@ export function registerAuthExpiredHandler(handler: () => void) {
 }
 
 function clearClientSession() {
-  localStorage.removeItem("veritext_access_token");
-  localStorage.removeItem("veritext_refresh_token");
-  localStorage.removeItem("veritext_user");
+  clearStoredSession();
   try {
     onAuthExpired?.();
   } catch {
@@ -31,7 +30,7 @@ export const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("veritext_access_token");
+    const token = getStoredToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -72,7 +71,7 @@ apiClient.interceptors.response.use(
           refreshResponse.data?.access_token;
 
         if (newAccessToken) {
-          localStorage.setItem("veritext_access_token", newAccessToken);
+          updateStoredToken(newAccessToken);
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }

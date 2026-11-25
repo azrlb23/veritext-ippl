@@ -61,7 +61,7 @@ async def login(req: UserLoginRequest, request: Request, response: Response, db:
         detail="Terlalu banyak percobaan masuk. Silakan coba lagi dalam 1 menit.",
     )
     user, access_token, refresh_token = await AuthService.authenticate_user(db, req, user_agent=request.headers.get("user-agent"), ip_address=ip_addr)
-    set_refresh_cookie(response, refresh_token, 7)
+    set_refresh_cookie(response, refresh_token, settings.REFRESH_TOKEN_EXPIRE_DAYS if req.remember_me else None)
     balance = await get_user_wallet_balance(db, user.id)
     return APIResponse(message="Login successful", data=TokenResponse(access_token=access_token, user=format_user_profile(user, balance)))
 

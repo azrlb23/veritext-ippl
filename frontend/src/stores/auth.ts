@@ -3,14 +3,17 @@ import { ref, computed } from "vue";
 import type { User } from "../types";
 import { authService, type LoginDTO, type RegisterDTO, type CompleteGoogleSignupDTO } from "../services/authService";
 import { useAuditStore } from "./audit";
+import {
+  getStoredToken,
+  getStoredUser,
+  saveStoredSession,
+  updateStoredUser,
+  clearStoredSession,
+} from "../utils/sessionStorage";
 
 export const useAuthStore = defineStore("auth", () => {
-  const rawUser = localStorage.getItem("veritext_user");
-  let initialUser: User | null = null;
-  try { initialUser = rawUser ? JSON.parse(rawUser) : null; } catch { initialUser = null; }
-
-  const user = ref<User | null>(initialUser);
-  const token = ref<string | null>(localStorage.getItem("veritext_access_token"));
+  const user = ref<User | null>(getStoredUser<User>());
+  const token = ref<string | null>(getStoredToken());
   const welcomeName = ref<string | null>(sessionStorage.getItem("veritext_welcome"));
   const isLoading = ref<boolean>(false);
 
@@ -32,24 +35,23 @@ export const useAuthStore = defineStore("auth", () => {
     return val;
   }
 
-  function applySession(data: { access_token: string; user: User }) {
+  function applySession(data: { access_token: string; user: User }, remember = true) {
     token.value = data.access_token;
     user.value = data.user;
-    localStorage.setItem("veritext_access_token", data.access_token);
-    localStorage.setItem("veritext_user", JSON.stringify(data.user));
+    saveStoredSession(data.access_token, data.user, remember);
   }
 
   function decrementTokenBalance(amount: number) {
     if (user.value) {
       user.value.token_balance = Math.max(0, (user.value.token_balance ?? 5) - amount);
-      localStorage.setItem("veritext_user", JSON.stringify(user.value));
+      updateStoredUser(user.value);
     }
   }
 
   function setTokenBalance(balance: number) {
     if (user.value) {
       user.value.token_balance = balance;
-      localStorage.setItem("veritext_user", JSON.stringify(user.value));
+      updateStoredUser(user.value);
     }
   }
 
@@ -57,7 +59,7 @@ export const useAuthStore = defineStore("auth", () => {
     isLoading.value = true;
     try {
       const data = await authService.login(creds);
-      applySession(data);
+      applySession(data, creds.remember_me ?? true);
       markWelcome();
       return data;
     } finally {
@@ -85,7 +87,7 @@ export const useAuthStore = defineStore("auth", () => {
     token.value = null;
     welcomeName.value = null;
     sessionStorage.removeItem("veritext_welcome");
-    ["veritext_access_token", "veritext_user"].forEach((k) => localStorage.removeItem(k));
+    clearStoredSession();
     try { useAuditStore().reset(); } catch { /* Fallback */ }
   }
 
@@ -99,7 +101,7 @@ export const useAuthStore = defineStore("auth", () => {
     try {
       const profile = await authService.getProfile();
       user.value = profile;
-      localStorage.setItem("veritext_user", JSON.stringify(profile));
+      updateStoredUser(profile);
     } catch (err: any) {
       if (err?.response?.status === 401) await logout();
     }

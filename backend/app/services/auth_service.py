@@ -96,12 +96,13 @@ class AuthService:
         access_token = create_access_token(subject=str(user.id), role=user.role)
         refresh_token = create_refresh_token(subject=str(user.id))
 
+        session_days = settings.REFRESH_TOKEN_EXPIRE_DAYS if getattr(req, "remember_me", True) else 1
         session_obj = Session(
             user_id=user.id,
             refresh_token_hash=hash_token(refresh_token),
             user_agent=user_agent,
             ip_address=ip_address,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            expires_at=now + timedelta(days=session_days),
         )
         db.add(session_obj)
         db.add(
