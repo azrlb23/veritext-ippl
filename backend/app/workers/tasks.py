@@ -68,7 +68,7 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
         db.commit()
 
         corpus_bank = ReferenceCorpusBank.get_instance()
-        corpus_index, corpus_chunks = load_corpus_indexes(db, corpus_bank, logger)
+        corpus_index, corpus_chunks = load_corpus_indexes(db, corpus_bank, logger, doc_text=doc_text)
         task.progress_pct, task.current_stage = 40, "Tahap 2 - Penelusuran internet & korpus"
         db.commit()
 

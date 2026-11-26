@@ -19,13 +19,13 @@ from app.models.wallet import TokenTransaction, TokenWallet
 
 
 def load_corpus_indexes(
-    db: Any, corpus_bank: Any, logger: Any
+    db: Any, corpus_bank: Any, logger: Any, doc_text: str | None = None
 ) -> tuple[dict[int, list[dict[str, Any]]], list[dict[str, Any]]]:
     corpus_index: dict[int, list[dict[str, Any]]] = dict(corpus_bank.get_fingerprint_index())
     # Potongan korpus basis data dicari lewat indeks HNSW pgvector (lihat PgvectorChunkSearch), bukan dimuat ke memori.
     corpus_chunks: list[dict[str, Any]] = list(corpus_bank.get_corpus_chunks())
     try:
-        db_fps = (
+        q_base = (
             db.query(
                 LexicalFingerprint.fingerprint_hash,
                 LexicalFingerprint.corpus_doc_id,
@@ -35,9 +35,15 @@ def load_corpus_indexes(
             )
             .join(CorpusDocument, LexicalFingerprint.corpus_doc_id == CorpusDocument.id)
             .filter(CorpusDocument.status == "INDEXED")
-            .yield_per(5000)
         )
-        for fp_hash, doc_id, pos_start, title, cat in db_fps:
+        if doc_text:
+            doc_hashes = list({h for h, _ in corpus_bank.lexical_engine.extract_fingerprints(doc_text)})
+            rows = []
+            for i in range(0, len(doc_hashes), 4000):
+                rows.extend(q_base.filter(LexicalFingerprint.fingerprint_hash.in_(doc_hashes[i : i + 4000])).all())
+        else:
+            rows = q_base.yield_per(5000)
+        for fp_hash, doc_id, pos_start, title, cat in rows:
             corpus_index.setdefault(fp_hash, []).append({
                 "doc_id": str(doc_id), "title": title,
                 "category": cat or "General", "position": pos_start,
