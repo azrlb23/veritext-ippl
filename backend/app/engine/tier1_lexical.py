@@ -113,7 +113,7 @@ class WinnowingLexicalEngine:
                         "similarity": round(min(1.0, cnt / len(s_hashes)), 2),
                         "matched_source_text": source_info[d_id].get("snippet") or None,
                     }
-                    for d_id, cnt in ranked[1:4]
+                    for d_id, cnt in ranked[1:]
                 ]
                 sentence_matches.append(SentenceLexicalMatch(
                     sentence_index=s.index, matching_fingerprints=len(s_matched),

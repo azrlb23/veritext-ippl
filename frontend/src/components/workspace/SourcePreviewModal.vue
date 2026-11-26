@@ -1,28 +1,25 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { auditService } from "../../services/auditService";
-import type { SourcePreviewData } from "../../types";
+import type { MatchedSource, SourcePreviewData } from "../../types";
 import { splitOverlapTokens } from "../../utils/textOverlap";
 
-const INITIAL_LIMIT = 12000;
 const props = defineProps<{
   open: boolean;
   reportId: string;
   target: { title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string } | null;
+  sources?: MatchedSource[];
 }>();
-const emit = defineEmits<{ (e: "close"): void }>();
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "select-source", p: { title?: string; corpus_doc_id?: string; source_url?: string }): void;
+}>();
 
 const loading = ref(false);
 const error = ref("");
 const data = ref<SourcePreviewData | null>(null);
-const showFull = ref(false);
 const activeIdx = ref<number | null>(0);
-
-const visibleText = computed(() => {
-  const raw = data.value?.full_text || "";
-  return showFull.value || raw.length <= INITIAL_LIMIT ? raw : raw.slice(0, INITIAL_LIMIT);
-});
-const isTruncated = computed(() => !showFull.value && (data.value?.full_text.length || 0) > INITIAL_LIMIT);
+const visibleText = computed(() => data.value?.full_text || "");
 
 const textSegments = computed(() => {
   const txt = visibleText.value;
@@ -53,14 +50,13 @@ const textSegments = computed(() => {
 
 async function jumpToMatch(idx: number) {
   activeIdx.value = idx;
-  if (isTruncated.value) showFull.value = true;
   await nextTick();
   document.querySelector(`[data-preview-match="${idx}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 watch(() => [props.open, props.target], async ([isOpen]) => {
   if (!isOpen || !props.target || !props.reportId) return;
-  loading.value = true; error.value = ""; data.value = null; showFull.value = false; activeIdx.value = 0;
+  loading.value = true; error.value = ""; data.value = null; activeIdx.value = 0;
   try {
     data.value = await auditService.getSourcePreview(props.reportId, props.target);
     if (props.target.focusSentence && data.value?.matched_highlights.length) {
@@ -83,6 +79,12 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
           </div>
           <button type="button" aria-label="Tutup pratinjau" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full" @click="emit('close')">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div v-if="(sources || []).length > 1" class="mt-3 flex gap-2 overflow-x-auto pb-1">
+          <button v-for="(s, si) in sources" :key="si" type="button" class="shrink-0 cursor-pointer rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition-colors" :class="s.title === (data?.title || target?.title) ? 'border-[#0F766E] bg-[#EBF8F6] text-[#0F766E]' : 'border-[#E8ECEB] bg-white text-[#4B4757] hover:border-[#0F766E]'" @click="emit('select-source', { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url })">
+            {{ s.title.slice(0, 36) }}{{ s.title.length > 36 ? '...' : '' }} ({{ s.contribution_pct }}%)
           </button>
         </div>
 
@@ -118,9 +120,6 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
                   <template v-else>{{ seg.text }}</template>
                 </template>
               </p>
-              <button v-if="isTruncated" type="button" class="mt-4 cursor-pointer text-[13.5px] font-semibold text-[#0F766E] hover:underline" @click="showFull = true">
-                Tampilkan seluruh teks ({{ data.full_text.length.toLocaleString('id-ID') }} karakter)
-              </button>
             </div>
           </div>
         </div>

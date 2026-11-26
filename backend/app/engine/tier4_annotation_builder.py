@@ -91,12 +91,12 @@ def build_heatmap_annotations(
                 similarity=wm.similarity, source_title=wm.source_title or "Sumber Web Publik",
                 text_snippet=s.text, source_url=wm.source_url,
                 matched_source_text=_clip(wm.matched_snippet), source_category="Sumber Internet Publik",
-                secondary_sources=sec[:3] or None,
+                secondary_sources=sec or None,
                 reason="Kecocokan web publik terverifikasi", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif s.index in tier1_matched_indices:
             t1 = tier1_matched_indices[s.index]
-            sec = [{"source_title": x.get("source_title"), "source_category": x.get("source_category"), "similarity": x.get("similarity"), "matched_source_text": _clip(x.get("matched_source_text"))} for x in t1.secondary_sources[:3]]
+            sec = [{"source_title": x.get("source_title"), "source_category": x.get("source_category"), "similarity": x.get("similarity"), "matched_source_text": _clip(x.get("matched_source_text"))} for x in t1.secondary_sources]
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T1", color="RED",
                 similarity=t1.similarity,
@@ -117,7 +117,7 @@ def build_heatmap_annotations(
                 similarity=wm.similarity, source_title=wm.source_title or "Sumber Web Publik",
                 text_snippet=s.text, source_url=wm.source_url,
                 matched_source_text=_clip(wm.matched_snippet), source_category="Sumber Internet Publik",
-                secondary_sources=sec[:3] or None,
+                secondary_sources=sec or None,
                 reason="Parafrasa konten web publik terverifikasi", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif s.index in tier2_matched_indices:

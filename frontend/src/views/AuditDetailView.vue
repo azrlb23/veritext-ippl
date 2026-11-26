@@ -117,7 +117,7 @@ watch(() => route.params.id, (id) => {
       </div>
       <DocumentHighlights :report-id="report.id" :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => { selected = a; drawerOpen = true; }" />
       <SourcesPanel :sources="sources" :annotations="annotations" @select-annotation="(a) => { selected = a; drawerOpen = true; }" @preview-source="openSourcePreview" />
-      <SourcePreviewModal :open="previewOpen" :report-id="report.id" :target="previewTarget" @close="previewOpen = false" />
+      <SourcePreviewModal :open="previewOpen" :report-id="report.id" :target="previewTarget" :sources="sources" @select-source="openSourcePreview" @close="previewOpen = false" />
     </div>
 
     <Teleport to="body">

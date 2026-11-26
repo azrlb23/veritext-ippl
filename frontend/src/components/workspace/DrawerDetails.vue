@@ -13,7 +13,7 @@ const isAiView = computed(() => props.selected.active_view === "AI" || props.sel
 const isResolved = computed(() => props.selected.color === "RESOLVED_GREEN" || (props.selected as any).match_type === "RESOLVED_GREEN");
 const matchKindLabel = computed(() => (props.selected.tier === "T1" ? "Kata sama" : props.selected.tier === "T2" ? "Makna sama" : "Pola AI"));
 const quoteTokens = computed(() => splitOverlapTokens(props.selected.matched_source_text || "", props.selected.text_snippet || ""));
-const extraSources = computed(() => (props.selected.secondary_sources || []).slice(0, 3));
+const extraSources = computed(() => props.selected.secondary_sources || []);
 </script>
 
 <template>
