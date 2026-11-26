@@ -2,7 +2,14 @@ from types import SimpleNamespace
 import pytest
 
 from app.engine.reference_corpus import BUILTIN_REFERENCE_CORPUS
-from app.services.source_preview_service import build_source_preview
+from app.services.source_preview_service import _is_readable_prose, build_source_preview
+
+
+def test_is_readable_prose_rejects_obfuscated_scribd_text():
+    garbled = "1n{.liI?[__:st=aH tn=:?I+p=d];J0_=FzVSxmj6DIa0KdV))g.B ]0)K=oSsnnainc+(B|iJo)gOB{d)"
+    clean = "Dokumen ini membahas perancangan sistem informasi akademik berbasis web untuk perguruan tinggi."
+    assert not _is_readable_prose(garbled)
+    assert _is_readable_prose(clean)
 
 
 class _EmptyResult:

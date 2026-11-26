@@ -14,6 +14,16 @@ from app.models.audit import AuditReport
 from app.models.corpus import CorpusDocument, DocumentChunk
 
 _TAG_RE = re.compile(r"<[^>]+>")
+_NOISE_BLOCK_RE = re.compile(r"<(script|style|noscript)[^>]*>.*?</\1>", flags=re.IGNORECASE | re.DOTALL)
+
+
+def _is_readable_prose(text: str) -> bool:
+    words = text.split()
+    if len(words) < 8 or any(sym in text for sym in ("{", "}", "=>", "function(", "var ", "const ")):
+        return False
+    alpha_space = sum(1 for ch in text if ch.isalpha() or ch.isspace())
+    avg_len = sum(len(w) for w in words) / len(words)
+    return (alpha_space / max(1, len(text)) >= 0.78) and (3.0 <= avg_len <= 13.0)
 
 
 def _find_builtin_corpus(corpus_doc_id: str | None, title: str | None) -> dict[str, Any] | None:
@@ -53,9 +63,10 @@ async def _fetch_web_excerpt(source_url: str | None) -> str | None:
             resp = await client.get(source_url, headers={"User-Agent": "VeriTextAI/1.0"})
         if resp.status_code != 200 or "html" not in (resp.headers.get("content-type") or "").lower():
             return None
-        paras = re.findall(r"<p[^>]*>(.*?)</p>", resp.text, flags=re.IGNORECASE | re.DOTALL)
-        cleaned = [html_lib.unescape(_TAG_RE.sub(" ", p)).strip() for p in paras]
-        good = [" ".join(c.split()) for c in cleaned if len(c.split()) >= 8][:8]
+        body = _NOISE_BLOCK_RE.sub(" ", resp.text)
+        paras = re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.IGNORECASE | re.DOTALL)
+        cleaned = [" ".join(html_lib.unescape(_TAG_RE.sub(" ", p)).split()) for p in paras]
+        good = [c for c in cleaned if _is_readable_prose(c)][:8]
         return "\n\n".join(good) if good else None
     except Exception:  # noqa: BLE001
         return None
