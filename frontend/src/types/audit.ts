@@ -40,6 +40,22 @@ export interface MatchedSource {
   source_url?: string;
 }
 
+export interface SourcePreviewMatch {
+  sentence_text: string;
+  matched_source_text: string;
+  similarity: number;
+  tier?: string;
+}
+
+export interface SourcePreviewData {
+  title: string;
+  category: string;
+  source_type: string;
+  source_url?: string | null;
+  full_text: string;
+  matched_highlights: SourcePreviewMatch[];
+}
+
 export interface AuditReport {
   id: string;
   audit_task_id: string;

@@ -1,5 +1,5 @@
 import { apiClient } from "./api";
-import type { AuditTask, AuditReport } from "../types";
+import type { AuditTask, AuditReport, SourcePreviewData } from "../types";
 
 const MIME_TYPES: Record<"docx" | "pdf", string> = {
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -58,6 +58,11 @@ export const auditService = {
   async exportHistoryCsv() {
     const res = await apiClient.get("/audits/history/export-csv", { responseType: "blob" });
     triggerBlobDownload(res.data, "text/csv;charset=utf-8;", "veritext_audit_history.csv");
+  },
+
+  async getSourcePreview(reportId: string, params: { title?: string; corpus_doc_id?: string; source_url?: string }) {
+    const res = await apiClient.get<{ data: SourcePreviewData }>(`/reports/${reportId}/source-preview`, { params });
+    return res.data.data;
   },
 
   async getHistory(page: number = 1, limit: number = 20) {

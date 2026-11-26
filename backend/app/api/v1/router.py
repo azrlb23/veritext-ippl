@@ -10,6 +10,7 @@ from app.api.v1.chat_batch import router as chat_batch_router
 from app.api.v1.chat_sessions import router as chat_sessions_router
 from app.api.v1.documents import router as documents_router
 from app.api.v1.reports import router as reports_router
+from app.api.v1.source_preview import router as source_preview_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -17,6 +18,7 @@ api_v1_router.include_router(auth_router)
 api_v1_router.include_router(documents_router)
 api_v1_router.include_router(audits_router)
 api_v1_router.include_router(reports_router)
+api_v1_router.include_router(source_preview_router)
 api_v1_router.include_router(billing_router)
 api_v1_router.include_router(admin_router)
 api_v1_router.include_router(admin_extra_router)

@@ -4,7 +4,10 @@ import type { HeatmapAnnotation, MatchedSource } from "../../types";
 
 const PER_PAGE = 10;
 const props = defineProps<{ sources: MatchedSource[]; annotations?: HeatmapAnnotation[] }>();
-const emit = defineEmits<{ (e: "select-annotation", a: HeatmapAnnotation): void }>();
+const emit = defineEmits<{
+  (e: "select-annotation", a: HeatmapAnnotation): void;
+  (e: "preview-source", p: { title?: string; corpus_doc_id?: string; source_url?: string }): void;
+}>();
 
 type FilterKind = "all" | "web" | "corpus";
 const filter = ref<FilterKind>("all");
@@ -53,7 +56,8 @@ function toggleRow(k: string) { expanded.value[k] = !expanded.value[k]; }
               <p class="text-[15px] font-semibold leading-snug text-[#14111C]">{{ s.title }}</p>
               <p class="mt-1 text-[13px] text-[#5E5A6B]">
                 {{ s.category || "Arsip" }} · {{ sentencesFor(s).length }} kalimat cocok
-                <a v-if="s.source_url" :href="s.source_url" target="_blank" rel="noopener noreferrer" class="ml-2 font-medium text-[#0F766E] hover:underline" @click.stop>Buka sumber</a>
+                <button type="button" class="ml-2 cursor-pointer font-semibold text-[#0F766E] hover:underline" @click.stop="emit('preview-source', { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url })">Lihat isi teks pembanding</button>
+                <a v-if="s.source_url" :href="s.source_url" target="_blank" rel="noopener noreferrer" class="ml-2 font-medium text-[#5E5A6B] hover:text-[#0F766E] hover:underline" @click.stop>Buka sumber</a>
               </p>
             </div>
             <div class="flex flex-shrink-0 items-center gap-3">

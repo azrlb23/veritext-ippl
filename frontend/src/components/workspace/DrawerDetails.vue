@@ -4,6 +4,7 @@ import type { HeatmapAnnotation } from "../../types";
 import { splitOverlapTokens } from "../../utils/textOverlap";
 
 const props = defineProps<{ selected: HeatmapAnnotation }>();
+const emit = defineEmits<{ (e: "preview-source", p: { title?: string; corpus_doc_id?: string; source_url?: string }): void }>();
 const showInitialSource = ref(false);
 watch(() => props.selected, () => { showInitialSource.value = false; });
 
@@ -52,7 +53,10 @@ const extraSources = computed(() => (props.selected.secondary_sources || []).sli
           </template>
         </p>
         <p v-else class="mt-1.5 text-[13px] italic text-[#5E5A6B]">Kutipan teks tidak tersedia dari sumber; kecocokan berbasis judul/snippet indeks.</p>
-        <a v-if="selected.source_url" :href="selected.source_url" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-[13px] font-medium text-[#0F766E] hover:underline">Buka sumber</a>
+        <div class="mt-2.5 flex flex-wrap items-center gap-3">
+          <button type="button" class="cursor-pointer text-[13px] font-semibold text-[#0F766E] hover:underline" @click="emit('preview-source', { title: selected.source_title, corpus_doc_id: selected.source_chunk_id, source_url: selected.source_url })">Lihat isi teks pembanding</button>
+          <a v-if="selected.source_url" :href="selected.source_url" target="_blank" rel="noopener noreferrer" class="text-[13px] font-medium text-[#5E5A6B] hover:text-[#0F766E] hover:underline">Buka sumber</a>
+        </div>
       </div>
 
       <div v-if="!isAiView && extraSources.length" class="space-y-1.5 border-t border-[#E8ECEB] pt-2.5">

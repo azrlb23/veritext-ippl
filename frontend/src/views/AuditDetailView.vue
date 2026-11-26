@@ -7,6 +7,7 @@ import type { AuditReport, HeatmapAnnotation, MatchedSource } from "../types";
 import ScoreHeader from "../components/workspace/ScoreHeader.vue";
 import DocumentHighlights from "../components/workspace/DocumentHighlights.vue";
 import SourcesPanel from "../components/workspace/SourcesPanel.vue";
+import SourcePreviewModal from "../components/workspace/SourcePreviewModal.vue";
 import ParaphrasePanel from "../components/workspace/ParaphrasePanel.vue";
 import DrawerDetails from "../components/workspace/DrawerDetails.vue";
 
@@ -23,6 +24,9 @@ const annotations = ref<HeatmapAnnotation[]>([]);
 const sources = ref<MatchedSource[]>([]);
 const selected = ref<HeatmapAnnotation | null>(null);
 const drawerOpen = ref(false);
+const previewOpen = ref(false);
+const previewTarget = ref<{ title?: string; corpus_doc_id?: string; source_url?: string } | null>(null);
+const openSourcePreview = (p: { title?: string; corpus_doc_id?: string; source_url?: string }) => { previewTarget.value = p; previewOpen.value = true; };
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 async function load(id: string) {
@@ -112,7 +116,8 @@ watch(() => route.params.id, (id) => {
         </router-link>
       </div>
       <DocumentHighlights :report-id="report.id" :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => { selected = a; drawerOpen = true; }" />
-      <SourcesPanel :sources="sources" :annotations="annotations" @select-annotation="(a) => { selected = a; drawerOpen = true; }" />
+      <SourcesPanel :sources="sources" :annotations="annotations" @select-annotation="(a) => { selected = a; drawerOpen = true; }" @preview-source="openSourcePreview" />
+      <SourcePreviewModal :open="previewOpen" :report-id="report.id" :target="previewTarget" @close="previewOpen = false" />
     </div>
 
     <Teleport to="body">
@@ -124,7 +129,7 @@ watch(() => route.params.id, (id) => {
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
             </button>
           </div>
-          <DrawerDetails :selected="selected" />
+          <DrawerDetails :selected="selected" @preview-source="openSourcePreview" />
           <div class="mt-5 flex-1"><ParaphrasePanel :selected="selected" @applied="onApplied" /></div>
           <div class="mt-6 border-t border-[#E8ECEB] pt-5">
             <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>
