@@ -33,27 +33,32 @@ def reconstruct_abstract(inv_idx: dict[str, list[int]] | None) -> str:
     return " ".join(w for w in words if w).strip()
 
 
-def fetch_openalex_batch(client: httpx.Client, lang: str, cursor: str) -> tuple[list[dict], str | None]:
+def fetch_openalex_batch(client: httpx.Client, lang: str, page: int) -> list[dict]:
     params = {
         "filter": f"has_abstract:true,language:{lang}",
         "per-page": 200,
-        "cursor": cursor,
+        "page": page,
         "select": "id,title,publication_year,abstract_inverted_index,primary_topic",
     }
     resp = client.get("https://api.openalex.org/works", params=params)
     resp.raise_for_status()
-    payload = resp.json()
-    return payload.get("results", []), payload.get("meta", {}).get("next_cursor")
+    return resp.json().get("results", [])
 
 
 def harvest_language(
     session, lexical: WinnowingLexicalEngine, semantic: SemanticEngine,
     seen_hashes: set[str], lang: str, quota: int,
 ) -> int:
-    added, cursor = 0, "*"
+    added, page = 0, 1
     with httpx.Client(timeout=30.0, headers={"User-Agent": "VeriTextAI/1.0 (mailto:admin@veritext.ai)"}) as client:
-        while added < quota and cursor:
-            works, cursor = fetch_openalex_batch(client, lang, cursor)
+        while added < quota and page <= 50:
+            try:
+                works = fetch_openalex_batch(client, lang, page)
+            except Exception as err:  # noqa: BLE001
+                print(f"[{lang.upper()}] page={page} skipped: {err}", flush=True)
+                page += 1
+                continue
+            page += 1
             if not works:
                 break
             pending_docs, all_sents = [], []
