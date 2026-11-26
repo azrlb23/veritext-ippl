@@ -88,47 +88,49 @@ class WinnowingLexicalEngine:
             if not s_matched:
                 continue
 
-            sim_ratio = len(s_matched) / len(s_hashes)
-            if sim_ratio >= 0.40 or len(s_matched) >= 3:
-                source_counts: dict[str, int] = {}
-                source_info: dict[str, dict[str, str]] = {}
-                for h in s_matched:
-                    for ref in corpus_index.get(h, []):
-                        d_id = str(ref.get("doc_id", "corpus-doc"))
-                        source_counts[d_id] = source_counts.get(d_id, 0) + 1
-                        source_info.setdefault(d_id, {
-                            "title": ref.get("title", "Dokumen Korpus Pembanding"),
-                            "category": ref.get("category", "Umum"),
-                            "snippet": ref.get("snippet", ""),
-                        })
+            doc_hits: dict[str, set[int]] = {}
+            source_info: dict[str, dict[str, str]] = {}
+            for h in s_matched:
+                for ref in corpus_index.get(h, []):
+                    d_id = str(ref.get("doc_id", "corpus-doc"))
+                    doc_hits.setdefault(d_id, set()).add(h)
+                    source_info.setdefault(d_id, {
+                        "title": ref.get("title", "Dokumen Korpus Pembanding"),
+                        "category": ref.get("category", "Umum"),
+                        "snippet": ref.get("snippet", ""),
+                    })
 
-                ranked = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)
-                best_id = ranked[0][0] if ranked else None
-                best_info = source_info[best_id] if best_id else {}
+            ranked = sorted(doc_hits.items(), key=lambda x: len(x[1]), reverse=True)
+            if not ranked:
+                continue
+            best_id, best_hashes = ranked[0]
+            best_ratio = len(best_hashes) / len(s_hashes)
+            if best_ratio >= 0.45 and len(best_hashes) >= 4:
+                best_info = source_info[best_id]
                 best_title = best_info.get("title", "Korpus Pembanding")
                 sec = [
                     {
                         "source_title": source_info[d_id]["title"],
                         "source_category": source_info[d_id]["category"],
-                        "similarity": round(min(1.0, cnt / len(s_hashes)), 2),
+                        "similarity": round(min(1.0, len(hset) / len(s_hashes)), 2),
                         "matched_source_text": source_info[d_id].get("snippet") or None,
                     }
-                    for d_id, cnt in ranked[1:]
+                    for d_id, hset in ranked[1:]
+                    if len(hset) / len(s_hashes) >= 0.40 and len(hset) >= 3
                 ]
                 sentence_matches.append(SentenceLexicalMatch(
-                    sentence_index=s.index, matching_fingerprints=len(s_matched),
-                    total_fingerprints=len(s_hashes), similarity=round(min(1.0, sim_ratio), 2),
+                    sentence_index=s.index, matching_fingerprints=len(best_hashes),
+                    total_fingerprints=len(s_hashes), similarity=round(min(1.0, best_ratio), 2),
                     matched_corpus_doc_id=best_id, matched_source_title=best_title,
                     matched_source_category=best_info.get("category"),
                     matched_source_snippet=best_info.get("snippet") or None,
                     secondary_sources=sec,
                 ))
-                if best_id:
-                    hit = corpus_hits.setdefault(best_id, {
-                        "corpus_doc_id": best_id, "title": best_title,
-                        "category": source_info[best_id]["category"], "match_count": 0,
-                    })
-                    hit["match_count"] += len(s_matched)
+                hit = corpus_hits.setdefault(best_id, {
+                    "corpus_doc_id": best_id, "title": best_title,
+                    "category": source_info[best_id]["category"], "match_count": 0,
+                })
+                hit["match_count"] += len(best_hashes)
 
         return LexicalAnalysisResult(
             score_t1=score_t1, doc_fingerprints=doc_fps, matched_fingerprints=matched_fps,
