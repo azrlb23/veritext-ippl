@@ -73,36 +73,35 @@ async def _fetch_web_excerpt(source_url: str | None) -> str | None:
 
 
 def _collect_matches(report: AuditReport, title: str | None, source_url: str | None) -> list[dict[str, Any]]:
-    t_norm = (title or "").strip().lower()
-    out: list[dict[str, Any]] = []
+    t_norm, out = (title or "").strip().lower(), []
     for a in report.heatmap_annotations or []:
         if not isinstance(a, dict) or a.get("tier") not in ("T1", "T2"):
             continue
         a_title = str(a.get("source_title") or "").strip().lower()
-        a_url = a.get("source_url")
-        if (t_norm and a_title == t_norm) or (source_url and a_url == source_url):
-            out.append({
-                "sentence_text": a.get("text_snippet") or "",
-                "matched_source_text": a.get("matched_source_text") or "",
-                "similarity": float(a.get("similarity") or 0.0),
-                "tier": a.get("tier"),
-            })
-    out.sort(key=lambda x: x["similarity"], reverse=True)
-    return out
+        if (t_norm and a_title == t_norm) or (source_url and a.get("source_url") == source_url):
+            out.append({"sentence_text": a.get("text_snippet") or "", "matched_source_text": a.get("matched_source_text") or "", "similarity": float(a.get("similarity") or 0.0), "tier": a.get("tier")})
+        else:
+            for sec in a.get("secondary_sources") or []:
+                if isinstance(sec, dict) and t_norm and str(sec.get("source_title") or "").strip().lower() == t_norm:
+                    out.append({"sentence_text": a.get("text_snippet") or "", "matched_source_text": sec.get("matched_source_text") or "", "similarity": float(sec.get("similarity") or a.get("similarity") or 0.0), "tier": a.get("tier")})
+    return sorted(out, key=lambda x: x["similarity"], reverse=True)
 
 
 def _fill_missing_quotes(matches: list[dict[str, Any]], full_text: str) -> None:
+    from app.engine.tier1_filters import content_words
+
     sents = [s.strip() for s in full_text.split(".") if len(s.strip()) >= 15]
     if not sents:
         return
     for m in matches:
         if m.get("matched_source_text"):
             continue
-        ref = {w.lower().strip(".,;:!?()[]") for w in str(m.get("sentence_text") or "").split() if len(w) >= 3}
+        ref = set(content_words(str(m.get("sentence_text") or "")))
         if not ref:
             continue
-        best = max(sents, key=lambda s: len(ref.intersection(w.lower().strip(".,;:!?()[]") for w in s.split())))
-        m["matched_source_text"] = (best + ".")[:400]
+        best = max(sents, key=lambda s: len(ref.intersection(content_words(s))))
+        if len(ref.intersection(content_words(best))) >= 2:
+            m["matched_source_text"] = (best + ".")[:400]
 
 
 async def build_source_preview(

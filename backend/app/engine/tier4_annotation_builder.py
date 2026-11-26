@@ -122,12 +122,14 @@ def build_heatmap_annotations(
             ).to_dict())
         elif s.index in tier2_matched_indices:
             t2 = tier2_matched_indices[s.index]
+            sec = [{"source_title": x.get("source_title"), "source_category": x.get("source_category"), "similarity": x.get("similarity"), "matched_source_text": _clip(x.get("matched_source_text"))} for x in getattr(t2, "secondary_sources", [])]
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T2", color="ORANGE",
                 similarity=t2.similarity,
                 source_title=t2.matched_source_title or "Korpus Pembanding Semantik",
                 text_snippet=s.text, source_chunk_id=t2.matched_chunk_id,
                 matched_source_text=_clip(t2.matched_chunk_text), source_category="Bank Korpus",
+                secondary_sources=sec or None,
                 reason="Parafrasa semantik terdeteksi dari bank korpus", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif t3_match is not None and (score_t3 >= 20.0 or t3_match.anomaly_score >= 0.50):

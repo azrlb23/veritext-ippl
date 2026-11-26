@@ -38,15 +38,33 @@ def load_corpus_indexes(
         )
         if doc_text:
             doc_hashes = list({h for h, _ in corpus_bank.lexical_engine.extract_fingerprints(doc_text)})
-            rows = []
+            raw_rows = []
             for i in range(0, len(doc_hashes), 4000):
-                rows.extend(q_base.filter(LexicalFingerprint.fingerprint_hash.in_(doc_hashes[i : i + 4000])).all())
+                raw_rows.extend(q_base.filter(LexicalFingerprint.fingerprint_hash.in_(doc_hashes[i : i + 4000])).all())
+            hash_docs: dict[int, set[str]] = {}
+            for fp_hash, doc_id, *_ in raw_rows:
+                hash_docs.setdefault(fp_hash, set()).add(str(doc_id))
+            rows = [r for r in raw_rows if len(hash_docs.get(r[0], ())) <= 50]
+            cand_ids = list({r[1] for r in rows})
+            doc_texts: dict[Any, str] = {}
+            for i in range(0, len(cand_ids), 200):
+                chunk_rows = (
+                    db.query(DocumentChunk.corpus_doc_id, DocumentChunk.chunk_text)
+                    .filter(DocumentChunk.corpus_doc_id.in_(cand_ids[i : i + 200]))
+                    .order_by(DocumentChunk.chunk_index.asc())
+                    .all()
+                )
+                for cid, ctxt in chunk_rows:
+                    if ctxt:
+                        doc_texts[cid] = (doc_texts.get(cid, "") + " " + ctxt).strip()
         else:
             rows = q_base.yield_per(5000)
+            doc_texts = {}
         for fp_hash, doc_id, pos_start, title, cat in rows:
             corpus_index.setdefault(fp_hash, []).append({
                 "doc_id": str(doc_id), "title": title,
                 "category": cat or "General", "position": pos_start,
+                "snippet": doc_texts.get(doc_id, ""),
             })
     except Exception as e:  # noqa: BLE001
         logger.warning("Database corpus query fallback to ReferenceCorpusBank: %s", e)

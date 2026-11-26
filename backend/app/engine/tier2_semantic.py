@@ -5,12 +5,9 @@ from dataclasses import dataclass, field
 from typing import Any
 from app.core.config import settings
 from app.engine.preprocessor import SentenceSpan
+from app.engine.tier1_filters import is_heading_or_too_short
 from app.engine.tier2_reranker import SemanticReranker
-from app.engine.tier2_fallback_embedder import (
-    cosine_similarity,
-    embed_sentence_dense,
-    get_inference_context,
-)
+from app.engine.tier2_fallback_embedder import cosine_similarity, embed_sentence_dense, get_inference_context
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +20,7 @@ class SentenceSemanticMatch:
     matched_source_title: str | None = None
     matched_chunk_text: str | None = None
     matched_corpus_doc_id: str | None = None
+    secondary_sources: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -41,9 +39,7 @@ class SemanticEngine:
     cosine_similarity = staticmethod(cosine_similarity)
 
     def __init__(self, dimension: int = 384, paraphrase_threshold: float = 0.75):
-        self.dimension = dimension or settings.EMBEDDING_DIMENSION
-        self.paraphrase_threshold = paraphrase_threshold
-        self._transformer_model = None
+        self.dimension, self.paraphrase_threshold, self._transformer_model = dimension or settings.EMBEDDING_DIMENSION, paraphrase_threshold, None
 
     def embed_sentence_dense(self, text: str) -> list[float]:
         return embed_sentence_dense(text, dimension=self.dimension)
@@ -55,9 +51,7 @@ class SemanticEngine:
             try:
                 from sentence_transformers import SentenceTransformer
 
-                cls._shared_transformer_model = SentenceTransformer(
-                    settings.SENTENCE_TRANSFORMER_MODEL
-                )
+                cls._shared_transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
             except Exception as e:  # noqa: BLE001
                 logger.debug("SentenceTransformer load skipped: %s", e)
                 cls._shared_transformer_model = None
@@ -97,11 +91,8 @@ class SemanticEngine:
         return best_sim, best_chunk
 
     def analyze_document(
-        self,
-        sentences: list[SentenceSpan],
-        corpus_chunks: list[dict[str, Any]],
-        exclude_sentence_indices: set | None = None,
-        corpus_searcher: Any | None = None,
+        self, sentences: list[SentenceSpan], corpus_chunks: list[dict[str, Any]],
+        exclude_sentence_indices: set | None = None, corpus_searcher: Any | None = None,
     ) -> SemanticAnalysisResult:
         exclude = exclude_sentence_indices or set()
         sentence_matches: list[SentenceSemanticMatch] = []
@@ -112,31 +103,38 @@ class SemanticEngine:
         doc_embeddings = self.embed_sentences([s.text for s in sentences])
         matched_similarities, candidates = [], []
         for idx, s in enumerate(sentences):
-            if s.is_citation or idx in exclude:
+            if s.is_citation or idx in exclude or is_heading_or_too_short(s.text):
                 continue
+            hits: list[tuple[float, dict[str, Any]]] = []
             best_sim, best_chunk = self._best_chunk(doc_embeddings[idx], corpus_chunks)
-            ann = corpus_searcher.nearest(doc_embeddings[idx]) if corpus_searcher else None
-            if ann and ann[0] > best_sim:
-                best_sim, best_chunk = ann
             if best_chunk and best_sim >= self.paraphrase_threshold:
-                candidates.append((s, best_sim, best_chunk))
+                hits.append((best_sim, best_chunk))
+            if corpus_searcher and hasattr(corpus_searcher, "nearest_k"):
+                hits.extend((sim, ch) for sim, ch in corpus_searcher.nearest_k(doc_embeddings[idx], k=5) if sim >= self.paraphrase_threshold)
+            elif corpus_searcher and (ann := corpus_searcher.nearest(doc_embeddings[idx])) and ann[0] >= self.paraphrase_threshold:
+                hits.append(ann)
+            seen_docs: set[str] = set()
+            for sim, ch in sorted(hits, key=lambda x: x[0], reverse=True):
+                did = str(ch.get("corpus_doc_id", "corpus-doc"))
+                if did not in seen_docs:
+                    seen_docs.add(did)
+                    candidates.append((s, sim, ch))
         keep = SemanticReranker.accept_mask([(s.text, c.get("chunk_text", "")) for s, _, c in candidates])
-        for (s, best_sim, best_chunk), accepted in zip(candidates, keep):
-            if not accepted:
-                continue
+        by_sent: dict[int, list[tuple[SentenceSpan, float, dict[str, Any]]]] = {}
+        for item, accepted in zip(candidates, keep):
+            if accepted:
+                by_sent.setdefault(item[0].index, []).append(item)
+        for s_idx, group in by_sent.items():
+            s, best_sim, best_chunk = group[0]
             matched_similarities.append(best_sim)
             doc_id = str(best_chunk.get("corpus_doc_id", "corpus-doc"))
             title = best_chunk.get("title", "Dokumen Korpus Pembanding")
+            sec = [{"source_title": c.get("title"), "source_category": c.get("category", "Bank Korpus"), "similarity": round(sim, 2), "matched_source_text": c.get("chunk_text")} for _, sim, c in group[1:]]
             sentence_matches.append(SentenceSemanticMatch(
-                sentence_index=s.index, similarity=round(best_sim, 2),
-                matched_chunk_id=str(best_chunk.get("chunk_id", "")),
-                matched_source_title=title, matched_chunk_text=best_chunk.get("chunk_text", ""),
-                matched_corpus_doc_id=doc_id,
+                sentence_index=s_idx, similarity=round(best_sim, 2), matched_chunk_id=str(best_chunk.get("chunk_id", "")),
+                matched_source_title=title, matched_chunk_text=best_chunk.get("chunk_text", ""), matched_corpus_doc_id=doc_id, secondary_sources=sec,
             ))
-            hit = corpus_hits.setdefault(doc_id, {
-                "corpus_doc_id": doc_id, "title": title,
-                "category": best_chunk.get("category", "Umum"), "match_count": 0, "total_sim": 0.0,
-            })
+            hit = corpus_hits.setdefault(doc_id, {"corpus_doc_id": doc_id, "title": title, "category": best_chunk.get("category", "Umum"), "match_count": 0, "total_sim": 0.0})
             hit["match_count"] += 1
             hit["total_sim"] += best_sim
 
