@@ -1,125 +1,133 @@
-"""Multi-source academic corpus harvester (OpenAlex, Crossref, Semantic Scholar, OAI-PMH)."""
 from __future__ import annotations
 
 import argparse
-import re
+import hashlib
 import sys
 import uuid
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import httpx
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.core.database import SyncSessionLocal
-from app.engine.academic_search_providers import reconstruct_openalex_abstract
-from app.engine.reference_corpus import ReferenceCorpusBank
-from app.engine.reference_corpus_data import sync_corpus_records
+from app.core.config import settings
+from app.engine.preprocessor import TextPreprocessor
 from app.engine.tier1_lexical import WinnowingLexicalEngine
 from app.engine.tier2_semantic import SemanticEngine
-
-_TAG_RE = re.compile(r"<[^>]+>")
-_OAI_NS = {"oai": "http://www.openarchives.org/OAI/2.0/", "dc": "http://purl.org/dc/elements/1.1/"}
+from app.models.corpus import CorpusDocument, DocumentChunk, LexicalFingerprint
 
 
-def _make_record(title: str, text: str, category: str, year: str) -> dict:
-    clean_t = " ".join(title.split())[:240]
-    clean_body = _TAG_RE.sub(" ", " ".join(text.split()))
-    return {
-        "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"veritext-corpus:{clean_t.lower()}")),
-        "title": clean_t,
-        "category": category,
-        "academic_year": year,
-        "text": f"{clean_t}. {clean_body}",
+def reconstruct_abstract(inv_idx: dict[str, list[int]] | None) -> str:
+    if not inv_idx or not isinstance(inv_idx, dict):
+        return ""
+    max_pos = max((max(pos) for pos in inv_idx.values() if pos), default=-1)
+    if max_pos < 0 or max_pos > 4000:
+        return ""
+    words = [""] * (max_pos + 1)
+    for token, positions in inv_idx.items():
+        for pos in positions:
+            if 0 <= pos <= max_pos:
+                words[pos] = token
+    return " ".join(w for w in words if w).strip()
+
+
+def fetch_openalex_batch(client: httpx.Client, lang: str, cursor: str) -> tuple[list[dict], str | None]:
+    params = {
+        "filter": f"has_abstract:true,language:{lang}",
+        "per-page": 200,
+        "cursor": cursor,
+        "select": "id,title,publication_year,abstract_inverted_index,primary_topic",
     }
+    resp = client.get("https://api.openalex.org/works", params=params)
+    resp.raise_for_status()
+    payload = resp.json()
+    return payload.get("results", []), payload.get("meta", {}).get("next_cursor")
 
 
-def fetch_openalex(limit: int = 120) -> list[dict]:
-    records, cursor = [], "*"
-    with httpx.Client(timeout=15.0) as client:
-        while len(records) < limit and cursor:
-            r = client.get(
-                "https://api.openalex.org/works",
-                params={"filter": "language:id,has_abstract:true", "per-page": min(100, limit - len(records)), "cursor": cursor},
-            )
-            if r.status_code != 200:
+def harvest_language(
+    session, lexical: WinnowingLexicalEngine, semantic: SemanticEngine,
+    seen_hashes: set[str], lang: str, quota: int,
+) -> int:
+    added, cursor = 0, "*"
+    with httpx.Client(timeout=30.0, headers={"User-Agent": "VeriTextAI/1.0 (mailto:admin@veritext.ai)"}) as client:
+        while added < quota and cursor:
+            works, cursor = fetch_openalex_batch(client, lang, cursor)
+            if not works:
                 break
-            data = r.json()
-            for w in data.get("results", []):
-                abs_text = reconstruct_openalex_abstract(w.get("abstract_inverted_index"))
-                title = w.get("title") or ""
-                if title and len(abs_text) >= 80:
-                    records.append(_make_record(title, abs_text, "OpenAlex ID", str(w.get("publication_year") or "2025")))
-            cursor = data.get("meta", {}).get("next_cursor")
-    return records[:limit]
-
-
-def fetch_crossref(queries: list[str], per_query: int = 25) -> list[dict]:
-    records: list[dict] = []
-    with httpx.Client(timeout=15.0) as client:
-        for q in queries:
-            r = client.get("https://api.crossref.org/works", params={"query": q, "filter": "has-abstract:true", "rows": per_query, "mailto": "veritext-audit@example.com"})
-            if r.status_code != 200:
-                continue
-            for item in r.json().get("message", {}).get("items", []):
-                t = (item.get("title") or [""])[0]
-                ab = item.get("abstract") or ""
-                if t and len(ab) >= 80:
-                    records.append(_make_record(t, ab, "Crossref", "2025"))
-    return records
-
-
-def fetch_semantic_scholar(queries: list[str], per_query: int = 25) -> list[dict]:
-    records: list[dict] = []
-    with httpx.Client(timeout=15.0) as client:
-        for q in queries:
-            r = client.get("https://api.semanticscholar.org/graph/v1/paper/search", params={"query": q, "limit": per_query, "fields": "title,abstract,year"})
-            if r.status_code != 200:
-                continue
-            for p in r.json().get("data", []):
-                if p.get("title") and len(p.get("abstract") or "") >= 80:
-                    records.append(_make_record(p["title"], p["abstract"], "Semantic Scholar", str(p.get("year") or "2025")))
-    return records
-
-
-def fetch_oaipmh(endpoints: list[str], per_endpoint: int = 25) -> list[dict]:
-    records: list[dict] = []
-    with httpx.Client(timeout=15.0, follow_redirects=True) as client:
-        for url in endpoints:
-            try:
-                r = client.get(url, params={"verb": "ListRecords", "metadataPrefix": "oai_dc"})
-                if r.status_code != 200:
+            pending_docs, all_sents = [], []
+            for w in works:
+                if added + len(pending_docs) >= quota:
+                    break
+                title = " ".join(str(w.get("title") or "").split())[:490]
+                abstract = reconstruct_abstract(w.get("abstract_inverted_index"))
+                if len(title) < 8 or len(abstract.split()) < 35:
                     continue
-                root = ET.fromstring(r.text)
-                for rec in root.findall(".//oai:record", _OAI_NS)[:per_endpoint]:
-                    t_el = rec.find(".//dc:title", _OAI_NS)
-                    d_el = rec.find(".//dc:description", _OAI_NS)
-                    if t_el is not None and d_el is not None and t_el.text and len(d_el.text or "") >= 80:
-                        records.append(_make_record(t_el.text, d_el.text, "OJS Indonesia", "2025"))
-            except Exception:  # noqa: BLE001
+                sha = hashlib.sha256(f"{title}\n{abstract}".encode()).hexdigest()
+                if sha in seen_hashes:
+                    continue
+                seen_hashes.add(sha)
+                sents = [s for s in TextPreprocessor.segment_sentences(abstract) if s.word_count >= 5]
+                if not sents:
+                    continue
+                cat = ((w.get("primary_topic") or {}).get("display_name") or f"OpenAlex ({lang.upper()})")[:250]
+                doc_id = uuid.uuid4()
+                oa_id = str(w.get("id") or doc_id).rsplit("/", 1)[-1]
+                pending_docs.append((
+                    CorpusDocument(
+                        id=doc_id, title=title, category=cat,
+                        academic_year=str(w.get("publication_year") or ""),
+                        stored_filename=f"oa_{lang}_{oa_id}_{str(doc_id)[:8]}",
+                        sha256_hash=sha, status="INDEXED", total_chunks=len(sents),
+                    ),
+                    abstract,
+                    sents,
+                ))
+                all_sents.extend(s.text for s in sents)
+
+            if not pending_docs:
                 continue
-    return records
+            embs = semantic.embed_sentences(all_sents)
+            emb_idx = 0
+            for doc_row, abstract, sents in pending_docs:
+                session.add(doc_row)
+                for idx, s in enumerate(sents):
+                    session.add(DocumentChunk(
+                        corpus_doc_id=doc_row.id, chunk_index=idx,
+                        chunk_text=s.text, embedding=embs[emb_idx],
+                    ))
+                    emb_idx += 1
+                for h_val, pos in lexical.extract_fingerprints(abstract):
+                    session.add(LexicalFingerprint(
+                        corpus_doc_id=doc_row.id, fingerprint_hash=h_val, position_start=pos,
+                    ))
+            session.commit()
+            added += len(pending_docs)
+            print(f"[{lang.upper()}] harvested={added}/{quota}", flush=True)
+    return added
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--openalex", type=int, default=120)
+    parser = argparse.ArgumentParser(description="Harvest open-access academic corpus from OpenAlex into pgvector")
+    parser.add_argument("--target", type=int, default=10000, help="Total new documents to harvest (50% ID, 50% EN)")
     args = parser.parse_args()
-    queries = ["plagiarisme kecerdasan buatan indonesia", "sistem informasi akademik", "pembelajaran mesin teks"]
-    ojs_urls = ["https://journal.unnes.ac.id/journals/jal/oai", "https://ejournal.undip.ac.id/index.php/jtsi/oai"]
 
-    docs = fetch_openalex(args.openalex) + fetch_crossref(queries) + fetch_semantic_scholar(queries) + fetch_oaipmh(ojs_urls)
-    unique = list({d["id"]: d for d in docs}.values())
-    print(f"Fetched {len(unique)} unique academic documents across 4 sources.")
+    sync_url = settings.DATABASE_URL.replace("+asyncpg", "")
+    engine = create_engine(sync_url)
+    Session = sessionmaker(bind=engine)
+    lexical = WinnowingLexicalEngine()
+    semantic = SemanticEngine()
 
-    db = SyncSessionLocal()
-    try:
-        builtin_count = ReferenceCorpusBank.get_instance().sync_to_db(db)
-        harvested_count = sync_corpus_records(unique, WinnowingLexicalEngine(), SemanticEngine(), db)
-        print(f"Synced builtin={builtin_count}, harvested={harvested_count} into PostgreSQL pgvector.")
-    finally:
-        db.close()
+    with Session() as session:
+        existing = session.execute(text("SELECT sha256_hash FROM corpus_documents")).scalars().all()
+        seen_hashes = set(existing)
+        print(f"Existing corpus_documents={len(seen_hashes)}, target_new={args.target}", flush=True)
+        half = args.target // 2
+        n_id = harvest_language(session, lexical, semantic, seen_hashes, "id", half)
+        n_en = harvest_language(session, lexical, semantic, seen_hashes, "en", args.target - n_id)
+        total = session.execute(text("SELECT count(*) FROM corpus_documents")).scalar()
+        print(f"DONE added_id={n_id} added_en={n_en} total_corpus_documents={total}", flush=True)
 
 
 if __name__ == "__main__":

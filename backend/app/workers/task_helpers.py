@@ -25,12 +25,22 @@ def load_corpus_indexes(
     # Potongan korpus basis data dicari lewat indeks HNSW pgvector (lihat PgvectorChunkSearch), bukan dimuat ke memori.
     corpus_chunks: list[dict[str, Any]] = list(corpus_bank.get_corpus_chunks())
     try:
-        q_fps = db.query(LexicalFingerprint, CorpusDocument.title, CorpusDocument.category)
-        db_fps = q_fps.join(CorpusDocument, LexicalFingerprint.corpus_doc_id == CorpusDocument.id).filter(CorpusDocument.status == "INDEXED").all()
-        for fp, title, cat in db_fps:
-            corpus_index.setdefault(fp.fingerprint_hash, []).append({
-                "doc_id": str(fp.corpus_doc_id), "title": title,
-                "category": cat or "General", "position": fp.position_start,
+        db_fps = (
+            db.query(
+                LexicalFingerprint.fingerprint_hash,
+                LexicalFingerprint.corpus_doc_id,
+                LexicalFingerprint.position_start,
+                CorpusDocument.title,
+                CorpusDocument.category,
+            )
+            .join(CorpusDocument, LexicalFingerprint.corpus_doc_id == CorpusDocument.id)
+            .filter(CorpusDocument.status == "INDEXED")
+            .yield_per(5000)
+        )
+        for fp_hash, doc_id, pos_start, title, cat in db_fps:
+            corpus_index.setdefault(fp_hash, []).append({
+                "doc_id": str(doc_id), "title": title,
+                "category": cat or "General", "position": pos_start,
             })
     except Exception as e:  # noqa: BLE001
         logger.warning("Database corpus query fallback to ReferenceCorpusBank: %s", e)
