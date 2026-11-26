@@ -2,6 +2,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 import { auditService } from "../../services/auditService";
 import type { SourcePreviewData } from "../../types";
+import { splitOverlapTokens } from "../../utils/textOverlap";
 
 const INITIAL_LIMIT = 12000;
 const props = defineProps<{
@@ -15,7 +16,7 @@ const loading = ref(false);
 const error = ref("");
 const data = ref<SourcePreviewData | null>(null);
 const showFull = ref(false);
-const activeIdx = ref<number | null>(null);
+const activeIdx = ref<number | null>(0);
 
 const visibleText = computed(() => {
   const raw = data.value?.full_text || "";
@@ -59,7 +60,7 @@ async function jumpToMatch(idx: number) {
 
 watch(() => [props.open, props.target], async ([isOpen]) => {
   if (!isOpen || !props.target || !props.reportId) return;
-  loading.value = true; error.value = ""; data.value = null; showFull.value = false; activeIdx.value = null;
+  loading.value = true; error.value = ""; data.value = null; showFull.value = false; activeIdx.value = 0;
   try {
     data.value = await auditService.getSourcePreview(props.reportId, props.target);
     if (props.target.focusSentence && data.value?.matched_highlights.length) {
@@ -74,10 +75,10 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
 <template>
   <Teleport to="body">
     <div v-if="open" class="fixed inset-0 z-[110] flex items-center justify-center bg-[#14111C]/45 p-4 backdrop-blur-[2px]" @click.self="emit('close')" @keydown.esc="emit('close')">
-      <div role="dialog" aria-modal="true" aria-labelledby="src-preview-title" class="flex max-h-[88vh] w-full max-w-3xl flex-col rounded-[32px] bg-white p-6 shadow-float sm:p-8">
+      <div role="dialog" aria-modal="true" aria-labelledby="src-preview-title" class="flex max-h-[88vh] w-full max-w-5xl flex-col rounded-[32px] bg-white p-6 shadow-float sm:p-8">
         <div class="flex items-start justify-between gap-4 border-b border-[#E8ECEB] pb-4">
           <div class="min-w-0">
-            <p class="text-[12.5px] font-medium text-[#0F766E]">{{ data?.category || "Pratinjau Sumber Pembanding" }}</p>
+            <p class="text-[12.5px] font-medium text-[#0F766E]">{{ data?.category || "Perbandingan Naskah & Sumber" }}</p>
             <h2 id="src-preview-title" class="mt-0.5 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-[#14111C]">{{ data?.title || target?.title || "Sumber Pembanding" }}</h2>
           </div>
           <button type="button" aria-label="Tutup pratinjau" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full" @click="emit('close')">
@@ -85,22 +86,33 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
           </button>
         </div>
 
-        <div class="mt-4 flex-1 space-y-4 overflow-y-auto pr-1">
-          <p v-if="loading" class="py-12 text-center text-[15px] text-[#4B4757]">Memuat isi teks pembanding...</p>
-          <p v-else-if="error" class="py-12 text-center text-[15px] text-[#B91C1C]">{{ error }}</p>
-          <template v-else-if="data">
-            <div v-if="data.matched_highlights.length" class="space-y-2 rounded-2xl border border-[#D5ECE8] bg-[#EBF8F6] p-4">
-              <p class="text-[13px] font-semibold text-[#0F766E]">Kalimat naskah yang cocok ({{ data.matched_highlights.length }}) — klik untuk lompat ke posisi sumber</p>
-              <div class="flex flex-wrap gap-2">
-                <button v-for="(m, idx) in data.matched_highlights.slice(0, 8)" :key="idx" type="button" class="cursor-pointer rounded-full border border-[#CBE6E1] bg-white px-3 py-1.5 text-left text-[12.5px] text-[#14111C] hover:border-[#0F766E]" @click="jumpToMatch(idx)">
-                  <span class="font-semibold text-[#0F766E]">#{{ idx + 1 }} ({{ ((m.similarity > 1 ? m.similarity : m.similarity * 100)).toFixed(0) }}%)</span> {{ m.sentence_text.slice(0, 55) }}{{ m.sentence_text.length > 55 ? '...' : '' }}
-                </button>
-              </div>
+        <p v-if="loading" class="py-16 text-center text-[15px] text-[#4B4757]">Memuat perbandingan naskah dan sumber pembanding...</p>
+        <p v-else-if="error" class="py-16 text-center text-[15px] text-[#B91C1C]">{{ error }}</p>
+        <div v-else-if="data" class="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="flex min-h-0 flex-col rounded-2xl border border-[#D5ECE8] bg-[#EBF8F6]/50 p-4">
+            <p class="mb-3 text-[13px] font-semibold text-[#0F766E]">Naskah Anda ({{ data.matched_highlights.length }} kalimat cocok)</p>
+            <div class="flex-1 space-y-2.5 overflow-y-auto pr-1">
+              <p v-if="!data.matched_highlights.length" class="text-[13.5px] text-[#5E5A6B]">Tidak ada rincian kalimat tercatat.</p>
+              <button v-for="(m, idx) in data.matched_highlights" :key="idx" type="button" class="block w-full cursor-pointer rounded-xl border bg-white p-3 text-left transition-colors" :class="activeIdx === idx ? 'border-[#0F766E] ring-1 ring-[#0F766E]' : 'border-[#E8ECEB] hover:border-[#0F766E]'" @click="jumpToMatch(idx)">
+                <div class="mb-1 flex items-center justify-between text-[12px] font-semibold text-[#0F766E]">
+                  <span>#{{ idx + 1 }} · {{ m.tier === 'T1' ? 'Kata sama' : 'Makna sama' }}</span>
+                  <span class="tabular-nums text-[#14111C]">{{ ((m.similarity > 1 ? m.similarity : m.similarity * 100)).toFixed(0) }}%</span>
+                </div>
+                <p class="text-[13.5px] leading-relaxed text-[#14111C]">
+                  <template v-for="(tok, ti) in splitOverlapTokens(m.sentence_text, m.matched_source_text || data.full_text)" :key="ti">
+                    <span v-if="tok.match" class="rounded bg-[#FEE2E2]/80 px-0.5">{{ tok.text }}</span>
+                    <template v-else>{{ tok.text }}</template>
+                  </template>
+                </p>
+              </button>
             </div>
+          </div>
 
-            <div class="rounded-2xl border border-[#E8ECEB] bg-[#F8FAFC] p-4 sm:p-5">
+          <div class="flex min-h-0 flex-col rounded-2xl border border-[#E8ECEB] bg-[#F8FAFC] p-4">
+            <p class="mb-3 text-[13px] font-semibold text-[#14111C]">Sumber Asli Pembanding</p>
+            <div class="flex-1 overflow-y-auto pr-1">
               <p v-if="!data.full_text" class="text-[14px] italic text-[#5E5A6B]">Teks lengkap tidak tersedia secara langsung dari situs eksternal; gunakan tautan di bawah untuk membuka sumber asli.</p>
-              <p v-else class="whitespace-pre-wrap text-[14.5px] leading-[1.75] text-[#14111C]">
+              <p v-else class="whitespace-pre-wrap text-[14px] leading-[1.75] text-[#14111C]">
                 <template v-for="(seg, si) in textSegments" :key="si">
                   <mark v-if="seg.matchIdx !== null" :data-preview-match="seg.matchIdx" class="rounded px-1 py-0.5" :class="activeIdx === seg.matchIdx ? 'bg-[#FDBA74] ring-2 ring-[#0F766E]' : 'bg-[#FEE2E2]'">{{ seg.text }}</mark>
                   <template v-else>{{ seg.text }}</template>
@@ -110,7 +122,7 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
                 Tampilkan seluruh teks ({{ data.full_text.length.toLocaleString('id-ID') }} karakter)
               </button>
             </div>
-          </template>
+          </div>
         </div>
 
         <div v-if="data?.source_url" class="mt-4 flex justify-end border-t border-[#E8ECEB] pt-4">

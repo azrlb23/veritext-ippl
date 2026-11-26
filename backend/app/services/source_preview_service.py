@@ -80,23 +80,40 @@ def _collect_matches(report: AuditReport, title: str | None, source_url: str | N
     return out
 
 
+def _fill_missing_quotes(matches: list[dict[str, Any]], full_text: str) -> None:
+    sents = [s.strip() for s in full_text.split(".") if len(s.strip()) >= 15]
+    if not sents:
+        return
+    for m in matches:
+        if m.get("matched_source_text"):
+            continue
+        ref = {w.lower().strip(".,;:!?()[]") for w in str(m.get("sentence_text") or "").split() if len(w) >= 3}
+        if not ref:
+            continue
+        best = max(sents, key=lambda s: len(ref.intersection(w.lower().strip(".,;:!?()[]") for w in s.split())))
+        m["matched_source_text"] = (best + ".")[:400]
+
+
 async def build_source_preview(
     db: AsyncSession, report: AuditReport, title: str | None = None, corpus_doc_id: str | None = None, source_url: str | None = None
 ) -> dict[str, Any]:
     matches = _collect_matches(report, title, source_url)
     builtin = _find_builtin_corpus(corpus_doc_id, title)
     if builtin:
+        full_text = builtin.get("text") or ""
+        _fill_missing_quotes(matches, full_text)
         return {
             "title": builtin.get("title") or title or "Dokumen Korpus",
             "category": builtin.get("category") or "Bank Korpus",
             "source_type": "corpus",
             "source_url": None,
-            "full_text": builtin.get("text") or "",
+            "full_text": full_text,
             "matched_highlights": matches,
         }
 
     db_title, db_cat, db_text = await _find_db_corpus(db, corpus_doc_id, title)
     if db_text:
+        _fill_missing_quotes(matches, db_text)
         return {
             "title": db_title or title or "Dokumen Korpus",
             "category": db_cat or "Bank Korpus",
