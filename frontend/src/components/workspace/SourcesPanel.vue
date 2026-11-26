@@ -6,7 +6,7 @@ const PER_PAGE = 10;
 const props = defineProps<{ sources: MatchedSource[]; annotations?: HeatmapAnnotation[] }>();
 const emit = defineEmits<{
   (e: "select-annotation", a: HeatmapAnnotation): void;
-  (e: "preview-source", p: { title?: string; corpus_doc_id?: string; source_url?: string }): void;
+  (e: "preview-source", p: { title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string }): void;
 }>();
 
 type FilterKind = "all" | "web" | "corpus";
@@ -68,13 +68,16 @@ function toggleRow(k: string) { expanded.value[k] = !expanded.value[k]; }
 
           <div v-if="expanded[keyOf(s, i)]" class="mt-2.5 space-y-2 border-l-2 border-[#CBE6E1] pl-4">
             <p v-if="sentencesFor(s).length === 0" class="text-[13px] text-[#5E5A6B]">Detail kalimat belum tersedia untuk laporan ini.</p>
-            <button v-for="(a, ai) in (showAll[keyOf(s, i)] ? sentencesFor(s) : sentencesFor(s).slice(0, 5))" :key="ai" type="button" class="block w-full cursor-pointer rounded-xl border border-[#E8ECEB] bg-[#F8FAFC] p-3 text-left transition-colors hover:border-[#0F766E] hover:bg-[#EBF8F6]" @click="emit('select-annotation', a)">
+            <div v-for="(a, ai) in (showAll[keyOf(s, i)] ? sentencesFor(s) : sentencesFor(s).slice(0, 5))" :key="ai" role="button" tabindex="0" class="block w-full cursor-pointer rounded-xl border border-[#E8ECEB] bg-[#F8FAFC] p-3 text-left transition-colors hover:border-[#0F766E] hover:bg-[#EBF8F6]" @click="emit('preview-source', { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url, focusSentence: a.text_snippet })" @keydown.enter.prevent="emit('preview-source', { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url, focusSentence: a.text_snippet })">
               <div class="flex items-baseline justify-between gap-2">
                 <span class="text-[12px] font-semibold text-[#0F766E]">{{ a.tier === 'T1' ? 'Kata sama' : 'Makna sama' }}</span>
-                <span class="text-[12px] font-semibold tabular-nums text-[#14111C]">{{ ((a.similarity > 1 ? a.similarity : a.similarity * 100)).toFixed(1).replace('.', ',') }}%</span>
+                <div class="flex items-center gap-3">
+                  <button type="button" class="cursor-pointer text-[12px] font-medium text-[#5E5A6B] hover:text-[#0F766E] hover:underline" @click.stop="emit('select-annotation', a)">Lihat di naskah</button>
+                  <span class="text-[12px] font-semibold tabular-nums text-[#14111C]">{{ ((a.similarity > 1 ? a.similarity : a.similarity * 100)).toFixed(1).replace('.', ',') }}%</span>
+                </div>
               </div>
               <p class="mt-1 line-clamp-2 text-[13.5px] leading-snug text-[#14111C]">{{ a.text_snippet }}</p>
-            </button>
+            </div>
             <button v-if="sentencesFor(s).length > 5 && !showAll[keyOf(s, i)]" type="button" class="cursor-pointer text-[13px] font-semibold text-[#0F766E] hover:underline" @click="showAll[keyOf(s, i)] = true">
               Tampilkan semua ({{ sentencesFor(s).length }} kalimat)
             </button>

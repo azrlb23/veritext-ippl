@@ -7,7 +7,7 @@ const INITIAL_LIMIT = 12000;
 const props = defineProps<{
   open: boolean;
   reportId: string;
-  target: { title?: string; corpus_doc_id?: string; source_url?: string } | null;
+  target: { title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string } | null;
 }>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
@@ -60,8 +60,13 @@ async function jumpToMatch(idx: number) {
 watch(() => [props.open, props.target], async ([isOpen]) => {
   if (!isOpen || !props.target || !props.reportId) return;
   loading.value = true; error.value = ""; data.value = null; showFull.value = false; activeIdx.value = null;
-  try { data.value = await auditService.getSourcePreview(props.reportId, props.target); }
-  catch { error.value = "Isi teks sumber pembanding belum bisa dimuat."; }
+  try {
+    data.value = await auditService.getSourcePreview(props.reportId, props.target);
+    if (props.target.focusSentence && data.value?.matched_highlights.length) {
+      const idx = data.value.matched_highlights.findIndex((m) => m.sentence_text === props.target?.focusSentence);
+      await jumpToMatch(idx >= 0 ? idx : 0);
+    }
+  } catch { error.value = "Isi teks sumber pembanding belum bisa dimuat."; }
   finally { loading.value = false; }
 }, { immediate: true });
 </script>

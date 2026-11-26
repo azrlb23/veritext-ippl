@@ -25,8 +25,8 @@ const sources = ref<MatchedSource[]>([]);
 const selected = ref<HeatmapAnnotation | null>(null);
 const drawerOpen = ref(false);
 const previewOpen = ref(false);
-const previewTarget = ref<{ title?: string; corpus_doc_id?: string; source_url?: string } | null>(null);
-const openSourcePreview = (p: { title?: string; corpus_doc_id?: string; source_url?: string }) => { previewTarget.value = p; previewOpen.value = true; };
+const previewTarget = ref<{ title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string } | null>(null);
+const openSourcePreview = (p: { title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string }) => { previewTarget.value = p; previewOpen.value = true; };
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 async function load(id: string) {
