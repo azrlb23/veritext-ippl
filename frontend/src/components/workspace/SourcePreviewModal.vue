@@ -20,6 +20,15 @@ const error = ref("");
 const data = ref<SourcePreviewData | null>(null);
 const activeIdx = ref<number | null>(0);
 const visibleText = computed(() => data.value?.full_text || "");
+const currentSourceIdx = computed(() => {
+  const list = props.sources || [];
+  const t = data.value?.title || props.target?.title;
+  return Math.max(0, list.findIndex((s) => s.title === t));
+});
+function pickSourceAt(idx: number) {
+  const s = (props.sources || [])[idx];
+  if (s) emit("select-source", { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url });
+}
 
 const textSegments = computed(() => {
   const txt = visibleText.value;
@@ -72,30 +81,36 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
   <Teleport to="body">
     <div v-if="open" class="fixed inset-0 z-[110] flex items-center justify-center bg-[#14111C]/45 p-4 backdrop-blur-[2px]" @click.self="emit('close')" @keydown.esc="emit('close')">
       <div role="dialog" aria-modal="true" aria-labelledby="src-preview-title" class="flex max-h-[88vh] w-full max-w-5xl flex-col rounded-[32px] bg-white p-6 shadow-float sm:p-8">
-        <div class="flex items-start justify-between gap-4 border-b border-[#E8ECEB] pb-4">
+        <div class="flex shrink-0 items-start justify-between gap-4 border-b border-[#E8ECEB] pb-4">
           <div class="min-w-0">
             <p class="text-[12.5px] font-medium text-[#0F766E]">{{ data?.category || "Perbandingan Naskah & Sumber" }}</p>
             <h2 id="src-preview-title" class="mt-0.5 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-[#14111C]">{{ data?.title || target?.title || "Sumber Pembanding" }}</h2>
           </div>
-          <button type="button" aria-label="Tutup pratinjau" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full" @click="emit('close')">
+          <button type="button" aria-label="Tutup pratinjau" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="emit('close')">
             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
 
-        <div v-if="(sources || []).length > 1" class="mt-3 flex gap-2 overflow-x-auto pb-1">
-          <button v-for="(s, si) in sources" :key="si" type="button" class="shrink-0 cursor-pointer rounded-full border px-3.5 py-1.5 text-[12.5px] font-medium transition-colors" :class="s.title === (data?.title || target?.title) ? 'border-[#0F766E] bg-[#EBF8F6] text-[#0F766E]' : 'border-[#E8ECEB] bg-white text-[#4B4757] hover:border-[#0F766E]'" @click="emit('select-source', { title: s.title, corpus_doc_id: s.corpus_doc_id, source_url: s.source_url })">
-            {{ s.title.slice(0, 36) }}{{ s.title.length > 36 ? '...' : '' }} ({{ s.contribution_pct }}%)
+        <div v-if="(sources || []).length > 1" class="mt-3 flex shrink-0 flex-wrap items-center gap-2 rounded-2xl border border-[#E8ECEB] bg-[#F8FAF9] p-2">
+          <button type="button" aria-label="Sumber sebelumnya" :disabled="currentSourceIdx <= 0" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="pickSourceAt(currentSourceIdx - 1)">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <select aria-label="Pilih sumber referensi" :value="currentSourceIdx" class="h-11 min-w-0 flex-1 cursor-pointer rounded-xl border border-[#D5ECE8] bg-white px-3 text-[13.5px] font-medium text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @change="pickSourceAt(Number(($event.target as HTMLSelectElement).value))">
+            <option v-for="(s, si) in sources" :key="si" :value="si">Referensi {{ si + 1 }}/{{ sources!.length }}: {{ s.title }} ({{ s.contribution_pct }}%)</option>
+          </select>
+          <button type="button" aria-label="Sumber berikutnya" :disabled="currentSourceIdx >= (sources || []).length - 1" class="vt-btn-light inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" @click="pickSourceAt(currentSourceIdx + 1)">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
           </button>
         </div>
 
         <p v-if="loading" class="py-16 text-center text-[15px] text-[#4B4757]">Memuat perbandingan naskah dan sumber pembanding...</p>
         <p v-else-if="error" class="py-16 text-center text-[15px] text-[#B91C1C]">{{ error }}</p>
-        <div v-else-if="data" class="mt-4 grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
+        <div v-else-if="data" class="mt-4 grid min-h-[320px] flex-1 grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
           <div class="flex min-h-0 flex-col rounded-2xl border border-[#D5ECE8] bg-[#EBF8F6]/50 p-4">
-            <p class="mb-3 text-[13px] font-semibold text-[#0F766E]">Naskah Anda ({{ data.matched_highlights.length }} kalimat cocok)</p>
+            <p class="mb-3 shrink-0 text-[13px] font-semibold text-[#0F766E]">Naskah Anda ({{ data.matched_highlights.length }} kalimat cocok)</p>
             <div class="flex-1 space-y-2.5 overflow-y-auto pr-1">
               <p v-if="!data.matched_highlights.length" class="text-[13.5px] text-[#5E5A6B]">Tidak ada rincian kalimat tercatat.</p>
-              <button v-for="(m, idx) in data.matched_highlights" :key="idx" type="button" class="block w-full cursor-pointer rounded-xl border bg-white p-3 text-left transition-colors" :class="activeIdx === idx ? 'border-[#0F766E] ring-1 ring-[#0F766E]' : 'border-[#E8ECEB] hover:border-[#0F766E]'" @click="jumpToMatch(idx)">
+              <button v-for="(m, idx) in data.matched_highlights" :key="idx" type="button" class="block w-full cursor-pointer rounded-xl border bg-white p-3.5 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="activeIdx === idx ? 'border-[#0F766E] ring-1 ring-[#0F766E]' : 'border-[#E8ECEB] hover:border-[#0F766E]'" @click="jumpToMatch(idx)">
                 <div class="mb-1 flex items-center justify-between text-[12px] font-semibold text-[#0F766E]">
                   <span>#{{ idx + 1 }} · {{ m.tier === 'T1' ? 'Kata sama' : 'Makna sama' }}</span>
                   <span class="tabular-nums text-[#14111C]">{{ ((m.similarity > 1 ? m.similarity : m.similarity * 100)).toFixed(0) }}%</span>
@@ -111,7 +126,7 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
           </div>
 
           <div class="flex min-h-0 flex-col rounded-2xl border border-[#E8ECEB] bg-[#F8FAFC] p-4">
-            <p class="mb-3 text-[13px] font-semibold text-[#14111C]">Sumber Asli Pembanding</p>
+            <p class="mb-3 shrink-0 text-[13px] font-semibold text-[#14111C]">Sumber Asli Pembanding</p>
             <div class="flex-1 overflow-y-auto pr-1">
               <p v-if="!data.full_text" class="text-[14px] italic text-[#5E5A6B]">Teks lengkap tidak tersedia secara langsung dari situs eksternal; gunakan tautan di bawah untuk membuka sumber asli.</p>
               <p v-else class="whitespace-pre-wrap text-[14px] leading-[1.75] text-[#14111C]">
@@ -124,7 +139,7 @@ watch(() => [props.open, props.target], async ([isOpen]) => {
           </div>
         </div>
 
-        <div v-if="data?.source_url" class="mt-4 flex justify-end border-t border-[#E8ECEB] pt-4">
+        <div v-if="data?.source_url" class="mt-4 flex shrink-0 justify-end border-t border-[#E8ECEB] pt-4">
           <a :href="data.source_url" target="_blank" rel="noopener noreferrer" class="vt-btn-dark inline-flex h-11 items-center rounded-full px-6 text-[14px] font-semibold">Buka sumber asli</a>
         </div>
       </div>
