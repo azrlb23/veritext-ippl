@@ -40,11 +40,11 @@ class ReferenceCorpusBank:
         for doc in self.documents:
             doc_id, title, category, text = doc["id"], doc["title"], doc["category"], doc["text"]
             sentences = TextPreprocessor.segment_sentences(text)
-            for h_val, pos in self.lexical_engine.extract_fingerprints(text):
-                self.fingerprint_index.setdefault(h_val, []).append(
-                    {"doc_id": doc_id, "title": title, "category": category, "position": pos}
-                )
             for s in sentences:
+                for h_val, pos in self.lexical_engine.extract_fingerprints(s.text):
+                    self.fingerprint_index.setdefault(h_val, []).append(
+                        {"doc_id": doc_id, "title": title, "category": category, "position": pos, "snippet": s.text}
+                    )
                 self.corpus_chunks.append({
                     "chunk_id": str(uuid.uuid4()),
                     "corpus_doc_id": doc_id,

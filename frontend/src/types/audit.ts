@@ -3,6 +3,13 @@ export type AuditStatus = "QUEUED" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANC
 export type TierLevel = "T1" | "T2" | "T3";
 export type AnnotationColor = "RED" | "ORANGE" | "YELLOW" | "RESOLVED_GREEN";
 
+export interface SecondarySourceRef {
+  source_title?: string;
+  source_category?: string;
+  similarity?: number;
+  matched_source_text?: string;
+}
+
 export interface HeatmapAnnotation {
   sentence_id?: string;
   start: number;
@@ -10,9 +17,12 @@ export interface HeatmapAnnotation {
   tier: TierLevel;
   color: AnnotationColor;
   source_title?: string;
+  source_category?: string;
   source_chunk_id?: string;
   similarity: number;
   text_snippet?: string;
+  matched_source_text?: string;
+  secondary_sources?: SecondarySourceRef[];
   source_url?: string;
   reason?: string;
   ai_flag?: boolean;

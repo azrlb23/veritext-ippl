@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, reactive, ref, watch } from "vue";
+import { computed, nextTick, onUnmounted, reactive, ref, watch } from "vue";
 import { auditService } from "../../services/auditService";
 import type { HeatmapAnnotation } from "../../types";
 
@@ -9,17 +9,13 @@ const emit = defineEmits<{ (e: "select", a: HeatmapAnnotation): void }>();
 type Kind = "RED" | "ORANGE" | "YELLOW" | "RESOLVED_GREEN";
 const layers = reactive<Record<Kind, boolean>>({ RED: true, ORANGE: true, YELLOW: true, RESOLVED_GREEN: true });
 const KINDS: { key: Kind; label: string; bg: string }[] = [
-  { key: "RED", label: "Kata sama", bg: "bg-[#FEE2E2]" },
-  { key: "ORANGE", label: "Makna sama", bg: "bg-[#FFEDD5]" },
-  { key: "YELLOW", label: "Pola AI", bg: "bg-[#FEF9C3]" },
-  { key: "RESOLVED_GREEN", label: "Sudah diperbaiki", bg: "bg-[#DCFCE7]" },
+  { key: "RED", label: "Kata sama", bg: "bg-[#FEE2E2]" }, { key: "ORANGE", label: "Makna sama", bg: "bg-[#FFEDD5]" },
+  { key: "YELLOW", label: "Pola AI", bg: "bg-[#FEF9C3]" }, { key: "RESOLVED_GREEN", label: "Sudah diperbaiki", bg: "bg-[#DCFCE7]" },
 ];
 const mode = ref<"text" | "pdf">("text");
 const onlyHighlighted = ref(false);
 const page = ref(1);
-const pdfUrl = ref("");
-const pdfLoading = ref(false);
-const pdfError = ref("");
+const pdfUrl = ref(""), pdfLoading = ref(false), pdfError = ref("");
 
 function kindOf(a: HeatmapAnnotation): Kind {
   if (a.color === "RESOLVED_GREEN" || (a as any).match_type === "RESOLVED_GREEN") return "RESOLVED_GREEN";
@@ -78,8 +74,7 @@ const pages = computed(() => {
 const safePage = computed(() => Math.min(Math.max(1, page.value), Math.max(1, pages.value.length)));
 const currentParas = computed(() => pages.value[safePage.value - 1] || []);
 const nextHighlightPage = computed(() => {
-  const list = pages.value;
-  const cur = safePage.value - 1;
+  const list = pages.value, cur = safePage.value - 1;
   for (let i = cur + 1; i < list.length; i++) if (list[i].some((p) => p.hasActive)) return i + 1;
   for (let i = 0; i < cur; i++) if (list[i].some((p) => p.hasActive)) return i + 1;
   return null;
@@ -89,15 +84,20 @@ const revokePdf = () => { if (pdfUrl.value) { window.URL.revokeObjectURL(pdfUrl.
 async function loadPdf() {
   if (!props.reportId || pdfUrl.value || pdfLoading.value) return;
   pdfLoading.value = true; pdfError.value = "";
-  try { pdfUrl.value = await auditService.fetchAnnotatedPdfPreviewUrl(props.reportId); }
-  catch { pdfError.value = "Pratinjau PDF belum bisa dimuat."; }
-  finally { pdfLoading.value = false; }
+  try { pdfUrl.value = await auditService.fetchAnnotatedPdfPreviewUrl(props.reportId); } catch { pdfError.value = "Pratinjau PDF belum bisa dimuat."; } finally { pdfLoading.value = false; }
 }
 function openTab(next: "text" | "pdf") { mode.value = next; if (next === "pdf") void loadPdf(); }
 function jumpNext() { if (nextHighlightPage.value) page.value = nextHighlightPage.value; }
+watch(() => props.selected, async (sel) => {
+  if (!sel) return;
+  mode.value = "text";
+  const idx = pages.value.findIndex((pg) => pg.some((p) => p.slices.some((s) => s.anno?.start === sel.start && s.anno?.end === sel.end)));
+  if (idx >= 0) page.value = idx + 1;
+  await nextTick();
+  document.querySelector(`[data-anno-start="${sel.start}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+});
 watch([() => props.text, onlyHighlighted], () => { page.value = 1; });
-watch(() => props.reportId, () => { revokePdf(); if (mode.value === "pdf") void loadPdf(); });
-onUnmounted(revokePdf);
+watch(() => props.reportId, () => { revokePdf(); if (mode.value === "pdf") void loadPdf(); }); onUnmounted(revokePdf);
 </script>
 
 <template>
@@ -125,7 +125,7 @@ onUnmounted(revokePdf);
         <p v-else-if="!currentParas.length" class="py-16 text-center text-[15px] text-[#4B4757]">Tidak ada bagian tersorot pada saringan aktif.</p>
         <p v-else v-for="(p, pi) in currentParas" :key="`${safePage}-${pi}`" class="whitespace-pre-wrap">
           <template v-for="(s, si) in p.slices" :key="si">
-            <span v-if="s.anno" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[activeBgOf(s.anno), isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="pick(s.anno)" @keydown.enter.prevent="pick(s.anno)" @keydown.space.prevent="pick(s.anno)">{{ s.text }}</span>
+            <span v-if="s.anno" :data-anno-start="s.anno.start" role="button" tabindex="0" class="cursor-pointer rounded-[4px] py-[1px] transition-colors box-decoration-clone focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]" :class="[activeBgOf(s.anno), isSelected(s.anno) ? 'ring-2 ring-[#14111C]' : '']" @click="pick(s.anno)" @keydown.enter.prevent="pick(s.anno)" @keydown.space.prevent="pick(s.anno)">{{ s.text }}</span>
             <span v-else>{{ s.text }}</span>
           </template>
         </p>

@@ -55,6 +55,7 @@ export interface PrioritySentenceItem {
   text: string;
   match_type: string;
   similarity_score: number;
+  source_title?: string | null;
 }
 
 export interface PrioritySentencesData { audit_task_id: string; report_id?: string | null; items: PrioritySentenceItem[]; }

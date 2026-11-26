@@ -50,6 +50,7 @@ def build_report_pdf_response(report: AuditReport, current_user: User | None = N
         score_semantic=float(report.score_semantic or 0.0),
         score_stylometric=float(report.score_stylometric or 0.0),
         matched_sources=report.matched_sources or [],
+        heatmap_annotations=report.heatmap_annotations or [],
         verify_base_url=settings.FRONTEND_URL.rstrip("/"),
     )
     filename = clean_pdf_filename(doc_title)

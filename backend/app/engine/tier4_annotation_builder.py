@@ -10,6 +10,13 @@ from app.engine.tier3_stylometric import StylometricSentenceAnomaly
 from app.engine.web_scanner import WebMatchResult
 
 
+def _clip(text: str | None, limit: int = 400) -> str | None:
+    cleaned = " ".join((text or "").split())
+    if not cleaned:
+        return None
+    return cleaned if len(cleaned) <= limit else cleaned[: limit - 3].rstrip() + "..."
+
+
 @dataclass
 class HeatmapAnnotationData:
     start: int
@@ -22,6 +29,9 @@ class HeatmapAnnotationData:
     source_chunk_id: str | None = None
     source_url: str | None = None
     reason: str | None = None
+    matched_source_text: str | None = None
+    source_category: str | None = None
+    secondary_sources: list[dict[str, Any]] | None = None
     ai_flag: bool = False
     ai_reason: str | None = None
     ai_score: float | None = None
@@ -39,6 +49,12 @@ class HeatmapAnnotationData:
             "source_url": self.source_url,
             "reason": self.reason,
         }
+        if self.matched_source_text:
+            data["matched_source_text"] = self.matched_source_text
+        if self.source_category:
+            data["source_category"] = self.source_category
+        if self.secondary_sources:
+            data["secondary_sources"] = self.secondary_sources
         if self.ai_flag:
             data["ai_flag"] = True
             data["ai_reason"] = self.ai_reason
@@ -66,27 +82,42 @@ def build_heatmap_annotations(
         t3_score = t3_match.anomaly_score if t3_match else None
         if s.index in web_by_idx and web_by_idx[s.index].tier == "T1":
             wm = web_by_idx[s.index]
+            sec = []
+            if s.index in tier1_matched_indices:
+                t1 = tier1_matched_indices[s.index]
+                sec.append({"source_title": t1.matched_source_title, "source_category": t1.matched_source_category or "Bank Korpus", "similarity": t1.similarity, "matched_source_text": _clip(t1.matched_source_snippet)})
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T1", color="RED",
                 similarity=wm.similarity, source_title=wm.source_title or "Sumber Web Publik",
-                text_snippet=wm.matched_snippet or s.text, source_url=wm.source_url,
+                text_snippet=s.text, source_url=wm.source_url,
+                matched_source_text=_clip(wm.matched_snippet), source_category="Sumber Internet Publik",
+                secondary_sources=sec[:3] or None,
                 reason="Kecocokan web publik terverifikasi", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif s.index in tier1_matched_indices:
             t1 = tier1_matched_indices[s.index]
+            sec = [{"source_title": x.get("source_title"), "source_category": x.get("source_category"), "similarity": x.get("similarity"), "matched_source_text": _clip(x.get("matched_source_text"))} for x in t1.secondary_sources[:3]]
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T1", color="RED",
                 similarity=t1.similarity,
                 source_title=t1.matched_source_title or "Korpus Pembanding Leksikal",
                 text_snippet=s.text, source_chunk_id=t1.matched_corpus_doc_id,
+                matched_source_text=_clip(t1.matched_source_snippet), source_category=t1.matched_source_category or "Bank Korpus",
+                secondary_sources=sec or None,
                 reason="Kecocokan leksikal langsung dengan bank korpus", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif s.index in web_by_idx and web_by_idx[s.index].tier == "T2":
             wm = web_by_idx[s.index]
+            sec = []
+            if s.index in tier2_matched_indices:
+                t2 = tier2_matched_indices[s.index]
+                sec.append({"source_title": t2.matched_source_title, "source_category": "Bank Korpus", "similarity": t2.similarity, "matched_source_text": _clip(t2.matched_chunk_text)})
             annotations.append(HeatmapAnnotationData(
                 start=s.start_char, end=s.end_char, tier="T2", color="ORANGE",
                 similarity=wm.similarity, source_title=wm.source_title or "Sumber Web Publik",
-                text_snippet=wm.matched_snippet or s.text, source_url=wm.source_url,
+                text_snippet=s.text, source_url=wm.source_url,
+                matched_source_text=_clip(wm.matched_snippet), source_category="Sumber Internet Publik",
+                secondary_sources=sec[:3] or None,
                 reason="Parafrasa konten web publik terverifikasi", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif s.index in tier2_matched_indices:
@@ -96,6 +127,7 @@ def build_heatmap_annotations(
                 similarity=t2.similarity,
                 source_title=t2.matched_source_title or "Korpus Pembanding Semantik",
                 text_snippet=s.text, source_chunk_id=t2.matched_chunk_id,
+                matched_source_text=_clip(t2.matched_chunk_text), source_category="Bank Korpus",
                 reason="Parafrasa semantik terdeteksi dari bank korpus", ai_flag=has_ai, ai_reason=t3_reason, ai_score=t3_score,
             ).to_dict())
         elif t3_match is not None and (score_t3 >= 20.0 or t3_match.anomaly_score >= 0.50):

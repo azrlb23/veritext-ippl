@@ -16,6 +16,9 @@ class SentenceLexicalMatch:
     similarity: float
     matched_corpus_doc_id: str | None = None
     matched_source_title: str | None = None
+    matched_source_category: str | None = None
+    matched_source_snippet: str | None = None
+    secondary_sources: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -96,14 +99,29 @@ class WinnowingLexicalEngine:
                         source_info.setdefault(d_id, {
                             "title": ref.get("title", "Dokumen Korpus Pembanding"),
                             "category": ref.get("category", "Umum"),
+                            "snippet": ref.get("snippet", ""),
                         })
 
-                best_id = max(source_counts, key=source_counts.get) if source_counts else None
-                best_title = source_info[best_id]["title"] if best_id else "Korpus Pembanding"
+                ranked = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)
+                best_id = ranked[0][0] if ranked else None
+                best_info = source_info[best_id] if best_id else {}
+                best_title = best_info.get("title", "Korpus Pembanding")
+                sec = [
+                    {
+                        "source_title": source_info[d_id]["title"],
+                        "source_category": source_info[d_id]["category"],
+                        "similarity": round(min(1.0, cnt / len(s_hashes)), 2),
+                        "matched_source_text": source_info[d_id].get("snippet") or None,
+                    }
+                    for d_id, cnt in ranked[1:4]
+                ]
                 sentence_matches.append(SentenceLexicalMatch(
                     sentence_index=s.index, matching_fingerprints=len(s_matched),
                     total_fingerprints=len(s_hashes), similarity=round(min(1.0, sim_ratio), 2),
                     matched_corpus_doc_id=best_id, matched_source_title=best_title,
+                    matched_source_category=best_info.get("category"),
+                    matched_source_snippet=best_info.get("snippet") or None,
+                    secondary_sources=sec,
                 ))
                 if best_id:
                     hit = corpus_hits.setdefault(best_id, {

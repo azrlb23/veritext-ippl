@@ -19,6 +19,7 @@ from app.services.pdf_certificate_draw import (
 from app.services.pdf_certificate_template import (
     build_matched_sources_table,
     build_scores_table,
+    build_source_quotes_table,
     get_certificate_styles,
 )
 from app.services.pdf_invoice_service import clean_invoice_filename, generate_invoice_pdf
@@ -49,6 +50,14 @@ def generate_pdf_certificate(
 
     date_str = generated_at.strftime("%d %B %Y, %H:%M WIB") if hasattr(generated_at, "strftime") else str(generated_at)
 
+    quotes_table = build_source_quotes_table(kwargs.get("heatmap_annotations"), s["body_style"], s["body_bold"])
+    quote_section = [
+        Spacer(1, 10),
+        Paragraph("<b>RINCIAN KUTIPAN SUMBER TERATAS</b>", s["sec_title"]),
+        Spacer(1, 3),
+        quotes_table,
+    ] if quotes_table is not None else []
+
     story = [
         *build_certificate_header_table(verification_uuid, s["brand_style"], s["brand_sub"], s["badge_style"], styles),
         Paragraph("SERTIFIKAT HASIL AUDIT ORISINALITAS", s["title_style"]),
@@ -61,6 +70,7 @@ def generate_pdf_certificate(
         Paragraph("<b>RUJUKAN KORPUS DOKUMEN YANG COCOK</b>", s["sec_title"]),
         Spacer(1, 3),
         build_matched_sources_table(matched_sources, s["body_style"], s["body_bold"]),
+        *quote_section,
         Spacer(1, 10),
         build_certificate_qr_table(f"{base_url}/verify/{verification_uuid}", verification_uuid, s["body_style"], s["body_bold"], styles),
         Spacer(1, 8),

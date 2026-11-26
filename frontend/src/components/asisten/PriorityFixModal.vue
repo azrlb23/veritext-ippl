@@ -102,6 +102,7 @@ onUnmounted(() => { if (copyTimer) clearTimeout(copyTimer); });
               <div class="flex flex-wrap items-center gap-2">
                 <span class="rounded-full px-3 py-1 text-[12px] font-semibold" :class="badgeOf(item.match_type).cls">{{ badgeOf(item.match_type).label }}</span>
                 <span class="text-[13px] font-medium tabular-nums text-[#5E5A6B]">Skor awal: {{ pct(item.similarity_score) }}%</span>
+                <span v-if="item.source_title" class="max-w-[260px] truncate text-[12.5px] font-medium text-[#0F766E]" :title="item.source_title">Sumber: {{ item.source_title }}</span>
               </div>
               <span v-if="applied[item.sentence_id]" class="rounded-full bg-[#D1FAE5] px-3 py-1 text-[12px] font-semibold text-[#065F46]">Sudah diterapkan</span>
             </div>

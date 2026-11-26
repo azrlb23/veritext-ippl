@@ -112,7 +112,7 @@ watch(() => route.params.id, (id) => {
         </router-link>
       </div>
       <DocumentHighlights :report-id="report.id" :text="documentText" :annotations="annotations" :selected="selected" @select="(a) => { selected = a; drawerOpen = true; }" />
-      <SourcesPanel :sources="sources" />
+      <SourcesPanel :sources="sources" :annotations="annotations" @select-annotation="(a) => { selected = a; drawerOpen = true; }" />
     </div>
 
     <Teleport to="body">

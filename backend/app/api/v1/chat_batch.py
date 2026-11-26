@@ -33,6 +33,7 @@ class PrioritySentenceItem(BaseModel):
     text: str
     match_type: str
     similarity_score: float
+    source_title: Optional[str] = None
 
 
 class PrioritySentencesResponse(BaseModel):

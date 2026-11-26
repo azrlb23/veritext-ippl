@@ -101,6 +101,11 @@ async def fetch_priority_sentences(
     )
     selected = eligible[:capped_limit]
     report = getattr(task, "report", None)
+    src_by_text = {
+        (a.get("text_snippet") or "").strip(): a.get("source_title")
+        for a in (getattr(report, "heatmap_annotations", None) or [])
+        if isinstance(a, dict) and a.get("source_title")
+    }
 
     return {
         "audit_task_id": str(task.id),
@@ -111,6 +116,7 @@ async def fetch_priority_sentences(
                 "text": s.current_text or s.sentence_text,
                 "match_type": s.match_type,
                 "similarity_score": float(s.similarity_score or 0.0),
+                "source_title": src_by_text.get((s.current_text or s.sentence_text or "").strip()),
             }
             for s in selected
         ],
