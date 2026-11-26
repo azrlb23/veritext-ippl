@@ -4,8 +4,18 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.core.config import settings
-from app.engine.preprocessor import SentenceSpan
+from app.engine.preprocessor import SentenceSpan, TextPreprocessor
 from app.engine.tier1_hasher import compute_kgram_hashes, polynomial_hash, winnow_hashes
+
+_STOPWORDS = frozenset({
+    "dan", "atau", "yang", "untuk", "dengan", "pada", "dari", "dalam", "oleh", "sebagai",
+    "serta", "terhadap", "adalah", "ini", "itu", "agar", "karena", "sehingga", "bahwa",
+    "dapat", "akan", "telah", "juga", "antara", "secara", "menjadi", "merupakan", "tersebut",
+    "bab", "the", "and", "for", "with", "that", "this", "from", "into", "are", "was", "were", "been", "have", "has",
+})
+
+def _content_words(text: str) -> set[str]:
+    return {w for w in TextPreprocessor.tokenize_words(text) if len(w) >= 4 and w not in _STOPWORDS}
 
 
 @dataclass
@@ -76,8 +86,7 @@ class WinnowingLexicalEngine:
     ) -> LexicalAnalysisResult:
         doc_fps = self.extract_fingerprints(original_text)
         all_corpus_hashes = set(corpus_index.keys())
-        score_t1, matched_fps = self.calculate_containment(doc_fps, all_corpus_hashes)
-
+        _, matched_fps = self.calculate_containment(doc_fps, all_corpus_hashes)
         sentence_matches: list[SentenceLexicalMatch] = []
         corpus_hits: dict[str, dict[str, Any]] = {}
 
@@ -105,8 +114,10 @@ class WinnowingLexicalEngine:
                 continue
             best_id, best_hashes = ranked[0]
             best_ratio = len(best_hashes) / len(s_hashes)
-            if best_ratio >= 0.45 and len(best_hashes) >= 4:
-                best_info = source_info[best_id]
+            best_info = source_info[best_id]
+            snippet = best_info.get("snippet") or ""
+            shared_cw = len(_content_words(s.text).intersection(_content_words(snippet))) if snippet else 2
+            if best_ratio >= 0.50 and len(best_hashes) >= 4 and shared_cw >= 2:
                 best_title = best_info.get("title", "Korpus Pembanding")
                 sec = [
                     {
@@ -126,13 +137,12 @@ class WinnowingLexicalEngine:
                     matched_source_snippet=best_info.get("snippet") or None,
                     secondary_sources=sec,
                 ))
-                hit = corpus_hits.setdefault(best_id, {
-                    "corpus_doc_id": best_id, "title": best_title,
-                    "category": source_info[best_id]["category"], "match_count": 0,
-                })
+                hit = corpus_hits.setdefault(best_id, {"corpus_doc_id": best_id, "title": best_title, "category": best_info["category"], "match_count": 0})
                 hit["match_count"] += len(best_hashes)
 
+        meaningful = max(1, len([s for s in sentences if not s.is_citation]))
+        tuned_t1 = round(min(100.0, (sum(m.similarity for m in sentence_matches) / meaningful) * 100.0), 2) if sentence_matches else 0.0
         return LexicalAnalysisResult(
-            score_t1=score_t1, doc_fingerprints=doc_fps, matched_fingerprints=matched_fps,
+            score_t1=tuned_t1, doc_fingerprints=doc_fps, matched_fingerprints=matched_fps,
             sentence_matches=sentence_matches, corpus_contributions=corpus_hits,
         )
