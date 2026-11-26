@@ -109,16 +109,35 @@ async def lookup_verification_data(verification_uuid: str, db) -> APIResponse[Au
     )
 
 
+def _enrich_corpus_quote(item: dict) -> None:
+    from app.engine.reference_corpus import BUILTIN_REFERENCE_CORPUS
+
+    title = str(item.get("source_title") or "").strip().lower()
+    doc = next((d for d in BUILTIN_REFERENCE_CORPUS if str(d.get("title", "")).strip().lower() == title), None)
+    if not doc:
+        return
+    ref_words = {w.lower().strip(".,;:!?()[]") for w in str(item.get("text_snippet") or "").split() if len(w) >= 3}
+    sents = [s.strip() for s in str(doc.get("text") or "").split(".") if len(s.strip()) >= 15]
+    if not sents:
+        return
+    best = max(sents, key=lambda s: len(ref_words.intersection(w.lower().strip(".,;:!?()[]") for w in s.split())))
+    item["matched_source_text"] = (best + ".")[:400]
+    item.setdefault("source_category", doc.get("category") or "Bank Korpus")
+
+
 def attach_sentence_ids(annotations: list, sentences) -> list:
     """Menambahkan sentence_id ke tiap anotasi berdasarkan rentang karakter agar parafrase dapat menargetkan kalimat."""
     spans = sorted(((x.start_char, x.end_char, str(x.id)) for x in sentences), key=lambda t: t[0])
     result = []
     for anno in annotations:
         item = dict(anno) if isinstance(anno, dict) else anno
-        if isinstance(item, dict) and not item.get("sentence_id"):
-            start = int(item.get("start", 0))
-            hit = next((sid for lo, hi, sid in spans if lo <= start < max(hi, lo + 1)), None)
-            if hit:
-                item["sentence_id"] = hit
+        if isinstance(item, dict):
+            if not item.get("sentence_id"):
+                start = int(item.get("start", 0))
+                hit = next((sid for lo, hi, sid in spans if lo <= start < max(hi, lo + 1)), None)
+                if hit:
+                    item["sentence_id"] = hit
+            if item.get("tier") in ("T1", "T2") and not item.get("matched_source_text") and item.get("source_title"):
+                _enrich_corpus_quote(item)
         result.append(item)
     return result
