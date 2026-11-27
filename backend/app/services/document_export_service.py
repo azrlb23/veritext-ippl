@@ -71,12 +71,16 @@ def _replace_para(para: Any, pairs: list[tuple[str, str]]) -> None:
     for old_t, new_t in pairs:
         if not old_t or old_t not in para.text:
             continue
+        if new_t == "":
+            target = f" {old_t}" if f" {old_t}" in para.text else (f"{old_t} " if f"{old_t} " in para.text else old_t)
+        else:
+            target = old_t
         for run in para.runs:
-            if old_t in run.text:
-                run.text = run.text.replace(old_t, new_t, 1)
+            if target in run.text:
+                run.text = run.text.replace(target, new_t, 1)
                 break
         else:
-            para.text = para.text.replace(old_t, new_t, 1)
+            para.text = para.text.replace(target, new_t, 1)
 
 
 def _render_docx_bytes(
@@ -87,7 +91,7 @@ def _render_docx_bytes(
         pairs = [
             (old_t, new_t)
             for s in sentences if getattr(s, "is_modified", False)
-            for new_t in [(getattr(s, "current_text", None) or "").strip()] if new_t
+            for new_t in [(getattr(s, "current_text", None) or "").strip()]
             for cand in (getattr(s, "original_text", None), getattr(s, "sentence_text", None))
             for old_t in [(cand or "").strip()] if old_t and old_t != new_t
         ]

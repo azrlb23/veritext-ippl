@@ -132,7 +132,11 @@ class AuditReport(Base):
             return self._document_text
         if self.audit_task and self.audit_task.sentences:
             ordered = sorted(self.audit_task.sentences, key=lambda s: getattr(s, "sentence_index", 0))
-            return " ".join((s.current_text or s.sentence_text or "") for s in ordered).strip() or None
+            parts = [
+                (s.current_text if s.is_modified else (s.current_text or s.sentence_text or ""))
+                for s in ordered
+            ]
+            return " ".join(p for p in parts if p).strip() or None
         return None
 
     @document_text.setter

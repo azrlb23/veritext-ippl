@@ -62,8 +62,9 @@ async function generate() {
 async function apply(text: string) {
   if (!props.selected?.sentence_id) return;
   applying.value = true;
+  error.value = "";
   try {
-    const res = await chatService.applyParaphrase(props.selected.sentence_id, text);
+    const res = await chatService.applyParaphrase(props.selected.sentence_id, text, mode.value);
     emit("applied", { appliedText: res.current_text || text, newCompositeScore: res.new_composite_score });
     variations.value = [];
   } catch (err: any) {

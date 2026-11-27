@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from app.engine.citation_verifier import CitationFinding, merge_citation_annotations
 from app.engine.preprocessor import SentenceSpan
 from app.engine.tier1_lexical import SentenceLexicalMatch
 from app.engine.tier2_semantic import SentenceSemanticMatch
@@ -70,6 +71,7 @@ def build_heatmap_annotations(
     tier3_anomalies_by_index: dict[int, StylometricSentenceAnomaly],
     audit_depth: str,
     score_t3: float,
+    citation_findings: list[CitationFinding] | None = None,
 ) -> list[dict[str, Any]]:
     """Builds prioritized heatmap annotations across all tiers (T1, T2, T3)."""
     web_by_idx = {m.sentence_index: m for m in web_matches}
@@ -140,4 +142,6 @@ def build_heatmap_annotations(
                 ai_reason=t3_match.reason, ai_score=t3_match.anomaly_score,
             ).to_dict())
 
+    if audit_depth == "FULL" and citation_findings:
+        return merge_citation_annotations(annotations, citation_findings)
     return annotations

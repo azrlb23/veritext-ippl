@@ -20,7 +20,9 @@ from app.schemas.chat import (
 from app.schemas.common import APIResponse
 from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
 from app.services.audit_log_helper import record_token_debit
-from app.services.chat_context import build_document_context_async, load_owned_documents
+from app.services.chat_context import (
+    build_document_context_async, load_audited_sentences_map, load_focus_sentence_context, load_owned_documents,
+)
 from app.services.chat_prompt import build_prompt, classify_task_and_engine
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
 from app.services.paraphrase_scope import resolve_paraphrase_scope_text
@@ -75,7 +77,10 @@ async def send_chat_message(
     AssistantService.check_academic_guardrail(payload.prompt)
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode="CHAT")
     session, docs, history = await _resolve_session(db, current_user.id, payload)
-    context = await build_document_context_async(docs, payload.prompt)
+    focus_ctx = await load_focus_sentence_context(db, current_user.id, payload.sentence_id) if payload.sentence_id else ""
+    doc_ids = [d.id for d in docs if getattr(d, "id", None)]
+    audited_map = await load_audited_sentences_map(db, current_user.id, doc_ids) if doc_ids else {}
+    context = await build_document_context_async(docs, payload.prompt, focus_context=focus_ctx, audited_map=audited_map)
     task_mode, engine_pref = payload.task_mode, payload.preferred_engine
     if engine_pref == "auto" and task_mode == "QA_DOCUMENT":
         task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs))
@@ -87,9 +92,7 @@ async def send_chat_message(
 
     trial_rem, bal, allow_rem = await _charge_ai_usage(db, current_user, "CHAT", "CHAT_SESSION", session.id, "AI Chatbot token debit")
     db.add(ChatMessage(session_id=session.id, role="USER", content=payload.prompt, target_sentence_id=payload.sentence_id))
-    assistant_msg = ChatMessage(
-        session_id=session.id, role="ASSISTANT", content=ai_text, mode="CONSULTATION", target_sentence_id=payload.sentence_id,
-    )
+    assistant_msg = ChatMessage(session_id=session.id, role="ASSISTANT", content=ai_text, mode="CONSULTATION", target_sentence_id=payload.sentence_id)
     db.add(assistant_msg)
     session.updated_at = func.now()
     await db.commit()
@@ -123,9 +126,7 @@ async def paraphrase_sentence(
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode=payload.mode)
 
     scope_text = await resolve_paraphrase_scope_text(db, sentence, payload.mode)
-    variations, active_engine = await asyncio.to_thread(
-        AssistantService.generate_paraphrase_variations, scope_text, mode=payload.mode, preferred_engine=payload.preferred_engine,
-    )
+    variations, active_engine = await asyncio.to_thread(AssistantService.generate_paraphrase_variations, scope_text, mode=payload.mode, preferred_engine=payload.preferred_engine)
     await _charge_ai_usage(db, current_user, payload.mode, "AUDIT_SENTENCE", sentence.id, f"Paraphrase {payload.mode} token debit")
     await db.commit()
     return APIResponse(data=ParaphraseResponse(sentence_id=payload.sentence_id, mode=payload.mode, variations=[ParaphraseVariation(**v) for v in variations], active_engine=active_engine))
@@ -142,6 +143,6 @@ async def apply_paraphrase(
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     all_s = (await db.execute(select(AuditSentence).where(AuditSentence.audit_task_id == sentence.audit_task_id))).scalars().all()
     report = (await db.execute(select(AuditReport).where(AuditReport.audit_task_id == sentence.audit_task_id))).scalar_one_or_none()
-    result = AssistantService.apply_paraphrase_in_place(sentence, payload.selected_text, list(all_s), report)
+    result = AssistantService.apply_paraphrase_in_place(sentence, payload.selected_text, list(all_s), report, mode=payload.mode)
     await db.commit()
     return APIResponse(data=ApplyParaphraseResponse(**result))

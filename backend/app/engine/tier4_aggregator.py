@@ -6,6 +6,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.engine.ai_detector import GeminiAIDetector
+from app.engine.citation_verifier import CitationFinding, CitationVerifier
 from app.engine.preprocessor import SentenceSpan, TextPreprocessor
 from app.engine.reference_corpus import ReferenceCorpusBank
 from app.engine.tier1_lexical import LexicalAnalysisResult, WinnowingLexicalEngine
@@ -39,6 +40,7 @@ class HybridAuditResult:
     web_matches: list[WebMatchResult] | None = None
     web_scan_available: bool = True
     web_scan_note: str | None = None
+    citation_findings: list[CitationFinding] | None = None
 
 
 class HybridAggregator:
@@ -52,6 +54,7 @@ class HybridAggregator:
         corpus_bank: ReferenceCorpusBank | None = None,
         ai_detector: GeminiAIDetector | None = None,
         web_scanner: GeminiWebScanner | None = None,
+        citation_verifier: CitationVerifier | None = None,
     ):
         self.w_lexical = settings.SIMILARITY_LEXICAL_WEIGHT if w_lexical is None else w_lexical
         self.w_semantic = settings.SIMILARITY_SEMANTIC_WEIGHT if w_semantic is None else w_semantic
@@ -64,6 +67,7 @@ class HybridAggregator:
         self.web_scanner = web_scanner or GeminiWebScanner(
             lexical_engine=self.tier1_engine, semantic_engine=self.tier2_engine
         )
+        self.citation_verifier = citation_verifier or CitationVerifier()
         self.corpus_bank = corpus_bank or ReferenceCorpusBank.get_instance()
 
     @staticmethod
@@ -109,7 +113,7 @@ class HybridAggregator:
 
         if audit_depth == "TIER1_ONLY":
             score_t2, score_t3, score_comp = 0.0, 0.0, self.sanitize_score(score_t1)
-            t2_res, t3_res, t2_idx, t3_idx = None, None, {}, {}
+            t2_res, t3_res, t2_idx, t3_idx, citation_findings = None, None, {}, {}, []
             web_matches, web_avail, web_note = [], False, "Mode pindaian cepat (TIER1_ONLY) tidak mencakup pemindaian web."
         else:
             t2_res = self.tier2_engine.analyze_document(
@@ -123,12 +127,13 @@ class HybridAggregator:
             )
 
             if on_progress:
-                on_progress(75, "Tahap 3 - Evaluasi gaya penulisan & penyusunan laporan")
+                on_progress(75, "Tahap 3 - Evaluasi gaya penulisan & verifikasi sitasi")
             t3_res = self.ai_detector.analyze_document(original_text=original_text, sentences=sentences)
             score_t3, t3_idx = t3_res.score_t3, {a.sentence_index: a for a in t3_res.sentence_anomalies}
+            citation_findings = self.citation_verifier.verify_document(original_text) if settings.WEB_SCAN_ENABLED else []
             score_comp = self.calculate_composite_score(score_t1, score_t2, score_t3)
 
-        heatmap = build_heatmap_annotations(sentences, web_matches, t1_idx, t2_idx, t3_idx, audit_depth, score_t3)
+        heatmap = build_heatmap_annotations(sentences, web_matches, t1_idx, t2_idx, t3_idx, audit_depth, score_t3, citation_findings)
         sources = self._aggregate_matched_sources(
             t1_result=t1_res, t2_result=t2_res, score_composite=score_comp,
             web_matches=web_matches, web_scan_available=web_avail, web_scan_note=web_note, audit_depth=audit_depth,
@@ -138,5 +143,5 @@ class HybridAggregator:
             score_stylometric=self.sanitize_score(score_t3), score_composite=self.sanitize_score(score_comp),
             audit_depth=audit_depth, sentences=sentences, heatmap_annotations=heatmap, matched_sources=sources,
             t1_result=t1_res, t2_result=t2_res, t3_result=t3_res, web_matches=web_matches,
-            web_scan_available=web_avail, web_scan_note=web_note,
+            web_scan_available=web_avail, web_scan_note=web_note, citation_findings=citation_findings,
         )

@@ -64,6 +64,7 @@ class ParaphraseResponse(BaseModel):
 class ApplyParaphraseRequest(BaseModel):
     sentence_id: uuid.UUID
     selected_text: str
+    mode: str = Field(default="SENTENCE")
 
 
 class ApplyParaphraseResponse(BaseModel):

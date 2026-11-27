@@ -31,6 +31,7 @@ const forensicNotice = computed(() => {
   const texts = annotations.value.map((a) => `${a.ai_reason || ""} ${a.reason || ""}`.toLowerCase());
   if (texts.some((t) => /homoglyph|zero-width|manipulasi/.test(t))) return "Terdeteksi indikasi manipulasi karakter (zero-width/homoglyph) pada naskah.";
   if (texts.some((t) => /style-shift|artefak/.test(t))) return "Terdeteksi anomali struktural AI (style-shift atau artefak format) pada naskah.";
+  if (texts.some((t) => /sitasi fiktif|tidak terverifikasi|tidak cocok dengan metadata/.test(t))) return "Terdeteksi sitasi daftar pustaka yang tidak terverifikasi di Crossref/OpenAlex.";
   return null;
 });
 let timer: ReturnType<typeof setTimeout> | null = null;

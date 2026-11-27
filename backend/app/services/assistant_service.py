@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.wallet import TokenWallet
 from app.services.chat_guardrail import enforce_academic_guardrail
 from app.services.paraphrase_helper import apply_paraphrase_update
+from app.services.paraphrase_prompt import build_paraphrase_prompt, score_paraphrase_variations
 
 logger = logging.getLogger(__name__)
 _PARAPHRASE_MODES = ("SENTENCE", "PARAGRAPH", "FULL_PAGE")
@@ -87,17 +88,9 @@ class AssistantService:
             variations, active_engine = _try_local_paraphrase(original_text)
             if not variations:
                 raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
-            return variations, active_engine
+            return score_paraphrase_variations(original_text, variations), active_engine
         gw = gateway or DualEngineLLMGateway()
-        prompt = (
-            f"Parafrasekan teks berikut ({mode}) menjadi 3 variasi gaya akademik.\n"
-            "WAJIB pertahankan bahasa yang sama persis dengan teks asli "
-            "(jika teks berbahasa Indonesia, seluruh variasi WAJIB berbahasa Indonesia akademik baku; "
-            "jangan diterjemahkan ke bahasa lain).\n"
-            f"Teks asli:\n{original_text}\n"
-            "KEMBALIKAN HANYA JSON ARRAY MURNI (diawali `[` dan diakhiri `]`) tanpa teks pengantar atau markdown:\n"
-            '[{"option_id": 1, "style": "Formal", "text": "...", "predicted_score": 8.2}, ...]'
-        )
+        prompt = build_paraphrase_prompt(original_text, mode)
         variations: list[dict[str, Any]] = []
         active_engine = "Synthesis Engine"
         try:
@@ -123,11 +116,12 @@ class AssistantService:
 
         if not variations:
             raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
-        return variations, active_engine
+        return score_paraphrase_variations(original_text, variations), active_engine
 
     @classmethod
     def apply_paraphrase_in_place(
         cls, sentence: AuditSentence, selected_text: str,
         all_sentences: list[AuditSentence], report: AuditReport | None = None,
+        mode: str = "SENTENCE",
     ) -> dict[str, Any]:
-        return apply_paraphrase_update(sentence, selected_text, all_sentences, report)
+        return apply_paraphrase_update(sentence, selected_text, all_sentences, report, mode=mode)

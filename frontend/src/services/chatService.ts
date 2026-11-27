@@ -75,10 +75,15 @@ export const chatService = {
     return res.data.data;
   },
 
-  async applyParaphrase(sentenceId: string, selectedText: string) {
+  async applyParaphrase(
+    sentenceId: string,
+    selectedText: string,
+    mode: "SENTENCE" | "PARAGRAPH" | "FULL_PAGE" = "SENTENCE"
+  ) {
     const res = await apiClient.post<{ data: ApplyParaphraseResponseData }>("/chat/apply-paraphrase", {
       sentence_id: sentenceId,
       selected_text: selectedText,
+      mode,
     });
     return res.data.data;
   },

@@ -88,7 +88,7 @@ def test_generate_paraphrase_variations_gateway():
     vars_, engine = AssistantService.generate_paraphrase_variations("Teks uji.", gateway=mock_gw)
     assert len(vars_) == 3
     assert engine == "Gemini (gemini-2.5-flash)"
-    assert vars_[0]["predicted_score"] == 7.5
+    assert vars_[0]["predicted_score"] == 0.0
 
 
 def test_apply_paraphrase_in_place():
@@ -99,12 +99,12 @@ def test_apply_paraphrase_in_place():
     res = AssistantService.apply_paraphrase_in_place(s1, "Kalimat hasil parafrase baru.", [s1, s2], report)
     assert s1.match_type == "RESOLVED_GREEN"
     assert s1.is_modified is True
-    assert s1.similarity_score == 6.0
+    assert s1.similarity_score == 0.0
     assert s1.current_text == "Kalimat hasil parafrase baru."
     assert res["match_type"] == "RESOLVED_GREEN"
-    assert res["new_similarity"] == 6.0
-    assert res["new_composite_score"] == 40.5
-    assert report.score_composite == 40.5
+    assert res["new_similarity"] == 0.0
+    assert res["new_composite_score"] == 37.5
+    assert report.score_composite == 37.5
 
 
 def test_build_prompt_paraphrase_task():
@@ -131,6 +131,6 @@ def test_gateway_preferred_engine_ollama_before_gemini():
 
 
 def test_classify_task_and_engine_routing():
-    assert classify_task_and_engine("Tolong parafrase kalimat ini agar lebih baku.", True) == ("PARAPHRASE_TASK", "ollama")
-    assert classify_task_and_engine("Cek pola AI dan burstiness pada paragraf kedua.", True) == ("STYLE_REVIEW", "ollama")
+    assert classify_task_and_engine("Tolong parafrase kalimat ini agar lebih baku.", True) == ("PARAPHRASE_TASK", "auto")
+    assert classify_task_and_engine("Cek pola AI dan burstiness pada paragraf kedua.", True) == ("STYLE_REVIEW", "auto")
     assert classify_task_and_engine("Apa kesimpulan utama dari naskah ini?", True) == ("QA_DOCUMENT", "auto")

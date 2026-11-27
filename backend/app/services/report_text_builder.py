@@ -31,6 +31,8 @@ def _reconstruct_from_sentences(ordered: list[Any]) -> str | None:
     parts: list[str] = []
     prev: Any = None
     for s in ordered:
+        if getattr(s, "is_modified", False) and (getattr(s, "current_text", None) or "") == "":
+            continue
         text = (getattr(s, "sentence_text", None) or getattr(s, "current_text", None) or "").strip()
         if not text:
             continue
@@ -59,7 +61,21 @@ def _apply_modified_sentences(document_text: str, ordered: list[Any]) -> str:
         orig_text = getattr(s, "sentence_text", None) or ""
         new_text = getattr(s, "current_text", None)
         is_mod = bool(getattr(s, "is_modified", False))
-        if (is_mod or new_text != orig_text) and new_text and orig_text and new_text != orig_text:
+        if not orig_text:
+            continue
+        if is_mod and new_text == "":
+            pattern = _ws_pattern(orig_text)
+            if f" {orig_text}" in updated:
+                updated = updated.replace(f" {orig_text}", "", 1)
+            elif f"{orig_text} " in updated:
+                updated = updated.replace(f"{orig_text} ", "", 1)
+            elif orig_text in updated:
+                updated = updated.replace(orig_text, "", 1)
+            elif pattern:
+                m = re.search(rf"[ \t]*{pattern}[ \t]*", updated)
+                if m:
+                    updated = updated[:m.start()] + (" " if m.start() > 0 and m.end() < len(updated) and updated[m.start() - 1] != "\n" and updated[m.end()] != "\n" else "") + updated[m.end():]
+        elif (is_mod or new_text != orig_text) and new_text and new_text != orig_text:
             if orig_text in updated:
                 updated = updated.replace(orig_text, new_text, 1)
             else:

@@ -21,6 +21,7 @@ const forensicTag = computed(() => {
   if (/artefak|markdown|chatbot/.test(txt)) return { label: "Artefak Chatbot / Markdown (WP:AISIGNS)", tone: "border-[#B45309] text-[#B45309]" };
   if (/style-shift|pergeseran gaya/.test(txt)) return { label: "Pergeseran Gaya Antar-Bab (Style-Shift)", tone: "border-[#B45309] text-[#B45309]" };
   if (/em-dash|label-titik dua|titik dua|wp:aisigns|triad|enumerasi/.test(txt)) return { label: "Sinyal Struktural AI (WP:AISIGNS)", tone: "border-[#0F766E] text-[#0F766E]" };
+  if (/sitasi fiktif|tidak terverifikasi|tidak cocok dengan metadata/.test(txt)) return { label: "Sitasi Tidak Terverifikasi (Crossref/OpenAlex)", tone: "border-[#B91C1C] text-[#B91C1C]" };
   return null;
 });
 </script>
@@ -47,7 +48,7 @@ const forensicTag = computed(() => {
           <p class="text-[13px] font-medium text-[#5E5A6B]">
             {{ isAiView ? "Indikasi Pola Tulisan AI" : `${matchKindLabel} • ${selected.source_category || "Sumber Pembanding"}` }}
           </p>
-          <p class="mt-0.5 text-[14px] font-semibold text-[#14111C]">{{ isAiView ? "Analisis Gaya Penulisan AI" : (selected.source_title || "Sumber pembanding") }}</p>
+          <p class="mt-0.5 text-[14px] font-semibold text-[#14111C]">{{ isAiView ? (selected.source_title || "Analisis Gaya Penulisan AI") : (selected.source_title || "Sumber pembanding") }}</p>
         </div>
         <p class="flex-shrink-0 text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ pct(isAiView ? (selected.ai_score ?? selected.similarity ?? 0) : (selected.similarity ?? 0)) }}%</p>
       </div>
@@ -55,6 +56,7 @@ const forensicTag = computed(() => {
       <div v-if="isAiView" class="space-y-2">
         <p v-if="forensicTag" class="border-l-2 pl-2.5 text-[12.5px] font-semibold" :class="forensicTag.tone">{{ forensicTag.label }}</p>
         <p class="text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.ai_reason || selected.reason || "Struktur kalimat seragam atau terindikasi pola penulisan AI." }}</p>
+        <a v-if="selected.source_url" :href="selected.source_url" target="_blank" rel="noopener noreferrer" class="inline-block text-[13px] font-medium text-[#0F766E] hover:underline">Periksa tautan DOI</a>
       </div>
       <div v-else class="rounded-2xl border border-[#E8ECEB] bg-[#F8FAFC] p-3.5">
         <p class="text-[12.5px] font-medium text-[#5E5A6B]">Kutipan pada sumber pembanding</p>

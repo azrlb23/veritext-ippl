@@ -14,7 +14,7 @@ export function friendlyChatError(err: any): string {
   const detail: string = err?.response?.data?.detail || "";
   if (detail.includes("CHAT_001")) return GUARDRAIL;
   if (detail.includes("CHAT_002") || detail.includes("AUDIT_001")) return QUOTA;
-  return detail.replace(/^[A-Z]+_\d+:\s*/, "") || "Asisten belum bisa menjawab. Coba lagi sebentar lagi.";
+  return detail.replace(/^[A-Z0-9_]+:\s*/, "") || "Asisten belum bisa menjawab. Coba lagi sebentar lagi.";
 }
 
 const NEW_KEY = "__new__";

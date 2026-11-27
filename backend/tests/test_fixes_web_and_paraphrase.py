@@ -23,7 +23,8 @@ def test_paraphrase_prompt_locks_original_language() -> None:
         {"option_id": 3, "style": "Analitis", "text": "Kalimat analitis.", "predicted_score": 8.3},
     ]
 
-    def fake_generate(prompt: str) -> tuple[str, str]:
+    def fake_generate(prompt: str, preferred_engine: str = "auto") -> tuple[str, str]:
+        _ = preferred_engine
         captured_prompts.append(prompt)
         return json.dumps(mock_variations), "DeepSeek (test)"
 

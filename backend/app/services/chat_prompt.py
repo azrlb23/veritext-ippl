@@ -38,9 +38,9 @@ def classify_task_and_engine(question: str, has_docs: bool = False) -> tuple[str
     _ = has_docs
     q = (question or "").lower()
     if any(key in q for key in _PARAPHRASE_KEYS):
-        return ("PARAPHRASE_TASK", "ollama")
+        return ("PARAPHRASE_TASK", "auto")
     if any(key in q for key in _STYLE_KEYS):
-        return ("STYLE_REVIEW", "ollama")
+        return ("STYLE_REVIEW", "auto")
     return ("QA_DOCUMENT", "auto")
 
 
