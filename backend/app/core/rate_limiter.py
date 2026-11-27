@@ -15,6 +15,8 @@ RATE_RULES: tuple[tuple[str, int, int], ...] = (
     ("/api/v1/auth/login", 15, 60),
     ("/api/v1/auth/register", 15, 60),
     ("/api/v1/auth/forgot-password", 10, 60),
+    ("/api/v1/auth/reset-password", 10, 60),
+    ("/api/v1/auth/google/", 20, 60),
     ("/api/v1/documents/upload", 20, 60),
     ("/api/v1/chat", 30, 60),
 )

@@ -38,6 +38,8 @@ def test_rate_limiter_memory_fallback_enforces_limit():
 def test_match_rate_rule_mutating_vs_get():
     assert match_rate_rule("/api/v1/auth/login", "POST") == (15, 60)
     assert match_rate_rule("/api/v1/auth/forgot-password", "post") == (10, 60)
+    assert match_rate_rule("/api/v1/auth/reset-password", "POST") == (10, 60)
+    assert match_rate_rule("/api/v1/auth/google/verify", "POST") == (20, 60)
     assert match_rate_rule("/api/v1/documents/upload", "POST") == (20, 60)
     assert match_rate_rule("/api/v1/chat/sessions", "POST") == (30, 60)
     assert match_rate_rule("/api/v1/auth/me", "GET") is None
