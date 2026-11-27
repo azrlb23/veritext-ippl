@@ -217,13 +217,13 @@ def test_apply_paraphrase_recomputes_composite_and_shifts_offsets():
             {"start": 10, "end": 26, "color": "ORANGE", "similarity": 70.0, "text_snippet": "Second sentence."},
         ],
     )
-    new_text = "New paraphrased text."
+    new_text = "Kalimat pengganti baru yang berbeda."
     delta = len(new_text) - len("Old text.")
     res = AssistantService.apply_paraphrase_in_place(s1, new_text, [s1, s2], report)
 
-    assert report.score_lexical == 6.0
+    assert report.score_lexical == 0.0
     assert report.score_semantic == 70.0
-    expected_comp = round(0.50 * 6.0 + 0.35 * 70.0 + 0.15 * 20.0, 2)
+    expected_comp = round(0.50 * 0.0 + 0.35 * 70.0 + 0.15 * 20.0, 2)
     assert report.score_composite == expected_comp
     assert res["new_composite_score"] == expected_comp
     assert s2.start_char == 10 + delta

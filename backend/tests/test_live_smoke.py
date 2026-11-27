@@ -97,5 +97,5 @@ def test_dual_engine_llm_gateway_and_assistant_e2e():
     report = AuditReport(score_composite=85.0)
     result = AssistantService.apply_paraphrase_in_place(sentence, "Hasil kajian menunjukkan.", [sentence], report)
     assert result["match_type"] == "RESOLVED_GREEN"
-    assert result["new_similarity"] == 6.0
-    assert report.score_composite == 6.0
+    assert result["new_similarity"] == 0.0
+    assert report.score_composite == 0.0

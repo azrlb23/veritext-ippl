@@ -58,11 +58,11 @@ def _live_session():
 def test_live_nearest_uses_hnsw_index_and_returns_closest_chunk():
     db = _live_session()
     try:
-        row = db.execute(text("select embedding::text from document_chunks c join corpus_documents d on d.id=c.corpus_doc_id where d.status='INDEXED' limit 1")).first()
+        row = db.execute(text("select embedding::text from document_chunks c join corpus_documents d on d.id=c.corpus_doc_id where d.status='INDEXED' order by c.created_at desc limit 1")).first()
         if not row:
             pytest.skip("Belum ada potongan korpus terindeks")
         emb = [float(x) for x in row[0].strip("[]").split(",")]
-        found = PgvectorChunkSearch(db).nearest(emb)
+        found = PgvectorChunkSearch(db, ef_search=200).nearest(emb)
         assert found is not None and found[0] > 0.99
         db.execute(text("SET LOCAL enable_seqscan = off"))
         plan = "\n".join(r[0] for r in db.execute(text("EXPLAIN SELECT id FROM document_chunks ORDER BY embedding <=> CAST(:v AS vector) LIMIT 1"), {"v": row[0]}))

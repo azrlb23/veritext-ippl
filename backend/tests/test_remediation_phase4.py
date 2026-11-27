@@ -586,16 +586,25 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
         with open(api_ts_path, "r", encoding="utf-8") as f:
             content = f.read()
 
+        session_ts_path = os.path.abspath(
+            os.path.join(BACKEND_DIR, "..", "frontend", "src", "utils", "sessionStorage.ts")
+        )
+        self.assertTrue(os.path.exists(session_ts_path), f"File {session_ts_path} must exist")
+        with open(session_ts_path, "r", encoding="utf-8") as f:
+            session_content = f.read()
+
         # 1. Harus memiliki penanganan status 401
         self.assertIn("401", content)
 
-        # 2. Harus membersihkan storage token dan user
-        self.assertIn('localStorage.removeItem("veritext_access_token")', content)
-        self.assertIn('localStorage.removeItem("veritext_user")', content)
+        # 2. Harus membersihkan storage token dan user lewat clearStoredSession
+        self.assertIn("clearStoredSession()", content)
+        self.assertIn("veritext_access_token", session_content)
+        self.assertIn("veritext_user", session_content)
+        self.assertIn("localStorage.removeItem", session_content)
 
-        # 3. Harus mereset state auth Pinia (logout)
+        # 3. Harus mereset state auth melalui onAuthExpired / logout
         self.assertTrue(
-            "logout" in content or "useAuthStore" in content,
+            "onAuthExpired" in content or "logout" in content or "useAuthStore" in content,
             "api.ts response interceptor must trigger authStore logout/reset",
         )
 
