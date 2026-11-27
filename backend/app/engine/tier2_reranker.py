@@ -43,15 +43,30 @@ class SemanticReranker:
             return None
 
     @classmethod
-    def accept_mask(cls, pairs: list[tuple[str, str]]) -> list[bool]:
+    def accept_mask(
+        cls,
+        pairs: list[tuple[str, str]],
+        similarities: list[float] | None = None,
+    ) -> list[bool]:
         scores = cls.score_pairs(pairs)
         cross = [True] * len(pairs) if scores is None else [s >= settings.RERANKER_THRESHOLD for s in scores]
         survivor_indices = [i for i, ok in enumerate(cross) if ok]
         if not survivor_indices:
             return cross
 
-        id_idx = [i for i in survivor_indices if detect_language(pairs[i][0]) == "id"]
-        en_idx = [i for i in survivor_indices if detect_language(pairs[i][0]) == "en"]
+        id_idx: list[int] = []
+        en_idx: list[int] = []
+        cross_lang_idx: list[int] = []
+        for i in survivor_indices:
+            lang_a = detect_language(pairs[i][0])
+            lang_b = detect_language(pairs[i][1])
+            if lang_a == "id" and lang_b == "id":
+                id_idx.append(i)
+            elif lang_a == "en" and lang_b == "en":
+                en_idx.append(i)
+            else:
+                cross_lang_idx.append(i)
+
         id_mask = IndoBertScorer.accept_mask([pairs[i] for i in id_idx]) if id_idx else []
         en_mask = EnglishReranker.accept_mask([pairs[i] for i in en_idx]) if en_idx else []
 
@@ -60,4 +75,6 @@ class SemanticReranker:
             final[idx] = ok
         for idx, ok in zip(en_idx, en_mask):
             final[idx] = ok
+        for idx in cross_lang_idx:
+            final[idx] = cross[idx] and (similarities is None or similarities[idx] >= 0.80)
         return final

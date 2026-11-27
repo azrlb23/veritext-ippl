@@ -164,3 +164,13 @@ Sistem VeriText AI tidak bergantung pada pengunggahan arsip ZIP manual. Basis da
 4. **Crossref REST API**: Mengidentifikasi metadata resmi DOI dan publikasi ilmiah berkala.
 5. **HuggingFace Indonesian STS & Paraphrase Datasets**: Memuat dataset rujukan parafrase bahasa Indonesia (`jakartaresearch/id-paraphrase-detection`, `LazarusNLP/stsb_mt_id`).
 6. **Google Search Grounding (Gemini)**: Verifikasi real-time terhadap rujukan artikel web publik terkini.
+
+---
+
+## 5. Dokumentasi Arsitektur Lanjutan (Two-Stage Funnel & Pengetatan)
+
+Rincian pembaruan arsitektur mesin deteksi terkini didokumentasikan secara terpisah pada [`docs/TWO_STAGE_FUNNEL_ARCHITECTURE.md`](./TWO_STAGE_FUNNEL_ARCHITECTURE.md), mencakup:
+
+* **Two-Stage Funnel (Tier 3)**: Pemindaian lokal 100% kalimat tanpa beban RAM tambahan (normalisasi anti-evasion RAID, sinyal `WP:AISIGNS`, *sliding-window local burstiness*, rasio kompresi `zlib`, dan deteksi *style-shift*) yang dilanjutkan dengan evaluasi cloud paralel multi-batch berbasis sinyal serta *Gray-Zone Dual-Judge Consensus*.
+* **Pengetatan Plagiarisme (Tier 1, Tier 2, Web Scanner)**: Kewajiban bukti frasa berurutan 4-gram/5-gram, penapisan boilerplate akademik, verifikasi silang web bebas stopword, guard *single-hit* `< 0.80` pada dokumen panjang, serta jalur verifikasi *Cross-Lingual* `ID <-> EN` (`cosine >= 0.80`).
+* **Ekspansi Korpus Multi-Sumber & Panduan VPS**: Skrip pemanen korpus OpenAlex, DOAJ, dan arXiv serta spesifikasi deployment hemat RAM untuk VPS produksi.

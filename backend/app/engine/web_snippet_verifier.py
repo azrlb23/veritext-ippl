@@ -7,7 +7,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.engine.preprocessor import SentenceSpan, TextPreprocessor
+from app.engine.tier1_filters import content_words, has_lexical_evidence
 from app.engine.tier1_lexical import WinnowingLexicalEngine
+from app.engine.tier2_reranker import SemanticReranker
 from app.engine.tier2_semantic import SemanticEngine
 
 logger = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ def verify_snippet_cross_check(
 ) -> tuple[float, float, bool, str]:
     if not snippet or not sentence_text:
         return 0.0, 0.0, False, ""
-    tokens_s, tokens_snip = set(TextPreprocessor.tokenize_words(sentence_text)), set(TextPreprocessor.tokenize_words(snippet))
+    tokens_s, tokens_snip = set(content_words(sentence_text)), set(content_words(snippet))
     if not tokens_s or not tokens_snip:
         lexical_sim = 0.0
     else:
@@ -55,9 +57,9 @@ def verify_snippet_cross_check(
         semantic_sim = max(0.0, min(1.0, float(semantic_engine.cosine_similarity(emb_s, emb_snip))))
     except Exception:  # noqa: BLE001
         semantic_sim = 0.0
-    if lexical_sim >= 0.60:
+    if lexical_sim >= 0.60 and has_lexical_evidence(sentence_text, snippet):
         return lexical_sim, semantic_sim, True, "T1"
-    if semantic_sim >= 0.65 or (lexical_sim >= 0.30 and semantic_sim >= 0.40):
+    if semantic_sim >= 0.72 and SemanticReranker.accept_mask([(sentence_text, snippet)])[0]:
         return lexical_sim, semantic_sim, True, "T2"
     return lexical_sim, semantic_sim, False, ""
 

@@ -11,6 +11,7 @@ const props = defineProps<{
   stylometric?: number | null;
   exporting?: boolean;
   exportingDoc?: boolean;
+  forensicNotice?: string | null;
 }>();
 const emit = defineEmits<{ (e: "download"): void; (e: "downloadDoc", format: "docx" | "pdf"): void }>();
 const router = useRouter();
@@ -59,6 +60,7 @@ onUnmounted(() => document.removeEventListener("click", onDocClick));
     <div class="mt-2 grid gap-7 lg:grid-cols-[1fr_auto] lg:items-end">
       <div class="min-w-0">
         <h1 class="truncate text-[22px] font-semibold tracking-[-0.03em] text-[#14111C] sm:text-[28px]">{{ title || "Naskah" }}</h1>
+        <p v-if="forensicNotice" class="mt-2 border-l-2 border-[#D97706] pl-3 text-[13px] font-medium text-[#B45309]">{{ forensicNotice }}</p>
         <p class="mt-3 flex flex-wrap items-baseline gap-x-4">
           <span class="text-[88px] font-semibold leading-none tracking-[-0.06em] tabular-nums text-[#14111C] sm:text-[112px]">{{ composite.toFixed(0) }}<span class="text-[40px] tracking-[-0.04em]">%</span></span>
           <span class="text-[18px] font-semibold" :class="verdict.tone">{{ verdict.text }}</span>

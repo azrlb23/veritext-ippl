@@ -4,6 +4,8 @@ import re
 from dataclasses import dataclass, field
 from typing import ClassVar
 
+from app.engine.evasion_guard import normalize_evasion
+
 
 @dataclass
 class SentenceSpan:
@@ -50,13 +52,16 @@ class TextPreprocessor:
 
     @classmethod
     def clean_for_lexical(cls, text: str) -> str:
-        return re.sub(r"[^a-z0-9]", "", cls.case_folding(text)) if text else ""
+        if not text:
+            return ""
+        return re.sub(r"[^a-z0-9]", "", cls.case_folding(normalize_evasion(text)))
 
     @classmethod
     def tokenize_words(cls, text: str) -> list[str]:
         if not text:
             return []
-        return re.findall(r"\b[a-z0-9\u00C0-\u017F\-]+\b", cls.case_folding(text))
+        normalized = cls.case_folding(normalize_evasion(text))
+        return re.findall(r"\b[a-z0-9\u00C0-\u017F\-]+\b", normalized)
 
     @classmethod
     def is_citation_sentence(cls, sentence: str) -> bool:

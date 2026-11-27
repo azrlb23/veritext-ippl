@@ -50,7 +50,6 @@ class SemanticEngine:
             cls._shared_model_attempted = True
             try:
                 from sentence_transformers import SentenceTransformer
-
                 cls._shared_transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
             except Exception as e:  # noqa: BLE001
                 logger.debug("SentenceTransformer load skipped: %s", e)
@@ -119,11 +118,17 @@ class SemanticEngine:
                 if did not in seen_docs:
                     seen_docs.add(did)
                     candidates.append((s, sim, ch))
-        keep = SemanticReranker.accept_mask([(s.text, c.get("chunk_text", "")) for s, _, c in candidates])
+        keep = SemanticReranker.accept_mask([(s.text, c.get("chunk_text", "")) for s, _, c in candidates], similarities=[sim for _, sim, _ in candidates])
         by_sent: dict[int, list[tuple[SentenceSpan, float, dict[str, Any]]]] = {}
         for item, accepted in zip(candidates, keep):
             if accepted:
                 by_sent.setdefault(item[0].index, []).append(item)
+        if len(sentences) > 5:
+            doc_cnt: dict[str, int] = {}
+            for grp in by_sent.values():
+                for did in {str(c.get("corpus_doc_id", "corpus-doc")) for _, _, c in grp}:
+                    doc_cnt[did] = doc_cnt.get(did, 0) + 1
+            by_sent = {k: fg for k, grp in by_sent.items() if (fg := [it for it in grp if doc_cnt.get(str(it[2].get("corpus_doc_id", "corpus-doc")), 0) > 1 or it[1] >= 0.80])}
         for s_idx, group in by_sent.items():
             s, best_sim, best_chunk = group[0]
             matched_similarities.append(best_sim)
@@ -137,12 +142,7 @@ class SemanticEngine:
             hit = corpus_hits.setdefault(doc_id, {"corpus_doc_id": doc_id, "title": title, "category": best_chunk.get("category", "Umum"), "match_count": 0, "total_sim": 0.0})
             hit["match_count"] += 1
             hit["total_sim"] += best_sim
-
         meaningful = len([s for s in sentences if not s.is_citation])
         has_hits = meaningful > 0 and matched_similarities
         score_t2 = (sum(matched_similarities) / meaningful) * 100.0 if has_hits else 0.0
-        return SemanticAnalysisResult(
-            score_t2=round(min(100.0, max(0.0, score_t2)), 2),
-            sentence_matches=sentence_matches,
-            corpus_contributions=corpus_hits,
-        )
+        return SemanticAnalysisResult(score_t2=round(min(100.0, max(0.0, score_t2)), 2), sentence_matches=sentence_matches, corpus_contributions=corpus_hits)

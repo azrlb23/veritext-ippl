@@ -14,6 +14,15 @@ const isResolved = computed(() => props.selected.color === "RESOLVED_GREEN" || (
 const matchKindLabel = computed(() => (props.selected.tier === "T1" ? "Kata sama" : props.selected.tier === "T2" ? "Makna sama" : "Pola AI"));
 const quoteTokens = computed(() => splitOverlapTokens(props.selected.matched_source_text || "", props.selected.text_snippet || ""));
 const extraSources = computed(() => props.selected.secondary_sources || []);
+const forensicTag = computed(() => {
+  const txt = (props.selected.ai_reason || props.selected.reason || "").toLowerCase();
+  if (!txt) return null;
+  if (/zero-width|homoglyph|manipulasi/.test(txt)) return { label: "Indikasi Manipulasi Karakter (RAID)", tone: "border-[#B91C1C] text-[#B91C1C]" };
+  if (/artefak|markdown|chatbot/.test(txt)) return { label: "Artefak Chatbot / Markdown (WP:AISIGNS)", tone: "border-[#B45309] text-[#B45309]" };
+  if (/style-shift|pergeseran gaya/.test(txt)) return { label: "Pergeseran Gaya Antar-Bab (Style-Shift)", tone: "border-[#B45309] text-[#B45309]" };
+  if (/em-dash|label-titik dua|titik dua|wp:aisigns|triad|enumerasi/.test(txt)) return { label: "Sinyal Struktural AI (WP:AISIGNS)", tone: "border-[#0F766E] text-[#0F766E]" };
+  return null;
+});
 </script>
 
 <template>
@@ -43,7 +52,10 @@ const extraSources = computed(() => props.selected.secondary_sources || []);
         <p class="flex-shrink-0 text-[24px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-[#14111C]">{{ pct(isAiView ? (selected.ai_score ?? selected.similarity ?? 0) : (selected.similarity ?? 0)) }}%</p>
       </div>
 
-      <p v-if="isAiView" class="text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.ai_reason || selected.reason || "Struktur kalimat seragam atau terindikasi pola penulisan AI." }}</p>
+      <div v-if="isAiView" class="space-y-2">
+        <p v-if="forensicTag" class="border-l-2 pl-2.5 text-[12.5px] font-semibold" :class="forensicTag.tone">{{ forensicTag.label }}</p>
+        <p class="text-[13.5px] leading-relaxed text-[#4B4757]">{{ selected.ai_reason || selected.reason || "Struktur kalimat seragam atau terindikasi pola penulisan AI." }}</p>
+      </div>
       <div v-else class="rounded-2xl border border-[#E8ECEB] bg-[#F8FAFC] p-3.5">
         <p class="text-[12.5px] font-medium text-[#5E5A6B]">Kutipan pada sumber pembanding</p>
         <p v-if="selected.matched_source_text" class="mt-1.5 text-[13.5px] leading-relaxed text-[#14111C]">

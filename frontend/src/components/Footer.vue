@@ -7,6 +7,8 @@ const links = [
   { name: "Ringkasan", to: "/dashboard" },
   { name: "Token", to: "/billing" },
   { name: "Verifikasi Sertifikat", to: "/verify" },
+  { name: "Kebijakan Privasi", to: "/privasi" },
+  { name: "Ketentuan Layanan", to: "/ketentuan" },
 ];
 </script>
 

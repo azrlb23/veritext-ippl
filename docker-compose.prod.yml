@@ -1,0 +1,117 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: veritext_postgres_prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-veritext}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-veritext_secure_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-veritext_ai}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-veritext} -d ${POSTGRES_DB:-veritext_ai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - veritext-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: veritext_redis_prod
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-VeriTextRedis2026Secure}"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-VeriTextRedis2026Secure}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - veritext-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: veritext_backend_prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "False"
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - veritext-network
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: veritext_worker_prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "False"
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+    command: ["sh", "-c", "celery -A app.workers.celery_app worker --loglevel=info --concurrency=${CELERY_CONCURRENCY:-1}"]
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - veritext-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: veritext_frontend_prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - veritext-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  veritext-network:
+    driver: bridge

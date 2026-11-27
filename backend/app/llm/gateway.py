@@ -14,6 +14,19 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def _select_stratified_sample(meaningful: list[SentenceSpan], limit: int) -> list[SentenceSpan]:
+    if limit <= 0:
+        return []
+    if len(meaningful) <= limit:
+        return meaningful
+    if limit == 1:
+        return [meaningful[0]]
+    indices = dict.fromkeys(
+        round(i * (len(meaningful) - 1) / (limit - 1)) for i in range(limit)
+    )
+    return [meaningful[idx] for idx in indices]
+
+
 def _normalize_result(raw: dict[str, Any] | None) -> dict[str, Any] | None:
     if not raw or not isinstance(raw, dict):
         return None
@@ -69,15 +82,19 @@ class DualEngineLLMGateway:
             return [gemini_entry, deepseek_entry, *nemotron_entries, ollama_entry]
         return [deepseek_entry, *nemotron_entries, gemini_entry, ollama_entry]
 
-    def build_judge_prompt(self, sentences: list[SentenceSpan]) -> str:
+    def build_judge_prompt(self, sentences: list[SentenceSpan], stage1_hints: list[str] | None = None) -> str:
         lines = []
         for s in sentences:
             if s.is_citation or s.word_count < 3:
                 continue
-            cleaned = s.text.replace("\n", " ").strip()
-            lines.append(f"[{s.index}] {cleaned}")
+            lines.append(f"[{s.index}] {s.text.replace(chr(10), ' ').strip()}")
 
         sentences_block = "\n".join(lines)
+        hints_block = (
+            "Temuan sinyal lokal (Stage 1) untuk diverifikasi konteksnya:\n"
+            + "\n".join(f"- {h}" for h in stage1_hints[:6]) + "\n\n"
+            if stage1_hints else ""
+        )
         return (
             "Anda adalah evaluator orisinalitas teks independen berstandar tinggi. "
             "Tugas Anda menganalisis apakah kalimat-kalimat naskah berikut ditulis secara organik oleh manusia "
@@ -85,39 +102,35 @@ class DualEngineLLMGateway:
             "Karakteristik tulisan AI:\n"
             "- Struktur sintaksis terlalu seragam dan formulaik.\n"
             "- Frasa transisi generik berulang (misal: 'dalam era digital ini', 'penting untuk dicatat bahwa', 'memainkan peran vital').\n"
-            "- Minim ketidakteraturan gaya bahasa alami khas manusia.\n\n"
+            "- Minim ketidakteraturan gaya bahasa alami khas manusia.\n"
+            "- Pola judul/label singkat diikuti tanda titik dua lalu kalimat penjelasan panjang (misal: 'Keamanan Data: Sistem ini menerapkan enkripsi...').\n"
+            "- Penggunaan tanda pisah em-dash (—) di tengah kalimat yang sangat khas pada keluaran AI dan jarang diketik manual pada naskah akademik.\n\n"
+            f"{hints_block}"
             "Daftar kalimat naskah:\n"
             f"{sentences_block}\n\n"
             "KEMBALIKAN HANYA JSON MURNI tanpa markdown atau penjelasan luar, dengan format skema:\n"
-            "{\n"
-            '  "ai_probability": <float 0.0 sampai 100.0>,\n'
-            '  "suspicious_sentences": [\n'
-            "    {\n"
-            '      "sentence_index": <int nomor indeks kalimat>,\n'
+            '{\n  "ai_probability": <float 0.0 sampai 100.0>,\n  "suspicious_sentences": [\n'
+            '    {\n      "sentence_index": <int nomor indeks kalimat>,\n'
             '      "reason": <string alasan ringkas dalam bahasa Indonesia>,\n'
-            '      "anomaly_score": <float 0.0 sampai 1.0>\n'
-            "    }\n"
-            "  ]\n"
-            "}"
+            '      "anomaly_score": <float 0.0 sampai 1.0>\n    }\n  ]\n}'
         )
 
-    def evaluate_sentences(
-        self, sentences: list[SentenceSpan]
+    def evaluate_batch(
+        self, batch: list[SentenceSpan], stage1_hints: list[str] | None = None, skip_first: bool = False
     ) -> tuple[dict[str, Any] | None, str]:
+        prompt = self.build_judge_prompt(batch, stage1_hints=stage1_hints)
+        clients = self._client_order()[1:] if skip_first else self._client_order()
+        for client, name in clients:
+            normalized = _normalize_result(client.generate_json(prompt))
+            if normalized is not None:
+                return normalized, name
+        return None, ""
+
+    def evaluate_sentences(self, sentences: list[SentenceSpan]) -> tuple[dict[str, Any] | None, str]:
         meaningful = [s for s in sentences if not s.is_citation and s.word_count >= 3]
         if not meaningful:
             return None, ""
-
-        sample = meaningful[: settings.WEB_SCAN_MAX_SENTENCES]
-        prompt = self.build_judge_prompt(sample)
-
-        for client, name in self._client_order():
-            raw = client.generate_json(prompt)
-            normalized = _normalize_result(raw)
-            if normalized is not None:
-                return normalized, name
-
-        return None, ""
+        return self.evaluate_batch(_select_stratified_sample(meaningful, settings.WEB_SCAN_MAX_SENTENCES))
 
     def generate_text_with_failover(
         self, prompt: str, preferred_engine: str | None = None

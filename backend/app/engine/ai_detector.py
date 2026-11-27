@@ -12,6 +12,7 @@ from app.engine.tier3_stylometric import (
     StylometricSentenceAnomaly,
 )
 from app.llm.deepseek_client import DeepSeekRouterClient
+from app.llm.funnel_judge import evaluate_funnel_parallel
 from app.llm.gateway import DualEngineLLMGateway
 from app.llm.gemini_client import GeminiFlashClient
 
@@ -75,7 +76,12 @@ class GeminiAIDetector:
         if not sentences or not original_text.strip():
             return local_res
 
-        llm_data, evaluator_name = self.gateway.evaluate_sentences(sentences)
+        stage1_hints = getattr(local_res, "stage1_hints", [])
+        priority_idx = {a.sentence_index for a in local_res.sentence_anomalies}
+        if len(sentences) > settings.WEB_SCAN_MAX_SENTENCES or stage1_hints:
+            llm_data, evaluator_name = evaluate_funnel_parallel(self.gateway, sentences, stage1_hints=stage1_hints, priority_indices=priority_idx)
+        else:
+            llm_data, evaluator_name = self.gateway.evaluate_sentences(sentences)
         if not llm_data:
             return local_res
 

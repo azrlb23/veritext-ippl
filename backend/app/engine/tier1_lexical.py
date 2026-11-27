@@ -5,7 +5,7 @@ from typing import Any
 
 from app.core.config import settings
 from app.engine.preprocessor import SentenceSpan
-from app.engine.tier1_filters import has_lexical_evidence, is_heading_or_too_short
+from app.engine.tier1_filters import has_lexical_evidence, is_heading_or_too_short, pick_best_matching_snippet
 from app.engine.tier1_hasher import compute_kgram_hashes, polynomial_hash, winnow_hashes
 
 
@@ -102,12 +102,16 @@ class WinnowingLexicalEngine:
             best_id, best_hashes = verified[0]
             best_info = source_info[best_id]
             best_ratio = len(best_hashes) / len(s_hashes)
+            best_snip = pick_best_matching_snippet(s.text, best_info["snippet"]) if best_info["snippet"] else ""
             sec = [
                 {
                     "source_title": source_info[d_id]["title"],
                     "source_category": source_info[d_id]["category"],
                     "similarity": round(min(1.0, len(hset) / len(s_hashes)), 2),
-                    "matched_source_text": source_info[d_id]["snippet"] or None,
+                    "matched_source_text": (
+                        pick_best_matching_snippet(s.text, source_info[d_id]["snippet"])
+                        if source_info[d_id]["snippet"] else None
+                    ),
                 }
                 for d_id, hset in verified[1:]
             ]
@@ -115,7 +119,7 @@ class WinnowingLexicalEngine:
                 sentence_index=s.index, matching_fingerprints=len(best_hashes), total_fingerprints=len(s_hashes),
                 similarity=round(min(1.0, best_ratio), 2), matched_corpus_doc_id=best_id,
                 matched_source_title=best_info["title"], matched_source_category=best_info["category"],
-                matched_source_snippet=best_info["snippet"] or None, secondary_sources=sec,
+                matched_source_snippet=best_snip or None, secondary_sources=sec,
             ))
             hit = corpus_hits.setdefault(best_id, {"corpus_doc_id": best_id, "title": best_info["title"], "category": best_info["category"], "match_count": 0})
             hit["match_count"] += len(best_hashes)

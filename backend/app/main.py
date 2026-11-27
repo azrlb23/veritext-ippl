@@ -6,7 +6,9 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_v1_router
 from app.core.config import settings
+from app.core.health_checks import check_system_health
 from app.core.logging_config import setup_logging
+from app.core.rate_limiter import enforce_rate_limit
 
 setup_logging()
 
@@ -59,16 +61,11 @@ app = FastAPI(
 @app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     # Enforce Swagger / OpenAPI route hiding in production environment
-    if settings.ENVIRONMENT.lower() == "production" and request.url.path in [
-        "/docs",
-        "/docs/",
-        "/redoc",
-        "/redoc/",
-        "/openapi.json",
-    ]:
+    if settings.ENVIRONMENT.lower() == "production" and request.url.path in {"/docs", "/docs/", "/redoc", "/redoc/", "/openapi.json"}:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": "Not Found"})
 
-    response = await call_next(request)
+    rate_resp = enforce_rate_limit(request)
+    response = rate_resp if rate_resp is not None else await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-XSS-Protection"] = "1; mode=block"
@@ -86,7 +83,6 @@ app.add_middleware(
 )
 
 
-
 @app.get("/", tags=["Root"])
 async def root():
     return {
@@ -98,14 +94,18 @@ async def root():
     }
 
 
-
 @app.get("/health", tags=["Health"])
 async def health_check():
-    return {
-        "status": "healthy",
+    all_ok, deps = check_system_health()
+    payload = {
+        "status": "healthy" if all_ok else "degraded",
         "app_name": settings.APP_NAME,
         "version": settings.APP_VERSION,
+        "dependencies": deps,
     }
+    if not all_ok:
+        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content=payload)
+    return payload
 
 
 # Include unified API v1 routes

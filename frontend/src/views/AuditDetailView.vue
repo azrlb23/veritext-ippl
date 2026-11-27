@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { computed, ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute } from "vue-router";
 import { auditService } from "../services/auditService";
 import { useNotification } from "../composables/useNotification";
@@ -27,6 +27,12 @@ const drawerOpen = ref(false);
 const previewOpen = ref(false);
 const previewTarget = ref<{ title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string } | null>(null);
 const openSourcePreview = (p: { title?: string; corpus_doc_id?: string; source_url?: string; focusSentence?: string }) => { previewTarget.value = p; previewOpen.value = true; };
+const forensicNotice = computed(() => {
+  const texts = annotations.value.map((a) => `${a.ai_reason || ""} ${a.reason || ""}`.toLowerCase());
+  if (texts.some((t) => /homoglyph|zero-width|manipulasi/.test(t))) return "Terdeteksi indikasi manipulasi karakter (zero-width/homoglyph) pada naskah.";
+  if (texts.some((t) => /style-shift|artefak/.test(t))) return "Terdeteksi anomali struktural AI (style-shift atau artefak format) pada naskah.";
+  return null;
+});
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 async function load(id: string) {
@@ -108,7 +114,7 @@ watch(() => route.params.id, (id) => {
       <router-link to="/riwayat" class="vt-btn-dark mt-6 inline-flex h-12 cursor-pointer items-center rounded-full px-7 text-[15px] font-semibold">Kembali ke Riwayat</router-link>
     </div>
     <div v-else class="space-y-6">
-      <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" :exporting-doc="exportingDoc" @download="download" @download-doc="downloadDoc" />
+      <ScoreHeader :title="report.document_title" :composite="report.score_composite ?? 0" :lexical="report.score_lexical" :semantic="report.score_semantic" :stylometric="report.score_stylometric" :exporting="exporting" :exporting-doc="exportingDoc" :forensic-notice="forensicNotice" @download="download" @download-doc="downloadDoc" />
       <div class="flex flex-wrap items-center justify-end gap-3">
         <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 cursor-pointer items-center gap-2 rounded-full px-6 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">
           <svg class="h-4 w-4 text-[#0F766E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
