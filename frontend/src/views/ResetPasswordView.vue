@@ -25,14 +25,21 @@ const isPasswordMismatch = computed(
 );
 
 onMounted(() => {
+  let hasSensitiveQuery = false;
   if (typeof route.query.token === "string" && route.query.token.trim()) {
     token.value = route.query.token.trim();
+    hasSensitiveQuery = true;
   }
   if (typeof route.query.email === "string" && route.query.email.trim()) {
     email.value = route.query.email.trim();
+    hasSensitiveQuery = true;
   }
   if (typeof route.query.otp === "string" && route.query.otp.trim()) {
     otp.value = route.query.otp.trim();
+    hasSensitiveQuery = true;
+  }
+  if (hasSensitiveQuery && typeof window !== "undefined") {
+    window.history.replaceState({}, "", "/reset-password");
   }
 });
 

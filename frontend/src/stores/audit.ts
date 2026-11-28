@@ -21,7 +21,10 @@ export const useAuditStore = defineStore("audit", () => {
   async function pollTaskStatus(taskId: string, onComplete?: (report: AuditReport) => void) {
     stopPolling();
     isPolling.value = true;
+    let inFlight = false;
     pollingTimer = setInterval(async () => {
+      if (inFlight) return;
+      inFlight = true;
       try {
         const task = await auditService.getStatus(taskId);
         currentTask.value = task;
@@ -42,6 +45,8 @@ export const useAuditStore = defineStore("audit", () => {
         }
       } catch {
         stopPolling();
+      } finally {
+        inFlight = false;
       }
     }, 2000);
   }

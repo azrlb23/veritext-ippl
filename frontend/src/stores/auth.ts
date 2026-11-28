@@ -4,11 +4,7 @@ import type { User } from "../types";
 import { authService, type LoginDTO, type RegisterDTO, type CompleteGoogleSignupDTO } from "../services/authService";
 import { useAuditStore } from "./audit";
 import {
-  getStoredToken,
-  getStoredUser,
-  saveStoredSession,
-  updateStoredUser,
-  clearStoredSession,
+  getStoredToken, getStoredUser, saveStoredSession, updateStoredUser, clearStoredSession,
 } from "../utils/sessionStorage";
 
 export const useAuthStore = defineStore("auth", () => {
@@ -82,6 +78,8 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  function setAccessToken(nextToken: string) { token.value = nextToken; }
+
   function clearLocalSession() {
     user.value = null;
     token.value = null;
@@ -109,7 +107,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function deleteAccount() {
     await authService.deleteAccount();
-    await logout();
+    clearLocalSession();
   }
 
   async function completeGoogleSignup(data: CompleteGoogleSignupDTO) {
@@ -143,7 +141,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   return {
     user, token, welcomeName, isLoading, isAuthenticated, role, tokenBalance, isAdmin,
-    decrementTokenBalance, setTokenBalance, login, register, logout, clearLocalSession, deleteAccount,
-    fetchProfile, completeGoogleSignup, exchangeGoogleCode, markWelcome, consumeWelcome,
+    setAccessToken, decrementTokenBalance, setTokenBalance, login, register, logout, clearLocalSession,
+    deleteAccount, fetchProfile, completeGoogleSignup, exchangeGoogleCode, markWelcome, consumeWelcome,
   };
 });

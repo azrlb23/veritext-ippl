@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from "vue";
+import { ref, computed, watch, onUnmounted } from "vue";
 import AuthAlertBanner from "./AuthAlertBanner.vue";
 import AuthField from "./AuthField.vue";
 import GoogleAuthButton from "./GoogleAuthButton.vue";
@@ -21,6 +21,7 @@ const validationError = ref("");
 const countdown = ref(props.lockoutSeconds);
 let timerInterval: ReturnType<typeof setInterval> | null = null;
 if (props.lockoutSeconds > 0) startCountdown(props.lockoutSeconds);
+watch(() => props.lockoutSeconds, (sec) => { if (sec > 0) startCountdown(sec); });
 
 function startCountdown(sec: number) {
   countdown.value = sec;

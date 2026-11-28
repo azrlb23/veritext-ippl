@@ -18,7 +18,12 @@ const lockoutSeconds = ref(0);
 
 onMounted(() => {
   if (route.query.oauth_error) {
-    errorMessage.value = decodeURIComponent(route.query.oauth_error as string);
+    const raw = String(route.query.oauth_error);
+    try {
+      errorMessage.value = decodeURIComponent(raw);
+    } catch {
+      errorMessage.value = raw;
+    }
   }
 });
 

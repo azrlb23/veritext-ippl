@@ -11,6 +11,8 @@ const { showNotification } = useNotification();
 
 const isValid = ref(false);
 const isChecking = ref(false);
+const isInvoiceMode = ref(false);
+const invoiceOrderId = ref("");
 const certDetails = ref<CertificateDetails>({
   uuid: "", title: "", examiner: "", auditDate: "",
   compositeScore: 0, lexicalScore: 0, semanticScore: 0, styloScore: 0,
@@ -18,6 +20,7 @@ const certDetails = ref<CertificateDetails>({
 
 async function handleLookup(targetUuid: string) {
   const clean = targetUuid?.trim();
+  isInvoiceMode.value = false;
   if (!clean || clean === "sample" || clean === "invalid") {
     certDetails.value.uuid = "";
     isValid.value = false;
@@ -44,7 +47,7 @@ async function handleLookup(targetUuid: string) {
     };
     if (res?.is_valid) showNotification("Sertifikat berhasil divalidasi.", "success");
     else showNotification(res?.message || "Kode sertifikat tidak ditemukan.", "error");
-    if (route.params.uuid !== clean) router.replace(`/verify/${clean}`);
+    if (route.params.uuid !== clean) router.replace(`/verify/${encodeURIComponent(clean)}`);
   } catch {
     isValid.value = false;
     certDetails.value.uuid = clean;
@@ -57,6 +60,8 @@ async function handleLookup(targetUuid: string) {
 function resetVerification() {
   certDetails.value.uuid = "";
   isValid.value = false;
+  isInvoiceMode.value = false;
+  invoiceOrderId.value = "";
   router.replace("/verify");
 }
 
@@ -79,6 +84,11 @@ onMounted(() => {
   if (p && p.trim() && p !== "sample" && p !== "invalid") void handleLookup(p);
 });
 
+watch(() => route.query, (q) => {
+  isInvoiceMode.value = q.type === "invoice";
+  invoiceOrderId.value = typeof q.order_id === "string" ? q.order_id.trim() : "";
+}, { immediate: true });
+
 watch(() => route.params.uuid, (n) => {
   if (!n) {
     certDetails.value.uuid = "";
@@ -92,12 +102,8 @@ watch(() => route.params.uuid, (n) => {
 <template>
   <div class="mx-auto max-w-[1180px] px-4 pb-16 pt-6 font-sans sm:px-6 sm:pt-9">
     <div class="mx-auto mb-7 max-w-2xl text-center animate-fade-up">
-      <h1 class="text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">
-        Pastikan sertifikat itu benar-benar asli.
-      </h1>
-      <p class="mx-auto mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#4B4757]">
-        Masukkan kode UUID dari lembar sertifikat atau pindai kode QR-nya. Hasilnya langsung tampil di sini.
-      </p>
+      <h1 class="text-[28px] font-semibold leading-[1.12] tracking-[-0.035em] text-[#14111C] sm:text-[34px]">Pastikan sertifikat itu benar-benar asli.</h1>
+      <p class="mx-auto mt-3 max-w-[520px] text-[15px] leading-[1.6] text-[#4B4757]">Masukkan kode UUID dari lembar sertifikat atau pindai kode QR-nya. Hasilnya langsung tampil di sini.</p>
     </div>
 
     <div class="animate-fade-up [animation-delay:150ms]">
@@ -116,9 +122,7 @@ watch(() => route.params.uuid, (n) => {
         </div>
       </div>
 
-      <CertificateDetailsCard v-else-if="certDetails.uuid && isValid" 
-        :details="certDetails"
-        @reset="resetVerification" @copyLink="shareValidationLink" />
+      <CertificateDetailsCard v-else-if="certDetails.uuid && isValid" :details="certDetails" @reset="resetVerification" @copyLink="shareValidationLink" />
 
       <div v-else-if="certDetails.uuid && !isValid" class="mx-auto max-w-[760px] rounded-[36px] bg-white p-8 shadow-float sm:p-10">
         <h2 class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Sertifikat tidak ditemukan</h2>
@@ -126,13 +130,16 @@ watch(() => route.params.uuid, (n) => {
           Kode <code class="rounded-[8px] bg-[#FEE2E2] px-2 py-0.5 font-mono text-[13px] text-[#991B1B]">{{ certDetails.uuid }}</code>
           tidak terdaftar atau sudah kedaluwarsa. Pastikan kode terdiri dari 36 karakter dan disalin persis dari lembar sertifikat resmi VeriText AI.
         </p>
-        <button
-          type="button"
-          @click="resetVerification"
-          class="vt-btn-dark mt-7 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold"
-        >
-          Periksa kode lain
-        </button>
+        <button type="button" @click="resetVerification" class="vt-btn-dark mt-7 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold">Periksa kode lain</button>
+      </div>
+
+      <div v-else-if="isInvoiceMode" class="mx-auto max-w-[760px] rounded-[36px] bg-white p-8 shadow-float sm:p-10">
+        <h2 class="text-[22px] font-semibold tracking-[-0.03em] text-[#14111C]">Verifikasi Invoice Pembayaran</h2>
+        <p class="mt-3 text-[15px] leading-[1.7] text-[#4B4757]">
+          Invoice <code class="rounded-[8px] bg-[#E6ECEB] px-2 py-0.5 font-mono text-[13px] text-[#0F766E]">{{ invoiceOrderId || "-" }}</code>
+          dapat diperiksa dan diunduh langsung pada menu <strong>Riwayat Tagihan / Token</strong> di akun pembeli.
+        </p>
+        <button type="button" @click="resetVerification" class="vt-btn-dark mt-7 inline-flex h-11 cursor-pointer items-center rounded-full px-6 text-[13.5px] font-semibold">Periksa sertifikat lain</button>
       </div>
 
       <VerifyHowItWorks v-else />

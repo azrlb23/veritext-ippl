@@ -18,7 +18,11 @@ onMounted(async () => {
 
   if (oauthError) {
     isProcessing.value = false;
-    errorMessage.value = decodeURIComponent(oauthError);
+    try {
+      errorMessage.value = decodeURIComponent(oauthError);
+    } catch {
+      errorMessage.value = String(oauthError);
+    }
     return;
   }
 

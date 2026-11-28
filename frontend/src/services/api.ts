@@ -4,9 +4,13 @@ import { clearStoredSession, getStoredToken, updateStoredToken } from "../utils/
 const baseURL = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
 let onAuthExpired: (() => void) | null = null;
+let onTokenRefreshed: ((token: string) => void) | null = null;
 let refreshPromise: Promise<string | null> | null = null;
 export function registerAuthExpiredHandler(handler: () => void) {
   onAuthExpired = handler;
+}
+export function registerTokenRefreshedHandler(handler: (token: string) => void) {
+  onTokenRefreshed = handler;
 }
 
 async function performSilentRefresh(): Promise<string | null> {
@@ -40,6 +44,7 @@ function clearClientSession() {
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -78,6 +83,7 @@ apiClient.interceptors.response.use(
         const newAccessToken = await performSilentRefresh();
         if (newAccessToken) {
           updateStoredToken(newAccessToken);
+          onTokenRefreshed?.(newAccessToken);
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           }
