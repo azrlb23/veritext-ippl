@@ -83,7 +83,7 @@ async def send_chat_message(
     context = await build_document_context_async(docs, payload.prompt, focus_context=focus_and_audit_ctx, audited_map=audited_map)
     task_mode, engine_pref = payload.task_mode, payload.preferred_engine
     if engine_pref == "auto" and task_mode == "QA_DOCUMENT":
-        task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs), doc_count=len(docs))
+        task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs), doc_count=len(docs), history=history)
     prompt_text = build_prompt(payload.prompt, context, history, task_mode=task_mode)
     async with ai_user_slot(current_user.id):
         ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, engine_pref)

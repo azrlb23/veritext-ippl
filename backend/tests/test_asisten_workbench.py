@@ -83,6 +83,12 @@ def test_classify_task_and_engine_routes_workbench_modes_and_preserves_existing(
     assert classify_task_and_engine("Bandingkan bagian ini dengan metode sebelumnya.", True, doc_count=1) == ("QA_DOCUMENT", "auto")
     assert classify_task_and_engine("Tolong parafrase kalimat ini agar lebih baku.", True, doc_count=1) == ("PARAPHRASE_TASK", "auto")
     assert classify_task_and_engine("Apa kesimpulan utama dari naskah ini?", True, doc_count=1) == ("QA_DOCUMENT", "auto")
+    assert classify_task_and_engine(
+        "jalankan sesuai saran anda",
+        True,
+        doc_count=1,
+        history=[("USER", "Rapikan sitasi dan daftar pustaka."), ("ASSISTANT", "Pilih IEEE atau APA.")],
+    ) == ("CITATION_ASSIST", "auto")
 
 
 def test_build_prompt_includes_mode_specific_rules_and_audit_context():
