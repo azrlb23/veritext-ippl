@@ -75,5 +75,5 @@ Dokumen ini menjadi kiblat dan acuan tunggal antarmuka VeriText AI berdasarkan i
    - Gunakan warna Deep Teal `#0F766E` untuk seluruh aksen/fokus/tautan (hilangkan sisa ungu).
    - Hilangkan eyebrow redundan dan bungkus form panjang ke grid 2 kolom (`sm:grid-cols-2`) bila memungkinkan.
    - Seluruh tombol aksi utama memakai `.vt-btn-dark`, tombol sekunder `.vt-btn-light`, dan ikon tanpa kotak pembungkus.
-2. **Halaman Dalam Lainnya (`RingkasanView`, `PeriksaView`, `RiwayatView`, `TokenView`, `AsistenView`, `AdminView`)**:
+2. **Halaman Dalam Lainnya (`RingkasanView`, `PeriksaView`, `RiwayatView`, `TokenView`, `AsistenView`, `AdminOverviewView`)**:
    - Terapkan palet Deep Teal + putih bersih + warna semantik diagnostik saja, heading hitam polos non-italic, serta kartu berborder `#E8ECEB` / `#D5ECE8` tanpa outline/pill dekoratif.

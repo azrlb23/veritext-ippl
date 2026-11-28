@@ -44,3 +44,5 @@ Pembersihan dan dekomposisi menyeluruh (*Wave 2 Atomic Sweep & Phase 7 Codebase 
    - Studio Workspace split-screen di frontend aktif dengan dukungan interaksi parafrase 3-mode dan penggantian teks naskah in-place.
 6. **Log Audit Lengkap**:
    - Rincian seluruh berkas yang dihapus dan dimodifikasi terdokumentasi pada `docs/CLEANUP_AUDIT_LOG.md`.
+7. **Audit Keamanan & Pengerasan Produksi (2026-11-28)**:
+   - Seluruh temuan 12 putaran audit keamanan (SSRF, anti-spoofing rate limit, Midtrans fail-closed, paywall/IDOR/concurrency AI, atomisitas cancel/refund, OAuth CSRF, UU PDP purge, prompt firewall, `.dockerignore`, dan migrasi indeks `0008_add_tx_ref_idx`) terdokumentasi pada `docs/SECURITY_AUDIT_REPORT.md`.

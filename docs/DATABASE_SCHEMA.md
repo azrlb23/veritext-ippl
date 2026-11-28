@@ -85,6 +85,7 @@ CREATE TABLE token_transactions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX idx_token_tx_wallet ON token_transactions(wallet_id);
+CREATE INDEX ix_token_transactions_reference_id ON token_transactions(reference_id);
 
 CREATE TABLE invoices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -265,4 +266,4 @@ CREATE INDEX idx_audit_logs_event ON audit_logs(event_type);
 2. **Isolasi Naskah Pengguna (Zero Auto-Ingestion)**:
    Tabel `documents` dan `audit_sentences` dipisahkan secara fisik dan logis dari tabel korpus `corpus_documents` dan `document_chunks`. Naskah yang dipindai tidak pernah dimasukkan ke dalam basis data korpus publik.
 3. **Pemberian Kunci Baris Transaksi Moneter**:
-   Operasi perubahan saldo dompet token pada tabel `token_wallets` dan pembaruan invoice pada tabel `invoices` wajib menyertakan klausul `SELECT ... FOR UPDATE` untuk mencegah eksploitasi saldo ganda.
+   Operasi perubahan saldo dompet token pada tabel `token_wallets`, pembaruan invoice pada tabel `invoices`, serta pembatalan/refund pada `audit_tasks` dan `password_resets` wajib menyertakan klausul `SELECT ... FOR UPDATE` (dengan urutan penguncian `AuditTask` lalu `TokenWallet` untuk mencegah *double-refund*).
