@@ -197,7 +197,7 @@ def test_worker_refund_helpers_use_for_update():
     q_wallet2 = MagicMock()
     q_wallet2.filter.return_value.with_for_update.return_value.first.return_value = wallet
     db2 = MagicMock()
-    db2.query.side_effect = [q_none2, q_wallet2]
+    db2.query.side_effect = [q_wallet2, q_none2]
     res_obj = MagicMock(web_scan_available=False, web_scan_note="off")
     handle_web_scan_refund(db2, task, res_obj, MagicMock())
     assert wallet.balance == 6

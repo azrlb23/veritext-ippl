@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 
 from app.core.config import settings
 from app.engine.language_detector import detect_language
@@ -15,20 +16,23 @@ class SemanticReranker:
 
     _model = None
     _attempted = False
+    _lock = threading.Lock()
 
     @classmethod
     def get_model(cls):
         if not settings.RERANKER_ENABLED:
             return None
         if not cls._attempted:
-            cls._attempted = True
-            try:
-                from sentence_transformers import CrossEncoder
+            with cls._lock:
+                if not cls._attempted:
+                    cls._attempted = True
+                    try:
+                        from sentence_transformers import CrossEncoder
 
-                cls._model = CrossEncoder(settings.RERANKER_MODEL, max_length=512)
-            except Exception as err:  # noqa: BLE001
-                logger.warning("Re-ranker tidak dapat dimuat, memakai skor MiniLM saja: %s", err)
-                cls._model = None
+                        cls._model = CrossEncoder(settings.RERANKER_MODEL, max_length=512)
+                    except Exception as err:  # noqa: BLE001
+                        logger.warning("Re-ranker tidak dapat dimuat, memakai skor MiniLM saja: %s", err)
+                        cls._model = None
         return cls._model
 
     @classmethod

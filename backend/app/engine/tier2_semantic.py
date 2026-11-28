@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from dataclasses import dataclass, field
 from typing import Any
 from app.core.config import settings
@@ -32,10 +33,10 @@ class SemanticAnalysisResult:
 
 class SemanticEngine:
     """Engine for sentence-level semantic vector embedding and cosine similarity comparison."""
-
     PARAPHRASE_THRESHOLD: float = 0.75
     _shared_transformer_model = None
     _shared_model_attempted = False
+    _shared_model_lock = threading.Lock()
     cosine_similarity = staticmethod(cosine_similarity)
 
     def __init__(self, dimension: int = 384, paraphrase_threshold: float = 0.75):
@@ -47,13 +48,15 @@ class SemanticEngine:
     @classmethod
     def get_shared_model(cls):
         if not cls._shared_model_attempted:
-            cls._shared_model_attempted = True
-            try:
-                from sentence_transformers import SentenceTransformer
-                cls._shared_transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
-            except Exception as e:  # noqa: BLE001
-                logger.debug("SentenceTransformer load skipped: %s", e)
-                cls._shared_transformer_model = None
+            with cls._shared_model_lock:
+                if not cls._shared_model_attempted:
+                    cls._shared_model_attempted = True
+                    try:
+                        from sentence_transformers import SentenceTransformer
+                        cls._shared_transformer_model = SentenceTransformer(settings.SENTENCE_TRANSFORMER_MODEL)
+                    except Exception as e:  # noqa: BLE001
+                        logger.debug("SentenceTransformer load skipped: %s", e)
+                        cls._shared_transformer_model = None
         return cls._shared_transformer_model
 
     def embed_sentence(self, text: str) -> list[float]:
@@ -81,12 +84,9 @@ class SemanticEngine:
     def _best_chunk(self, s_emb: list[float], corpus_chunks: list[dict[str, Any]]):
         best_sim, best_chunk = -1.0, None
         for chunk in corpus_chunks:
-            c_emb = chunk.get("embedding")
-            if c_emb is None or len(c_emb) == 0:
-                continue
-            sim = self.cosine_similarity(s_emb, c_emb)
-            if sim > best_sim:
-                best_sim, best_chunk = sim, chunk
+            if (c_emb := chunk.get("embedding")) is not None and len(c_emb) > 0:
+                if (sim := self.cosine_similarity(s_emb, c_emb)) > best_sim:
+                    best_sim, best_chunk = sim, chunk
         return best_sim, best_chunk
 
     def analyze_document(
@@ -143,6 +143,5 @@ class SemanticEngine:
             hit["match_count"] += 1
             hit["total_sim"] += best_sim
         meaningful = len([s for s in sentences if not s.is_citation])
-        has_hits = meaningful > 0 and matched_similarities
-        score_t2 = (sum(matched_similarities) / meaningful) * 100.0 if has_hits else 0.0
+        score_t2 = (sum(matched_similarities) / meaningful) * 100.0 if meaningful > 0 and matched_similarities else 0.0
         return SemanticAnalysisResult(score_t2=round(min(100.0, max(0.0, score_t2)), 2), sentence_matches=sentence_matches, corpus_contributions=corpus_hits)

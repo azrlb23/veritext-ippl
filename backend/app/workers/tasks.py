@@ -51,9 +51,15 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
         db.commit()
 
         file_path = os.path.join(settings.UPLOAD_DIR, doc.stored_filename)
-        doc_text = TextPreprocessor.extract_text_from_file(file_path, doc.mime_type) if os.path.exists(file_path) else (
-            f"Dokumen uji {doc.original_filename}. Sistem deteksi plagiarisme cerdas berbasis arsitektur hybrid leksikal dan semantik."
-        )
+        if os.path.exists(file_path):
+            doc_text = TextPreprocessor.extract_text_from_file(file_path, doc.mime_type)
+        elif settings.ENVIRONMENT.lower() != "test" and not os.getenv("PYTEST_CURRENT_TEST"):
+            raise FileNotFoundError(f"Uploaded file missing for document {document_id}")
+        else:
+            doc_text = (
+                f"Dokumen uji {doc.original_filename}. "
+                "Sistem deteksi plagiarisme cerdas berbasis arsitektur hybrid leksikal dan semantik."
+            )
         doc_text = doc_text.strip() or "Naskah dokumen tanpa konten teks yang dapat diekstraksi."
 
         sentences = TextPreprocessor.segment_sentences(doc_text)
@@ -61,7 +67,8 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
         for s in sentences:
             db.add(AuditSentence(
                 audit_task_id=task.id, sentence_index=s.index, sentence_text=s.text,
-                start_char=s.start_char, end_char=s.end_char, word_count=s.word_count, is_citation=s.is_citation,
+                start_char=s.start_char, end_char=s.end_char,
+                word_count=min(int(s.word_count or 0), 32767), is_citation=s.is_citation,
             ))
         doc.word_count = sum(s.word_count for s in sentences)
         task.progress_pct, task.current_stage = 25, "LOADING_CORPUS_INDEX"
@@ -74,7 +81,7 @@ def execute_audit_pipeline(db: Any, audit_task_id: str, document_id: str) -> dic
 
         def update_progress(pct: int, stage_text: str):
             try:
-                task.progress_pct, task.current_stage = pct, stage_text
+                task.progress_pct, task.current_stage = pct, (stage_text or "")[:100]
                 db.commit()
             except Exception as err:  # noqa: BLE001
                 logger.debug("Progress update skipped: %s", err)

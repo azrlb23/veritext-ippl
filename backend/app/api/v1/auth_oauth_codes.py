@@ -6,6 +6,7 @@ import logging
 import secrets
 import time
 from collections import OrderedDict
+from collections.abc import Mapping
 
 from fastapi import Request, Response
 
@@ -31,7 +32,7 @@ def bind_oauth_state_cookie(response: Response, state: str) -> None:
 def verify_oauth_state_cookie(request: Request | None, state: str | None) -> bool:
     """Memverifikasi kecocokan parameter state dengan cookie vt_oauth_state."""
     cookies = getattr(request, "cookies", None)
-    if not isinstance(cookies, dict) or not state:
+    if not isinstance(cookies, Mapping) or not state:
         return False
     cookie_val = cookies.get(OAUTH_STATE_COOKIE, "")
     return isinstance(cookie_val, str) and bool(cookie_val) and hmac.compare_digest(cookie_val, state)

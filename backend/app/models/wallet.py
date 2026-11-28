@@ -40,7 +40,7 @@ class TokenTransaction(Base):
     transaction_type = Column(String(50), nullable=False)
     amount = Column(Integer, nullable=False)
     balance_after = Column(Integer, nullable=False, default=0)
-    reference_id = Column(GUID(), nullable=True)
+    reference_id = Column(GUID(), nullable=True, index=True)
     note = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), index=True)
 

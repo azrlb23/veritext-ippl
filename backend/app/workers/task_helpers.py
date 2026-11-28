@@ -96,11 +96,14 @@ def handle_web_scan_refund(db: Any, task: AuditTask, result: Any, logger: Any) -
     if task.audit_depth != "FULL" or getattr(result, "web_scan_available", True) or not task.user_id:
         return
     try:
+        wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()
+        if not wallet:
+            return
         already = db.query(TokenTransaction).filter(
             TokenTransaction.reference_id == task.id,
             TokenTransaction.transaction_type.in_(["CREDIT_REFUND", "REFUND"]),
         ).first()
-        if not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()):
+        if not already:
             wallet.balance += 1
             db.add(TokenTransaction(
                 wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=1,
@@ -115,7 +118,7 @@ def handle_web_scan_refund(db: Any, task: AuditTask, result: Any, logger: Any) -
 
 def handle_audit_failure(db: Any, audit_task_id: str, exc: Exception, logger: Any) -> None:
     task = db.query(AuditTask).filter(AuditTask.id == uuid.UUID(audit_task_id)).first()
-    if not task:
+    if not task or task.status in ("CANCELLED", "SUCCESS"):
         return
     task.status, task.error_message, task.completed_at = "FAILED", str(exc), datetime.now(UTC)
     try:
@@ -127,11 +130,12 @@ def handle_audit_failure(db: Any, audit_task_id: str, exc: Exception, logger: An
 
 def clean_zombie_tasks(db: Any, threshold_minutes: int = 30) -> int:
     cutoff = datetime.now(UTC) - timedelta(minutes=threshold_minutes)
-    zombie_tasks = (
-        db.query(AuditTask)
-        .filter(AuditTask.status == "PROCESSING", or_(AuditTask.started_at < cutoff, and_(AuditTask.started_at.is_(None), AuditTask.created_at < cutoff)))
-        .all()
+    stuck_processing = and_(
+        AuditTask.status == "PROCESSING",
+        or_(AuditTask.started_at < cutoff, and_(AuditTask.started_at.is_(None), AuditTask.created_at < cutoff)),
     )
+    stuck_queued = and_(AuditTask.status == "QUEUED", AuditTask.created_at < cutoff)
+    zombie_tasks = db.query(AuditTask).filter(or_(stuck_processing, stuck_queued)).all()
     for task in zombie_tasks:
         task.status = "FAILED"
         task.error_message = f"Task execution timed out after exceeding {threshold_minutes} minutes"
