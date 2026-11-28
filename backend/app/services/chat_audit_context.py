@@ -11,6 +11,7 @@ from app.models.document import Document
 from app.services.chat_context import load_audited_sentences_map, load_focus_sentence_context
 
 _COLORS = ("RED", "ORANGE", "YELLOW", "RESOLVED_GREEN")
+_PRIORITY = {"RED": 0, "ORANGE": 1, "YELLOW": 2}
 _CITATION_KEYS = ("sitasi", "doi", "daftar pustaka")
 
 
@@ -51,10 +52,20 @@ def format_single_report_summary(filename: str, report: AuditReport) -> str:
         lines.append("- Temuan verifikasi sitasi/daftar pustaka:")
         for item in cit_annos[:5]:
             lines.append(f'  * {_clip(item.get("ai_reason") or item.get("reason") or "Anomali sitasi", 120)} | "{_clip(item.get("text_snippet"), 120)}"')
-    flagged = [a for a in annos if str(a.get("color") or "").upper() in ("RED", "ORANGE", "YELLOW")]
+    flagged = [a for a in annos if str(a.get("color") or "").upper() in _PRIORITY]
     if flagged:
-        lines.append("- Contoh kalimat terindikasi teratas:")
-        for item in flagged[:5]:
+        ranked = sorted(
+            flagged,
+            key=lambda a: (
+                _PRIORITY[str(a.get("color") or "").upper()],
+                -float(a.get("similarity") or a.get("ai_score") or 0.0),
+            ),
+        )
+        picked = ranked[:6]
+        yellows = [a for a in ranked if str(a.get("color") or "").upper() == "YELLOW" and a not in picked]
+        picked.extend(yellows[:2])
+        lines.append("- Contoh kalimat terindikasi prioritas:")
+        for item in picked[:8]:
             src = _clip(item.get("source_title") or item.get("reason") or item.get("ai_reason") or "-", 70)
             detail = _clip(item.get("reason") or item.get("ai_reason") or "", 70)
             meta = f"{src}; {detail}" if detail and detail != src else src

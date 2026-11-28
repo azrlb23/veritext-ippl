@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import ChatComposer from "../components/asisten/ChatComposer.vue";
 import MessageList from "../components/asisten/MessageList.vue";
@@ -17,16 +17,25 @@ const showList = ref(false);
 const priorityOpen = ref(false);
 const downloading = ref<"docx" | "pdf" | null>(null);
 
-onMounted(() => {
-  const doc = route.query.doc;
-  if (typeof doc === "string" && doc && !a.selectedDocs.value.includes(doc) && a.selectedDocs.value.length < 3) {
-    a.selectedDocs.value = [...a.selectedDocs.value, doc];
+watch(
+  () => [route.query.doc, route.query.sentence],
+  ([doc, sentence]) => {
+    const docId = typeof doc === "string" && doc ? doc : null;
+    const sentId = typeof sentence === "string" && sentence ? sentence : null;
+    if (!docId && !sentId) return;
+    a.activeId.value = null;
+    if (docId) a.selectedDocs.value = [docId];
+    a.focusSentenceId.value = sentId;
+  },
+  { immediate: true },
+);
+
+function attachLatestDoc() {
+  const firstId = a.documents.value[0]?.id;
+  if (firstId && !a.selectedDocs.value.includes(firstId)) {
+    a.selectedDocs.value = [firstId];
   }
-  const sentence = route.query.sentence;
-  if (typeof sentence === "string" && sentence) {
-    a.focusSentenceId.value = sentence;
-  }
-});
+}
 
 async function open(id: string | null) {
   await a.openSession(id);
@@ -87,7 +96,9 @@ async function downloadDoc(format: "docx" | "pdf") {
             <QuickActions
               :doc-count="a.selectedDocs.value.length"
               :has-focus-sentence="Boolean(a.focusSentenceId.value)"
+              :has-documents="a.documents.value.length > 0"
               @pick="({ prompt, taskMode }) => a.send(prompt, taskMode)"
+              @attach-latest="attachLatestDoc"
             />
           </div>
         </template>

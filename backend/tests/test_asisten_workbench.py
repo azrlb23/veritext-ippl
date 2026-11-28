@@ -95,3 +95,18 @@ def test_build_prompt_includes_mode_specific_rules_and_audit_context():
 
     style_prompt = build_prompt("Haluskan gaya", "Teks uji", [], task_mode="STYLE_REVIEW")
     assert "WP:AISIGNS" in style_prompt and "em-dash" in style_prompt
+
+
+def test_format_single_report_summary_prioritizes_severe_red_over_earlier_yellow():
+    yellows = [
+        {"tier": "T3", "color": "YELLOW", "similarity": 0.72, "reason": "Pola AI", "text_snippet": f"Kalimat AI ke-{i}."}
+        for i in range(6)
+    ]
+    late_red = {
+        "tier": "T1", "color": "RED", "similarity": 0.95, "source_title": "Skripsi Bab 3",
+        "reason": "Kecocokan leksikal tinggi", "text_snippet": "Kalimat plagiat berat di bab 3.",
+    }
+    report = AuditReport(score_composite=38.0, score_lexical=45.0, score_semantic=10.0, score_stylometric=35.0, heatmap_annotations=[*yellows, late_red])
+    summary = format_single_report_summary("tesis.docx", report)
+    assert "Kalimat plagiat berat di bab 3." in summary
+    assert summary.index("Kalimat plagiat berat di bab 3.") < summary.index("Kalimat AI ke-0.")
