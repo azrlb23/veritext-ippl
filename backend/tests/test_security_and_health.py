@@ -47,13 +47,21 @@ def test_match_rate_rule_mutating_vs_get():
 
 
 def test_extract_client_ip_x_forwarded_for():
-    req = _fake_request(
+    req_spoof = _fake_request(
         "POST",
         "/api/v1/auth/login",
-        headers={"X-Forwarded-For": " 203.0.113.42 , 10.0.0.1 "},
+        headers={"X-Forwarded-For": " 203.0.113.42 , 198.51.100.8 "},
         host="127.0.0.1",
     )
-    assert extract_client_ip(req) == "203.0.113.42"
+    assert extract_client_ip(req_spoof) == "198.51.100.8"
+
+    req_real = _fake_request(
+        "POST",
+        "/api/v1/auth/login",
+        headers={"X-Real-IP": "203.0.113.99", "X-Forwarded-For": "1.2.3.4, 198.51.100.8"},
+        host="127.0.0.1",
+    )
+    assert extract_client_ip(req_real) == "203.0.113.99"
 
     req_direct = _fake_request("POST", "/api/v1/auth/login", host="192.168.1.9")
     assert extract_client_ip(req_direct) == "192.168.1.9"

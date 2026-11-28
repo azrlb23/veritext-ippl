@@ -57,12 +57,11 @@ class GeminiFlashClient:
 
     def _post_model(self, model: str, payload: dict[str, Any], max_retries: int = 1) -> dict[str, Any] | None:
         url = _ENDPOINT_FMT.format(model=model)
-        headers = {"Content-Type": "application/json"}
-        params = {"key": self.api_key}
+        headers = {"Content-Type": "application/json", "x-goog-api-key": self.api_key}
         for attempt in range(max_retries + 1):
             try:
                 with httpx.Client(timeout=float(self.timeout_s)) as client:
-                    response = client.post(url, headers=headers, params=params, json=payload)
+                    response = client.post(url, headers=headers, json=payload)
                 if response.status_code == 200:
                     return response.json()
                 if response.status_code in (500, 502, 503, 504) and attempt < max_retries:
@@ -77,7 +76,7 @@ class GeminiFlashClient:
                 logger.warning("Gemini model %s network/timeout: %s", model, type(exc).__name__)
                 return None
             except (httpx.HTTPError, ValueError, TypeError, RuntimeError) as exc:
-                logger.warning("Gemini model %s error: %s", model, exc)
+                logger.warning("Gemini model %s error: %s", model, type(exc).__name__)
                 return None
         return None
 

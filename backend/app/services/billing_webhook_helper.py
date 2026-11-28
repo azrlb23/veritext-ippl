@@ -17,7 +17,16 @@ from app.schemas.billing import MidtransWebhookPayload
 
 
 def verify_midtrans_signature(payload: MidtransWebhookPayload) -> None:
-    sig_keys = [k for k in (settings.MIDTRANS_SIGNATURE_KEY, settings.MIDTRANS_SERVER_KEY) if k]
+    raw_keys = (settings.MIDTRANS_SIGNATURE_KEY, settings.MIDTRANS_SERVER_KEY)
+    if settings.ENVIRONMENT.lower() == "production":
+        sig_keys = [k for k in raw_keys if k and k.strip() and "demoserverkey" not in k.lower()]
+        if not sig_keys:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Midtrans webhook signing key not configured",
+            )
+    else:
+        sig_keys = [k for k in raw_keys if k]
     if not any(
         hmac.compare_digest(
             payload.signature_key,

@@ -17,19 +17,25 @@ RATE_RULES: tuple[tuple[str, int, int], ...] = (
     ("/api/v1/auth/forgot-password", 10, 60),
     ("/api/v1/auth/reset-password", 10, 60),
     ("/api/v1/auth/google/", 20, 60),
+    ("/api/v1/auth/refresh", 30, 60),
     ("/api/v1/documents/upload", 20, 60),
+    ("/api/v1/audits", 20, 60),
+    ("/api/v1/billing/topup", 15, 60),
     ("/api/v1/chat", 30, 60),
 )
 _MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 
 def extract_client_ip(request: Request) -> str:
-    """Safely extract client IP from X-Forwarded-For or socket client."""
+    """Safely extract client IP from X-Real-IP, rightmost X-Forwarded-For, or socket client."""
+    real_ip = request.headers.get("x-real-ip", "").strip()
+    if real_ip:
+        return real_ip
     forwarded = request.headers.get("x-forwarded-for", "")
     if forwarded:
-        first_hop = forwarded.split(",")[0].strip()
-        if first_hop:
-            return first_hop
+        rightmost_hop = forwarded.split(",")[-1].strip()
+        if rightmost_hop:
+            return rightmost_hop
     if request.client and request.client.host:
         return request.client.host
     return "unknown"

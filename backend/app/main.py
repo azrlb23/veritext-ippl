@@ -38,6 +38,10 @@ async def lifespan(app: FastAPI):
         ):
             raise RuntimeError("FATAL: Insecure SECRET_KEY detected in production environment!")
 
+        mid_key = (settings.MIDTRANS_SERVER_KEY or "").strip()
+        if not mid_key or "demoserverkey" in mid_key.lower():
+            raise RuntimeError("FATAL: Insecure MIDTRANS_SERVER_KEY detected in production environment!")
+
     yield
     # Shutdown actions
 
@@ -71,6 +75,7 @@ async def security_headers_middleware(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     return response
 
 # CORS Middleware setup
@@ -115,22 +120,17 @@ app.include_router(api_v1_router)
 # Request Validation Error Handler (HTTP 422) with sensitive data sanitization
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    errors = []
-    for err in exc.errors():
-        loc = err.get("loc", [])
-        field_name = str(loc[-1]) if loc else "unknown"
-        errors.append({
-            "field": field_name,
+    errors = [
+        {
+            "field": str(err.get("loc", [])[-1]) if err.get("loc") else "unknown",
             "message": err.get("msg", "Validation error"),
             "type": err.get("type", "value_error"),
-        })
+        }
+        for err in exc.errors()
+    ]
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={
-            "status": "error",
-            "message": "Validation Error",
-            "detail": errors,
-        },
+        content={"status": "error", "message": "Validation Error", "detail": errors},
     )
 
 

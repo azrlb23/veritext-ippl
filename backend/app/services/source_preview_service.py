@@ -9,6 +9,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.url_guard import extract_report_allowed_urls, is_safe_public_url
 from app.engine.reference_corpus import BUILTIN_REFERENCE_CORPUS
 from app.models.audit import AuditReport
 from app.models.corpus import CorpusDocument, DocumentChunk
@@ -55,15 +56,19 @@ async def _find_db_corpus(db: AsyncSession, corpus_doc_id: str | None, title: st
     return doc.title, doc.category, full_text or None
 
 
-async def _fetch_web_excerpt(source_url: str | None) -> str | None:
+async def _fetch_web_excerpt(source_url: str | None, allowed_urls: set[str] | None = None) -> str | None:
     if not source_url or not source_url.startswith(("http://", "https://")):
         return None
+    if allowed_urls is not None and source_url not in allowed_urls:
+        return None
+    if not is_safe_public_url(source_url):
+        return None
     try:
-        async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=4.0, follow_redirects=False) as client:
             resp = await client.get(source_url, headers={"User-Agent": "VeriTextAI/1.0"})
         if resp.status_code != 200 or "html" not in (resp.headers.get("content-type") or "").lower():
             return None
-        body = _NOISE_BLOCK_RE.sub(" ", resp.text)
+        body = _NOISE_BLOCK_RE.sub(" ", resp.text[:524288])
         paras = re.findall(r"<p[^>]*>(.*?)</p>", body, flags=re.IGNORECASE | re.DOTALL)
         cleaned = [" ".join(html_lib.unescape(_TAG_RE.sub(" ", p)).split()) for p in paras]
         good = [c for c in cleaned if _is_readable_prose(c)][:8]
@@ -104,44 +109,35 @@ def _fill_missing_quotes(matches: list[dict[str, Any]], full_text: str) -> None:
             m["matched_source_text"] = (best + ".")[:400]
 
 
+def _corpus_result(doc_title: str | None, category: str | None, full_text: str, matches: list[dict[str, Any]]) -> dict[str, Any]:
+    _fill_missing_quotes(matches, full_text)
+    return {
+        "title": doc_title or "Dokumen Korpus",
+        "category": category or "Bank Korpus",
+        "source_type": "corpus",
+        "source_url": None,
+        "full_text": full_text,
+        "matched_highlights": matches,
+    }
+
+
 async def build_source_preview(
     db: AsyncSession, report: AuditReport, title: str | None = None, corpus_doc_id: str | None = None, source_url: str | None = None
 ) -> dict[str, Any]:
     matches = _collect_matches(report, title, source_url)
     builtin = _find_builtin_corpus(corpus_doc_id, title)
     if builtin:
-        full_text = builtin.get("text") or ""
-        _fill_missing_quotes(matches, full_text)
-        return {
-            "title": builtin.get("title") or title or "Dokumen Korpus",
-            "category": builtin.get("category") or "Bank Korpus",
-            "source_type": "corpus",
-            "source_url": None,
-            "full_text": full_text,
-            "matched_highlights": matches,
-        }
-
+        return _corpus_result(builtin.get("title") or title, builtin.get("category"), builtin.get("text") or "", matches)
     db_title, db_cat, db_text = await _find_db_corpus(db, corpus_doc_id, title)
     if db_text:
-        _fill_missing_quotes(matches, db_text)
-        return {
-            "title": db_title or title or "Dokumen Korpus",
-            "category": db_cat or "Bank Korpus",
-            "source_type": "corpus",
-            "source_url": None,
-            "full_text": db_text,
-            "matched_highlights": matches,
-        }
-
-    snippets = [m["matched_source_text"] for m in matches if m.get("matched_source_text")]
-    unique_snippets = list(dict.fromkeys(snippets))
-    web_excerpt = await _fetch_web_excerpt(source_url)
-    combined = web_excerpt or ("\n\n".join(unique_snippets) if unique_snippets else "")
+        return _corpus_result(db_title or title, db_cat, db_text, matches)
+    unique_snippets = list(dict.fromkeys(m["matched_source_text"] for m in matches if m.get("matched_source_text")))
+    web_excerpt = await _fetch_web_excerpt(source_url, extract_report_allowed_urls(report))
     return {
         "title": title or "Sumber Pembanding",
         "category": "Sumber Internet Publik" if source_url else "Bank Korpus",
         "source_type": "web" if source_url else "corpus",
         "source_url": source_url,
-        "full_text": combined,
+        "full_text": web_excerpt or ("\n\n".join(unique_snippets) if unique_snippets else ""),
         "matched_highlights": matches,
     }

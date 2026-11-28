@@ -36,15 +36,14 @@ def call_gemini_search_api(
         "KEMBALIKAN HANYA BLOK JSON."
     )
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-    params = {"key": api_key}
-    headers = {"Content-Type": "application/json"}
+    headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
     payload = {"contents": [{"parts": [{"text": prompt}]}], "tools": [{"google_search": {}}]}
 
     max_retries = 2
     for attempt in range(max_retries + 1):
         try:
             with httpx.Client(timeout=float(timeout_s)) as client:
-                resp = client.post(url, headers=headers, params=params, json=payload)
+                resp = client.post(url, headers=headers, json=payload)
             if resp.status_code == 200:
                 data = resp.json()
                 candidates = data.get("candidates", [])
@@ -63,9 +62,9 @@ def call_gemini_search_api(
             if attempt < max_retries:
                 time.sleep(1.0 * (attempt + 1))
                 continue
-            return None, str(net_err)
+            return None, type(net_err).__name__
         except Exception as exc:  # noqa: BLE001
-            return None, str(exc)
+            return None, type(exc).__name__
     return None, "Max retries exceeded"
 
 
