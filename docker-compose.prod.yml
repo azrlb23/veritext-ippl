@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-veritext}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-veritext_secure_pass}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:-veritext_ai}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,11 +22,13 @@ services:
     image: redis:7-alpine
     container_name: veritext_redis_prod
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-VeriTextRedis2026Secure}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}"]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-VeriTextRedis2026Secure}", "ping"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -46,14 +48,22 @@ services:
       DEBUG: "False"
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
-      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
-      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+      HF_HOME: /app/.cache/huggingface
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+    command: ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"]
     volumes:
       - uploads_data:/app/uploads
+      - hf_cache:/app/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,14 +85,43 @@ services:
       DEBUG: "False"
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
-      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:-veritext_secure_pass}@postgres:5432/${POSTGRES_DB:-veritext_ai}
-      REDIS_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
-      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
-      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-VeriTextRedis2026Secure}@redis:6379/0
+      HF_HOME: /app/.cache/huggingface
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
     command: ["sh", "-c", "celery -A app.workers.celery_app worker --loglevel=info --concurrency=${CELERY_CONCURRENCY:-1}"]
     volumes:
       - uploads_data:/app/uploads
+      - hf_cache:/app/.cache/huggingface
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - veritext-network
+
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: veritext_beat_prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "False"
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      SYNC_DATABASE_URL: postgresql://${POSTGRES_USER:-veritext}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:-veritext_ai}
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379/0
+    command: ["celery", "-A", "app.workers.celery_app", "beat", "--loglevel=info"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -100,7 +139,8 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - veritext-network
 
@@ -110,6 +150,8 @@ volumes:
   redis_data:
     driver: local
   uploads_data:
+    driver: local
+  hf_cache:
     driver: local
 
 networks:

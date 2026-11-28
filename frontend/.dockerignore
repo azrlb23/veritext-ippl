@@ -1,0 +1,39 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python caches and virtual environments
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+**/.ruff_cache/
+.mypy_cache/
+**/.mypy_cache/
+venv/
+**/venv/
+.venv/
+**/.venv/
+
+# Runtime data and logs
+uploads/
+**/uploads/
+logs/
+**/logs/
+
+# Frontend build artifacts and dependencies
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+
+# VCS and tests
+.git/
+.gitignore
+backend/tests/
+tests/
