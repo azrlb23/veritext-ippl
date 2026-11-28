@@ -74,13 +74,17 @@ def load_corpus_indexes(
 def _refund_audit_debit(db: Any, task: Any, note: str) -> None:
     if not task.user_id:
         return
+    db.query(AuditTask).filter(AuditTask.id == task.id).with_for_update().first()
+    wallet = db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()
+    if not wallet:
+        return
     debit = db.query(TokenTransaction).filter(
         TokenTransaction.reference_id == task.id, TokenTransaction.transaction_type == "DEBIT_AUDIT"
     ).first()
     already = db.query(TokenTransaction).filter(
         TokenTransaction.reference_id == task.id, TokenTransaction.transaction_type == "CREDIT_REFUND"
     ).first()
-    if debit and not already and (wallet := db.query(TokenWallet).filter(TokenWallet.user_id == task.user_id).with_for_update().first()):
+    if debit and not already:
         wallet.balance += abs(debit.amount)
         db.add(TokenTransaction(
             wallet_id=wallet.id, transaction_type="CREDIT_REFUND", amount=abs(debit.amount),

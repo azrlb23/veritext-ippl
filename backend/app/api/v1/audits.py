@@ -2,7 +2,7 @@ import csv
 import io
 import uuid
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +15,7 @@ from app.models.user import User
 from app.schemas.audit import AuditStartRequest, AuditTaskStatusResponse
 from app.schemas.common import APIResponse, PaginatedData
 from app.services.audit_service import AuditService
+from app.services.upload_limits import enforce_active_audit_limit, enforce_rate_limit
 
 router = APIRouter(prefix="/audits", tags=["Audits"])
 
@@ -25,24 +26,16 @@ async def start_audit(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    await enforce_rate_limit(current_user.id, "upload")
+    await enforce_active_audit_limit(db, current_user.id)
     task = await AuditService.create_audit_task(db, current_user.id, req, user_role=current_user.role)
-    return APIResponse(
-        message="Audit task created and queued for processing",
-        data=AuditTaskStatusResponse.model_validate(task),
-    )
+    return APIResponse(message="Audit task created and queued for processing", data=AuditTaskStatusResponse.model_validate(task))
 
 
 @router.get("/{task_id}/status", response_model=APIResponse[AuditTaskStatusResponse])
-async def get_audit_status(
-    task_id: uuid.UUID,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-):
+async def get_audit_status(task_id: uuid.UUID, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     task = await AuditService.get_task_status(db, task_id, current_user.id)
-    return APIResponse(
-        message="Audit status retrieved",
-        data=AuditTaskStatusResponse.model_validate(task),
-    )
+    return APIResponse(message="Audit status retrieved", data=AuditTaskStatusResponse.model_validate(task))
 
 
 @router.post("/{task_id}/cancel", response_model=APIResponse[dict])
@@ -80,15 +73,9 @@ async def _get_audit_tasks_paginated(
     items = (await db.execute(query)).scalars().all()
 
     pages = (total + limit - 1) // limit if total > 0 else 1
-
-    task_responses = [AuditTaskStatusResponse.model_validate(x) for x in items]
-
     return PaginatedData(
-        items=task_responses,
-        total=total,
-        page=page,
-        limit=limit,
-        pages=pages,
+        items=[AuditTaskStatusResponse.model_validate(x) for x in items],
+        total=total, page=page, limit=limit, pages=pages,
     )
 
 
@@ -134,17 +121,14 @@ async def export_audit_history_csv(
 
     for item in items:
         writer.writerow([
-            sanitize_csv_formula(str(item.id)),
-            sanitize_csv_formula(str(item.document_id)),
-            sanitize_csv_formula(item.audit_depth),
-            sanitize_csv_formula(item.status),
+            sanitize_csv_formula(str(item.id)), sanitize_csv_formula(str(item.document_id)),
+            sanitize_csv_formula(item.audit_depth), sanitize_csv_formula(item.status),
             sanitize_csv_formula(item.progress_pct),
             sanitize_csv_formula(item.started_at.isoformat() if item.started_at else ""),
             sanitize_csv_formula(item.completed_at.isoformat() if item.completed_at else ""),
         ])
 
     return Response(
-        content=output.getvalue(),
-        media_type="text/csv",
+        content=output.getvalue(), media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="veritext_audit_history.csv"'},
     )

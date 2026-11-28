@@ -18,6 +18,7 @@ from app.schemas.chat import (
     ChatMessageResponse, ParaphraseRequest, ParaphraseResponse, ParaphraseVariation,
 )
 from app.schemas.common import APIResponse
+from app.services.ai_concurrency import ai_user_slot
 from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
 from app.services.audit_log_helper import record_token_debit
 from app.services.chat_audit_context import load_chat_audit_bundle
@@ -75,6 +76,8 @@ async def send_chat_message(
 ):
     AssistantService.check_academic_guardrail(payload.prompt)
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode="CHAT")
+    if payload.sentence_id is not None:
+        await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     session, docs, history = await _resolve_session(db, current_user.id, payload)
     focus_and_audit_ctx, audited_map = await load_chat_audit_bundle(db, current_user.id, docs, payload.sentence_id)
     context = await build_document_context_async(docs, payload.prompt, focus_context=focus_and_audit_ctx, audited_map=audited_map)
@@ -82,7 +85,8 @@ async def send_chat_message(
     if engine_pref == "auto" and task_mode == "QA_DOCUMENT":
         task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs), doc_count=len(docs))
     prompt_text = build_prompt(payload.prompt, context, history, task_mode=task_mode)
-    ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, engine_pref)
+    async with ai_user_slot(current_user.id):
+        ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, engine_pref)
     if not ai_text:
         await db.rollback()
         raise HTTPException(status_code=503, detail=AI_UNAVAILABLE)
@@ -102,10 +106,8 @@ async def send_chat_message(
 
 
 async def _get_owned_sentence(db: AsyncSession, sentence_id, user_id) -> AuditSentence:
-    stmt = (
-        select(AuditSentence)
-        .join(AuditTask, AuditSentence.audit_task_id == AuditTask.id)
-        .where(AuditSentence.id == sentence_id, AuditTask.user_id == user_id)
+    stmt = select(AuditSentence).join(AuditTask, AuditSentence.audit_task_id == AuditTask.id).where(
+        AuditSentence.id == sentence_id, AuditTask.user_id == user_id
     )
     sentence = (await db.execute(stmt)).scalar_one_or_none()
     if not sentence:
@@ -121,9 +123,11 @@ async def paraphrase_sentence(
 ):
     sentence = await _get_owned_sentence(db, payload.sentence_id, current_user.id)
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode=payload.mode)
-
     scope_text = await resolve_paraphrase_scope_text(db, sentence, payload.mode)
-    variations, active_engine = await asyncio.to_thread(AssistantService.generate_paraphrase_variations, scope_text, mode=payload.mode, preferred_engine=payload.preferred_engine)
+    async with ai_user_slot(current_user.id):
+        variations, active_engine = await asyncio.to_thread(
+            AssistantService.generate_paraphrase_variations, scope_text, mode=payload.mode, preferred_engine=payload.preferred_engine
+        )
     await _charge_ai_usage(db, current_user, payload.mode, "AUDIT_SENTENCE", sentence.id, f"Paraphrase {payload.mode} token debit")
     await db.commit()
     return APIResponse(data=ParaphraseResponse(sentence_id=payload.sentence_id, mode=payload.mode, variations=[ParaphraseVariation(**v) for v in variations], active_engine=active_engine))

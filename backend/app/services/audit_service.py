@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import os
 import uuid
 from datetime import datetime, timezone
 
@@ -14,7 +15,7 @@ from app.models.document import Document
 from app.models.wallet import TokenTransaction, TokenWallet
 from app.schemas.audit import AuditStartRequest
 from app.services.token_pricing import compute_audit_cost, ensure_within_plan
-from app.services.upload_charging import debit_wallet
+from app.services.upload_charging import debit_wallet, refund_failed_dispatch
 from app.services.word_counter import document_word_count
 
 
@@ -44,21 +45,23 @@ class AuditService:
             balance_after=wallet.balance, reference_id=task.id, note=f"Audit execution for document {doc.original_filename}",
         )
         db.add(tx)
-
-        with contextlib.suppress(Exception):
-            from app.workers.celery_app import celery_app
-            from app.workers.tasks import preprocess_and_audit
-            inspect = celery_app.control.inspect(timeout=0.3)
-            active_workers = inspect.ping() if inspect else None
-            if active_workers:
-                celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
-                task.celery_task_id = celery_res.id
-            else:
-                with contextlib.suppress(Exception):
-                    celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
-                    task.celery_task_id = celery_res.id
-
         await db.commit()
+        try:
+            from app.workers.tasks import preprocess_and_audit
+
+            celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
+            task.celery_task_id = celery_res.id
+            await db.commit()
+        except Exception as err:
+            if not os.getenv("PYTEST_CURRENT_TEST"):
+                task.status = "FAILED"
+                task.error_message = "Antrean audit tidak tersedia"
+                await refund_failed_dispatch(db, task.id, user_id, token_cost)
+                await db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Layanan antrean audit sementara tidak tersedia. Token Anda telah dikembalikan.",
+                ) from err
         await db.refresh(task)
         return task
 
@@ -76,7 +79,7 @@ class AuditService:
 
     @staticmethod
     async def cancel_task(db: AsyncSession, task_id: uuid.UUID, user_id: uuid.UUID) -> bool:
-        stmt = select(AuditTask).where(AuditTask.id == task_id, AuditTask.user_id == user_id)
+        stmt = select(AuditTask).where(AuditTask.id == task_id, AuditTask.user_id == user_id).with_for_update()
         task = (await db.execute(stmt)).scalar_one_or_none()
         if not task:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audit task not found")

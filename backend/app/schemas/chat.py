@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Annotated, Literal, Optional
 import uuid
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+
+
+def _norm_mode(value: object) -> object:
+    return value.strip().upper() if isinstance(value, str) else value
+
+
+ParaphraseMode = Annotated[Literal["SENTENCE", "PARAGRAPH", "FULL_PAGE"], BeforeValidator(_norm_mode)]
 
 
 class ChatMessageRequest(BaseModel):
@@ -48,7 +55,7 @@ class ParaphraseVariation(BaseModel):
 
 class ParaphraseRequest(BaseModel):
     sentence_id: uuid.UUID
-    mode: str = "SENTENCE"
+    mode: ParaphraseMode = "SENTENCE"
     preferred_engine: str = "auto"
 
 
@@ -63,8 +70,8 @@ class ParaphraseResponse(BaseModel):
 
 class ApplyParaphraseRequest(BaseModel):
     sentence_id: uuid.UUID
-    selected_text: str
-    mode: str = Field(default="SENTENCE")
+    selected_text: str = Field(..., min_length=3, max_length=15000)
+    mode: ParaphraseMode = Field(default="SENTENCE")
 
 
 class ApplyParaphraseResponse(BaseModel):

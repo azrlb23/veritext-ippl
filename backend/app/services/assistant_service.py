@@ -15,7 +15,6 @@ from app.services.paraphrase_helper import apply_paraphrase_update
 from app.services.paraphrase_prompt import build_paraphrase_prompt, score_paraphrase_variations
 
 logger = logging.getLogger(__name__)
-_PARAPHRASE_MODES = ("SENTENCE", "PARAGRAPH", "FULL_PAGE")
 _PREMIUM_DETAIL = "PREMIUM_REQUIRED: Fitur parafrase hanya tersedia untuk akun Premium."
 _TRIAL_DETAIL = "CHAT_002: Batas kuota Trial AI Chatbot/Parafrase (3x) untuk Free User telah habis."
 _TOKEN_DETAIL = "AUDIT_001: Saldo token tidak mencukupi."
@@ -41,9 +40,9 @@ class AssistantService:
 
     @classmethod
     def check_ai_quota_available(cls, user: User, wallet: TokenWallet | None, mode: str = "CHAT") -> None:
-        mode_upper = (mode or "CHAT").upper()
+        mode_upper = (mode or "CHAT").strip().upper()
         role = str(getattr(user, "role", "FREE") or "FREE").upper()
-        if mode_upper in _PARAPHRASE_MODES and role == "FREE":
+        if mode_upper != "CHAT" and role == "FREE":
             raise HTTPException(status_code=403, detail=_PREMIUM_DETAIL)
         if ((wallet.ai_trial_remaining or 0) if wallet else 0) > 0:
             return
@@ -56,9 +55,9 @@ class AssistantService:
 
     @classmethod
     def consume_ai_quota(cls, user: User, wallet: TokenWallet, mode: str = "CHAT") -> tuple[int, int, int, bool]:
-        mode_upper = (mode or "CHAT").upper()
+        mode_upper = (mode or "CHAT").strip().upper()
         role = str(getattr(user, "role", "FREE") or "FREE").upper()
-        if mode_upper in _PARAPHRASE_MODES and role == "FREE":
+        if mode_upper != "CHAT" and role == "FREE":
             raise HTTPException(status_code=403, detail=_PREMIUM_DETAIL)
         trial, balance, allowance = wallet.ai_trial_remaining or 0, wallet.balance or 0, wallet.ai_chat_allowance_remaining or 0
         if trial > 0:

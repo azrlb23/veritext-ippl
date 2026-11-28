@@ -457,6 +457,9 @@ class TestRemediationPhase4(unittest.IsolatedAsyncioTestCase):
                         self._conds.extend(conds)
                         return self
 
+                    def with_for_update(self):
+                        return self
+
                     def all(self):
                         if model == AuditTask:
                             # Mengembalikan task zombie (PROCESSING > 30 menit)

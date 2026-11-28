@@ -13,10 +13,10 @@ from app.models.audit import AuditTask
 from app.models.audit_log import AuditLog
 from app.models.chat import ChatSession, ChatSessionDocument
 from app.models.document import Document
-from app.models.wallet import TokenTransaction, TokenWallet
+from app.models.wallet import TokenTransaction
 from app.services.audit_log_helper import record_token_debit
 from app.services.document_validator import validate_file, write_upload_stream
-from app.services.upload_charging import debit_wallet, remove_stored_file, stage_upload
+from app.services.upload_charging import debit_wallet, refund_failed_dispatch, remove_stored_file, stage_upload
 
 
 class DocumentService:
@@ -78,27 +78,30 @@ class DocumentService:
             balance_after=wallet.balance, reference_id=task.id, note=f"Audit execution for document {doc.original_filename}",
         )
         db.add(tx)
-        db.add(
-            AuditLog(
-                actor_id=user_id,
-                action_type="AUDIT_SUBMIT",
-                resource_type="DOCUMENT",
-                resource_id=doc.id,
-                action_result="SUCCESS",
-                meta_data={"task_id": str(task.id), "filename": doc.original_filename, "token_cost": token_cost},
-            )
-        )
+        db.add(AuditLog(
+            actor_id=user_id, action_type="AUDIT_SUBMIT", resource_type="DOCUMENT", resource_id=doc.id,
+            action_result="SUCCESS", meta_data={"task_id": str(task.id), "filename": doc.original_filename, "token_cost": token_cost},
+        ))
         record_token_debit(db, user_id, "DOCUMENT", doc.id, token_cost, f"Audit {doc.original_filename}")
 
         # Commit dulu agar worker menemukan baris tugas; mengirim ke antrean sebelum commit membuat worker gagal ("Task not found").
         await db.commit()
-        with contextlib.suppress(Exception):
-            from app.workers.celery_app import celery_app
+        try:
             from app.workers.tasks import preprocess_and_audit
 
             celery_res = preprocess_and_audit.delay(str(task.id), str(doc.id))
             task.celery_task_id = celery_res.id
             await db.commit()
+        except Exception as err:
+            if not os.getenv("PYTEST_CURRENT_TEST"):
+                task.status = "FAILED"
+                task.error_message = "Antrean audit tidak tersedia"
+                await refund_failed_dispatch(db, task.id, user_id, token_cost)
+                await db.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Layanan antrean audit sementara tidak tersedia. Token Anda telah dikembalikan.",
+                ) from err
         await db.refresh(doc)
         await db.refresh(task)
         return doc, task
@@ -132,14 +135,8 @@ class DocumentService:
         linked = select(ChatSessionDocument.session_id).where(ChatSessionDocument.document_id == doc.id)
         await db.execute(delete(ChatSession).where(or_(ChatSession.id.in_(linked), ChatSession.document_id == doc.id)))
         await db.execute(delete(Document).where(Document.id == doc.id))
-        db.add(
-            AuditLog(
-                actor_id=doc.user_id,
-                action_type="DOCUMENT_PURGE",
-                resource_type="DOCUMENT",
-                resource_id=doc.id,
-                action_result="SUCCESS",
-                meta_data={"filename": doc.original_filename},
-            )
-        )
+        db.add(AuditLog(
+            actor_id=doc.user_id, action_type="DOCUMENT_PURGE", resource_type="DOCUMENT",
+            resource_id=doc.id, action_result="SUCCESS", meta_data={"filename": doc.original_filename},
+        ))
         await db.commit()

@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models.wallet import TokenWallet
+from app.models.wallet import TokenTransaction, TokenWallet
 from app.services.document_validator import write_upload_stream
 from app.services.token_pricing import FREE_MAX_WORDS, compute_audit_cost, ensure_minimum_words, ensure_within_plan, exceeds_plan_limit
 from app.services.upload_content import verify_content
@@ -57,6 +57,38 @@ async def debit_wallet(db: AsyncSession, user_id, cost: int) -> TokenWallet:
         )
     wallet.balance -= cost
     return wallet
+
+
+async def refund_failed_dispatch(
+    db: AsyncSession, task_id, user_id, token_cost: int, reason: str = "Antrean audit tidak tersedia"
+) -> None:
+    """Mengunci dompet dan mengembalikan token secara idempoten jika dispatch Celery gagal."""
+    if token_cost <= 0:
+        return
+    wallet = (await db.execute(select(TokenWallet).where(TokenWallet.user_id == user_id).with_for_update())).scalar_one_or_none()
+    if not wallet:
+        return
+    already = (
+        await db.execute(
+            select(TokenTransaction).where(
+                TokenTransaction.reference_id == task_id,
+                TokenTransaction.transaction_type == "CREDIT_REFUND",
+            )
+        )
+    ).scalar_one_or_none()
+    if already:
+        return
+    wallet.balance += token_cost
+    db.add(
+        TokenTransaction(
+            wallet_id=wallet.id,
+            transaction_type="CREDIT_REFUND",
+            amount=token_cost,
+            balance_after=wallet.balance,
+            reference_id=task_id,
+            note=f"Pengembalian otomatis: {reason}",
+        )
+    )
 
 
 async def estimate_upload(file: UploadFile, user_role: str | None) -> dict:
