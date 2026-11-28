@@ -70,11 +70,15 @@ class TestAuthAccountUpgrades(unittest.IsolatedAsyncioTestCase):
         info_resp = MagicMock(status_code=200)
         info_resp.json.return_value = {"email": "reset@kampus.ac.id", "name": "Reset User", "verified_email": True}
 
+        reset_state = create_oauth_state("reset")
+        mock_req = MagicMock()
+        mock_req.cookies = {"vt_oauth_state": reset_state}
         with patch("httpx.AsyncClient.post", return_value=token_resp), patch("httpx.AsyncClient.get", return_value=info_resp):
-            resp = await auth_router.google_callback(code="c", state=create_oauth_state("reset"), request=MagicMock(), db=db)
+            resp = await auth_router.google_callback(code="c", state=reset_state, request=mock_req, db=db)
 
         self.assertEqual(resp.status_code, status.HTTP_307_TEMPORARY_REDIRECT)
         self.assertIn("/reset-password?token=", resp.headers.get("Location", ""))
+        self.assertTrue(any("update" in str(s).lower() and "password_resets" in str(s).lower() for s in db.executed))
         self.assertEqual(len([x for x in db.added if isinstance(x, PasswordReset)]), 1)
         self.assertTrue(db.committed)
 
@@ -132,4 +136,5 @@ class TestAuthAccountUpgrades(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(res.message, "Semua sesi perangkat telah diakhiri.")
         self.assertTrue(db.committed)
         self.assertEqual(len(db.executed), 1)
-        mock_resp.delete_cookie.assert_called_once_with(key="refresh_token")
+        mock_resp.delete_cookie.assert_called_once()
+        self.assertEqual(mock_resp.delete_cookie.call_args.kwargs.get("key"), "refresh_token")

@@ -4,6 +4,7 @@ from typing import Optional
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.url_guard import escape_ilike
 from app.models.audit import AuditTask
 from app.models.user import User
 from app.models.wallet import TokenWallet
@@ -41,8 +42,8 @@ async def list_users(
 
     filters = []
     if q and q.strip():
-        pattern = f"%{q.strip()}%"
-        filters.append(or_(User.email.ilike(pattern), User.full_name.ilike(pattern)))
+        pattern = f"%{escape_ilike(q.strip())}%"
+        filters.append(or_(User.email.ilike(pattern, escape="\\"), User.full_name.ilike(pattern, escape="\\")))
     if role and role.strip() and role.strip().upper() != "ALL":
         filters.append(User.role == role.strip().upper())
 

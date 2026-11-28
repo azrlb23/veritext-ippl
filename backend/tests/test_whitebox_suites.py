@@ -210,7 +210,9 @@ class TestWhiteboxFeature1Auth(unittest.IsolatedAsyncioTestCase):
         res = await auth_router.logout(response=mock_response, refresh_token="dummy-refresh", current_user=user, db=mock_db)
         self.assertIn(sess, mock_db.deleted)
         self.assertTrue(mock_db.committed)
-        mock_response.delete_cookie.assert_called_with(key="refresh_token")
+        mock_response.delete_cookie.assert_called_with(
+            key="refresh_token", httponly=True, samesite="lax", secure=False, path="/"
+        )
 
     async def test_tc_auth_005_update_user_profile_happy_path(self):
         """TC-AUTH-005 [Happy Ending]: Pengguna memperbarui nama lengkap profil."""

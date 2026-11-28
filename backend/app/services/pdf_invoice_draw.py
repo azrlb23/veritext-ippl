@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import io
 from typing import Any
 
@@ -80,12 +81,13 @@ def build_qr_table(verify_url: str, invoice_id: str, safe_order_id: str, body_st
     qr_buf.seek(0)
     qr_flowable = Image(qr_buf, width=72, height=72)
 
+    safe_verify_url = html.escape(verify_url)
     qr_text = [
         Paragraph("<b>VERIFIKASI KEASLIAN DIGITAL DENGAN KODE QR</b>", ParagraphStyle("InvQrH", parent=styles["Normal"], fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=colors.HexColor("#171717"))),
         Spacer(1, 2),
         Paragraph("Pindai kode QR atau buka tautan di bawah ini untuk mengonfirmasi keabsahan status pembayaran invoice ini secara real-time langsung ke server basis data:", body_style),
         Spacer(1, 2),
-        Paragraph(f"<font color='#2563EB'><u>{verify_url}</u></font>", body_bold),
+        Paragraph(f"<font color='#2563EB'><u>{safe_verify_url}</u></font>", body_bold),
         Spacer(1, 2),
         Paragraph(f"<font color='#737373'>Invoice ID: <b>{invoice_id}</b> | Order ID: <b>{safe_order_id}</b></font>", ParagraphStyle("InvHsh", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10)),
     ]

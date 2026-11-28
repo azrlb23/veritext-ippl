@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.core.security import sanitize_csv_formula
+from app.core.url_guard import escape_ilike
 from app.models.audit import AuditTask
 from app.models.document import Document
 from app.models.user import User
@@ -63,7 +64,7 @@ async def _get_audit_tasks_paginated(
     )
     count_stmt = select(func.count(AuditTask.id)).where(AuditTask.user_id == user_id)
     if search:
-        search_filter = Document.original_filename.ilike(f"%{search}%")
+        search_filter = Document.original_filename.ilike(f"%{escape_ilike(search)}%", escape="\\")
         query = query.join(Document, AuditTask.document_id == Document.id).where(search_filter)
         count_stmt = count_stmt.join(Document, AuditTask.document_id == Document.id).where(search_filter)
 
@@ -83,7 +84,7 @@ async def _get_audit_tasks_paginated(
 async def list_audit_tasks(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    search: Optional[str] = Query(None, description="Search by document original filename"),
+    search: Optional[str] = Query(None, max_length=100, description="Search by document original filename"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -95,7 +96,7 @@ async def list_audit_tasks(
 async def audit_history(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    search: Optional[str] = Query(None, description="Search by document original filename"),
+    search: Optional[str] = Query(None, max_length=100, description="Search by document original filename"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -112,6 +113,7 @@ async def export_audit_history_csv(
         select(AuditTask)
         .where(AuditTask.user_id == current_user.id)
         .order_by(AuditTask.created_at.desc())
+        .limit(5000)
     )
     items = (await db.execute(stmt)).scalars().all()
 

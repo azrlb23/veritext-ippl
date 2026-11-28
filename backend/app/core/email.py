@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -17,24 +18,31 @@ def send_password_reset_email(
     otp_code: str | None = None,
 ) -> bool:
     """Mengirim email pemulihan kata sandi melalui SMTP atau simulasi dev logging."""
-    otp_log = f"Kode OTP: {otp_code}\n" if otp_code else ""
-    logger.info(f"[EMAIL DISPATCH] Pemulihan kata sandi untuk {to_email} (OTP: {otp_code or '-'}): {reset_url}")
-    print(
-        f"\n======================================================\n"
-        f"[VERITEXT AI - TAUTAN RESET KATA SANDI]\n"
-        f"Kepada: {to_email}\n"
-        f"{otp_log}"
-        f"Tautan: {reset_url}\n"
-        f"(Berlaku selama 1 jam)\n"
-        f"======================================================\n",
-        flush=True,
-    )
+    if settings.ENVIRONMENT.lower() != "production":
+        otp_log = f"Kode OTP: {otp_code}\n" if otp_code else ""
+        logger.info(f"[EMAIL DISPATCH] Pemulihan kata sandi untuk {to_email} (OTP: {otp_code or '-'}): {reset_url}")
+        print(
+            f"\n======================================================\n"
+            f"[VERITEXT AI - TAUTAN RESET KATA SANDI]\n"
+            f"Kepada: {to_email}\n"
+            f"{otp_log}"
+            f"Tautan: {reset_url}\n"
+            f"(Berlaku selama 1 jam)\n"
+            f"======================================================\n",
+            flush=True,
+        )
+    else:
+        logger.info("Dispatching password reset email to %s", to_email)
 
     if not settings.SMTP_HOST or not settings.SMTP_HOST.strip():
         logger.info("SMTP_HOST tidak dikonfigurasi. Tautan reset password tercatat di server log untuk keperluan pengembangan.")
         return False
 
     try:
+        safe_name = html.escape(str(user_name or "Pengguna VeriText"))
+        safe_url = html.escape(str(reset_url))
+        safe_otp = html.escape(str(otp_code)) if otp_code else ""
+
         msg = MIMEMultipart("alternative")
         msg["Subject"] = "VeriText AI - Pemulihan Kata Sandi Akun"
         msg["From"] = f"{settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>"
@@ -43,9 +51,9 @@ def send_password_reset_email(
         otp_block = (
             f'<div style="background:#EBF8F6;border:1px solid #99F6E4;border-radius:12px;padding:16px;text-align:center;margin:16px 0;">'
             f'<div style="font-size:11px;font-weight:700;color:#0F766E;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Kode Verifikasi OTP</div>'
-            f'<div style="font-size:28px;font-weight:800;letter-spacing:6px;color:#0B0F19;font-family:monospace;">{otp_code}</div>'
+            f'<div style="font-size:28px;font-weight:800;letter-spacing:6px;color:#0B0F19;font-family:monospace;">{safe_otp}</div>'
             f'</div>'
-            if otp_code
+            if safe_otp
             else ""
         )
 
@@ -68,13 +76,13 @@ def send_password_reset_email(
           <div class="container">
             <div class="badge">Keamanan Akun</div>
             <h2>Permintaan Reset Kata Sandi</h2>
-            <p>Halo <strong>{user_name}</strong>,</p>
+            <p>Halo <strong>{safe_name}</strong>,</p>
             <p>Kami menerima permintaan untuk menyetel ulang kata sandi akun VeriText AI Anda. Gunakan kode OTP atau klik tombol di bawah ini untuk membuat kata sandi baru (berlaku selama 1 jam):</p>
             {otp_block}
             <div style="text-align: center;">
-              <a href="{reset_url}" class="btn">Setel Ulang Kata Sandi Saya</a>
+              <a href="{safe_url}" class="btn">Setel Ulang Kata Sandi Saya</a>
             </div>
-            <p style="font-size: 12px; color: #5B6475;">Atau salin tautan berikut ke peramban web Anda:<br><a href="{reset_url}" style="color: #0F766E; word-break: break-all;">{reset_url}</a></p>
+            <p style="font-size: 12px; color: #5B6475;">Atau salin tautan berikut ke peramban web Anda:<br><a href="{safe_url}" style="color: #0F766E; word-break: break-all;">{safe_url}</a></p>
             <div class="notice">
               Jika Anda tidak merasa mengajukan permintaan ini, abaikan email ini. Kata sandi Anda akan tetap aman dan tidak berubah.
             </div>

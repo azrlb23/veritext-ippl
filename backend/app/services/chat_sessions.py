@@ -43,16 +43,36 @@ async def recent_history(db: AsyncSession, session_id, limit: int = 6) -> list[t
 
 async def list_sessions(db: AsyncSession, user_id) -> list[dict]:
     sessions = (await db.execute(
-        select(ChatSession).where(ChatSession.user_id == user_id, ChatSession.is_active.is_(True)).order_by(ChatSession.updated_at.desc())
+        select(ChatSession).where(ChatSession.user_id == user_id, ChatSession.is_active.is_(True))
+        .order_by(ChatSession.updated_at.desc()).limit(50)
     )).scalars().all()
-    items = []
-    for s in sessions:
-        count = (await db.execute(select(func.count()).select_from(ChatMessage).where(ChatMessage.session_id == s.id))).scalar() or 0
-        last = (await db.execute(
-            select(ChatMessage.content).where(ChatMessage.session_id == s.id).order_by(ChatMessage.created_at.desc()).limit(1)
-        )).scalar_one_or_none()
-        items.append({
-            "id": s.id, "title": s.title, "document_ids": await session_document_ids(db, s.id),
-            "last_message": (last or "")[:160] or None, "message_count": count, "updated_at": s.updated_at,
-        })
-    return items
+    if not sessions:
+        return []
+
+    sids = [s.id for s in sessions]
+    doc_rows = (await db.execute(select(ChatSessionDocument.session_id, ChatSessionDocument.document_id).where(ChatSessionDocument.session_id.in_(sids)))).all()
+    docs_map: dict = {sid: [] for sid in sids}
+    for sid, doc_id in doc_rows:
+        docs_map[sid].append(doc_id)
+
+    stats_sq = (
+        select(ChatMessage.session_id.label("sid"), func.count(ChatMessage.id).label("cnt"), func.max(ChatMessage.created_at).label("max_ts"))
+        .where(ChatMessage.session_id.in_(sids)).group_by(ChatMessage.session_id).subquery()
+    )
+    counts = {sid: int(cnt or 0) for sid, cnt in (await db.execute(select(stats_sq.c.sid, stats_sq.c.cnt))).all()}
+    last_msg: dict = {}
+    if counts:
+        latest_rows = (await db.execute(
+            select(ChatMessage.session_id, ChatMessage.content)
+            .join(stats_sq, (ChatMessage.session_id == stats_sq.c.sid) & (ChatMessage.created_at == stats_sq.c.max_ts))
+        )).all()
+        last_msg = {sid: content for sid, content in latest_rows}
+
+    return [
+        {
+            "id": s.id, "title": s.title, "document_ids": docs_map.get(s.id, []),
+            "last_message": (last_msg.get(s.id) or "")[:160] or None,
+            "message_count": counts.get(s.id, 0), "updated_at": s.updated_at,
+        }
+        for s in sessions
+    ]

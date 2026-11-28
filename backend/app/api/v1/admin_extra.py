@@ -20,7 +20,7 @@ router = APIRouter(
 
 @router.get("/users", response_model=APIResponse[PaginatedData[AdminUserItem]])
 async def get_admin_users(
-    q: Optional[str] = Query(None),
+    q: Optional[str] = Query(None, max_length=100),
     role: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),

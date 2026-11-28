@@ -8,6 +8,10 @@ from urllib.parse import urlparse
 _BLOCKED_SUFFIXES = (".localhost", ".local", ".internal", ".home", ".arpa")
 
 
+def escape_ilike(term: str) -> str:
+    return term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def _is_public_ip(ip_str: str) -> bool:
     try:
         ip = ipaddress.ip_address(ip_str)

@@ -40,9 +40,11 @@ async def write_upload_stream(file: UploadFile, empty_msg: str) -> tuple[str, in
                     )
                 hasher.update(chunk)
                 f.write(chunk)
-                if len(chunk) < chunk_size:
-                    break
-                if hasattr(file.read, "return_value") and file.read.return_value == chunk and getattr(file, "file", None) is None:
+                if (
+                    isinstance(getattr(file.read, "return_value", None), (bytes, bytearray))
+                    and file.read.return_value == chunk
+                    and not getattr(file.read, "side_effect", None)
+                ):
                     break
     except Exception:
         if os.path.exists(file_path):

@@ -84,7 +84,7 @@ async def list_invoices(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    stmt = select(Invoice).where(Invoice.user_id == current_user.id).order_by(Invoice.created_at.desc())
+    stmt = select(Invoice).where(Invoice.user_id == current_user.id).order_by(Invoice.created_at.desc()).limit(100)
     items = (await db.execute(stmt)).scalars().all()
     return APIResponse(
         message="Invoices retrieved",

@@ -209,14 +209,17 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
     # =========================================================================
 
     async def test_google_login_redirect_and_sets_signed_state(self):
-        """GET /auth/google/login mengarahkan ke Google OAuth dengan signed JWT state."""
+        """GET /auth/google/login mengarahkan ke Google OAuth dengan signed JWT state dan cookie CSRF."""
         resp = await auth_router.google_login()
         self.assertEqual(resp.status_code, status.HTTP_307_TEMPORARY_REDIRECT)
         self.assertIn("Location", resp.headers)
         location = resp.headers["Location"]
         self.assertIn("accounts.google.com", location)
         self.assertIn("state=", location)
-        self.assertNotIn("g_oauth_state=", resp.headers.get("set-cookie", ""))
+        set_cookie = resp.headers.get("set-cookie", "")
+        self.assertNotIn("g_oauth_state=", set_cookie)
+        self.assertIn("vt_oauth_state=", set_cookie)
+        self.assertIn("HttpOnly", set_cookie)
 
     async def test_google_login_503_when_client_id_empty(self):
         """GET /auth/google/login mengembalikan 503 jika GOOGLE_CLIENT_ID kosong."""
@@ -227,13 +230,14 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
 
     async def test_google_callback_state_mismatch_rejected(self):
         """GET /auth/google/callback menolak permintaan jika state query tidak cocok dengan cookie."""
+        valid_state = create_oauth_state("login")
         mock_req = MagicMock()
-        mock_req.cookies = {"g_oauth_state": "expected_state_abc"}
+        mock_req.cookies = {"vt_oauth_state": "expected_state_abc"}
         mock_db = MockAsyncSession()
 
         resp = await auth_router.google_callback(
             code="mock_code",
-            state="tampered_state_xyz",
+            state=valid_state,
             request=mock_req,
             db=mock_db,
         )
@@ -243,14 +247,15 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         self.assertIn("kedaluwarsa", location.lower())
 
     async def test_google_callback_missing_state_cookie_rejected(self):
-        """GET /auth/google/callback menolak jika state tidak valid."""
+        """GET /auth/google/callback menolak jika cookie vt_oauth_state tidak ada."""
+        valid_state = create_oauth_state("login")
         mock_req = MagicMock()
         mock_req.cookies = {}
         mock_db = MockAsyncSession()
 
         resp = await auth_router.google_callback(
             code="mock_code",
-            state="some_state",
+            state=valid_state,
             request=mock_req,
             db=mock_db,
         )
@@ -261,7 +266,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         """GET /auth/google/callback menolak email yang verified_email=False dari Google."""
         valid_state = create_oauth_state("login")
         mock_req = MagicMock()
-        mock_req.cookies = {}
+        mock_req.cookies = {"vt_oauth_state": valid_state}
         mock_db = MockAsyncSession()
 
         token_resp = MagicMock(status_code=200)
@@ -301,7 +306,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         valid_state = create_oauth_state("login")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult(scalar_val=existing_user))
         mock_req = MagicMock()
-        mock_req.cookies = {}
+        mock_req.cookies = {"vt_oauth_state": valid_state}
         mock_req.client.host = "127.0.0.1"
 
         token_resp = MagicMock(status_code=200)
@@ -337,7 +342,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         valid_state = create_oauth_state("login")
         mock_db = MockAsyncSession(execute_handler=lambda s: MockQueryResult([]))
         mock_req = MagicMock()
-        mock_req.cookies = {}
+        mock_req.cookies = {"vt_oauth_state": valid_state}
         mock_req.client.host = "127.0.0.1"
 
         token_resp = MagicMock(status_code=200)
@@ -530,6 +535,7 @@ class TestGoogleOAuthAndResetPassword(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(resp.data.user.email, "complete.user@kampus.ac.id")
         self.assertEqual(resp.data.user.role, "FREE")
         self.assertEqual(resp.data.user.token_balance, 5)
+        self.assertEqual(resp.data.user.ai_trial_remaining, 3)
 
         # Verifikasi objek User & TokenWallet & Session tersimpan di database
         added_users = [u for u in mock_db.added if isinstance(u, User)]

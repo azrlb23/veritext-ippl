@@ -69,6 +69,17 @@ def set_refresh_cookie(response: Response, refresh_token: str, days: int | None 
     response.set_cookie(**cookie_kwargs)
 
 
+def clear_refresh_cookie(response: Response) -> None:
+    is_prod = getattr(settings, "ENVIRONMENT", "").lower() == "production"
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True,
+        samesite="lax",
+        secure=is_prod,
+        path="/",
+    )
+
+
 async def get_user_wallet_balance(db: AsyncSession, user_id) -> int:
     stmt = select(TokenWallet).where(TokenWallet.user_id == user_id)
     res = await db.execute(stmt)
@@ -95,8 +106,8 @@ async def update_profile(
         current_user.full_name = req.full_name
     await db.commit()
     await db.refresh(current_user)
-    balance = await get_user_wallet_balance(db, current_user.id)
-    return APIResponse(message="Profile updated", data=format_user_profile(current_user, balance))
+    bal, trial, chat = await get_user_wallet_info(db, current_user.id)
+    return APIResponse(message="Profile updated", data=format_user_profile(current_user, bal, trial, chat))
 
 
 @helpers_router.patch("/change-password", response_model=APIResponse[dict])
@@ -122,7 +133,7 @@ async def delete_own_account(
     db: AsyncSession = Depends(get_db),
 ):
     await AuthService.delete_user_account(db, current_user)
-    response.delete_cookie(key="refresh_token")
+    clear_refresh_cookie(response)
     msg = "Akun dan seluruh data pribadi naskah Anda telah dihapus secara permanen"
     return APIResponse(message=msg, data={})
 

@@ -4,12 +4,13 @@ import contextlib
 import os
 
 from fastapi import HTTPException, status
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.audit import AuditReport, AuditSentence, AuditTask
 from app.models.audit_log import AuditLog
+from app.models.chat import ChatSession, ChatSessionDocument
 from app.models.corpus import CorpusDocument
 from app.models.document import Document
 from app.models.invoice import Invoice
@@ -29,8 +30,7 @@ async def purge_user_account(db: AsyncSession, user: User) -> None:
                 detail="Cannot deactivate or delete the last active administrator",
             )
 
-    doc_stmt = select(Document).where(Document.user_id == user.id)
-    docs_res = await db.execute(doc_stmt)
+    docs_res = await db.execute(select(Document).where(Document.user_id == user.id))
     user_docs = docs_res.scalars().all() if hasattr(docs_res, "scalars") else []
     user_doc_ids = [getattr(d, "id", None) for d in user_docs if getattr(d, "id", None) is not None and isinstance(d, Document)]
     for doc in user_docs:
@@ -49,19 +49,40 @@ async def purge_user_account(db: AsyncSession, user: User) -> None:
     user_tasks = task_res.scalars().all() if hasattr(task_res, "scalars") else []
     task_ids = [getattr(t, "id", None) for t in user_tasks if getattr(t, "id", None) is not None and isinstance(t, AuditTask)]
 
+    active_cids = [
+        t.celery_task_id
+        for t in user_tasks
+        if isinstance(t, AuditTask)
+        and getattr(t, "status", None) in ("QUEUED", "PROCESSING")
+        and isinstance(getattr(t, "celery_task_id", None), str)
+        and t.celery_task_id
+    ]
+    if active_cids:
+        with contextlib.suppress(Exception):
+            from app.workers.celery_app import celery_app
+
+            for cid in active_cids:
+                celery_app.control.revoke(cid, terminate=True)
+
     if task_ids:
         await db.execute(delete(AuditReport).where(AuditReport.audit_task_id.in_(task_ids)))
         await db.execute(delete(AuditSentence).where(AuditSentence.audit_task_id.in_(task_ids)))
         await db.execute(delete(AuditTask).where(AuditTask.id.in_(task_ids)))
 
+    if user_doc_ids:
+        linked = select(ChatSessionDocument.session_id).where(ChatSessionDocument.document_id.in_(user_doc_ids))
+        await db.execute(
+            delete(ChatSession).where(
+                or_(ChatSession.user_id == user.id, ChatSession.document_id.in_(user_doc_ids), ChatSession.id.in_(linked))
+            )
+        )
+    else:
+        await db.execute(delete(ChatSession).where(ChatSession.user_id == user.id))
+
     await db.execute(delete(Document).where(Document.user_id == user.id))
     await db.execute(delete(Session).where(Session.user_id == user.id))
-
-    with contextlib.suppress(Exception):
-        await db.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
-
-    with contextlib.suppress(Exception):
-        await db.execute(delete(Invoice).where(Invoice.user_id == user.id))
+    await db.execute(delete(PasswordReset).where(PasswordReset.user_id == user.id))
+    await db.execute(delete(Invoice).where(Invoice.user_id == user.id))
 
     wallet_res = await db.execute(select(TokenWallet).where(TokenWallet.user_id == user.id))
     wallets = wallet_res.scalars().all() if hasattr(wallet_res, "scalars") else []
@@ -76,9 +97,7 @@ async def purge_user_account(db: AsyncSession, user: User) -> None:
         if w and isinstance(w, TokenWallet):
             await db.delete(w)
 
-    with contextlib.suppress(Exception):
-        await db.execute(update(CorpusDocument).where(CorpusDocument.uploaded_by == user.id).values(uploaded_by=None))
-
+    await db.execute(update(CorpusDocument).where(CorpusDocument.uploaded_by == user.id).values(uploaded_by=None))
     await db.execute(update(AuditLog).where(AuditLog.actor_id == user.id).values(actor_id=None))
     await db.delete(user)
     await db.commit()

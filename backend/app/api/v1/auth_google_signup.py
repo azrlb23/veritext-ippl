@@ -5,12 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.auth_helpers import (
-    format_user_profile,
-    set_refresh_cookie,
-)
+from app.api.v1.auth_helpers import format_user_profile, set_refresh_cookie
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.rate_limiter import extract_client_ip
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -104,7 +102,7 @@ async def google_complete(
             detail="Nama lengkap minimal 2 karakter.",
         )
 
-    if len(req.password) < 8:
+    if len(req.password) < 8 or len(req.password) > 128:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Kata sandi minimal harus 8 karakter.",
@@ -124,7 +122,7 @@ async def google_complete(
     db.add(wallet)
     await db.flush()
 
-    ip_addr = request.client.host if request and request.client else None
+    ip_addr = extract_client_ip(request) if request else None
     access_token, refresh_token = await create_google_session(
         db, new_user, "Google-SSO-Complete", ip_addr
     )
@@ -137,6 +135,6 @@ async def google_complete(
         message="Pendaftaran akun Google berhasil diselesaikan",
         data=TokenResponse(
             access_token=access_token,
-            user=format_user_profile(new_user, 5),
+            user=format_user_profile(new_user, 5, 3, 0),
         ),
     )

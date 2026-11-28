@@ -12,7 +12,7 @@ class UserRegisterRequest(BaseModel):
 
 class UserLoginRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=1, max_length=128)
     remember_me: bool = True
 
 
@@ -41,7 +41,7 @@ class UserProfileUpdate(BaseModel):
 
 
 class ChangePasswordRequest(BaseModel):
-    old_password: str
+    old_password: str = Field(..., max_length=128)
     new_password: str = Field(..., min_length=8, max_length=128)
 
 

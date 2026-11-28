@@ -15,6 +15,7 @@ import app.api.v1.auth_password_reset as _reset_mod
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.email import send_password_reset_email
+from app.core.rate_limiter import extract_client_ip
 from app.core.security import create_access_token, create_refresh_token, hash_token
 from app.models.session import Session
 from app.models.user import User
@@ -45,7 +46,7 @@ google_verify_token = _google_mod.google_verify_token
 
 @router.post("/register", response_model=APIResponse[TokenResponse], status_code=status.HTTP_201_CREATED)
 async def register(req: UserRegisterRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
-    ip_addr = request.client.host if request.client else None
+    ip_addr = extract_client_ip(request)
     user, access_token, refresh_token = await AuthService.register_user(db, req, user_agent=request.headers.get("user-agent"), ip_address=ip_addr)
     set_refresh_cookie(response, refresh_token, 7)
     return APIResponse(message="User account registered successfully. 5 trial tokens granted.", data=TokenResponse(access_token=access_token, user=format_user_profile(user, 5, 3, 0)))
@@ -53,7 +54,7 @@ async def register(req: UserRegisterRequest, request: Request, response: Respons
 
 @router.post("/login", response_model=APIResponse[TokenResponse])
 async def login(req: UserLoginRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
-    ip_addr = request.client.host if request.client else None
+    ip_addr = extract_client_ip(request)
     await enforce_rate_limit(
         f"{req.email.lower().strip()}:{ip_addr or 'unknown'}",
         "auth_login",
@@ -75,7 +76,7 @@ async def logout(response: Response, refresh_token: str = Cookie(None), current_
         if session_obj:
             await db.delete(session_obj)
             await db.commit()
-    response.delete_cookie(key="refresh_token")
+    _helpers_mod.clear_refresh_cookie(response)
     return APIResponse(message="Logged out successfully", data={})
 
 
@@ -97,7 +98,7 @@ async def refresh_token_endpoint(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token cookie missing")
 
     hashed = hash_token(token)
-    res = await db.execute(select(Session).where(Session.refresh_token_hash == hashed))
+    res = await db.execute(select(Session).where(Session.refresh_token_hash == hashed).with_for_update())
     sess = res.scalar_one_or_none()
     if not sess:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or revoked refresh token")
