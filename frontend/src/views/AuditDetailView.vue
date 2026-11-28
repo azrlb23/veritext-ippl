@@ -139,7 +139,7 @@ watch(() => route.params.id, (id) => {
           <DrawerDetails :selected="selected" @preview-source="openSourcePreview" />
           <div class="mt-5 flex-1"><ParaphrasePanel :selected="selected" @applied="onApplied" /></div>
           <div class="mt-6 border-t border-[#E8ECEB] pt-5">
-            <router-link :to="documentId ? `/asisten?doc=${documentId}` : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>
+            <router-link :to="documentId ? (selected?.sentence_id ? `/asisten?doc=${documentId}&sentence=${selected.sentence_id}` : `/asisten?doc=${documentId}`) : '/asisten'" class="vt-btn-light inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-full px-5 text-[14px] font-semibold text-[#14111C] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]">Diskusikan lebih lanjut di Asisten AI</router-link>
           </div>
         </div>
       </div>

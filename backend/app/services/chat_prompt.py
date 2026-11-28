@@ -5,9 +5,16 @@ HISTORY_CHARS = 600
 
 _DOMAIN_SAFEGUARD = (
     "ATURAN DOMAIN KETAT: Anda HANYA melayani pertanyaan seputar isi naskah, "
-    "parafrase akademik, dan penyuntingan gaya penulisan. Jika pengguna bertanya "
-    "di luar topik akademik atau naskah (seperti hiburan, resep, kode aplikasi umum, "
-    "atau obrolan santai), tolak dengan sopan dan arahkan kembali ke naskah."
+    "hasil audit orisinalitas, sitasi akademik, parafrase, dan penyuntingan gaya penulisan. "
+    "Jika pengguna bertanya di luar topik akademik atau naskah (seperti hiburan, resep, "
+    "kode aplikasi umum, atau obrolan santai), tolak dengan sopan dan arahkan kembali ke naskah."
+)
+_COMPARE_KEYS = ("bandingkan", "perbandingan", "progres", "antar draf", "antar-draf", "perubahan skor")
+_CITATION_KEYS = ("sitasi", "daftar pustaka", "dafpus", "kutipan", "apa 7", "ieee", "harvard", "doi")
+_EYD_KEYS = ("eyd", "puebi", "ejaan", "typo", "kalimat efektif", "tata tulis", "imbuhan")
+_AUDIT_KEYS = (
+    "bedah audit", "hasil audit", "rencana revisi", "prioritas revisi",
+    "kenapa skor", "turunkan skor", "ringkas temuan",
 )
 _PARAPHRASE_KEYS = (
     "parafrase", "tulis ulang", "ubah kalimat", "kalimat lain", "perbaiki kalimat", "susun ulang",
@@ -23,20 +30,59 @@ _TASK_INSTRUCTIONS: dict[str, str] = {
     "PARAPHRASE_TASK": (
         "Anda adalah spesialis parafrase akademik Bahasa Indonesia. Ubah teks pengguna menjadi "
         "2-3 variasi kalimat/paragraf yang orisinal, baku, dan mempertahankan makna ilmiah "
-        f"tanpa menambah informasi fiktif. {_DOMAIN_SAFEGUARD}"
+        "tanpa menambah informasi fiktif. Hindari klise AI (WP:AISIGNS) dan tanda pisah em-dash. "
+        f"{_DOMAIN_SAFEGUARD}"
     ),
     "STYLE_REVIEW": (
-        "Anda adalah penyunting gaya dan struktur akademik. Evaluasi kejelasan, koherensi, "
-        f"dan pola penulisan mirip AI, lalu berikan saran revisi konkret. {_DOMAIN_SAFEGUARD}"
+        "Anda adalah penyunting gaya dan De-AI (Humanizer Akademik Terarah). Hapus tanda pisah "
+        "em-dash (-- / \u2014), daftar beruntun berpola 'Label: penjelasan', klise WP:AISIGNS "
+        "(seperti 'dalam era digital ini', 'penting untuk dicatat', 'memainkan peran vital'), "
+        "enumerasi tiga serangkai (rule-of-three), serta panjang kalimat yang monoton. "
+        "Pertahankan ketepatan makna ilmiah, berikan evaluasi singkat dan versi revisi alami. "
+        f"{_DOMAIN_SAFEGUARD}"
+    ),
+    "AUDIT_COACH": (
+        "Anda adalah pelatih revisi naskah akademik berbasis bukti audit. Analisis data "
+        "Laporan Audit yang tersedia (skor komposit, T1 Leksikal, T2 Semantik, T3 Stilometri/AI, "
+        "sumber teratas, dan kalimat bertanda RED/ORANGE/YELLOW), lalu susun rencana revisi "
+        "bernomor yang diurutkan berdasarkan dampak terbesar terhadap penurunan skor. "
+        f"Jangan mengarang angka di luar laporan. {_DOMAIN_SAFEGUARD}"
+    ),
+    "CITATION_ASSIST": (
+        "Anda adalah asisten sitasi dan pembersih daftar pustaka akademik. Baca sumber terdeteksi "
+        "dan temuan verifikasi sitasi (UNVERIFIED/MISMATCHED_DOI) dari konteks laporan audit. "
+        "Bantu format sitasi dalam teks dan entri daftar pustaka sesuai gaya APA 7, IEEE, atau "
+        "Harvard secara konsisten. Dilarang mengarang DOI, tahun terbit, atau nama penulis "
+        f"jika tidak ada di konteks; tandai data yang perlu diverifikasi pengguna. {_DOMAIN_SAFEGUARD}"
+    ),
+    "EYD_PROOFREAD": (
+        "Anda adalah penyunting bahasa Indonesia berstandar EYD Edisi V dan kalimat efektif. "
+        "Periksa ketepatan kata depan 'di'/'ke' vs imbuhan 'di-'/'ke-', penulisan istilah asing "
+        "bercetak miring, huruf kapital, tanda baca, serta kehematan subjek-predikat. Sajikan "
+        f"temuan dalam format jelas: Sebelum -> Sesudah + Alasan singkat. {_DOMAIN_SAFEGUARD}"
+    ),
+    "DRAFT_COMPARE": (
+        "Anda adalah evaluator progres antar-draf akademik. Bandingkan 2-3 draf terlampir "
+        "berdasarkan Perbandingan Skor Antar-Draf (skor komposit, T1, T2, T3, dan jumlah kalimat "
+        "Resolved), identifikasi perbaikan yang tercapai serta kelemahan tersisa secara objektif. "
+        f"{_DOMAIN_SAFEGUARD}"
     ),
 }
 INSTRUCTION = _TASK_INSTRUCTIONS["QA_DOCUMENT"]
 
 
-def classify_task_and_engine(question: str, has_docs: bool = False) -> tuple[str, str]:
+def classify_task_and_engine(question: str, has_docs: bool = False, doc_count: int = 0) -> tuple[str, str]:
     """Menentukan task_mode dan preferred_engine secara otomatis dari pertanyaan pengguna."""
     _ = has_docs
     q = (question or "").lower()
+    if doc_count >= 2 and any(key in q for key in _COMPARE_KEYS):
+        return ("DRAFT_COMPARE", "auto")
+    if any(key in q for key in _CITATION_KEYS):
+        return ("CITATION_ASSIST", "auto")
+    if any(key in q for key in _EYD_KEYS):
+        return ("EYD_PROOFREAD", "auto")
+    if any(key in q for key in _AUDIT_KEYS):
+        return ("AUDIT_COACH", "auto")
     if any(key in q for key in _PARAPHRASE_KEYS):
         return ("PARAPHRASE_TASK", "auto")
     if any(key in q for key in _STYLE_KEYS):
@@ -50,11 +96,11 @@ def build_prompt(
     history: list[tuple[str, str]],
     task_mode: str = "QA_DOCUMENT",
 ) -> str:
-    """Menyusun prompt: instruksi task_mode, kutipan naskah relevan, riwayat singkat, lalu pertanyaan."""
+    """Menyusun prompt: instruksi task_mode, konteks naskah/audit, riwayat singkat, lalu pertanyaan."""
     instruction = _TASK_INSTRUCTIONS.get((task_mode or "").strip().upper(), _TASK_INSTRUCTIONS["QA_DOCUMENT"])
     parts = [instruction]
     if context:
-        parts.append("Kutipan naskah yang relevan:\n" + context)
+        parts.append("Kutipan naskah dan konteks audit yang relevan:\n" + context)
     recent = history[-HISTORY_TURNS:]
     if recent:
         lines = [f"{'Pengguna' if role == 'USER' else 'Asisten'}: {text[:HISTORY_CHARS]}" for role, text in recent]

@@ -44,17 +44,30 @@ onUnmounted(() => {
 
     <p v-if="sessions.length === 0" class="mt-6 px-1 text-[14px] leading-relaxed text-[#5E5A6B]">Percakapan Anda akan tersimpan di sini.</p>
     <ul v-else class="mt-4 flex-1 space-y-1 overflow-y-auto no-scrollbar">
-      <li v-for="s in sessions" :key="s.id">
+      <li
+        v-for="s in sessions"
+        :key="s.id"
+        class="flex items-center gap-1 rounded-[20px] border transition-colors"
+        :class="activeId === s.id ? 'border-[#D5ECE8] bg-[#EBF8F6] shadow-lift' : 'border-transparent hover:bg-white/70'"
+      >
         <button
           type="button"
-          title="Klik kanan untuk menghapus"
-          class="block min-h-[56px] w-full cursor-pointer rounded-[20px] px-4 py-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
-          :class="activeId === s.id ? 'border border-[#D5ECE8] bg-[#EBF8F6] shadow-lift' : 'border border-transparent hover:bg-white/70'"
+          title="Klik kanan untuk opsi"
+          class="min-h-[56px] min-w-0 flex-1 cursor-pointer rounded-[20px] py-3 pl-4 pr-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E]"
           @click="emit('open', s.id)"
           @contextmenu.prevent="openContext($event, s.id)"
         >
           <span class="block truncate text-[15px] font-semibold" :class="activeId === s.id ? 'text-[#0F766E]' : 'text-[#14111C]'">{{ s.title }}</span>
           <span class="mt-0.5 block truncate text-[13px] text-[#5E5A6B]">{{ s.last_message || "Belum ada pesan" }}</span>
+        </button>
+        <button
+          type="button"
+          aria-label="Hapus percakapan"
+          title="Hapus percakapan"
+          class="mr-2 inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-[#5E5A6B] transition-colors hover:bg-[#FEE2E2] hover:text-[#B91C1C] focus:outline-none focus-visible:text-[#B91C1C] focus-visible:ring-2 focus-visible:ring-[#0F766E]"
+          @click.stop="emit('remove', s.id)"
+        >
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
         </button>
       </li>
     </ul>

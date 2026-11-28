@@ -32,6 +32,7 @@ export function useAssistant() {
   const errorBySession = ref<Record<string, string>>({});
   const drafts = ref<Record<string, string>>({});
   const selectedDocs = ref<string[]>([]);
+  const focusSentenceId = ref<string | null>(null);
   const trialLeft = ref<number | null>(null);
   const preferredEngine = ref<"auto" | "ollama" | "gemini">("auto");
   const taskMode = ref<"QA_DOCUMENT" | "PARAPHRASE_TASK" | "STYLE_REVIEW">("QA_DOCUMENT");
@@ -80,7 +81,7 @@ export function useAssistant() {
     }
   }
 
-  async function send(prompt: string) {
+  async function send(prompt: string, overrideTaskMode?: string) {
     const originId = activeId.value;
     const originKey = keyOf(originId);
     drafts.value = { ...drafts.value, [originKey]: "" };
@@ -92,9 +93,11 @@ export function useAssistant() {
       const res = await chatService.sendMessage(prompt, {
         documentIds: originId ? [] : selectedDocs.value,
         sessionId: originId || undefined,
+        sentenceId: focusSentenceId.value || undefined,
         preferredEngine: preferredEngine.value,
-        taskMode: taskMode.value,
+        taskMode: overrideTaskMode || taskMode.value,
       });
+      focusSentenceId.value = null;
       const replyMsg: ChatHistoryItem = { id: res.message_id, role: "ASSISTANT", content: res.content, created_at: new Date().toISOString() };
       const nextMessages = { ...messagesBySession.value, [res.session_id]: [...(messagesBySession.value[originKey] || []), replyMsg] };
       if (originKey === NEW_KEY) nextMessages[NEW_KEY] = [];
@@ -129,7 +132,7 @@ export function useAssistant() {
 
   return {
     sessions, documents, activeId, activeSession, linkedAudit, messages, selectedDocs,
-    sending, error, draft, trialLeft, preferredEngine, taskMode, lastEngine,
+    focusSentenceId, sending, error, draft, trialLeft, preferredEngine, taskMode, lastEngine,
     openSession, send, removeSession,
   };
 }

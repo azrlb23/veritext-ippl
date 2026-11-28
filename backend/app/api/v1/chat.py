@@ -20,9 +20,8 @@ from app.schemas.chat import (
 from app.schemas.common import APIResponse
 from app.services.assistant_service import AI_UNAVAILABLE, AssistantService
 from app.services.audit_log_helper import record_token_debit
-from app.services.chat_context import (
-    build_document_context_async, load_audited_sentences_map, load_focus_sentence_context, load_owned_documents,
-)
+from app.services.chat_audit_context import load_chat_audit_bundle
+from app.services.chat_context import build_document_context_async, load_owned_documents
 from app.services.chat_prompt import build_prompt, classify_task_and_engine
 from app.services.chat_sessions import create_session, get_owned_session, recent_history, session_document_ids
 from app.services.paraphrase_scope import resolve_paraphrase_scope_text
@@ -77,13 +76,11 @@ async def send_chat_message(
     AssistantService.check_academic_guardrail(payload.prompt)
     AssistantService.check_ai_quota_available(current_user, await _read_wallet(db, current_user.id), mode="CHAT")
     session, docs, history = await _resolve_session(db, current_user.id, payload)
-    focus_ctx = await load_focus_sentence_context(db, current_user.id, payload.sentence_id) if payload.sentence_id else ""
-    doc_ids = [d.id for d in docs if getattr(d, "id", None)]
-    audited_map = await load_audited_sentences_map(db, current_user.id, doc_ids) if doc_ids else {}
-    context = await build_document_context_async(docs, payload.prompt, focus_context=focus_ctx, audited_map=audited_map)
+    focus_and_audit_ctx, audited_map = await load_chat_audit_bundle(db, current_user.id, docs, payload.sentence_id)
+    context = await build_document_context_async(docs, payload.prompt, focus_context=focus_and_audit_ctx, audited_map=audited_map)
     task_mode, engine_pref = payload.task_mode, payload.preferred_engine
     if engine_pref == "auto" and task_mode == "QA_DOCUMENT":
-        task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs))
+        task_mode, engine_pref = classify_task_and_engine(payload.prompt, bool(docs), doc_count=len(docs))
     prompt_text = build_prompt(payload.prompt, context, history, task_mode=task_mode)
     ai_text, engine = await asyncio.to_thread(DualEngineLLMGateway().generate_text_with_failover, prompt_text, engine_pref)
     if not ai_text:
